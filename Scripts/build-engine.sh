@@ -7,6 +7,11 @@ ROOT=$(cd "$(dirname "$0")/.." && pwd)
 SRC="$ROOT/ThirdParty/muscriptor.cpp/cpp"
 OUT="$ROOT/build/engine"
 
+if [ ! -f "$SRC/CMakeLists.txt" ]; then
+    echo "error: $SRC is missing; run git submodule update --init --recursive" >&2
+    exit 1
+fi
+
 # .stamp is touched once the archives are in place, so a stamp newer than the
 # engine's CMakeLists means the copies in lib/ are current.
 if [ -f "$OUT/lib/libmuscriptor_ggml.a" ] \
@@ -39,7 +44,7 @@ fi
 
 mkdir -p "$OUT/lib"
 for archive in libmuscriptor_ggml.a libpffft.a libggml.a libggml-base.a libggml-cpu.a libggml-metal.a; do
-    found=$(find "$OUT" -name "$archive" -not -path "$OUT/lib/*" | head -1)
+    found=$(find "$OUT" -name "$archive" -not -path "$OUT/lib/*" -print -quit)
     if [ -z "$found" ]; then
         echo "error: $archive not found under $OUT after the build" >&2
         exit 1

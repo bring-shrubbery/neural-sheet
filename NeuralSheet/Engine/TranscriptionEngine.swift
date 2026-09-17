@@ -52,9 +52,10 @@ nonisolated final class TranscriptionEngine: @unchecked Sendable {
 
     /// Read only on the transcription thread: it is set before that thread
     /// starts and cleared on it once the run is over.
-    private var updateHandler: ((EngineUpdate) -> Bool)?
+    private var updateHandler: (@Sendable (EngineUpdate) -> Bool)?
 
-    /// True between `run` starting and its `completion` returning.
+    /// True from `run` starting until the transcription thread is done; it is
+    /// already false by the time `completion` runs.
     var isRunning: Bool {
         lock.lock()
         defer { lock.unlock() }
@@ -78,8 +79,8 @@ nonisolated final class TranscriptionEngine: @unchecked Sendable {
     func run(modelPath: URL,
              groups: [Int32],
              samples16k: [Float],
-             onUpdate: @escaping (EngineUpdate) -> Bool,
-             completion: @escaping (Result<[EngineNote], EngineError>) -> Void) {
+             onUpdate: @escaping @Sendable (EngineUpdate) -> Bool,
+             completion: @escaping @Sendable (Result<[EngineNote], EngineError>) -> Void) {
         lock.lock()
         if running {
             lock.unlock()
