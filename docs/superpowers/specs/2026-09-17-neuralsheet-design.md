@@ -62,7 +62,7 @@ The app target gets a **Run Script** build phase (before Compile Sources) that r
 `LIBRARY_SEARCH_PATHS` for `build/engine/lib`, `OTHER_LDFLAGS` for `-lmuscriptor_ggml -lggml -lggml-base
 -lggml-cpu -lggml-metal -lpffft` (the six archives the CMake build produces), and
 linked frameworks Metal, Accelerate, Foundation, AVFoundation, AudioToolbox, CoreAudio, CoreMIDI.
-`CLANG_CXX_LANGUAGE_STANDARD = c++23`. Bundle id `com.antoni.neuralsheet`, product name
+`CLANG_CXX_LANGUAGE_STANDARD = c++23`. Bundle id `com.quassum.neuralsheet`, product name
 `NeuralSheet`, `NSMicrophoneUsageDescription = "Need access to Microphone"`.
 
 `Scripts/build-engine.sh`: idempotent; configures `ThirdParty/muscriptor.cpp/cpp` with
