@@ -10,6 +10,16 @@ import Testing
     #expect(TimeFormat.transportPlaceholder == "--:--.--")
 }
 
+@Test func transportDoesNotLoseAHundredthToBinaryScaling() {
+    // 0.29 * 100 == 28.999999999999996 and 1.15 * 100 == 114.99999999999999 in binary64.
+    #expect(TimeFormat.transport(0.29) == "00:00.29")
+    #expect(TimeFormat.transport(1.15) == "00:01.15")
+    #expect(TimeFormat.transport(60.29) == "01:00.29")
+    // Genuine fractions still truncate rather than round up.
+    #expect(TimeFormat.transport(2.675) == "00:02.67")
+    #expect(TimeFormat.transport(0.999) == "00:00.99")
+}
+
 @Test func rulerFormatsMinutesAndPaddedSeconds() {
     #expect(TimeFormat.ruler(65) == "1:05")
     #expect(TimeFormat.ruler(0) == "0:00")

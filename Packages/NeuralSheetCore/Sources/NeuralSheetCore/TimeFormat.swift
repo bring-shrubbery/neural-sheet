@@ -6,7 +6,10 @@ public enum TimeFormat {
     /// Transport position and total, `mm:ss.dd` (hundredths, truncated).
     public static func transport(_ seconds: Double) -> String {
         guard seconds.isFinite, seconds > 0 else { return "00:00.00" }
-        let hundredths = Int((seconds * 100).rounded(.down))
+        // Nudged before flooring: scaling by 100 in binary64 lands a hair *below* the intended
+        // hundredth for values such as 0.29 (28.999999999999996), which would truncate to .28.
+        // The nudge is a nanosecond wide, far too small to promote a genuine fraction.
+        let hundredths = Int((seconds * 100 + 1e-7).rounded(.down))
         return String(
             format: "%02d:%02d.%02d", hundredths / 6000, (hundredths / 100) % 60, hundredths % 100)
     }
