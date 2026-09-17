@@ -11,8 +11,9 @@ public struct PitchRange: Equatable, Sendable {
         self.high = high
     }
 
-    /// C0 through B5, the span an empty piano roll starts from before it is widened to fill.
-    public static let empty = PitchRange(low: 12, high: 83)
+    /// Octaves 1-5, MIDI 12-71: the span an empty piano roll starts from before it is widened
+    /// to fill.
+    public static let empty = PitchRange(low: 12, high: 71)
 }
 
 /// Which notes the piano roll shows.
@@ -20,11 +21,11 @@ public enum PianoRollRange {
     public static let minMidiNote = 0
     public static let maxMidiNote = 127
 
-    /// C0 through B5, the span an empty piano roll starts from before it is widened to fill.
-    /// Octaves here are 0-based indices into the MIDI range, so C0 (12) is octave 1 and B5 (83)
-    /// is the top of octave 6 — the naming ``TimeFormat/pitchName(_:)`` uses.
+    /// Octaves 1-5, MIDI 12-71: the span an empty piano roll starts from before it is widened
+    /// to fill. Octaves here are 0-based indices into the MIDI range (`note / 12`), not the octave
+    /// in a note's name.
     public static let defaultLowOctave = 1
-    public static let defaultHighOctave = 6
+    public static let defaultHighOctave = 5
 
     /// The octave a MIDI note falls in, 0 for notes 0-11. Not the octave in its name.
     public static func octave(of note: Int) -> Int { note / 12 }
@@ -42,7 +43,7 @@ public enum PianoRollRange {
     /// hides one — it only drops the octaves nothing reached. And it is never narrower than
     /// `minSemitones`, so the keyboard fills its column rather than leaving a gap: that is what
     /// decides how far past the notes it opens up, and why an empty roll can end up a little wider
-    /// than C0-B5.
+    /// than octaves 1-5.
     ///
     /// Whole octaves throughout, so the C separators the roll draws land on its edges.
     ///

@@ -2,13 +2,24 @@ import Testing
 
 @testable import NeuralSheetCore
 
-@Test func anEmptyRollShowsCZeroThroughBFive() {
-    #expect(PitchRange.empty == PitchRange(low: 12, high: 83))
-    #expect(PitchRange.empty.count == 72)
+@Test func anEmptyRollShowsOctavesOneThroughFive() {
+    // MIDI 12-71, the C++ reference's DEFAULT_LOW_OCTAVE / DEFAULT_HIGH_OCTAVE.
+    #expect(PitchRange.empty == PitchRange(low: 12, high: 71))
+    #expect(PitchRange.empty.count == 60)
 
     let range = PianoRollRange.displayRange(notes: nil, highest: nil, minSemitones: 12)
 
-    #expect(range == PitchRange(low: 12, high: 83))
+    #expect(range == PitchRange(low: 12, high: 71))
+}
+
+@Test func anEmptyRollStillWidensToFillTheColumn() {
+    // The default is only a starting point: above first, then alternating, as with notes.
+    #expect(
+        PianoRollRange.displayRange(notes: nil, highest: nil, minSemitones: 72)
+            == PitchRange(low: 12, high: 83))
+    #expect(
+        PianoRollRange.displayRange(notes: nil, highest: nil, minSemitones: 84)
+            == PitchRange(low: 0, high: 83))
 }
 
 @Test func theRangeIsWholeOctavesAroundTheNotes() {
