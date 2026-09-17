@@ -251,6 +251,91 @@ private func randomSamples(_ count: Int, seed: UInt64) -> [Float] {
     }
 }
 
+@Test func readerAgreesWithDirectQueriesAndSnapshot() {
+    let samples = randomSamples(40_000, seed: 61)
+    let peaks = WaveformPeaks()
+    peaks.build(from: samples)
+
+    let snapshot = peaks.snapshot()
+    var rng = SplitMix64(seed: 62)
+
+    var spans: [(Int, Int)] = [(0, samples.count), (0, WaveformPeaks.baseBinSamples), (1000, 9000)]
+    for _ in 0..<10 {
+        let start = rng.nextInt(below: samples.count - 1)
+        spans.append((start, start + 1 + rng.nextInt(below: samples.count - start)))
+    }
+
+    // Queried outside the closure: the reader must not be the only way to get these answers.
+    let expected = spans.map { peaks.peaks(from: $0.0, to: $0.1) }
+
+    peaks.withReader { reader in
+        #expect(reader.sampleCount == samples.count)
+
+        for (span, answer) in zip(spans, expected) {
+            let fromReader = reader.peaks(from: span.0, to: span.1)
+            #expect(fromReader == answer)
+            #expect(fromReader == snapshot.peaks(from: span.0, to: span.1))
+        }
+    }
+}
+
+@Test func readerSeesAppendedPeaksAndAppendingStillWorksAfterwards() {
+    let peaks = WaveformPeaks()
+    peaks.append([Float](repeating: 0.25, count: 5000))
+
+    let seenByReader = peaks.withReader { reader -> PeakPair in
+        #expect(reader.sampleCount == 5000)
+        return reader.peaks(from: 0, to: reader.sampleCount)
+    }
+    #expect(seenByReader.min == 0.25)
+    #expect(seenByReader.max == 0.25)
+
+    // Appending after a reader must extend the same peaks rather than start over.
+    peaks.append([Float](repeating: -0.5, count: 5000))
+    peaks.append([Float](repeating: 0.75, count: 3000))
+
+    #expect(peaks.sampleCount == 13_000)
+
+    let after = peaks.peaks(from: 0, to: 13_000)
+    #expect(after.min == -0.5)
+    #expect(after.max == 0.75)
+
+    peaks.withReader { reader in
+        #expect(reader.sampleCount == 13_000)
+        #expect(reader.peaks(from: 0, to: 13_000) == after)
+        #expect(reader.peaks(from: 0, to: 5000).max == 0.25)
+        #expect(reader.peaks(from: 10_000, to: 13_000).max == 0.75)
+    }
+
+    // And a build after a reader replaces everything as usual.
+    peaks.build(from: ramp(1000))
+    #expect(peaks.withReader { $0.sampleCount } == 1000)
+}
+
+@Test func readersAndAppendsInterleaveSafely() async {
+    let peaks = WaveformPeaks()
+    let chunk = [Float](repeating: 0.25, count: 512)
+
+    await withTaskGroup(of: Void.self) { group in
+        group.addTask {
+            for _ in 0..<200 { peaks.append(chunk) }
+        }
+        group.addTask {
+            for _ in 0..<200 {
+                peaks.withReader { reader in
+                    let count = reader.sampleCount
+                    let result = reader.peaks(from: 0, to: count)
+                    // Whatever the recorder has reached, the reader sees one consistent signal.
+                    #expect(count == 0 || result.min == 0.25)
+                    #expect(count == 0 || result.max == 0.25)
+                }
+            }
+        }
+    }
+
+    #expect(peaks.withReader { $0.sampleCount } == 200 * 512)
+}
+
 @Test func concurrentAppendsAndQueriesAreSafe() async {
     let peaks = WaveformPeaks()
     let chunk = [Float](repeating: 0.25, count: 512)

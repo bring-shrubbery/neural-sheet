@@ -94,10 +94,13 @@ private func query(
     return result
 }
 
-/// An immutable view of a pyramid, for a paint pass that must see one consistent signal.
+/// An immutable copy of a pyramid, for code that has to keep querying after the lock is gone --
+/// handing peaks to another task, or holding a "before" picture across an edit.
 ///
-/// Taking a snapshot copies three arrays' references, not their contents, so a frame pays for the
-/// lock once and then queries freely while the recorder keeps appending.
+/// The copy is cheap to take (three array references) but not free to hold: the next append finds
+/// level 0 shared and duplicates it, which is megabytes for a long recording. So this is for
+/// infrequent use. **A paint pass should use ``WaveformPeaks/withReader(_:)`` instead**, which
+/// reads the live pyramid with no copy at all.
 public struct WaveformPeaksSnapshot: Sendable {
     fileprivate let levels: [[PeakPair]]
     fileprivate let rawSamples: [Float]
@@ -119,6 +122,28 @@ public struct WaveformPeaksSnapshot: Sendable {
     }
 }
 
+/// A window onto the live pyramid, valid only for the duration of ``WaveformPeaks/withReader(_:)``.
+///
+/// Every query it answers reads the peaks in place -- no copy, no allocation -- under the lock that
+/// ``WaveformPeaks/withReader(_:)`` holds for the whole frame. That is what makes it safe, and it is
+/// also why it must not be stored: outside the closure the lock is gone and the pyramid may be
+/// growing underneath it.
+public struct WaveformPeaksReader {
+    private let source: WaveformPeaks
+
+    fileprivate init(source: WaveformPeaks) {
+        self.source = source
+    }
+
+    /// How many samples the peaks cover.
+    public var sampleCount: Int { source.count }
+
+    /// Peaks over `[from, to)`, clamped to what exists. Empty if nothing does.
+    public func peaks(from startSample: Int, to endSample: Int) -> PeakPair {
+        source.unlockedPeaks(from: startSample, to: endSample)
+    }
+}
+
 /// Min/max peaks over a mono signal, stored as a pyramid so a query costs the same however much
 /// audio it spans.
 ///
@@ -127,9 +152,11 @@ public struct WaveformPeaksSnapshot: Sendable {
 /// a bar spanning ten minutes reads about as many bins as one spanning a second. Below
 /// ``rawScanMaxSamples`` it reads the samples themselves and is exact.
 ///
-/// Peaks are appended from the audio thread while recording and read from the main actor while
-/// painting, so every access is locked; ``snapshot()`` hands a whole frame one consistent value
-/// rather than making it lock per query.
+/// While recording, peaks are appended from the recorder's serial dispatch queue -- the one fed by
+/// the AVAudioEngine input tap, never the render callback -- and read from the main actor while
+/// painting, so every access is locked. A paint pass takes ``withReader(_:)``, which holds the lock
+/// for the whole frame: 200 separate locks would be both slower and inconsistent, since the pyramid
+/// can grow between them.
 public final class WaveformPeaks: @unchecked Sendable {
     /// 4 ms at 16 kHz. Finer than one bar at any zoom the UI offers.
     public static let baseBinSamples = 64
@@ -143,13 +170,13 @@ public final class WaveformPeaks: @unchecked Sendable {
     private let lock = NSLock()
 
     /// `levels[k]` has bins of `baseBinSamples << k`. The top level is a single bin.
-    private var levels: [[PeakPair]] = []
+    fileprivate var levels: [[PeakPair]] = []
 
     /// The audio the peaks were built from. Empty while recording, which is what makes queries fall
     /// back to the pyramid at every zoom.
-    private var rawSamples: [Float] = []
+    fileprivate var rawSamples: [Float] = []
 
-    private var count = 0
+    fileprivate var count = 0
 
     public init() {}
 
@@ -207,6 +234,9 @@ public final class WaveformPeaks: @unchecked Sendable {
     /// Extends the peaks, for a recording that is still growing. No samples are retained.
     ///
     /// Appending in chunks gives the same pyramid as one ``build(from:)`` over the concatenation.
+    ///
+    /// Called from the recorder's serial dispatch queue, which the AVAudioEngine input tap feeds --
+    /// not from the render callback, so taking a lock and allocating here are both fine.
     public func append(_ samples: [Float]) {
         guard !samples.isEmpty else { return }
 
@@ -255,21 +285,49 @@ public final class WaveformPeaks: @unchecked Sendable {
     }
 
     /// Peaks over `[from, to)`, clamped to what exists. Empty if nothing does.
+    ///
+    /// This locks per call. A paint pass asking hundreds of these wants ``withReader(_:)``.
     public func peaks(from startSample: Int, to endSample: Int) -> PeakPair {
         lock.lock()
         defer { lock.unlock() }
 
-        return query(
-            levels: levels, rawSamples: rawSamples, sampleCount: count,
-            from: startSample, to: endSample)
+        return unlockedPeaks(from: startSample, to: endSample)
     }
 
-    /// An immutable copy for a paint pass: every query it serves sees the same audio.
+    /// Runs `body` with the lock held, so every query it makes sees the same audio.
+    ///
+    /// This is the painting path: the reader reads the live pyramid, copying nothing, so a frame
+    /// costs one lock and no allocation however long the recording is.
+    ///
+    /// - Important: the reader must not escape `body` -- outside it, nothing is synchronised. Nor
+    ///   may `body` touch this object by any other route: the lock is not recursive, so calling
+    ///   ``peaks(from:to:)``, ``append(_:)`` or ``snapshot()`` from inside deadlocks.
+    public func withReader<T>(_ body: (WaveformPeaksReader) throws -> T) rethrows -> T {
+        lock.lock()
+        defer { lock.unlock() }
+
+        return try body(WaveformPeaksReader(source: self))
+    }
+
+    /// An immutable copy of the peaks as they stand.
+    ///
+    /// See ``WaveformPeaksSnapshot``: holding one makes the next ``append(_:)`` duplicate the
+    /// pyramid, so this is for occasional use rather than per-frame painting.
     public func snapshot() -> WaveformPeaksSnapshot {
         lock.lock()
         defer { lock.unlock() }
 
         return WaveformPeaksSnapshot(levels: levels, rawSamples: rawSamples, sampleCount: count)
+    }
+
+    /// The query itself, for callers that already hold the lock.
+    ///
+    /// Passing the arrays as arguments only retains them for the call, so nothing is copied and the
+    /// next append still finds its storage uniquely referenced.
+    fileprivate func unlockedPeaks(from startSample: Int, to endSample: Int) -> PeakPair {
+        query(
+            levels: levels, rawSamples: rawSamples, sampleCount: count,
+            from: startSample, to: endSample)
     }
 
     /// Recomputes levels above 0 for the bins covering `[firstBin, lastBin]` at level 0.
