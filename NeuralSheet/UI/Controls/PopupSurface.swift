@@ -8,13 +8,15 @@ import SwiftUI
 /// takes the window's shadow instead.
 struct PopupSurface: ViewModifier {
     /// Already scaled by the caller, so a panel can round its corners to match its own metrics.
-    var corner: CGFloat = 8
+    /// `nil` takes the shared menu corner at the environment's scale -- a bare `8` as the default
+    /// would silently be the wrong radius at every scale but 1.
+    var corner: CGFloat?
     var shadow: Bool = true
 
     @Environment(\.uiScale) private var k
 
     func body(content: Content) -> some View {
-        let shape = RoundedRectangle(cornerRadius: corner, style: .circular)
+        let shape = RoundedRectangle(cornerRadius: corner ?? MenuMetrics.corner * k, style: .circular)
 
         return content
             .background(shape.fill(Theme.popupBg))
@@ -31,7 +33,7 @@ struct PopupSurface: ViewModifier {
 
 extension View {
     /// Puts this content on the shared popup surface. See `PopupSurface`.
-    func popupSurface(corner: CGFloat = 8, shadow: Bool = true) -> some View {
+    func popupSurface(corner: CGFloat? = nil, shadow: Bool = true) -> some View {
         modifier(PopupSurface(corner: corner, shadow: shadow))
     }
 }

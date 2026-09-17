@@ -1,4 +1,3 @@
-import AppKit
 import CoreText
 import Foundation
 import SwiftUI
@@ -134,11 +133,5 @@ enum Fonts {
     /// the point height, not the line height.
     static func tracking(_ em: Double, pointSize: CGFloat, scale: CGFloat) -> CGFloat {
         CGFloat(em) * pointSize * scale
-    }
-
-    /// An `NSFont` for the few places AppKit has to measure or draw our type itself -- the tooltip
-    /// panel sizes its window before SwiftUI ever sees the text.
-    static func nsFont(_ name: String, pointSize: CGFloat, scale: CGFloat = 1) -> NSFont {
-        NSFont(name: name, size: pointSize * scale) ?? .systemFont(ofSize: pointSize * scale)
     }
 }

@@ -97,11 +97,16 @@ struct TooltipModifier: ViewModifier {
     private func show(scale: CGFloat) {
         guard panel == nil, let hostWindow else { return }
 
-        let body = TooltipBody(text: text, scale: scale)
-        let hosting = NSHostingView(rootView: body)
-        let size = body.panelSize
+        let hosting = NSHostingView(rootView: TooltipBody(text: text, scale: scale))
+        let size = Self.wrappedSize(of: hosting, scale: scale)
 
+        // Left to itself, an NSHostingView acting as a window's content view keeps publishing
+        // sizing constraints, and the layout pass that addChildWindow triggers re-measures the text
+        // against a width it has not been given yet -- which grew the panel to a hundred lines. The
+        // size measured above is the answer; the view is pinned to it and stops negotiating.
+        hosting.sizingOptions = []
         hosting.frame = CGRect(origin: .zero, size: size)
+        hosting.autoresizingMask = [.width, .height]
 
         let tip = TooltipPanel(contentRect: CGRect(origin: .zero, size: size),
                                styleMask: [.borderless, .nonactivatingPanel],
@@ -133,6 +138,34 @@ struct TooltipModifier: ViewModifier {
             dismiss()
             return event
         }
+    }
+
+    /// SwiftUI's own measurement of what it is about to draw.
+    ///
+    /// Two passes, because `fittingSize` on its own reports the *unwrapped* ideal -- one line,
+    /// however long the tip. The first pass gives that ideal width, which is clamped to the cap;
+    /// pinning the view to it makes the second pass report the height the text really wraps to.
+    /// Measuring the text with AppKit instead and pinning SwiftUI to the result is what clipped the
+    /// last line whenever the two line breakers disagreed about where a tip wraps.
+    private static func wrappedSize(of hosting: NSView, scale: CGFloat) -> CGSize {
+        // NnLook.cpp:134 lays the text out at 260 and adds the padding after, so the panel runs to
+        // 282 and it is the text that wraps at 260.
+        let cap = (Tooltips.maxWidth + 2 * MenuMetrics.padX) * scale
+
+        hosting.translatesAutoresizingMaskIntoConstraints = false
+
+        let width = min(hosting.fittingSize.width, cap)
+        let pinned = hosting.widthAnchor.constraint(equalToConstant: width)
+
+        pinned.isActive = true
+        hosting.layoutSubtreeIfNeeded()
+
+        let height = hosting.fittingSize.height
+
+        pinned.isActive = false
+        hosting.translatesAutoresizingMaskIntoConstraints = true
+
+        return CGSize(width: width, height: height)
     }
 
     /// JUCE's placement, kept: the tip goes away from whichever screen edge the pointer is nearest,
@@ -174,41 +207,25 @@ private final class TooltipPanel: NSPanel {
     override var canBecomeMain: Bool { false }
 }
 
-/// The tip itself, sized here rather than by SwiftUI: the panel needs a frame before its content
-/// view exists, so the text is measured with the same font it is then drawn in.
+/// The tip itself. Nothing here pins the text to a measured box: the only layout that can be
+/// trusted to agree with SwiftUI's line breaker is SwiftUI's own, and a frame measured with AppKit
+/// clips the last line whenever the two disagree about where a two-line tip wraps. The text is
+/// given a maximum width and nothing else; `TooltipModifier.wrappedSize` reports what it came to.
 private struct TooltipBody: View {
     let text: String
     let scale: CGFloat
 
-    private var maxTextWidth: CGFloat { Tooltips.maxWidth * scale - 2 * MenuMetrics.padX * scale }
-
-    private var textSize: CGSize {
-        let font = Fonts.nsFont(Fonts.Name.interRegular, pointSize: Fonts.Size.menuItem, scale: scale)
-        let attributed = NSAttributedString(string: text, attributes: [.font: font])
-        let bounds = attributed.boundingRect(with: CGSize(width: maxTextWidth,
-                                                          height: .greatestFiniteMagnitude),
-                                             options: [.usesLineFragmentOrigin, .usesFontLeading])
-
-        // Rounded up: half a point short of the laid-out width is a wrap that was not asked for.
-        return CGSize(width: ceil(bounds.width), height: ceil(bounds.height))
-    }
-
-    /// What the panel is made, including the padding around the text.
-    var panelSize: CGSize {
-        let size = textSize
-
-        return CGSize(width: size.width + 2 * MenuMetrics.padX * scale,
-                      height: size.height + 2 * Tooltips.padY * scale)
-    }
+    /// `NnLook.cpp:134` lays the text out at 260 and then adds the padding, so the *text* is what
+    /// wraps at 260 and the panel runs to 282.
+    private var maxTextWidth: CGFloat { Tooltips.maxWidth * scale }
 
     var body: some View {
-        let size = textSize
-
         Text(text)
             .font(Fonts.menuItem(scale))
             .foregroundStyle(Theme.popupItem)
             .multilineTextAlignment(.leading)
-            .frame(width: size.width, height: size.height, alignment: .topLeading)
+            .fixedSize(horizontal: false, vertical: true)
+            .frame(maxWidth: maxTextWidth, alignment: .topLeading)
             .padding(.horizontal, MenuMetrics.padX * scale)
             .padding(.vertical, Tooltips.padY * scale)
             .environment(\.uiScale, scale)

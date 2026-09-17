@@ -106,6 +106,15 @@ struct FlatButton<Label: View>: View {
             .onHover { hovering in
                 isHovered = hovering
             }
+            // A button whose own action disables it -- Transcribe, Record -- has the gesture masked
+            // out from under a live press, so onEnded never arrives to clear it. Without this the
+            // pressed surface comes back the moment the button is enabled again.
+            .onChange(of: isEnabled) { _, enabled in
+                if !enabled {
+                    isPressed = false
+                    isHovered = false
+                }
+            }
             .gesture(press, including: isEnabled ? .all : .subviews)
             .pointerStyle(isEnabled ? .link : nil)
             .accessibilityAddTraits(.isButton)
@@ -117,14 +126,14 @@ struct FlatButton<Label: View>: View {
     private var press: some Gesture {
         DragGesture(minimumDistance: 0)
             .onChanged { _ in
-                if !isPressed {
+                if !isPressed, isEnabled {
                     isPressed = true
                 }
             }
             .onEnded { value in
                 isPressed = false
 
-                if CGRect(origin: .zero, size: size).contains(value.location) {
+                if isEnabled, CGRect(origin: .zero, size: size).contains(value.location) {
                     action()
                 }
             }
