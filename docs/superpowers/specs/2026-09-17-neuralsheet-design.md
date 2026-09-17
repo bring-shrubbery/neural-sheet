@@ -59,8 +59,8 @@ NeuralSheet/
 
 The app target gets a **Run Script** build phase (before Compile Sources) that runs
 `Scripts/build-engine.sh`, and build settings: `HEADER_SEARCH_PATHS` for the muscriptor include dir,
-`LIBRARY_SEARCH_PATHS` for `build/engine/lib`, `OTHER_LDFLAGS` for `-lmuscriptor -lmuscriptor_ggml
--lggml -lggml-base -lggml-cpu -lggml-metal -lpffft` (exact names taken from the CMake build), and
+`LIBRARY_SEARCH_PATHS` for `build/engine/lib`, `OTHER_LDFLAGS` for `-lmuscriptor_ggml -lggml -lggml-base
+-lggml-cpu -lggml-metal -lpffft` (the six archives the CMake build produces), and
 linked frameworks Metal, Accelerate, Foundation, AVFoundation, AudioToolbox, CoreAudio, CoreMIDI.
 `CLANG_CXX_LANGUAGE_STANDARD = c++23`. Bundle id `com.antoni.neuralsheet`, product name
 `NeuralSheet`, `NSMicrophoneUsageDescription = "Need access to Microphone"`.
