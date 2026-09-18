@@ -493,6 +493,8 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
         if rate > 0 { sampleRate = rate }
 
         buildGraph()
+        // The synths kept their nodes through the rebuild, but not necessarily the rate.
+        synthBank.reconnectForCurrentRate()
         updateGains()
 
         // The take is stored at the device rate, so new hardware means converting it again.

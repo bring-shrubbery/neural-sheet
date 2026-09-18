@@ -219,17 +219,19 @@ nonisolated final class InstrumentSynthBank: @unchecked Sendable {
         let bus = subMixer.nextAvailableInputBus
 
         engine.attach(node)
-        engine.connect(node, to: subMixer, fromBus: 0, toBus: bus, format: nil)
+        // At the engine's own rate, never the synth's default: the events are scheduled against the
+        // source node's sample time, and an AU rendering at 44.1 kHz under a 48 kHz engine counts
+        // its own samples 8 % slower, so every scheduled note lands later and later -- silence that
+        // grows with the app's uptime.
+        engine.connect(node, to: subMixer, fromBus: 0, toBus: bus, format: renderFormat)
 
         sendProgramChange(to: node, program: program)
 
-        let nodeRate = node.outputFormat(forBus: 0).sampleRate
-        let engineRate = engine.outputNode.outputFormat(forBus: 0).sampleRate
         let instrument = SynthInstrument(
             program: program,
             node: node,
             bus: bus,
-            sampleRate: nodeRate > 0 ? nodeRate : (engineRate > 0 ? engineRate : 48000),
+            sampleRate: renderRate,
             scratchFrames: InstrumentSynthBank.meterScratchFrames
         )
 
@@ -250,6 +252,45 @@ nonisolated final class InstrumentSynthBank: @unchecked Sendable {
 
         // Last, so the render thread only ever sees a block whose node is already in the graph.
         blocks[program] = instrument.scheduleBlock
+    }
+
+    /// The rate every synth renders at: the engine's, so the synths' sample timelines are the
+    /// source node's, which is what the scheduled events are timed against.
+    private var renderRate: Double {
+        let rate = engine.outputNode.outputFormat(forBus: 0).sampleRate
+
+        return rate > 0 ? rate : 48000
+    }
+
+    private var renderFormat: AVAudioFormat? {
+        AVAudioFormat(standardFormatWithSampleRate: renderRate, channels: 2)
+    }
+
+    /// Re-links every synth at the engine's current rate. Main thread, with the engine stopped:
+    /// after the graph has been rebuilt for new hardware, whose rate the synths were not
+    /// connected for.
+    func reconnectForCurrentRate() {
+        lock.lock()
+        let current = Array(instruments.values)
+        lock.unlock()
+
+        let rate = renderRate
+        let format = renderFormat
+
+        engine.disconnectNodeOutput(subMixer)
+        engine.connect(subMixer, to: mixTarget, format: format)
+
+        for instrument in current {
+            engine.disconnectNodeOutput(instrument.node)
+            engine.connect(instrument.node, to: subMixer, fromBus: 0, toBus: instrument.bus, format: format)
+
+            lock.lock()
+            instrument.meter = RmsMeter(sampleRate: rate)
+            lock.unlock()
+
+            // The AU's channel state need not survive being reconfigured; see ``allNotesOff()``.
+            sendProgramChange(to: instrument.node, program: instrument.program)
+        }
     }
 
     /// Drops every synth and every sounding note. Main thread.
