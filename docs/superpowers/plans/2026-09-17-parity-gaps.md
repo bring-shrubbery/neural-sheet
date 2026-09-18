@@ -1,0 +1,89 @@
+# Parity gaps — NeuralSheet against the NeuralNote v2 inventory
+
+Walked on 2026-09-18/19 against `docs/superpowers/specs/2026-09-17-neuralnote-feature-inventory.md`
+(every non-[PLUGIN] bullet), the C++ sources at `/Users/antoni/Projects/NeuralNote` (which win where
+the inventory disagrees) and the running app next to the C++ reference capture
+(`NeuralNote_UI.png`, 2×; `screencapture` of the C++ app is TCC-blocked in this environment).
+Rulings already made are respected (NeuralSheet strings, Mute = own output, model panel centred with no
+scrim, AppKit drag source, pinch factor, PillSlider nub, 4th-order Butterworth, private aggregate).
+
+## Gaps
+
+- [x] §1.1 corner resizer — not drawn; the C++ standalone shows JUCE's 18×18 `ResizableCornerComponent` at the bottom-right of the editor (three diagonal lines at 30/55/80 %, `textDim` hovered/dragged else `textScale`, unscaled window pixels) and it drags the window — `NeuralSheet/UI/MainView.swift`, new `NeuralSheet/UI/CornerResizer.swift`
+- [x] §1.2 region layout — status bar was full-width and the sidebar stopped above it; in the C++ (`VisualizationPanel::resized`, reference capture) the status bar belongs to the panel right of the sidebar and the sidebar runs to the window bottom (master panel at y = 800 − 63) — `NeuralSheet/UI/MainView.swift`
+- [x] §1.3 time display — `TimeDisplay::_format` rounds to the nearest hundredth (`roundToInt(seconds * 100)`); Swift truncated — `Packages/NeuralSheetCore/Sources/NeuralSheetCore/TimeFormat.swift` (+ test)
+- [x] §1.6 tempo editor — JUCE `TextEditor` has a 4 px left indent, so "120" sits 4 px into the 40 px field; Swift drew at the field's left edge — `NeuralSheet/UI/Toolbar/TempoField.swift`
+- [x] §1.12 / §11.3 settings menu — the LookAndFeel's `drawPopupMenuItemWithOptions` draws no submenu arrow; Swift drew a chevron on the two submenu rows — `NeuralSheet/UI/SettingsMenu.swift`
+- [x] §1.12 / §11.3 settings menu placement — `showMenuAsync().withTargetComponent(gear)` aligns the menu's left edge to the gear's left edge (x = 1234) and lets it overhang the window's right edge (own window); Swift kept it 6 px inside the window. Submenus follow JUCE's `calculateWindowPos` (beside the row, to the right when it fits, else the left) — `NeuralSheet/UI/SettingsMenu.swift` (now on `PopupMenuPresenter` windows)
+- [x] §1.12 popup menu width — `workOutManualSize` adds the 4 px `PopupMenu` border on both sides of the widest item, so the settings menu and the bin's clear menu are 8 px wider than their ideal item width; Swift used the ideal width alone — `NeuralSheet/UI/Controls/PopupMenuPresenter.swift`
+- [x] §3.2 model panel — drawn with the menus' 34 px drop shadow; `ModelDownloadPanel::paint` draws only the surface and its border — `NeuralSheet/UI/ModelPanel/ModelPanel.swift`
+- [x] §9 update notice — same: `nn::drawPopupSurface` only, no shadow — `NeuralSheet/UI/UpdateNotice.swift`
+- [x] §3.3 instrument picker scrollbar — the JUCE viewport shows its 8 px vertical scrollbar whenever the 36 rows exceed 274 px (always), narrowing the rows to 236 and drawing a `checkboxBorder` thumb (rounded 4, inset 1) over a transparent track; Swift used a hidden overlay scroller and 244-wide rows — `NeuralSheet/UI/Sidebar/InstrumentMenu.swift`, new `NeuralSheet/UI/Controls/LegacyScrollbar.swift`
+- [x] §1.4 sidebar strip list — same JUCE scrollbar once the strips overflow (9+ instruments at 1×): strips narrow by 8 px and the thumb shows — `NeuralSheet/UI/Sidebar/Sidebar.swift`
+- [x] §3.4 Transcribe label — `_layOutTranscribeButton` counts the selection only in `AudioLoaded` ("With no audio there is nothing to be specific about"); Swift showed "Transcribe N instruments" on the empty roll too — `NeuralSheet/App/AppModel.swift` (`transcribeLabel`)
+- [x] §3.3 picker lifetime — `updateEnablements` closes the picker the moment a transcription exists; Swift left it open — `NeuralSheet/App/AppModel.swift` (`transition(to:)`)
+- [x] §7.3 "MIX WAVEFORM" — `AudioRegion::paint` returns after the drop zone, so the label is absent while nothing is loaded; Swift drew it over the drop zone — `NeuralSheet/UI/Timeline/WaveformView.swift`
+- [x] §2.2 accepted extensions — the C++ list is `.mp3, .wav, .bwf, .aiff, .aif, .flac, .ogg` (mp3 first, then JUCE's `WavAudioFormat` ".wav .bwf", Aiff, Flac, Ogg); Swift lacked `.bwf` and listed them in another order in the "Could not load the file." message — `NeuralSheet/Audio/AudioFileLoader.swift`
+- [x] §5.2 synth timing (found while capturing "playing") — each `AVAudioUnitMIDIInstrument` was connected with `format: nil`, i.e. at the DLS synth's own 44.1 kHz under a 48 kHz engine; note events are scheduled in the source node's sample time, so on the synth's slower timeline they landed later and later (silence for seconds after Play, growing with the app's uptime, and the strip meters stayed dark). Synths now render at the engine's rate and are re-linked after a device rebuild — `NeuralSheet/Audio/InstrumentSynthBank.swift`, `NeuralSheet/Audio/PlaybackEngine.swift`
+
+## Verified as matching (per section)
+
+- §1.1 window scaling: 1280×800 canvas, aspect 1.6, 0.5…2.0 with the display rule (0.99 / 0.90), `max(0.5, min(...))`, `min(w/1280, h/800)`, `editorScale` written on close unless within 0.0005, presets 50…200 %, `bgRoot`.
+- §1.2 metrics (54 / 44 / 126 / 22 / 26 / 262 / 38 / 76 / 46), gutter and keyboard outside the horizontal viewport, `faderTrack` thumb on a transparent track, update-notice frame (820, 734, 449, 30), picker anchor (252, 33) from the sidebar.
+- §1.3 top bar: paddings 18/14/16/2, wordmark (9×9 accent square r = 2, Inter 15/600 0.14 em, mono 9/500 0.06 em +9/+2), 34×30 transport with the exact icons/colours/enable rules (Loop disabled with its tooltip), time display (mono 15/500 + 11/400, 14/8, rules, `textBright`/`textScale`/`textFaint`, `--:--.--`), Model button (upper-cased label, sectionHeader 0.09 em, (11,11,7), lit while open), mix pill (ORIG/MIDI, 86, 12/9, r 6, accent@80 %, dim 0.38 without notes), volume pill (13 px speaker, 74, 30 px `String(v, 1)` in meta, dim unless canPlay), MUTE ((11,11,7), `bgMuteActive`/`warn`), 32 px settings gear. Pixel-compared against the reference.
+- §1.4 sidebar: header 38 (INSTRUMENTS 0.13 em, count mono 10 `textFaintest`, 18×18 "+" r 4 hidden with a transcription), strips 76, master 63 (pad 12, label 12, gap 10, 26 segments gap 3 h 5, `bgControlSubtle`). Pixel-compared.
+- §1.5 instrument strip: every metric, chip (22, r 5, @13 % / @25 %, mono 8/600), name at 31 (Inter 12/500, strike-through when muted), meta strings (`selected · not transcribed yet`, `n hits · kit map`, `n notes · C2-G5`), M/S 20×18 r 4 colours, solo row tint, `divRow`, fader −36…+6 step 0.1 double-click 0, muted fill/thumb, dB readout `textDim`, muted alpha 0.5, placeholder disables M/S/fader. Pixel-compared.
+- §1.6 toolbar: file name (Inter 12.5/500 `textFile`, nothing for a recording), Clear 28×28, Drag/Export buttons, EXPORT TEMPO pill (0.09 em `textDim`, 40 px editor, 7×4 triangles gap 2, `bgControlAlt`), enable rules (populated only; bin in audioLoaded/populated). Pixel-compared.
+- §1.7 status bar: mono 9.5 `textFainter`, ` · ` separators (`textSeparator`, 14 each side), segments and their conditions, zoom icon 11 + 8 + 74 px slider colours, progress 24 px left of it.
+- §1.8 palette: every hex and alpha in `Theme.swift` matches `NnLook.h`.
+- §1.9 interaction rules: `surface`/`foreground` are `surfaceFor`/`foregroundFor` byte for byte (darker 0.15, brighter 0.12), disabled = 0.38 alpha.
+- §1.10 fonts: Inter / JetBrains Mono NL faces, the whole ramp and its trackings; tracked width = natural + (n−1) × em × size.
+- §1.11 icons: all 20 shapes, stroke 1.3 with round caps/joins, check at 2 px.
+- §1.12 popups: 244 / 8 / 28 / 29 / 30 / 274 / 11 / 4 / 14 / 3, surface + 1 px border, tick on the right, nothing for unticked rows, `menuItemTicked` + `popupItemTicked`, hover fill, 9 px separators, min width 180; tooltips 260 max, pad 6, 800 ms, popup surface, away from the nearest edge.
+- §2.1 recording: record-toggle states, `~/Library/NeuralSheet/recordings`, `recorded_audio<YYYY-MM-DD_HH-MM-SS>.wav` (16-bit, min(channels, 2)) + `_downsampled.wav` (16 kHz mono 16-bit), `_1`… suffixes, averaged downmix, read-back on stop, zero samples clears, the two failure dialogs.
+- §2.2 drop/open: accepting states, clear-then-load, both failure dialogs (extension refused before clearing), 16 kHz mono + device-rate copies, peaks, `AudioLoaded` without a run, dropped file name, "Select Audio File" chooser filtered from the same list.
+- §2.3 device-rate resample on change; §2.4 peaks pyramid (64-sample bins, 16 bins per query, raw scan below 2048, append while recording); §2.5 meters (50 ms RMS, −36…0, mid −12 / hot −6, band boundaries, instant attack / 24 dB/s, corner 1, display-link driven, staleness `max(0.5 s, 2 × block)`); §2.6 clear rules (only `recorded_audio*` in the recordings folder is ever deleted).
+- §3.1 manifest (sizes, bytes, hashes, URL template, revision), models folder, "installed = exact size", part-file naming and stale-part deletion, resolution order.
+- §3.2 downloader (timeouts, 5 redirects, 1 MiB chunks, Range/206/200/416 rules, every message string, 2/5/10 s retries reset on progress, SHA-256 check, resume after cancel) and the panel (440, rows 46/2/6, all strings, size formatting, 172 px column, Download/Resume/Retry, progress bar 3/2 + 32 px % + cross, VERIFYING, selection, hover + hand cursor, "Open models folder", close cross only when optional, mandatory rule, 10 Hz poll while hidden).
+- §3.3 selection (enumerator order, duplicates dropped, empty = Automatic, "Automatic (any instrument)" first, 35 groups, header/footer strings and trackings, shadow 34/(0,14), scrim + Escape close, placeholders in the sidebar, "+" hidden with a transcription).
+- §3.4 run: CTA (34, 17, 9, r 6, `ctaFill`, accent outline, visible when idle + model, enabled in audioLoaded), the nine launch steps in order, GPU always, unload after the call, load-failure strings (NeuralSheet), 30 Hz drain, fixed amplitude 100/127, authoritative result replaces the stream, cancel → audioLoaded, failure dialog, latched cancel dimming 0.38.
+- §3.5 progress group (TRANSCRIBING 0.06 em, 150×3 r 2, 28 px %, 16 px cross, gaps 10, 1.6 s raised-cosine pulse 0.55…1 quantised to hundredths).
+- §4 note model (fields, sort order, merge-overlapping-same-program-and-pitch only), mixer entries ascending program with drums last, `noteCount == 0` placeholders, the 35-row name/chip/colour table and the `program_n` / HSL fallback; §4.2 gain/mute/solo per program, `isAudible`, reset only at launch.
+- §5.1 transport (Back rewinds and scrolls left, playback whenever canPlay incl. during a run, seek ignored outside `[0, duration)`, playhead saved, wrap-to-0 and stop at the end), scheduler (512 active, 30 s lookback, re-anchoring on a swapped list, note-offs expired before and after the onset pass, 4×512 events, stable sort with note-off first).
+- §5.2 synth (deviation 1: Apple GM bank): one AU per instrument, GM bank 0 / percussion bank on channel 10, 10 ms ramps, −36 dB = silence, drum note-offs ignored, CC 123 on stop/seek, mono fold.
+- §5.3 mix (equal-power `cos`/`sin`, step 0.001, default 0.5, forced to 0 with no notes), master −36…+6 step 0.1 default 0, output clamped to 1–2 channels, master meter after the fader.
+- §6.1 both exits (drag writes to `<temp>/neuralsheet/<name>` and starts an AppKit drag session with the file icon; export = "Export MIDI" save panel in Music, `.mid`, overwrite warning; failure dialog), file names (`<name>_NNTranscription.mid` / `NNTranscription.mid`), both disabled unless populated.
+- §6.2 MIDI file (format 1, 960 tpqn, conductor track with tempo + 4/4, one track per instrument ascending with a type-3 name and a program change (drums 0), tick formula, velocity 100, channel map with channel 10 reserved, 15 melodic channels, reuse from index 9 / drop by note count, export tempo 20…999 default 120 max 6 chars digits and ".").
+- §7.1 horizontal zoom (100 px/s, 0.1…5 with the fit-to-viewport floor, `ZOOM_LEVEL`, ⌘-wheel `+= deltaY`, pinch multiply, left edge anchored, wheel routing over the roll vs elsewhere, no scroll while following, auto-scroll while recording, centre-playhead on every frame).
+- §7.2 vertical zoom (6 + norm × 37.6 per semitone, white key = row × 12/7, −1 = automatic fit ≥ 12 semitones, slider takes it off automatic, Reset Zoom writes −1, whole-octave range widened above first then alternating, empty 12…71, widen-only while processing, keyboard 0.58 / 0.65 / 11 px, 1 px gaps, C labels mono 7.5 right-aligned 5 px, 40 % dim), gutter labels centred on 63.5 ± 51.
+- §7.3 waveform (3/1/4 px bars anchored to content pixels, symmetric, min 1 px, absolute scale, `bgPanel`, centre line white@5 %, wash + 1 px edge left of the playhead, corner label meta 0.1 em at inset 10, dashed drop zone 9/8/4-4 with the drag-over colours, Load button 14/32/15/8, "OR DROP A FILE HERE" 0.06 em 12 px 9 below).
+- §7.4 ruler (seconds only, divisions {0.1 … 60} at ≥ 56 px, 1 px `divTick`, `m:ss` floored, 6 px right, `bgPanel`, nothing unless canPlay).
+- §7.5 roll (`bgRoot`, lanes by key colour at 0.55 while empty, `divOctave` under every C, notes r 2 width `max(1, x1 − x0 − 1)`, muted 0.16, 2 px onset edge for width > 4, drums drawn ≥ 0.1 s, playhead hidden while idle, wash left of it, frontier `bgRoot@75 %` + `divStrong` line, click-to-seek only).
+- §8.1 global settings keys/defaults (plist per deviation 5), reload per window open; §8.2 session (tempo, overflow, source path, playhead, centred, zooms, groups, mixer; transcription never saved; recordings re-registered for deletion); §8.3 paths under `~/Library/NeuralSheet` (deviation 3), `<temp>/neuralsheet` removed on quit, Music folder.
+- §9 update check (once per launch + on demand, `tag_name`, dotted compare with "v" stripped, both notice strings, "See update" 24/12 accent-outlined, 10 s, +3 s per 5 Hz hover tick, cross, hit-test restricted to the panel; deviation 4 URLs).
+- §11.1 states and `canPlay`/`hasTranscription`; §11.2 shortcuts (Space, ⇧Space, ⇧⌫ in audioLoaded/populated, r, m, c, Esc, right-click bin menu with "Clear transcription only" enabled only when populated, ⌘-wheel/pinch, fader double-click); §11.3 menu order, tick re-evaluation, nothing for unticked rows; §11.4 every tooltip string; §11.5 timers (30 Hz drain, 10 Hz panel, 5 Hz notice, display link, 800 ms); §11.7 every dialog title/body; §11.8 no About box, links only to GitHub/Hugging Face; §11.9 animations.
+
+## Human verification (not checkable from this shell)
+
+- MIDI drag-out lands in Finder and in a DAW (the AppKit `NSDraggingSession` starts after 3 pt of travel with the file's icon).
+- Pointing-hand cursor and the "Drag the transcribed MIDI into your DAW" tooltip on the drag button.
+- A real Finder drop of an audio file onto the timeline (the drop zone lights up for a supported file).
+- The "Export MIDI" save panel's OK path writes the file (the panel is modal; only the model's write was exercised).
+- Window edge/corner drag keeps the 1280:800 aspect between 0.5× and the display's maximum.
+- The update endpoint (`api.github.com/repos/antoni/neural-sheet/releases/latest`, a placeholder that 404s today) — the notice was exercised with injected results.
+- Audible check that every instrument sounds from the first note after Play (the sample-rate fix above was verified through the meters and the tap sample times, not by ear).
+
+## Deferred (not user-visible)
+
+- The corner grip's two inner lines (55 % and 80 %) fall under the native window's rounded corner, which clips them; the JUCE standalone drew its own square-cornered frame. A consequence of the native title bar, not of the grip.
+- The legacy scrollbars' thumbs are drawn, not dragged (the wheel scrolls, as it did in JUCE too).
+- Tooltip placement decides "nearest edge" against the screen rather than the main view (`TooltipWindow`'s parent area was the editor); identical for a window near the centre of its display.
+- JUCE ellipsises with "..." where SwiftUI uses "…" (placeholder strip meta at 262 px).
+- JetBrains Mono 9/15 pt rasterises one device pixel higher than JUCE (font hinting; ledger, Task 15).
+- Settings menu: JUCE's `PopupMenu` has a native window shadow; the presenter uses the panel's own window shadow (same mechanism, different radius).
+- The JUCE horizontal scrollbar autohides only when the content fits; the timeline's does the same, but AppKit fades its knob slot in and out where JUCE snapped.
+- Ledger minors kept as they were (all internal): `FontRegistry` ignores registration failures; `fileSize(999_999_999)` renders "1000 MB" (spec-literal); `group(forProgram:)` linear scan; downloader session/hash/atomicity notes; Task 7 DSP test coverage; `RmsMeter` reference semantics untested; `Tooltips.enabled = false` does not hide a tip already showing; `PillSlider` double-click also moves the value first (JUCE sliders jump on the first click too); `WindowReader` dispatches per update; Task 10/11/12 engine notes (duration vs frame count, device-change position rescale, inputDevice didSet rebuild, grace-period reclamation, ramp one step short, retain cycle for the app-lifetime bank, blocks[] slot access pair, no-default-input edge, revert touches inputNode); Task 14 (`clear()` while recording decodes the take; AppModel size); Task 16 (`Equatable` identity ceremony); Task 17 (`NSFont` rebuilt per `updateNSView`; presenter/catcher live in `Toolbar.swift`); Task 19 (`TimelineScroller.scale` static; `refreshForAudioLength` double layout; recording repaints the visible strip per tick; deinit and paused-link notes); Task 20 (settings reload in `attach()`; shortcuts under in-window menus; `Persistence` in `AppModel+Session.swift`; Esc monitor duplicated in two overlays).
+
+## Needs a decision
+
+- None.
