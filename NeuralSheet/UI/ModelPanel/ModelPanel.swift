@@ -1,3 +1,4 @@
+import AppKit
 import Foundation
 import NeuralSheetCore
 import SwiftUI
@@ -35,6 +36,11 @@ nonisolated enum ModelPanelMetrics {
 
     static let footerGap: CGFloat = 10
     static let buttonHeight: CGFloat = 26
+
+    /// The licence line under the folder button: a `meta` line, set off by the row gap. Not in the
+    /// C++ panel (an accepted deviation), so it is kept as quiet as a row's own meta line.
+    static let licenceGap: CGFloat = 8
+    static let licenceHeight: CGFloat = 14
     static let buttonCorner: CGFloat = 6
     static let buttonPadLeft: CGFloat = 10
     static let buttonPadRight: CGFloat = 12
@@ -55,13 +61,18 @@ nonisolated enum ModelPanelMetrics {
         controlColumnWidth - cancelHitSize - controlGap - percentWidth - controlGap
     }
 
-    /// `ModelDownloadPanel::getIdealHeight()`: 252 for three rows.
+    /// `ModelDownloadPanel::getIdealHeight()`: 252 for three rows, plus the licence line's 22.
     static var idealHeight: CGFloat {
         let rows = CGFloat(ModelSize.allCases.count)
 
         return padTop + titleHeight + subtitleHeight + headerGap + rows * rowHeight + (rows - 1) * rowGap
-            + footerGap + buttonHeight + padBottom
+            + footerGap + buttonHeight + licenceGap + licenceHeight + padBottom
     }
+
+    /// Where the weights come from, and what they may be used for.
+    static let licenceText = "Model weights: CC BY-NC 4.0 (non-commercial)"
+    static let licenceLinkTitle = "Hugging Face"
+    static let licenceURL = URL(string: "https://huggingface.co/DamRsn/muscriptor-gguf")!
 }
 
 /// One row of the panel, read off the `AppModel` once per body so the drawing code below never
@@ -254,14 +265,44 @@ struct ModelPanelContent: View {
     // MARK: - Footer
 
     private var footer: some View {
-        ModelPanelLabelButton(title: "Open models folder",
-                              fill: Theme.popupRowHover,
-                              outline: Theme.popupBorder,
-                              foreground: Theme.textButton,
-                              iconColour: Theme.textIcon,
-                              icon: Icons.FolderStroked(),
-                              action: actions.openFolder)
-            .frame(maxWidth: .infinity, alignment: .leading)
+        let s = Scaled(k: k)
+        let m = ModelPanelMetrics.self
+
+        return VStack(alignment: .leading, spacing: 0) {
+            ModelPanelLabelButton(title: "Open models folder",
+                                  fill: Theme.popupRowHover,
+                                  outline: Theme.popupBorder,
+                                  foreground: Theme.textButton,
+                                  iconColour: Theme.textIcon,
+                                  icon: Icons.FolderStroked(),
+                                  action: actions.openFolder)
+
+            licence
+                .frame(height: s(m.licenceHeight))
+                .padding(.top, s(m.licenceGap))
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    /// The weights' licence, with the repository they come from as the one link. As faint as the
+    /// panel's text goes: it is there to be found, not to be read first.
+    private var licence: some View {
+        let m = ModelPanelMetrics.self
+
+        return HStack(spacing: 0) {
+            Text("\(m.licenceText)  \u{00B7}  ")
+
+            Text(m.licenceLinkTitle)
+                .underline()
+                .contentShape(Rectangle())
+                .onTapGesture { NSWorkspace.shared.open(m.licenceURL) }
+                .pointerStyle(.link)
+                .tooltip(tip(m.licenceURL.absoluteString))
+                .accessibilityAddTraits(.isLink)
+        }
+        .font(Fonts.meta(k))
+        .foregroundStyle(Theme.textFaintest)
+        .lineLimit(1)
     }
 
     private func tip(_ text: String) -> String {
