@@ -46,7 +46,8 @@ struct UpdateNoticeView: View {
         }
         .padding(.horizontal, s(MenuMetrics.padX))
         .frame(height: s(MenuMetrics.rowHeight))
-        .popupSurface(corner: s(MenuMetrics.corner))
+        // `nn::drawPopupSurface` only: the notification carries no shadow.
+        .popupSurface(corner: s(MenuMetrics.corner), shadow: false)
         .onHover { isHovered = $0 }
         // The 5 Hz tick, running only while the pointer is on the panel.
         .task(id: isHovered) {

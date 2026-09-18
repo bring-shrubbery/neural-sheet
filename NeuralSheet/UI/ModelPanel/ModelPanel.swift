@@ -214,7 +214,8 @@ struct ModelPanelContent: View {
         .padding(.top, s(m.padTop))
         .padding(.bottom, s(m.padBottom))
         .frame(width: s(m.width), alignment: .leading)
-        .popupSurface(corner: s(m.corner))
+        // The surface and its border only: `ModelDownloadPanel::paint` draws no shadow.
+        .popupSurface(corner: s(m.corner), shadow: false)
     }
 
     // MARK: - Header

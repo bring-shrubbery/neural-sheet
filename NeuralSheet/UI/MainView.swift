@@ -6,7 +6,7 @@ import SwiftUI
 /// full-height sidebar beside the toolbar, the timeline and the status bar -- drawn at one scale
 /// and never reflowed, with the overlays on top in the order the original stacked them: the model
 /// panel (centred on the piano roll), the update notice above the status bar, the instrument
-/// picker off the sidebar, and the settings menu under the gear.
+/// picker off the sidebar; the settings menu opens in its own window under the gear.
 ///
 /// The scale is `min(width / 1280, height / 800)` of whatever the window gives, injected as
 /// `\.uiScale`; ``MainWindowController`` keeps the window at the canvas's aspect so the two agree
@@ -18,7 +18,7 @@ struct MainView: View {
 
     @State private var windowController: MainWindowController
     @State private var shortcuts: KeyboardShortcuts
-    @State private var isSettingsMenuOpen = false
+    @State private var settingsMenu = SettingsMenuController()
 
     init(model: AppModel, persistence: Persistence) {
         self.model = model
@@ -77,12 +77,6 @@ struct MainView: View {
                     if model.isInstrumentMenuOpen {
                         InstrumentMenuOverlay(model: model)
                     }
-
-                    if isSettingsMenuOpen {
-                        SettingsMenuOverlay(model: model,
-                                            onWindowScale: windowController.applyScale,
-                                            onClose: { isSettingsMenuOpen = false })
-                    }
                 }
                 .frame(width: s(Layout.canvas.width), height: s(Layout.canvas.height), alignment: .topLeading)
                 .clipped()
@@ -121,7 +115,7 @@ struct MainView: View {
     /// and the sidebar runs to the bottom of the window with its master panel.
     private var composition: some View {
         VStack(spacing: 0) {
-            TopBar(model: model, onSettings: { isSettingsMenuOpen = true })
+            TopBar(model: model, onSettings: openSettingsMenu)
 
             HStack(spacing: 0) {
                 Sidebar(model: model)
@@ -137,6 +131,16 @@ struct MainView: View {
             }
             .frame(maxHeight: .infinity)
         }
+    }
+
+    /// The gear: the settings menu in its own window under the button (§11.3).
+    private func openSettingsMenu() {
+        guard let window = windowController.window else { return }
+
+        settingsMenu.open(in: window,
+                          scale: CGFloat(windowController.appliedScale),
+                          model: model,
+                          onWindowScale: windowController.applyScale)
     }
 
     /// `VisualizationPanel::_applyVerticalZoom` for the slider's readout while the zoom is
@@ -172,6 +176,6 @@ struct MainView: View {
     private func disappear() {
         shortcuts.uninstall()
         windowController.detach()
-        isSettingsMenuOpen = false
+        settingsMenu.close()
     }
 }

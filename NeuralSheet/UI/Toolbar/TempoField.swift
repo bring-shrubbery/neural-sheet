@@ -25,6 +25,8 @@ struct TempoField: View {
 
     /// `TEMPO_VALUE_WIDTH` and `nn::fonts::tempoValue`.
     static let width: CGFloat = 40
+    /// `juce::TextEditor`'s default left indent: the text starts 4 px into the field.
+    static let leftIndent: CGFloat = 4
     static let maxLength = 6
     static let minTempo = 20.0
     static let maxTempo = 999.0
@@ -42,18 +44,19 @@ struct TempoField: View {
                     .font(Fonts.tempoValue(k))
                     .foregroundStyle(Theme.textFile)
                     .lineLimit(1)
-                    .frame(width: s(Self.width), alignment: .leading)
+                    .frame(width: s(Self.width - Self.leftIndent), alignment: .leading)
             }
 
             NumericField(value: Binding(get: { model.exportTempo }, set: { model.exportTempo = $0 }),
                          isEnabled: isEnabled,
                          editing: $editing,
                          scale: k)
-                .frame(width: s(Self.width))
+                .frame(width: s(Self.width - Self.leftIndent))
                 .frame(height: s(Toolbar.Metrics.buttonHeight), alignment: .center)
                 .opacity(editing ? 1 : 0)
         }
-        .frame(width: s(Self.width), height: s(Toolbar.Metrics.buttonHeight))
+        .padding(.leading, s(Self.leftIndent))
+        .frame(width: s(Self.width), height: s(Toolbar.Metrics.buttonHeight), alignment: .leading)
         .contentShape(Rectangle())
         .onTapGesture {
             if isEnabled { editing = true }
