@@ -424,8 +424,23 @@ nonisolated struct UpdateNotice: Equatable, Sendable {
         }
 
         clear()
+        load(url: url, restoringSession: false)
+    }
 
-        let audio: SourceAudio
+    /// A session's take, re-read from its path (§8.2): the file a session was working on, whether
+    /// the user's own or a recording in `paths.recordings`. A recording restored this way shows no
+    /// file name -- it was never a dropped file -- and is deleted on clear as any take is.
+    ///
+    /// Only from `empty`, and a path that no longer exists is skipped in silence: a session whose
+    /// file has gone is an empty session, not an error.
+    func restoreAudio(url: URL) {
+        guard state == .empty, FileManager.default.fileExists(atPath: url.path) else { return }
+
+        load(url: url, restoringSession: true)
+    }
+
+    private func load(url: URL, restoringSession: Bool) {
+        var audio: SourceAudio
 
         do {
             audio = try AudioFileLoader.load(url: url, deviceRate: engine.sampleRate)
@@ -434,6 +449,15 @@ nonisolated struct UpdateNotice: Equatable, Sendable {
                 "Could not load the audio file.",
                 "Check your file format (Accepted formats: .wav, .aiff, .flac, .mp3, .ogg).")
             return
+        }
+
+        if restoringSession, isDeletableRecording(url) {
+            audio = SourceAudio(deviceRate: audio.deviceRate,
+                                channels: audio.channels,
+                                mono16k: audio.mono16k,
+                                peaks: audio.peaks,
+                                droppedFileName: nil,
+                                sourcePath: audio.sourcePath)
         }
 
         install(audio)
@@ -761,12 +785,12 @@ nonisolated struct UpdateNotice: Equatable, Sendable {
     // MARK: - Update check
 
     /// Asks the releases endpoint whether a newer version exists and sets ``updateNotice`` (§9).
-    /// Task 20's `UpdateCheck` provides the body; until then the notice never appears on its own.
+    /// `UpdateCheck` does the request off the main actor and lands the answer back here.
     ///
     /// - Parameter explicit: True from Settings → Check for updates, which is the only time
     ///   "You are on the latest version" is worth a notice.
     func checkForUpdates(explicit: Bool) {
-        _ = explicit
+        UpdateCheck.run(for: self, explicit: explicit)
     }
 
     func dismissUpdateNotice() {

@@ -534,12 +534,12 @@ private struct ModelPanelCrossButton: View {
 
 // MARK: - Overlay
 
-/// The panel where the root view shows it, with the scrim that closes it.
+/// The panel where the root view shows it.
 ///
 /// Nothing is drawn while the panel is closed, so the root can keep this in its `ZStack`
-/// unconditionally. While the panel is mandatory (§3.2) there is no scrim: nothing may close it,
-/// and the rest of the window -- loading audio, in particular -- stays usable underneath, as it
-/// did in the original.
+/// unconditionally. No scrim, as in the original: the panel closes from its own cross or the top
+/// bar's Model button, and the rest of the window -- loading audio, in particular -- stays usable
+/// underneath whether or not the panel is mandatory (§3.2).
 ///
 /// - Parameter anchor: The panel's top-leading corner in authored pixels, from the root's
 ///   top-leading corner. The default hangs it under the top bar; the original centred it on the
@@ -556,12 +556,6 @@ struct ModelPanelOverlay: View {
 
         ZStack(alignment: .topLeading) {
             if model.isModelPanelOpen {
-                if !model.isModelPanelMandatory {
-                    Color.clear
-                        .contentShape(Rectangle())
-                        .onTapGesture { model.isModelPanelOpen = false }
-                }
-
                 ModelPanel(model: model)
                     .padding(.leading, s(anchor.x))
                     .padding(.top, s(anchor.y))

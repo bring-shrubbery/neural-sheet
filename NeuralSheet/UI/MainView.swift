@@ -1,100 +1,162 @@
 import AppKit
-import Combine
 import NeuralSheetCore
 import SwiftUI
-import UniformTypeIdentifiers
 
-/// A minimal harness over ``AppModel``, enough to run the load → transcribe → play path end to
-/// end. Task 20 replaces it with the real composition.
+/// The window (`NeuralNoteMainView`, inventory §1.2): the 1280 x 800 canvas -- top bar over a
+/// sidebar beside the toolbar and the timeline, status bar along the bottom -- drawn at one scale
+/// and never reflowed, with the overlays on top in the order the original stacked them: the model
+/// panel (centred on the piano roll), the update notice above the status bar, the instrument
+/// picker off the sidebar, and the settings menu under the gear.
+///
+/// The scale is `min(width / 1280, height / 800)` of whatever the window gives, injected as
+/// `\.uiScale`; ``MainWindowController`` keeps the window at the canvas's aspect so the two agree
+/// to a pixel. Also where the app's window-bound pieces are installed: the dialogs, the shortcuts,
+/// the display link, the session restore and the launch-time update check.
 struct MainView: View {
     let model: AppModel
-    @State private var alert: (title: String, body: String)?
-    @State private var isAlertShown = false
+    let persistence: Persistence
 
-    /// Stands in for the window's display link until Task 20 wires one.
-    private let tick = Timer.publish(every: 1.0 / 60.0, on: .main, in: .common).autoconnect()
+    @State private var windowController: MainWindowController
+    @State private var shortcuts: KeyboardShortcuts
+    @State private var isSettingsMenuOpen = false
 
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 8) {
-                Button("Load…", action: load)
-                    .disabled(model.state == .recording || model.state == .processing)
-                Button(model.state == .recording ? "Stop" : "Record", action: model.toggleRecord)
-                    .disabled(!model.canRecord)
-                Button(model.transcribeLabel, action: model.launchTranscription)
-                    .disabled(!model.canTranscribe)
-                Button("Cancel", action: model.cancelTranscription)
-                    .disabled(model.state != .processing)
-                Button(model.isPlaying ? "Pause" : "Play", action: model.togglePlay)
-                    .disabled(!model.state.canPlay)
-                Button("Start", action: model.goToStart)
-                    .disabled(!model.state.canPlay)
-                Button("Clear", action: model.clear)
-                    .disabled(model.state == .empty || model.state == .processing)
-                Button("Export MIDI…", action: model.exportMidi)
-                    .disabled(!model.canExport)
-            }
+    init(model: AppModel, persistence: Persistence) {
+        self.model = model
+        self.persistence = persistence
+        _windowController = State(initialValue: MainWindowController(model: model))
+        _shortcuts = State(initialValue: KeyboardShortcuts(model: model))
+    }
 
-            Text(
-                "state: \(model.state.rawValue)   notes: \(model.notes.count)   "
-                    + "progress: \(Int((model.transcriptionProgress * 100).rounded()))%"
-                    + (model.cancelLatched ? " (cancelling)" : "")
-            )
-            .font(.system(.body, design: .monospaced))
+    // MARK: - Authored layout (`nn::metrics`)
 
-            Text(
-                "\(model.timeReadout.position) / \(model.timeReadout.total)   "
-                    + "finalized: \(TimeFormat.seconds2(model.finalizedThrough)) s   "
-                    + "master: \(TimeFormat.decibels(model.masterLevelDb)) dB   "
-                    + "model: \(model.modelSize?.displayName ?? "none")"
-            )
-            .font(.system(.body, design: .monospaced))
+    enum Layout {
+        static let canvas = MainWindowController.canvas
+        static let topBarHeight: CGFloat = 54
+        static let sidebarWidth: CGFloat = SidebarMetrics.width
+        static let toolbarHeight: CGFloat = Toolbar.Metrics.height
+        static let statusBarHeight: CGFloat = StatusBar.Metrics.height
 
-            let status = model.statusLine
-            Text(
-                "\(status.instruments) instruments · \(status.notes) notes"
-                    + (status.lowest.map { " · \(TimeFormat.pitchName($0)) - \(TimeFormat.pitchName(status.highest ?? $0))" } ?? "")
-                    + (model.droppedFileName.map { " · \($0)" } ?? "")
-            )
-            .font(.system(.body, design: .monospaced))
+        /// The timeline block: everything right of the sidebar between the toolbar and the status bar.
+        static let timeline = CGRect(x: sidebarWidth,
+                                     y: topBarHeight + toolbarHeight,
+                                     width: canvas.width - sidebarWidth,
+                                     height: canvas.height - topBarHeight - toolbarHeight - statusBarHeight)
 
-            ForEach(model.mixer.entries, id: \.program) { entry in
-                Text(
-                    "\(entry.info.name): \(entry.noteCount) notes   "
-                        + "level \(TimeFormat.decibels(model.instrumentLevelDb(program: entry.program))) dB"
-                )
-                .font(.system(.caption, design: .monospaced))
-            }
+        /// The piano roll: the timeline's viewport less the gutter column, the waveform and the ruler.
+        static let pianoRoll = CGRect(x: timeline.minX + TimelineMetrics.gutterWidth,
+                                      y: timeline.minY + TimelineMetrics.pianoRollY,
+                                      width: timeline.width - TimelineMetrics.gutterWidth,
+                                      height: timeline.height - TimelineMetrics.pianoRollY)
 
-            Spacer()
-        }
-        .padding()
-        .frame(minWidth: 720, minHeight: 320)
-        .onAppear {
-            model.presentError = { title, body in
-                alert = (title, body)
-                isAlertShown = true
-            }
-        }
-        .onReceive(tick) { _ in
-            model.displayLinkTick(dt: 1.0 / 60.0)
-        }
-        .alert(alert?.title ?? "", isPresented: $isAlertShown, presenting: alert) { _ in
-            Button("OK") {}
-        } message: { alert in
-            Text(alert.body)
+        /// `VisualizationPanel::_layOutTranscribeButton`: the model panel centred on the roll.
+        static var modelPanelAnchor: CGPoint {
+            CGPoint(x: pianoRoll.midX - ModelPanelMetrics.width / 2,
+                    y: pianoRoll.midY - ModelPanelMetrics.idealHeight / 2)
         }
     }
 
-    private func load() {
-        let panel = NSOpenPanel()
-        panel.title = "Select Audio File"
-        panel.allowedContentTypes = AudioFileLoader.acceptedExtensions.compactMap { UTType(filenameExtension: $0) }
-        panel.allowsMultipleSelection = false
-        panel.canChooseDirectories = false
+    // MARK: - Body
 
-        guard panel.runModal() == .OK, let url = panel.url else { return }
+    var body: some View {
+        GeometryReader { proxy in
+            let k = Self.scale(for: proxy.size)
+            let s = Scaled(k: k)
 
-        model.loadAudio(url: url)
+            ZStack(alignment: .topLeading) {
+                Theme.bgRoot
+
+                ZStack(alignment: .topLeading) {
+                    composition
+
+                    ModelPanelOverlay(model: model, anchor: Layout.modelPanelAnchor)
+
+                    if let notice = model.updateNotice {
+                        UpdateNoticeView(model: model, notice: notice)
+                    }
+
+                    if model.isInstrumentMenuOpen {
+                        InstrumentMenuOverlay(model: model)
+                    }
+
+                    if isSettingsMenuOpen {
+                        SettingsMenuOverlay(model: model,
+                                            onWindowScale: windowController.applyScale,
+                                            onClose: { isSettingsMenuOpen = false })
+                    }
+                }
+                .frame(width: s(Layout.canvas.width), height: s(Layout.canvas.height), alignment: .topLeading)
+                .clipped()
+            }
+            .frame(width: proxy.size.width, height: proxy.size.height, alignment: .topLeading)
+            .environment(\.uiScale, k)
+        }
+        // The window's limits (§1.1), which `windowResizability(.contentSize)` reads off the
+        // content: 0.5x up to what the display holds.
+        .frame(minWidth: Layout.canvas.width * MainWindowController.minScale,
+               idealWidth: (Layout.canvas.width * windowController.idealScale).rounded(),
+               maxWidth: (Layout.canvas.width * windowController.maxScaleForDisplay).rounded(),
+               minHeight: Layout.canvas.height * MainWindowController.minScale,
+               idealHeight: (Layout.canvas.height * windowController.idealScale).rounded(),
+               maxHeight: (Layout.canvas.height * windowController.maxScaleForDisplay).rounded())
+        .background(MainWindowHost(controller: windowController, model: model))
+        .onAppear(perform: appear)
+        .onDisappear(perform: disappear)
+    }
+
+    /// `min(w / 1280, h / 800)`: the tighter side, so the canvas never runs past the window.
+    static func scale(for size: CGSize) -> CGFloat {
+        guard size.width > 0, size.height > 0 else { return 1 }
+
+        return min(size.width / Layout.canvas.width, size.height / Layout.canvas.height)
+    }
+
+    // MARK: - Composition
+
+    private var composition: some View {
+        VStack(spacing: 0) {
+            TopBar(model: model, onSettings: { isSettingsMenuOpen = true })
+
+            HStack(spacing: 0) {
+                Sidebar(model: model)
+
+                VStack(spacing: 0) {
+                    Toolbar(model: model)
+
+                    TimelineView(model: model)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                }
+            }
+            .frame(maxHeight: .infinity)
+
+            StatusBar(model: model, automaticNorm: automaticVerticalZoom)
+        }
+    }
+
+    /// `VisualizationPanel::_applyVerticalZoom` for the slider's readout while the zoom is
+    /// automatic: the norm that fits the transcription's octaves in the roll's height. The roll is
+    /// always 528 authored pixels tall, so this is the timeline's own figure without a round trip.
+    private var automaticVerticalZoom: Double {
+        let status = model.statusLine
+        let content = PianoRollRange.displayRange(notes: status.lowest, highest: status.highest, minSemitones: 0)
+
+        return ZoomMath.normForFit(visibleHeight: Double(Layout.pianoRoll.height), semitones: content.count)
+    }
+
+    // MARK: - Lifecycle
+
+    /// The dialogs first, so a session whose file has gone bad can say so; then the session,
+    /// the autosave, the shortcuts and the once-per-window update check.
+    private func appear() {
+        Dialogs.install(on: model) { [windowController] in windowController.window }
+        persistence.restoreOnce()
+        persistence.start()
+        shortcuts.install()
+        model.checkForUpdates(explicit: false)
+    }
+
+    private func disappear() {
+        shortcuts.uninstall()
+        windowController.detach()
+        isSettingsMenuOpen = false
     }
 }
