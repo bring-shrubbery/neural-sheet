@@ -184,6 +184,9 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
     private var lastAppliedOutputDevice: AudioDevice?
     private var lastAppliedInputDevice: AudioDevice?
 
+    /// The aggregate the I/O unit is on, when a chosen input needed one. Ours to destroy.
+    private var inputAggregate: AudioDeviceID?
+
     /// Called on the main queue when the playhead reaches the end. The transport has already been
     /// stopped and rewound by then.
     var onPlayheadWrapped: (() -> Void)?
@@ -193,6 +196,13 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
     var inputTap: ((AVAudioPCMBuffer, AVAudioTime) -> Void)? {
         didSet { refreshInputTap() }
     }
+
+    /// What the input tap delivers: the rate and channel count a recording is written at.
+    ///
+    /// Read it after ``inputTap`` has been set, never before. Setting the tap is what points the
+    /// input unit at ``inputDevice``, and until then the node answers for the device it was on.
+    /// Reading it also instantiates the input node, which is what asks for microphone access.
+    var inputFormat: AVAudioFormat { engine.inputNode.outputFormat(forBus: 0) }
 
     var outputDevice: AudioDevice? {
         didSet {
@@ -238,6 +248,7 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
         if meterTapInstalled { engine.mainMixerNode.removeTap(onBus: 0) }
         if inputTapInstalled { engine.inputNode.removeTap(onBus: 0) }
         engine.stop()
+        InputAggregate.destroy(inputAggregate)
     }
 
     // MARK: - Transport
@@ -525,16 +536,57 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
         }
 
         // The input node is only touched once something wants the input: instantiating it asks for
-        // microphone access, and playback alone has no business doing that.
-        if let inputDevice, inputTap != nil || inputTapInstalled {
-            let status = Self.setDevice(inputDevice.id, on: engine.inputNode)
-            if status == noErr {
-                lastAppliedInputDevice = inputDevice
-            } else {
-                lastDeviceError = status
-                revert(\.inputDevice, on: engine.inputNode, fallback: lastAppliedInputDevice)
-            }
+        // microphone access, and playback alone has no business doing that. Dropping a chosen input
+        // is the exception -- the aggregate standing behind it has to go either way.
+        if inputTap != nil || inputTapInstalled || inputAggregate != nil {
+            applyInputDevice()
         }
+    }
+
+    /// Points the I/O unit at ``inputDevice``, through a private aggregate when that is a different
+    /// box from the one playing.
+    ///
+    /// One unit serves both directions, so this decides where the output goes as well: the aggregate
+    /// carries the output device alongside the chosen input, which is the only way the two can be
+    /// different. See ``InputAggregate`` for why a bare `setDevice` cannot do it.
+    private func applyInputDevice() {
+        let outputID = outputDevice?.id ?? AudioDevices.defaultOutput()?.id
+
+        guard let inputDevice else {
+            // Nothing wants a particular input any more: back to the device that is playing, and
+            // the aggregate that was only ever there to bolt an input onto it can go.
+            if inputAggregate != nil {
+                if let outputID { Self.setDevice(outputID, on: engine.outputNode) }
+                InputAggregate.destroy(inputAggregate)
+                inputAggregate = nil
+            }
+            return
+        }
+
+        let aggregate = outputID.flatMap { InputAggregate.create(input: inputDevice.id, output: $0) }
+        let status = Self.setDevice(aggregate ?? inputDevice.id, on: engine.inputNode)
+
+        // Only once the unit is off it, which the set above has just seen to.
+        let previous = inputAggregate
+        inputAggregate = nil
+
+        if status == noErr {
+            inputAggregate = aggregate
+            lastAppliedInputDevice = inputDevice
+        } else {
+            InputAggregate.destroy(aggregate)
+            lastDeviceError = status
+
+            // A refused switch does not leave the unit as it was: it can clear the device outright,
+            // which silences playback too. Put the one that plays back before publishing anything.
+            if Self.currentDevice(of: engine.outputNode) == nil, let outputID {
+                Self.setDevice(outputID, on: engine.outputNode)
+            }
+
+            revert(\.inputDevice, on: engine.inputNode, fallback: lastAppliedInputDevice)
+        }
+
+        InputAggregate.destroy(previous)
     }
 
     /// Puts the published choice back to the device the I/O unit is really on, so a rejected switch
@@ -641,22 +693,40 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
         return ioBufferFrames
     }
 
+    /// Puts the tap on or takes it off, and restarts the engine when that changed whether the input
+    /// node is in use at all.
+    ///
+    /// The restart is not optional: the I/O unit enables its input side when the engine starts, from
+    /// whether anything is pulling the input node, so a tap installed on an engine that started
+    /// without one is never called. Coming back through ``rebuildGraph(_:)`` is what re-enables it.
     private func refreshInputTap() {
+        let wasInstalled = inputTapInstalled
+
         if inputTapInstalled {
             engine.inputNode.removeTap(onBus: 0)
             inputTapInstalled = false
         }
 
+        defer {
+            if inputTapInstalled != wasInstalled {
+                // A no-op while a rebuild is already in flight, which is where this call came from.
+                rebuildGraph {}
+            }
+        }
+
         guard let inputTap else { return }
+
+        // Before the format is read, not after: the node reports the format of the device its unit
+        // is on, and a tap installed with the last device's rate captures at the wrong one.
+        applyInputDevice()
 
         let format = engine.inputNode.outputFormat(forBus: 0)
         guard format.sampleRate > 0, format.channelCount > 0 else { return }
 
-        if let inputDevice {
-            Self.setDevice(inputDevice.id, on: engine.inputNode)
-        }
-
-        engine.inputNode.installTap(onBus: 0, bufferSize: 1024, format: format) { buffer, time in
+        // nil, not the format just read: a device switch settles a moment after it is asked for, and
+        // an explicit format that no longer matches the node's live one is an uncatchable ObjC
+        // exception out of `installTap`. The tap's own buffers carry the format either way.
+        engine.inputNode.installTap(onBus: 0, bufferSize: 1024, format: nil) { buffer, time in
             inputTap(buffer, time)
         }
         inputTapInstalled = true
