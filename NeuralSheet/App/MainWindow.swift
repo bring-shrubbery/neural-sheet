@@ -137,6 +137,15 @@ import SwiftUI
         persistScale()
     }
 
+    /// The corner resizer's drag: the scale the requested content size asks for, from whichever
+    /// side is tighter, clamped and applied. Not persisted here -- the drag's end does that, as the
+    /// constrainer's `resizeEnd` did.
+    func resize(toContentSize size: NSSize) {
+        let requested = min(size.width / Self.canvas.width, size.height / Self.canvas.height)
+
+        setScale(requested)
+    }
+
     /// Resizes the content to `scale`, clamped, keeping the window's top-left where it is.
     private func setScale(_ scale: Double) {
         guard let window else { return }

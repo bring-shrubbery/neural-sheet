@@ -3,7 +3,7 @@ import NeuralSheetCore
 import SwiftUI
 
 /// The window (`NeuralNoteMainView`, inventory §1.2): the 1280 x 800 canvas -- top bar over a
-/// sidebar beside the toolbar and the timeline, status bar along the bottom -- drawn at one scale
+/// full-height sidebar beside the toolbar, the timeline and the status bar -- drawn at one scale
 /// and never reflowed, with the overlays on top in the order the original stacked them: the model
 /// panel (centred on the piano roll), the update notice above the status bar, the instrument
 /// picker off the sidebar, and the settings menu under the gear.
@@ -89,6 +89,11 @@ struct MainView: View {
             }
             .frame(width: proxy.size.width, height: proxy.size.height, alignment: .topLeading)
             .environment(\.uiScale, k)
+            // The corner grip sits in window pixels over everything, as the editor's own child did.
+            .overlay(alignment: .bottomTrailing) {
+                CornerResizer(controller: windowController)
+                    .frame(width: CornerResizer.size, height: CornerResizer.size)
+            }
         }
         // The window's limits (§1.1), which `windowResizability(.contentSize)` reads off the
         // content: 0.5x up to what the display holds.
@@ -112,6 +117,8 @@ struct MainView: View {
 
     // MARK: - Composition
 
+    /// The status bar belongs to the column right of the sidebar (`VisualizationPanel::resized`),
+    /// and the sidebar runs to the bottom of the window with its master panel.
     private var composition: some View {
         VStack(spacing: 0) {
             TopBar(model: model, onSettings: { isSettingsMenuOpen = true })
@@ -124,11 +131,11 @@ struct MainView: View {
 
                     TimelineView(model: model)
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+                    StatusBar(model: model, automaticNorm: automaticVerticalZoom)
                 }
             }
             .frame(maxHeight: .infinity)
-
-            StatusBar(model: model, automaticNorm: automaticVerticalZoom)
         }
     }
 
