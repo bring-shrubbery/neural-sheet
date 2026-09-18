@@ -67,7 +67,16 @@ nonisolated final class NoteScheduler: @unchecked Sendable {
     static let maxLookbackSeconds = 30.0
 
     /// Enough for every active note to be released and a fresh set started without reallocating.
+    /// This is the ceiling the *onset* pass stops adding at, not the most one block can produce.
     static let eventCapacity = 4 * maxActiveNotes
+
+    /// What `events` has to be reserved to, and what ``InstrumentSynthBank`` reserves.
+    ///
+    /// Larger than ``eventCapacity`` because the expiry pass that runs *after* the onset pass is not
+    /// optional — giving up a note-off would strand a sounding note — and it can stop every note the
+    /// onset pass left sounding. Reserving both is what makes "never reallocates on the render
+    /// thread" a guarantee rather than a hope.
+    static let reservedEventCapacity = eventCapacity + maxActiveNotes
 
     /// A note this class has started and not yet stopped.
     private struct ActiveNote {
@@ -109,7 +118,14 @@ nonisolated final class NoteScheduler: @unchecked Sendable {
 
     // MARK: - The render thread's
 
-    private var list: NoteList?
+    /// The published list as the render thread sees it: the buffer, not a reference to the object
+    /// that owns it.
+    ///
+    /// An owning reference stored here would make the render thread capable of performing a final
+    /// release — and so a `free` — if a swap landed while the engine was stopped for longer than the
+    /// retirement window. The main thread owns every ``NoteList``'s lifetime; this is a borrow, held
+    /// valid by ``currentList`` and ``retiredLists``.
+    private var publishedNotes = UnsafeMutableBufferPointer<NoteEvent>(start: nil, count: 0)
     private var listGenerationSeen = 0
 
     /// Index of the first note starting at or after the current time.
@@ -211,9 +227,9 @@ nonisolated final class NoteScheduler: @unchecked Sendable {
     /// Fills `events` with everything that happens in `[t0, t1)`, in nondecreasing sample offset and
     /// with a note-off always ahead of a note-on it shares an offset with.
     ///
-    /// Allocation- and lock-free: `events` is pre-reserved by the caller to ``eventCapacity`` and
-    /// never grown past it, the active table is a fixed buffer, and the note list arrives as one
-    /// pointer read.
+    /// Allocation- and lock-free: `events` is pre-reserved by the caller to
+    /// ``reservedEventCapacity`` and can never exceed it, the active table is a fixed buffer, and
+    /// the note list arrives as one pointer read.
     func collect(
         from t0: Double, to t1: Double, sampleRate: Double, into events: inout [SynthEvent]
     ) {
@@ -228,7 +244,14 @@ nonisolated final class NoteScheduler: @unchecked Sendable {
         let generation = listGeneration.load(ordering: .acquiring)
         if generation != listGenerationSeen {
             listGenerationSeen = generation
-            list = box.pointee?.takeUnretainedValue()
+            // Unretained, and only the buffer is kept: the object's lifetime stays the main
+            // thread's. The transient +0 reference here cannot be the last one, because `swap`
+            // holds the list it replaced for the retirement window.
+            if let published = box.pointee {
+                publishedNotes = published.takeUnretainedValue().notes
+            } else {
+                publishedNotes = UnsafeMutableBufferPointer<NoteEvent>(start: nil, count: 0)
+            }
 
             updateCursor(at: t0)
             reanchorActive(at: t0)
@@ -261,54 +284,52 @@ nonisolated final class NoteScheduler: @unchecked Sendable {
 
         expire(before: t1, t0: t0, sampleRate: sampleRate, frames: frames, into: &events)
 
-        if let list {
-            let notes = list.notes
+        while cursor < publishedNotes.count, publishedNotes[cursor].startTime < t1 {
+            let note = publishedNotes[cursor]
+            cursor += 1
 
-            while cursor < list.count, notes[cursor].startTime < t1 {
-                let note = notes[cursor]
-                cursor += 1
+            // Already over by the time we reached it — post-processing can shorten a note under a
+            // running playhead. Starting it would only produce a note-on chasing its own note-off.
+            if note.endTime <= t0 { continue }
 
-                // Already over by the time we reached it — post-processing can shorten a note under
-                // a running playhead. Starting it would only produce a note-on chasing its own off.
-                if note.endTime <= t0 { continue }
+            // Three events is the most one onset can add: a retrigger release, a steal release and
+            // the note-on itself. The onset pass is the only one allowed to give up — the expiry
+            // pass below it has to run whatever happens — so this is where the growth stops, and
+            // only note-ons are ever given up, which leaves the note-off invariant intact. The
+            // expiry pass then adds at most ``maxActiveNotes`` more, which is why the caller
+            // reserves ``reservedEventCapacity`` rather than ``eventCapacity``.
+            if events.count + 3 > NoteScheduler.eventCapacity { break }
 
-                // Three events is the most one onset can add: a retrigger release, a steal release
-                // and the note-on itself. Stopping short of the reserved capacity is what keeps the
-                // array from growing under the render thread, and only note-ons are ever given up
-                // this way, so the note-off invariant survives it.
-                if events.count + 3 > NoteScheduler.eventCapacity { break }
+            let offset = sampleOffset(
+                for: note.startTime, t0: t0, sampleRate: sampleRate, frames: frames)
 
-                let offset = sampleOffset(
-                    for: note.startTime, t0: t0, sampleRate: sampleRate, frames: frames)
+            // Only the same instrument's note on this pitch: two instruments playing the same note
+            // is ordinary, and releasing the other one would silence it for the rest of its
+            // duration.
+            let sounding = findActive(program: note.program, pitch: note.pitch)
 
-                // Only the same instrument's note on this pitch: two instruments playing the same
-                // note is ordinary, and releasing the other one would silence it for the rest of its
-                // duration.
-                let sounding = findActive(program: note.program, pitch: note.pitch)
-
-                if sounding < activeCount {
-                    // A retrigger has to release the previous one first, or the note-off that
-                    // eventually arrives reads as ending this one instead.
-                    stopActive(at: sounding, sampleOffset: offset, into: &events)
-                }
-
-                if activeCount == NoteScheduler.maxActiveNotes {
-                    stopActive(at: 0, sampleOffset: offset, into: &events)
-                }
-
-                active[activeCount] = ActiveNote(
-                    program: note.program, pitch: note.pitch, endTime: note.endTime)
-                activeCount += 1
-
-                events.append(
-                    SynthEvent(
-                        sampleOffset: offset, program: note.program, pitch: note.pitch, isOn: true))
+            if sounding < activeCount {
+                // A retrigger has to release the previous one first, or the note-off that eventually
+                // arrives reads as ending this one instead.
+                stopActive(at: sounding, sampleOffset: offset, into: &events)
             }
+
+            if activeCount == NoteScheduler.maxActiveNotes {
+                stopActive(at: 0, sampleOffset: offset, into: &events)
+            }
+
+            active[activeCount] = ActiveNote(
+                program: note.program, pitch: note.pitch, endTime: note.endTime)
+            activeCount += 1
+
+            events.append(
+                SynthEvent(
+                    sampleOffset: offset, program: note.program, pitch: note.pitch, isOn: true))
         }
 
         // Again, for notes that both start and end inside this block. A drum hit lasts 10 ms, which
         // is shorter than a block at most sizes, so without this pass they would all be stretched to
-        // one.
+        // one. Unguarded, deliberately: the reservation above covers it.
         expire(before: t1, t0: t0, sampleRate: sampleRate, frames: frames, into: &events)
 
         sort(&events)
@@ -326,9 +347,6 @@ nonisolated final class NoteScheduler: @unchecked Sendable {
 
     /// Starts the notes the playhead is currently inside, after a seek or a resume.
     private func startNotesCovering(_ time: Double, into events: inout [SynthEvent]) {
-        guard let list else { return }
-
-        let notes = list.notes
         let earliest = time - NoteScheduler.maxLookbackSeconds
 
         // Backwards from the cursor, so the first match on an instrument and pitch is the latest
@@ -336,7 +354,7 @@ nonisolated final class NoteScheduler: @unchecked Sendable {
         var index = cursor
         while index > 0 {
             index -= 1
-            let note = notes[index]
+            let note = publishedNotes[index]
 
             if note.startTime < earliest { break }
             if note.startTime > time || note.endTime <= time { continue }
@@ -358,9 +376,6 @@ nonisolated final class NoteScheduler: @unchecked Sendable {
     /// The end time of the note in the current list that covers `time` on this instrument and pitch,
     /// or a negative value if there is none — which stops the sounding note in the next block.
     private func endTimeOfCoveringNote(program: Int, pitch: Int, at time: Double) -> Double {
-        guard let list else { return -1 }
-
-        let notes = list.notes
         let earliest = time - NoteScheduler.maxLookbackSeconds
 
         // The cursor is the first note starting at or after `time`, so anything that could cover it
@@ -368,7 +383,7 @@ nonisolated final class NoteScheduler: @unchecked Sendable {
         var index = cursor
         while index > 0 {
             index -= 1
-            let note = notes[index]
+            let note = publishedNotes[index]
 
             if note.startTime < earliest { break }
 
@@ -426,20 +441,15 @@ nonisolated final class NoteScheduler: @unchecked Sendable {
         return activeCount
     }
 
-    /// Points ``cursor`` at the first note starting at or after `time`.
+    /// Points ``cursor`` at the first note starting at or after `time`. An empty list leaves it at
+    /// 0, which is what every backwards walk below reads as "nothing to look at".
     private func updateCursor(at time: Double) {
-        guard let list else {
-            cursor = 0
-            return
-        }
-
-        let notes = list.notes
         var low = 0
-        var high = list.count
+        var high = publishedNotes.count
 
         while low < high {
             let mid = low + (high - low) / 2
-            if notes[mid].startTime < time { low = mid + 1 } else { high = mid }
+            if publishedNotes[mid].startTime < time { low = mid + 1 } else { high = mid }
         }
 
         cursor = low

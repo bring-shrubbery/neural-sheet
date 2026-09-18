@@ -21,6 +21,11 @@ private nonisolated final class SynthInstrument: @unchecked Sendable {
     /// What ``InstrumentSynthBank/apply(mixer:)`` last put on the mixer input.
     var gain: Float = 1
 
+    /// The node's `scheduleMIDIEventBlock`, held here as well as in the bank's table so that the
+    /// block and the audio unit it calls into have exactly one lifetime between them: retiring the
+    /// instrument retires both.
+    var scheduleBlock: AUScheduleMIDIEventBlock?
+
     /// Room to fold a tap buffer to mono without allocating on the tap thread.
     let scratch: UnsafeMutableBufferPointer<Float>
 
@@ -87,8 +92,8 @@ nonisolated final class InstrumentSynthBank: @unchecked Sendable {
     /// The fader's silent end, the app's one gain floor.
     private static let minGainDb = InstrumentMixerState.minGainDb
 
-    /// How long a scheduling block dropped by ``reset()`` is kept alive — orders of magnitude more
-    /// than one render cycle, which is all the block needs.
+    /// How long a synth dropped by ``reset()`` is kept alive and in the graph — orders of magnitude
+    /// more than one render cycle, which is all the render block needs.
     private static let retirementSeconds = 0.5
 
     private let engine: AVAudioEngine
@@ -100,8 +105,9 @@ nonisolated final class InstrumentSynthBank: @unchecked Sendable {
 
     // MARK: - The render thread's
 
-    /// Pre-reserved to ``NoteScheduler/eventCapacity`` in `init` and never grown past it, so the
-    /// render thread's only array work is writing into storage that already exists.
+    /// Pre-reserved to ``NoteScheduler/reservedEventCapacity`` in `init`, which is the most one
+    /// block can produce, so the render thread's only array work is writing into storage that
+    /// already exists.
     private var events: [SynthEvent] = []
 
     /// The three bytes of the message being scheduled. One buffer, rewritten per event.
@@ -121,9 +127,17 @@ nonisolated final class InstrumentSynthBank: @unchecked Sendable {
 
     private var instruments: [Int: SynthInstrument] = [:]
 
-    /// Blocks ``reset()`` has taken out of the table, held until the render block cannot be inside
-    /// one.
-    private var retiredBlocks: [AUScheduleMIDIEventBlock] = []
+    /// Synths ``reset()`` has taken out of the table but not yet out of the graph, held until the
+    /// render block cannot still be inside one of their scheduling blocks.
+    ///
+    /// Main thread only. Clearing a table entry stops *new* loads; a cycle that already has the
+    /// block in hand is still going to call it, so neither the block nor the audio unit behind it
+    /// may go until that cycle cannot be running any more.
+    private var retiredInstruments: [SynthInstrument] = []
+
+    /// The last mix applied, so a synth created after it starts at the gain its instrument already
+    /// has rather than at unity. Main thread.
+    private var appliedMixer = InstrumentMixerState()
 
     /// The synth side of the equal-power crossfade, `sin(mix · π/2)`. Written from the main thread;
     /// it is the sub-mix's output volume, so it applies to every instrument at once.
@@ -150,7 +164,7 @@ nonisolated final class InstrumentSynthBank: @unchecked Sendable {
 
         midiBytes.initialize(repeating: 0)
 
-        events.reserveCapacity(NoteScheduler.eventCapacity)
+        events.reserveCapacity(NoteScheduler.reservedEventCapacity)
 
         engine.attach(subMixer)
         engine.connect(subMixer, to: mixTarget, format: nil)
@@ -158,6 +172,16 @@ nonisolated final class InstrumentSynthBank: @unchecked Sendable {
     }
 
     deinit {
+        // The table first, then the nodes behind it — the same order ``reset()`` uses, for the same
+        // reason. There is no grace period to wait out here and nowhere to wait it out from: the
+        // bank is owned by ``PlaybackEngine``, whose own `deinit` stops the engine before releasing
+        // it, so the render thread has already gone by the time this runs.
+        blocks.update(repeating: nil)
+
+        for instrument in Array(instruments.values) + retiredInstruments {
+            dispose(instrument)
+        }
+
         blocks.deinitialize()
         blocks.deallocate()
 
@@ -209,6 +233,10 @@ nonisolated final class InstrumentSynthBank: @unchecked Sendable {
             scratchFrames: InstrumentSynthBank.meterScratchFrames
         )
 
+        // From the mix that is already in force, not from unity: a program the user had muted before
+        // its synth existed must not get one audible block on the way in.
+        instrument.gain = InstrumentSynthBank.gain(for: program, in: appliedMixer)
+        instrument.scheduleBlock = node.auAudioUnit.scheduleMIDIEventBlock
         node.volume = instrument.gain
 
         node.installTap(onBus: 0, bufferSize: InstrumentSynthBank.meterTapFrames, format: nil) {
@@ -221,30 +249,30 @@ nonisolated final class InstrumentSynthBank: @unchecked Sendable {
         lock.unlock()
 
         // Last, so the render thread only ever sees a block whose node is already in the graph.
-        blocks[program] = node.auAudioUnit.scheduleMIDIEventBlock
+        blocks[program] = instrument.scheduleBlock
     }
 
     /// Drops every synth and every sounding note. Main thread.
     func reset() {
         lock.lock()
-        let dropped = instruments
+        let dropped = Array(instruments.values)
         instruments.removeAll()
         lock.unlock()
 
-        // The table first: it is the only thing the render thread reads, and a block taken out of it
-        // is still held for a grace period rather than freed under a block that is mid-call.
-        for program in dropped.keys {
-            if let block = blocks[program] {
-                retire(block)
-                blocks[program] = nil
-            }
+        // The table first: it is the only thing the render thread reads. Clearing an entry stops new
+        // loads of that block, which is all ``reset()`` can do synchronously — the node, the block
+        // and the audio unit behind it all go together, later.
+        for instrument in dropped {
+            blocks[instrument.program] = nil
         }
 
-        for instrument in dropped.values {
-            instrument.node.removeTap(onBus: 0)
-            engine.disconnectNodeOutput(instrument.node)
-            engine.detach(instrument.node)
+        // They are about to stop being reachable, so anything sounding would ring on until the
+        // retirement timer finally takes the node out.
+        for instrument in dropped {
+            sendAllNotesOff(to: instrument.node)
         }
+
+        retire(dropped)
     }
 
     /// Bank select then program change, on the channel this instrument's notes arrive on.
@@ -264,15 +292,38 @@ nonisolated final class InstrumentSynthBank: @unchecked Sendable {
         }
     }
 
-    /// Holds a dropped scheduling block until any render block that saw it has long since returned.
-    private func retire(_ block: @escaping AUScheduleMIDIEventBlock) {
-        retiredBlocks.append(block)
+    /// Holds dropped synths — node, scheduling block and all — until any render block that saw one
+    /// has long since returned, and only then takes them out of the graph.
+    ///
+    /// Tearing the node down inside ``reset()`` would free the audio unit under a render cycle that
+    /// had already loaded its block, which is a call into disposed memory rather than a missed note.
+    private func retire(_ dropped: [SynthInstrument]) {
+        guard !dropped.isEmpty else { return }
+
+        retiredInstruments.append(contentsOf: dropped)
 
         DispatchQueue.main.asyncAfter(deadline: .now() + InstrumentSynthBank.retirementSeconds) {
             [weak self] in
-            guard let self, !self.retiredBlocks.isEmpty else { return }
-            self.retiredBlocks.removeFirst()
+            // No `self` means the bank has gone, and with it the engine — `dropped` is released here
+            // and there is no graph left to take the nodes out of.
+            guard let self else { return }
+
+            for instrument in dropped {
+                self.dispose(instrument)
+
+                if let index = self.retiredInstruments.firstIndex(where: { $0 === instrument }) {
+                    self.retiredInstruments.remove(at: index)
+                }
+            }
         }
+    }
+
+    /// Takes one synth out of the graph. Main thread, and only once nothing can still be scheduling
+    /// into it.
+    private func dispose(_ instrument: SynthInstrument) {
+        instrument.node.removeTap(onBus: 0)
+        engine.disconnectNodeOutput(instrument.node)
+        engine.detach(instrument.node)
     }
 
     // MARK: - Render thread
@@ -345,17 +396,21 @@ nonisolated final class InstrumentSynthBank: @unchecked Sendable {
         lock.unlock()
 
         for instrument in current {
-            instrument.node.sendController(
-                InstrumentSynthBank.allNotesOffController,
-                withValue: 0,
-                onChannel: InstrumentSynthBank.melodicChannel)
-            instrument.node.sendController(
-                InstrumentSynthBank.allNotesOffController,
-                withValue: 0,
-                onChannel: InstrumentSynthBank.drumChannel)
-
+            sendAllNotesOff(to: instrument.node)
             sendProgramChange(to: instrument.node, program: instrument.program)
         }
+    }
+
+    /// CC 123 on both the melodic and the percussion channel.
+    private func sendAllNotesOff(to node: AVAudioUnitMIDIInstrument) {
+        node.sendController(
+            InstrumentSynthBank.allNotesOffController,
+            withValue: 0,
+            onChannel: InstrumentSynthBank.melodicChannel)
+        node.sendController(
+            InstrumentSynthBank.allNotesOffController,
+            withValue: 0,
+            onChannel: InstrumentSynthBank.drumChannel)
     }
 
     /// Pushes the fader, mute and solo state onto the sub-mix inputs. Main thread.
@@ -363,18 +418,29 @@ nonisolated final class InstrumentSynthBank: @unchecked Sendable {
     /// Solo is derived here rather than stored as "the others are muted": `isAudible` is the one
     /// place that decision lives, and the piano roll dims its notes by the same answer.
     func apply(mixer: InstrumentMixerState) {
+        // Kept so a synth created later starts where its instrument already is, rather than at
+        // unity until the next call (``ensureInstrument(program:)``).
+        appliedMixer = mixer
+
         lock.lock()
         defer { lock.unlock() }
 
         for instrument in instruments.values {
-            let db = mixer.gainDb(program: instrument.program)
-            // −36 dB is the fader's silent end, not a very quiet one.
-            let linear = db <= InstrumentSynthBank.minGainDb ? 0 : pow(10.0, db / 20.0)
-            let gain = Float(linear * (mixer.isAudible(program: instrument.program) ? 1 : 0))
+            let gain = InstrumentSynthBank.gain(for: instrument.program, in: mixer)
 
             instrument.gain = gain
             instrument.node.volume = gain
         }
+    }
+
+    /// One instrument's mixer-input gain: the fader in linear terms, silenced outright when the
+    /// fader is at its floor or the instrument is not currently heard.
+    private static func gain(for program: Int, in mixer: InstrumentMixerState) -> Float {
+        let db = mixer.gainDb(program: program)
+        // −36 dB is the fader's silent end, not a very quiet one.
+        let linear = db <= InstrumentSynthBank.minGainDb ? 0 : pow(10.0, db / 20.0)
+
+        return Float(linear * (mixer.isAudible(program: program) ? 1 : 0))
     }
 
     /// One instrument's post-fader level over the meter window.
