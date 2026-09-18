@@ -8,8 +8,10 @@ import NeuralSheetCore
 /// through the vendored stb_vorbis. Either way the result is float channels at the file's own rate,
 /// which are then converted twice: to the device rate for playback and to 16 kHz mono for the model.
 nonisolated enum AudioFileLoader {
-    /// The extensions the drop target and the file chooser accept, lower-cased.
-    static let acceptedExtensions = ["wav", "aiff", "aif", "flac", "ogg", "mp3"]
+    /// The extensions the drop target and the file chooser accept, lower-cased, in the order the
+    /// original listed them in its "Could not load the file." message: the hard-coded ".mp3",
+    /// then each registered JUCE format's own list (`WavAudioFormat` ".wav .bwf", Aiff, Flac, Ogg).
+    static let acceptedExtensions = ["mp3", "wav", "bwf", "aiff", "aif", "flac", "ogg"]
 
     nonisolated enum LoadError: Error {
         /// The file is not one of ``acceptedExtensions``.
@@ -67,7 +69,7 @@ nonisolated enum AudioFileLoader {
             ? try decodeOgg(url: url) : try decodeWithAVFoundation(url: url)
     }
 
-    /// wav / aiff / aif / flac / mp3. `processingFormat` is always deinterleaved float32, so the
+    /// mp3 / wav / bwf / aiff / aif / flac. `processingFormat` is always deinterleaved float32, so the
     /// channel pointers come out of the buffer as they are.
     private static func decodeWithAVFoundation(url: URL) throws -> Decoded {
         guard let file = try? AVAudioFile(forReading: url) else { throw LoadError.decodeFailed }

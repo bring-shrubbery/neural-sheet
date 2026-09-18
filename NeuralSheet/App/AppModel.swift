@@ -128,6 +128,12 @@ nonisolated struct UpdateNotice: Equatable, Sendable {
         guard newState != state else { return }
 
         state = newState
+
+        // The selection is fixed once a transcription exists, and the "+" goes away with it. A
+        // picker left open over that would be offering a choice that no longer applies.
+        if newState.hasTranscription, isInstrumentMenuOpen {
+            isInstrumentMenuOpen = false
+        }
     }
 
     /// §3.4 step 6, and nowhere else: the next run's instruments start neutral. A session reload
@@ -305,8 +311,10 @@ nonisolated struct UpdateNotice: Equatable, Sendable {
     /// Both MIDI exits: only a finished transcription, never a half-decoded one (§6.1).
     var canExport: Bool { state == .populated }
 
+    /// Names the selection only once there is audio to run it on (`_layOutTranscribeButton`):
+    /// with nothing loaded there is nothing to be specific about, so it names the action only.
     var transcribeLabel: String {
-        switch selectedGroups.count {
+        switch state == .audioLoaded ? selectedGroups.count : 0 {
         case 0: "Transcribe"
         case 1: "Transcribe 1 instrument"
         case let n: "Transcribe \(n) instruments"

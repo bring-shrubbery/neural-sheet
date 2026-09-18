@@ -97,7 +97,14 @@ final class WaveformView: NSView {
         ctx.fill(dirtyRect, TimelinePalette.bgPanel)
         ctx.fill(CGRect(x: dirtyRect.minX, y: height - k, width: dirtyRect.width, height: k), TimelinePalette.divSoft)
 
-        guard let peaks, peaks.sampleCount > 0 else {
+        // The corner label goes with the audio (`AudioRegion::paint` returns after the drop zone).
+        let hasAudio = (peaks?.sampleCount ?? 0) > 0
+
+        if cornerLabel.isHidden == hasAudio {
+            cornerLabel.isHidden = !hasAudio
+        }
+
+        guard let peaks, hasAudio else {
             drawDropZone(ctx)
             return
         }
