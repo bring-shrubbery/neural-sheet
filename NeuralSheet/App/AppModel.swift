@@ -466,24 +466,18 @@ nonisolated struct UpdateNotice: Equatable, Sendable {
     }
 
     private func load(url: URL, restoringSession: Bool) {
-        var audio: SourceAudio
+        let audio: SourceAudio
 
         do {
-            audio = try AudioFileLoader.load(url: url, deviceRate: engine.sampleRate)
+            // A restored recording was never a dropped file, so it carries no name.
+            audio = try AudioFileLoader.load(url: url,
+                                             deviceRate: engine.sampleRate,
+                                             namedAfterFile: !(restoringSession && isDeletableRecording(url)))
         } catch {
             showError(
                 "Could not load the audio file.",
                 "Check your file format (Accepted formats: .wav, .aiff, .flac, .mp3, .ogg).")
             return
-        }
-
-        if restoringSession, isDeletableRecording(url) {
-            audio = SourceAudio(deviceRate: audio.deviceRate,
-                                channels: audio.channels,
-                                mono16k: audio.mono16k,
-                                peaks: audio.peaks,
-                                droppedFileName: nil,
-                                sourcePath: audio.sourcePath)
         }
 
         install(audio)

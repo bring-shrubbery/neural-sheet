@@ -10,12 +10,12 @@ import NeuralSheetCore
 ///
 /// `@unchecked Sendable`: every stored property is a `let` and the raw playback storage is written
 /// only in `init`. ``peaks`` is itself `@unchecked Sendable` and manages its own access.
+///
+/// The playback audio lives in ``storage`` alone: the `[[Float]]` it was built from is copied in
+/// and let go, not retained beside it, so a take costs one buffer rather than two.
 nonisolated final class SourceAudio: @unchecked Sendable {
-    /// The rate ``channels`` is at, which is the audio device's rate at the time it was built.
+    /// The rate the playback buffer is at, which is the audio device's rate at the time it was built.
     let deviceRate: Double
-
-    /// Playback audio at ``deviceRate``, with the source's own channel count.
-    let channels: [[Float]]
 
     /// What the transcription model reads: mono, 16 kHz, always.
     let mono16k: [Float]
@@ -44,6 +44,8 @@ nonisolated final class SourceAudio: @unchecked Sendable {
     /// render block indexes raw memory instead of walking a Swift array of arrays.
     private let storage: UnsafeMutableBufferPointer<Float>
 
+    /// - Parameter channels: Playback audio at `deviceRate`, with the source's own channel count.
+    ///   Copied into ``storage``; the arrays are not kept.
     init(
         deviceRate: Double,
         channels: [[Float]],
@@ -53,7 +55,6 @@ nonisolated final class SourceAudio: @unchecked Sendable {
         sourcePath: URL?
     ) {
         self.deviceRate = deviceRate
-        self.channels = channels
         self.mono16k = mono16k
         self.peaks = peaks
         self.droppedFileName = droppedFileName
@@ -90,8 +91,15 @@ nonisolated final class SourceAudio: @unchecked Sendable {
 
     /// The same take with its playback buffer converted to another device rate. The model's copy and
     /// the peaks are shared rather than rebuilt: neither depends on the device.
+    ///
+    /// Main thread, and allocating: the channels are read back out of ``storage`` for the
+    /// resampler and dropped again once the new take has copied its own in.
     func resampled(to rate: Double) -> SourceAudio {
-        guard rate != deviceRate, !channels.isEmpty else { return self }
+        guard rate != deviceRate, frameCount > 0 else { return self }
+
+        let channels = (0..<channelCount).map { channel in
+            [Float](UnsafeBufferPointer(start: base(ofChannel: channel), count: frameCount))
+        }
 
         return SourceAudio(
             deviceRate: rate,

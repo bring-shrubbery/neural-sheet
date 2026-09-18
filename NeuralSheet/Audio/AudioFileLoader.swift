@@ -23,7 +23,10 @@ nonisolated enum AudioFileLoader {
     /// Reads `url` and returns it ready to play at `deviceRate` and ready to transcribe at 16 kHz.
     ///
     /// Slow and allocating: the message thread's, off the main queue for a long file.
-    static func load(url: URL, deviceRate: Double) throws -> SourceAudio {
+    ///
+    /// - Parameter namedAfterFile: False for a recording re-read from `AppPaths.recordings`, which
+    ///   was never a dropped file and shows no name (``SourceAudio/droppedFileName`` is nil).
+    static func load(url: URL, deviceRate: Double, namedAfterFile: Bool = true) throws -> SourceAudio {
         let ext = url.pathExtension.lowercased()
 
         guard acceptedExtensions.contains(ext) else { throw LoadError.unsupportedExtension }
@@ -48,7 +51,7 @@ nonisolated enum AudioFileLoader {
             channels: playback,
             mono16k: mono16k,
             peaks: peaks,
-            droppedFileName: url.deletingPathExtension().lastPathComponent,
+            droppedFileName: namedAfterFile ? url.deletingPathExtension().lastPathComponent : nil,
             sourcePath: url
         )
     }
