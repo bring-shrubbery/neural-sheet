@@ -47,7 +47,7 @@ struct TranscriptionProgress: View {
         let dim = cancelling ? Theme.disabledAlpha : 1
 
         HStack(spacing: s(Metrics.gap)) {
-            TimelineView(.animation(paused: cancelling)) { context in
+            SwiftUI.TimelineView(.animation(paused: cancelling)) { context in
                 // The alpha is the only thing that changes per frame, and it changes at most a
                 // hundredth at a time, so the text is not re-laid-out for a pulse that stood still.
                 caption
@@ -72,7 +72,7 @@ struct TranscriptionProgress: View {
     }
 
     private var caption: some View {
-        TrackedText(string: Self.caption,
+        TrackedLabel(string: Self.caption,
                     em: Metrics.captionTracking,
                     pointSize: Fonts.Size.statusBar,
                     font: Fonts.statusBar(k),

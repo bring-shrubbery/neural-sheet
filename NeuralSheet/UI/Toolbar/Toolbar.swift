@@ -84,7 +84,7 @@ struct Toolbar: View {
         let s = Scaled(k: k)
 
         return HStack(spacing: 0) {
-            TrackedText(string: "EXPORT TEMPO",
+            TrackedLabel(string: "EXPORT TEMPO",
                         em: Metrics.labelTracking,
                         pointSize: Fonts.Size.pillLabel,
                         font: Fonts.pillLabel(k),
@@ -249,7 +249,7 @@ struct Toolbar: View {
 /// `i * em * pointSize`, which puts a gap after every glyph but the last. `kerning` on its own adds
 /// one after the last glyph too, and that trailing gap is what would make a measured or
 /// right-aligned label a fraction wide.
-struct TrackedText: View {
+struct TrackedLabel: View {
     let string: String
     let em: Double
     let pointSize: CGFloat
