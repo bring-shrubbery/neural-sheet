@@ -110,6 +110,12 @@ struct ModelPanelActions {
 struct ModelPanel: View {
     let model: AppModel
 
+    /// Part-file sizes, stat'ed once when the panel opens and again only when a row's own phase
+    /// settles (to `.idle` or `.failed`) or the installed set moves. Never in `body`: the
+    /// downloading row's phase changes on every chunk, and a stat per chunk per row on the main
+    /// actor is what the C++ panel's 10 Hz poll avoided.
+    @State private var partialBytes: [ModelSize: Int64] = [:]
+
     var body: some View {
         ModelPanelContent(rows: rows,
                           hasInstalledModel: !model.installedModels.isEmpty,
@@ -120,6 +126,30 @@ struct ModelPanel: View {
                                                      cancel: { model.cancelDownload($0) },
                                                      openFolder: { model.openModelsFolder() },
                                                      close: { model.isModelPanelOpen = false }))
+            .onAppear {
+                for size in ModelSize.allCases {
+                    refreshPartialBytes(for: size)
+                }
+            }
+            .onChange(of: model.downloadPhases) { old, new in
+                for size in ModelSize.allCases {
+                    let phase = new[size] ?? .idle
+
+                    guard phase != old[size] ?? .idle else { continue }
+
+                    // Only the settled phases show the button that reads the count; a chunk of
+                    // progress on the downloading row is not a reason to stat the others.
+                    switch phase {
+                    case .idle, .failed: refreshPartialBytes(for: size)
+                    case .downloading, .verifying: break
+                    }
+                }
+            }
+            .onChange(of: model.installedModels) { _, _ in
+                for size in ModelSize.allCases {
+                    refreshPartialBytes(for: size)
+                }
+            }
     }
 
     private var rows: [ModelPanelRow] {
@@ -131,9 +161,12 @@ struct ModelPanel: View {
                                  isInstalled: isInstalled,
                                  isInUse: model.modelSize == size,
                                  phase: phase,
-                                 partialBytes: !isInstalled && phase == .idle
-                                     ? ModelPanel.partialBytes(for: size, in: model.paths) : 0)
+                                 partialBytes: !isInstalled && phase == .idle ? partialBytes[size] ?? 0 : 0)
         }
+    }
+
+    private func refreshPartialBytes(for size: ModelSize) {
+        partialBytes[size] = ModelPanel.partialBytes(for: size, in: model.paths)
     }
 
     /// The part file's size, or 0 without one -- the "Resume" the C++ panel read off
