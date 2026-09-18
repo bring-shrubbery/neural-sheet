@@ -32,6 +32,14 @@ nonisolated enum AudioDevices {
         defaultDevice(selector: kAudioHardwarePropertyDefaultOutputDevice)
     }
 
+    /// One device by id, whether or not it would appear in ``inputs()`` or ``outputs()`` — for
+    /// naming the device something is actually on, which is not always one the pickers offer.
+    static func device(withID id: AudioDeviceID) -> AudioDevice? {
+        guard id != kAudioObjectUnknown else { return nil }
+
+        return name(of: id).map { AudioDevice(id: id, name: $0) }
+    }
+
     // MARK: - HAL plumbing
 
     private static func devices(scope: AudioObjectPropertyScope) -> [AudioDevice] {

@@ -100,7 +100,13 @@ private nonisolated final class RenderState: @unchecked Sendable {
 nonisolated final class PlaybackEngine: @unchecked Sendable {
     /// What the I/O unit is asked for. 128 frames at 48 kHz is 2.7 ms, which is what keeps the
     /// one-cycle-ahead MIDI scheduling from being audible as latency.
-    private static let ioBufferFrames: UInt32 = 128
+    private static let requestedIOBufferFrames: UInt32 = 128
+
+    /// How long the health check waits before its first retry, how far that doubles, and how many
+    /// retries it gets before it stops and leaves ``lastStartError`` for the UI to show.
+    private static let healBackoffSeconds = 0.25
+    private static let healBackoffMaxSeconds = 5.0
+    private static let healAttemptLimit = 8
 
     /// The fader's silent end, matching `InstrumentMixerState.minGainDb`.
     private static let minGainDb = -36.0
@@ -148,6 +154,36 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
     /// actual state against.
     private var shouldRun = false
 
+    /// How long the health check waits before its next attempt, and how many it has spent. Both are
+    /// reset by a successful start and by the user choosing a device.
+    private var healDelay = PlaybackEngine.healBackoffSeconds
+    private var healAttempts = 0
+
+    /// Set while a failed device switch is being rolled back, so the rollback's `didSet` does not
+    /// start another reconfiguration.
+    private var isRevertingDevice = false
+
+    /// The frame count the device actually settled on, read back after the request. 0 before the
+    /// engine has been started once.
+    private(set) var ioBufferFrames = 0
+
+    /// The last failure from pointing the I/O unit at a device, or nil if the last switch took. The
+    /// published ``outputDevice``/``inputDevice`` is rolled back to what is really in use when this
+    /// is set, so the two never disagree.
+    private(set) var lastDeviceError: OSStatus?
+
+    /// Why the engine last refused to start, or nil if it is running or was stopped deliberately.
+    private(set) var lastStartError: Error?
+
+    /// The status of the last I/O buffer-size request, or nil if it was accepted. The size that
+    /// came back is ``ioBufferFrames``, which is what the HAL settled on rather than what was asked.
+    private(set) var lastIOBufferError: OSStatus?
+
+    /// The devices the I/O units were last pointed at successfully, so a rejected switch has
+    /// something to fall back to when the unit cannot name what it is on.
+    private var lastAppliedOutputDevice: AudioDevice?
+    private var lastAppliedInputDevice: AudioDevice?
+
     /// Called on the main queue when the playhead reaches the end. The transport has already been
     /// stopped and rewound by then.
     var onPlayheadWrapped: (() -> Void)?
@@ -160,14 +196,14 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
 
     var outputDevice: AudioDevice? {
         didSet {
-            guard outputDevice != oldValue else { return }
+            guard !isRevertingDevice, outputDevice != oldValue else { return }
             reconfigureDevices()
         }
     }
 
     var inputDevice: AudioDevice? {
         didSet {
-            guard inputDevice != oldValue else { return }
+            guard !isRevertingDevice, inputDevice != oldValue else { return }
             reconfigureDevices()
         }
     }
@@ -246,6 +282,7 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
     var masterLevelDb: Double { Double(bitPattern: state.masterLevelBits.load(ordering: .relaxed)) }
 
     private func setPlayhead(frames: Int, seconds: Double) {
+        supersedePendingWrap()
         state.pendingSeek.store(frames, ordering: .relaxed)
         synthBank.scheduler.seek(toSeconds: seconds)
         // The scheduler's note-offs are not enough on their own: drums are one-shot and the synth
@@ -268,12 +305,21 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
         currentSource = prepared
         state.source.pointee = prepared.map { Unmanaged.passUnretained($0) }
 
+        supersedePendingWrap()
         state.playheadFrames.store(0, ordering: .relaxed)
         state.pendingSeek.store(-1, ordering: .relaxed)
         synthBank.scheduler.seek(toSeconds: 0)
         synthBank.allNotesOff()
 
         retire(retiring)
+    }
+
+    /// A wrap the poll has not picked up yet is superseded by an explicit seek or a new take: the
+    /// transport is where it has just been put, not at an end it passed a few milliseconds ago.
+    /// Without this the poll would re-anchor the scheduler and announce the wrap up to 33 ms late,
+    /// on top of a position the user had already chosen.
+    private func supersedePendingWrap() {
+        lastWrapGeneration = state.wrapGeneration.load(ordering: .relaxed)
     }
 
     /// Holds a replaced take until any render block that saw it has long since returned.
@@ -296,17 +342,28 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
         guard !engine.isRunning else { return }
 
         shouldRun = true
+        healAttempts = 0
+        healDelay = Self.healBackoffSeconds
+
         applyDevices()
+
+        // Before `prepare()`, not after `start()`: `prepare()` initialises the AUHAL, and an
+        // initialised unit answers kAudioUnitErr_Initialized to a buffer-size request.
+        let bufferStatus = requestIOBufferSize()
+        lastIOBufferError = bufferStatus == noErr ? nil : bufferStatus
+
         engine.prepare()
 
         do {
             try engine.start()
+            lastStartError = nil
         } catch {
+            lastStartError = error
             shouldRun = false
             throw error
         }
 
-        requestIOBufferSize()
+        readIOBufferSize()
         startWrapPoll()
     }
 
@@ -366,6 +423,11 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
     /// and the channel count, and a connection made against the old one is what makes `start()`
     /// return quietly without running.
     private func reconfigureDevices() {
+        // A device the user just chose gets a fresh budget: whatever made the last one unstartable
+        // has nothing to say about this one.
+        healAttempts = 0
+        healDelay = Self.healBackoffSeconds
+
         rebuildGraph { self.applyDevices() }
     }
 
@@ -376,10 +438,22 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
     /// engine that should be running and is not, and rebuilds it.
     private func healIfNeeded() {
         guard shouldRun, !engine.isRunning, !isRebuilding,
-            Date().timeIntervalSince(lastRebuild) > 0.25
+            healAttempts < Self.healAttemptLimit,
+            Date().timeIntervalSince(lastRebuild) > healDelay
         else { return }
 
+        healAttempts += 1
         rebuildGraph {}
+
+        if engine.isRunning {
+            healAttempts = 0
+            healDelay = Self.healBackoffSeconds
+        } else {
+            // Backing off rather than hammering: an engine that cannot start is usually waiting on
+            // hardware that is not coming back, and a full graph rebuild four times a second for
+            // the rest of the session is worse than giving up and saying so.
+            healDelay = Swift.min(healDelay * 2, Self.healBackoffMaxSeconds)
+        }
     }
 
     /// The common path for "the hardware underneath us changed": our own device switch, and the
@@ -414,9 +488,19 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
         // `shouldRun` as well as `wasRunning`: the health check only calls this because the engine
         // has already stopped on its own, and that is exactly the case that has to come back up.
         if wasRunning || shouldRun {
+            let bufferStatus = requestIOBufferSize()
+            lastIOBufferError = bufferStatus == noErr ? nil : bufferStatus
+
             engine.prepare()
-            try? engine.start()
-            requestIOBufferSize()
+
+            do {
+                try engine.start()
+                lastStartError = nil
+            } catch {
+                lastStartError = error
+            }
+
+            readIOBufferSize()
         }
 
         // The transport survives a device change: the playhead is a position in the take, not in
@@ -428,22 +512,54 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
     }
 
     private func applyDevices() {
+        lastDeviceError = nil
+
         if let outputDevice {
-            Self.setDevice(outputDevice.id, on: engine.outputNode)
+            let status = Self.setDevice(outputDevice.id, on: engine.outputNode)
+            if status == noErr {
+                lastAppliedOutputDevice = outputDevice
+            } else {
+                lastDeviceError = status
+                revert(\.outputDevice, on: engine.outputNode, fallback: lastAppliedOutputDevice)
+            }
         }
 
         // The input node is only touched once something wants the input: instantiating it asks for
         // microphone access, and playback alone has no business doing that.
         if let inputDevice, inputTap != nil || inputTapInstalled {
-            Self.setDevice(inputDevice.id, on: engine.inputNode)
+            let status = Self.setDevice(inputDevice.id, on: engine.inputNode)
+            if status == noErr {
+                lastAppliedInputDevice = inputDevice
+            } else {
+                lastDeviceError = status
+                revert(\.inputDevice, on: engine.inputNode, fallback: lastAppliedInputDevice)
+            }
         }
     }
 
-    private static func setDevice(_ id: AudioDeviceID, on node: AVAudioIONode) {
-        guard let unit = node.audioUnit else { return }
+    /// Puts the published choice back to the device the I/O unit is really on, so a rejected switch
+    /// does not leave the picker naming something that is not playing.
+    private func revert(
+        _ key: ReferenceWritableKeyPath<PlaybackEngine, AudioDevice?>,
+        on node: AVAudioIONode,
+        fallback: AudioDevice?
+    ) {
+        // By id, not by looking the id up in the pickers' lists: the unit can be on something the
+        // lists leave out, and naming it is still better than publishing nil.
+        let inUse = Self.currentDevice(of: node).flatMap(AudioDevices.device(withID:))
+
+        isRevertingDevice = true
+        self[keyPath: key] = inUse ?? fallback
+        isRevertingDevice = false
+    }
+
+    @discardableResult
+    private static func setDevice(_ id: AudioDeviceID, on node: AVAudioIONode) -> OSStatus {
+        guard let unit = node.audioUnit else { return OSStatus(kAudioUnitErr_Uninitialized) }
 
         var deviceID = id
-        AudioUnitSetProperty(
+
+        return AudioUnitSetProperty(
             unit,
             kAudioOutputUnitProperty_CurrentDevice,
             kAudioUnitScope_Global,
@@ -453,20 +569,76 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
         )
     }
 
-    /// Asks the output unit for the small I/O buffer. Advisory: the HAL clamps it to what the device
-    /// supports, and nothing here depends on getting exactly what it asked for.
-    private func requestIOBufferSize() {
-        guard let unit = engine.outputNode.audioUnit else { return }
+    /// Which device the node's I/O unit is on right now, whatever was asked for.
+    private static func currentDevice(of node: AVAudioIONode) -> AudioDeviceID? {
+        guard let unit = node.audioUnit else { return nil }
 
-        var frames = Self.ioBufferFrames
-        AudioUnitSetProperty(
-            unit,
-            kAudioDevicePropertyBufferFrameSize,
-            kAudioUnitScope_Global,
-            0,
-            &frames,
-            UInt32(MemoryLayout<UInt32>.size)
-        )
+        var deviceID = AudioDeviceID(0)
+        var size = UInt32(MemoryLayout<AudioDeviceID>.size)
+
+        let status = AudioUnitGetProperty(
+            unit, kAudioOutputUnitProperty_CurrentDevice, kAudioUnitScope_Global, 0, &deviceID,
+            &size)
+
+        return status == noErr && deviceID != kAudioObjectUnknown ? deviceID : nil
+    }
+
+    /// Asks for the small I/O buffer, before the engine is prepared.
+    ///
+    /// Two routes, because neither works on its own: the AUHAL takes the property only while it is
+    /// uninitialised, and it stays initialised across a stop, so a restart has to go to the device
+    /// instead. The request is advisory either way — the HAL clamps it to what the device supports
+    /// and to what other clients have asked for — which is why ``readIOBufferSize()`` reports what
+    /// actually happened rather than what was asked.
+    private func requestIOBufferSize() -> OSStatus {
+        var frames = Self.requestedIOBufferFrames
+        let size = UInt32(MemoryLayout<UInt32>.size)
+
+        var status = OSStatus(kAudioUnitErr_Uninitialized)
+
+        if let unit = engine.outputNode.audioUnit {
+            status = AudioUnitSetProperty(
+                unit, kAudioDevicePropertyBufferFrameSize, kAudioUnitScope_Global, 0, &frames, size)
+        }
+
+        if status != noErr, let device = Self.currentDevice(of: engine.outputNode) {
+            var address = AudioObjectPropertyAddress(
+                mSelector: kAudioDevicePropertyBufferFrameSize,
+                mScope: kAudioObjectPropertyScopeGlobal,
+                mElement: kAudioObjectPropertyElementMain
+            )
+
+            status = AudioObjectSetPropertyData(device, &address, 0, nil, size, &frames)
+        }
+
+        return status
+    }
+
+    /// Reads back the frame count the device settled on into ``ioBufferFrames``.
+    @discardableResult
+    private func readIOBufferSize() -> Int {
+        var frames = UInt32(0)
+        var size = UInt32(MemoryLayout<UInt32>.size)
+        var status = OSStatus(kAudioUnitErr_Uninitialized)
+
+        if let unit = engine.outputNode.audioUnit {
+            status = AudioUnitGetProperty(
+                unit, kAudioDevicePropertyBufferFrameSize, kAudioUnitScope_Global, 0, &frames, &size)
+        }
+
+        if status != noErr, let device = Self.currentDevice(of: engine.outputNode) {
+            var address = AudioObjectPropertyAddress(
+                mSelector: kAudioDevicePropertyBufferFrameSize,
+                mScope: kAudioObjectPropertyScopeGlobal,
+                mElement: kAudioObjectPropertyElementMain
+            )
+
+            status = AudioObjectGetPropertyData(device, &address, 0, nil, &size, &frames)
+        }
+
+        ioBufferFrames = status == noErr ? Int(frames) : 0
+
+        return ioBufferFrames
     }
 
     private func refreshInputTap() {
@@ -520,7 +692,10 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
             guard generation != self.lastWrapGeneration else { return }
 
             self.lastWrapGeneration = generation
-            self.synthBank.scheduler.seek(toSeconds: 0)
+
+            // The current playhead, not 0: the block rewound to 0 when it wrapped, but up to 33 ms
+            // have passed and a seek in that window has already moved the transport somewhere else.
+            self.synthBank.scheduler.seek(toSeconds: self.playheadSeconds)
             self.synthBank.allNotesOff()
             self.onPlayheadWrapped?()
         }
