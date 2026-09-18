@@ -215,7 +215,7 @@ extension AppModel {
 
             clearTranscription()
 
-            presentError?(
+            showError(
                 "Transcription failed.",
                 reason.isEmpty
                     ? "The transcription model could not be loaded or run."

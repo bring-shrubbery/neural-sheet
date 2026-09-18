@@ -40,6 +40,17 @@ nonisolated struct UpdateNotice: Equatable, Sendable {
     /// message, which is what happens before a window exists.
     @ObservationIgnored var presentError: ((String, String) -> Void)?
 
+    /// Every dialog goes through here: a message with nobody to show it is a wiring bug, which
+    /// a debug build says so about rather than swallowing.
+    func showError(_ title: String, _ body: String) {
+        guard let presentError else {
+            assertionFailure("presentError is not installed; dropped: \(title) / \(body)")
+            return
+        }
+
+        presentError(title, body)
+    }
+
     // MARK: - State
 
     private(set) var state: AppState = .empty
@@ -129,20 +140,10 @@ nonisolated struct UpdateNotice: Equatable, Sendable {
     // MARK: - Instrument selection and mix
 
     /// The instrument groups to restrict the next run to, in enumerator order. Empty means
-    /// Automatic: the model chooses.
+    /// Automatic: the model chooses. Whoever sets it passes a list through
+    /// ``normalised(_:)`` first; the commands below do.
     var selectedGroups: [InstrumentGroup] = [] {
-        didSet {
-            let normalised = AppModel.normalise(selectedGroups)
-
-            if normalised != selectedGroups {
-                selectedGroups = normalised
-                return
-            }
-
-            guard selectedGroups != oldValue else { return }
-
-            refreshMixerEntries()
-        }
+        didSet { refreshMixerEntries() }
     }
 
     /// The programs the selection stands for, which the sidebar shows as placeholders (§3.3).
@@ -367,7 +368,7 @@ nonisolated struct UpdateNotice: Equatable, Sendable {
             return
         } catch {
             clear()
-            presentError?("Error", "File creation for recording failed.")
+            showError("Error", "File creation for recording failed.")
             return
         }
 
@@ -392,16 +393,16 @@ nonisolated struct UpdateNotice: Equatable, Sendable {
     private func presentRecordingFailure(_ error: Recorder.RecordError) {
         switch error {
         case .fileCreation:
-            presentError?("Error", "File creation for recording failed.")
+            showError("Error", "File creation for recording failed.")
         case .readBack, .writeFailed:
-            presentError?("Could not load the recorded audio sample.", "")
+            showError("Could not load the recorded audio sample.", "")
         case .permissionDenied:
             presentMicrophoneDenied()
         }
     }
 
     private func presentMicrophoneDenied() {
-        presentError?(
+        showError(
             "Error",
             "Microphone access has not been granted. Allow NeuralSheet to use the microphone in "
                 + "System Settings › Privacy & Security › Microphone.")
@@ -414,20 +415,22 @@ nonisolated struct UpdateNotice: Equatable, Sendable {
     func loadAudio(url: URL) {
         guard state == .empty || state == .audioLoaded || state == .populated else { return }
 
-        clear()
-
+        // Before anything is cleared: the C++ drop target refuses an unknown extension ahead of
+        // `onFileDrop`, so a stray .txt on a finished transcription costs nothing.
         guard AudioFileLoader.acceptedExtensions.contains(url.pathExtension.lowercased()) else {
             let accepted = AudioFileLoader.acceptedExtensions.map { ".\($0)" }.joined(separator: ", ")
-            presentError?("Could not load the file.", "Check your file format (Accepted formats: \(accepted)).")
+            showError("Could not load the file.", "Check your file format (Accepted formats: \(accepted)).")
             return
         }
+
+        clear()
 
         let audio: SourceAudio
 
         do {
             audio = try AudioFileLoader.load(url: url, deviceRate: engine.sampleRate)
         } catch {
-            presentError?(
+            showError(
                 "Could not load the audio file.",
                 "Check your file format (Accepted formats: .wav, .aiff, .flac, .mp3, .ogg).")
             return
@@ -599,18 +602,22 @@ nonisolated struct UpdateNotice: Equatable, Sendable {
             groups.removeAll { $0 == group }
         }
 
-        selectedGroups = groups
+        let normalised = AppModel.normalised(groups)
+
+        if normalised != selectedGroups {
+            selectedGroups = normalised
+        }
     }
 
     /// Back to Automatic.
     func clearSelection() {
-        guard !state.hasTranscription else { return }
+        guard !state.hasTranscription, !selectedGroups.isEmpty else { return }
 
         selectedGroups = []
     }
 
-    /// Enumerator order, duplicates dropped.
-    private static func normalise(_ groups: [InstrumentGroup]) -> [InstrumentGroup] {
+    /// Enumerator order, duplicates dropped: the only shape ``selectedGroups`` is set to.
+    static func normalised(_ groups: [InstrumentGroup]) -> [InstrumentGroup] {
         let chosen = Set(groups)
 
         return InstrumentGroup.allCases.filter(chosen.contains)
@@ -712,7 +719,7 @@ nonisolated struct UpdateNotice: Equatable, Sendable {
         do {
             try FileManager.default.createDirectory(at: paths.midiScratch, withIntermediateDirectories: true)
         } catch {
-            presentError?("Error", "Temporary directory for midi file failed.")
+            showError("Error", "Temporary directory for midi file failed.")
             return nil
         }
 
@@ -721,7 +728,7 @@ nonisolated struct UpdateNotice: Equatable, Sendable {
         do {
             try data.write(to: url, options: .atomic)
         } catch {
-            presentError?("Error", "Could not create the midi file.")
+            showError("Error", "Could not create the midi file.")
             return nil
         }
 
@@ -734,7 +741,9 @@ nonisolated struct UpdateNotice: Equatable, Sendable {
         guard let data = midiData() else { return }
 
         let panel = NSSavePanel()
+        // `message` is what the modern panel shows; `title` is kept for the accessibility name.
         panel.title = "Export MIDI"
+        panel.message = "Export MIDI"
         panel.directoryURL = paths.musicFolder
         panel.nameFieldStringValue = midiExportFileName()
         panel.allowedContentTypes = [.midi]
@@ -745,7 +754,7 @@ nonisolated struct UpdateNotice: Equatable, Sendable {
         do {
             try data.write(to: url, options: .atomic)
         } catch {
-            presentError?("Error", "Could not write the MIDI file.")
+            showError("Error", "Could not write the MIDI file.")
         }
     }
 
@@ -827,22 +836,25 @@ nonisolated struct UpdateNotice: Equatable, Sendable {
             masterLevelDb = master
         }
 
-        var levels: [Int: Double] = [:]
-        var ballistics: [Int: MeterBallistics] = [:]
-
+        // In place, keyed by what is in the mix now: a program that left the mix is pruned, and
+        // the published dictionary is written only for a level that actually moved.
         for entry in mixer.entries {
             let program = entry.program
-            var meter = instrumentBallistics[program] ?? MeterBallistics()
             let input = stale ? MeterScale.minDb : engine.synthBank.levelDb(program: program)
+            let level = instrumentBallistics[program, default: MeterBallistics()].advance(input: input, dt: dt)
 
-            levels[program] = meter.advance(input: input, dt: dt)
-            ballistics[program] = meter
+            if instrumentLevels[program] != level {
+                instrumentLevels[program] = level
+            }
         }
 
-        instrumentBallistics = ballistics
+        if instrumentBallistics.count != mixer.entries.count {
+            let present = Set(mixer.entries.map(\.program))
 
-        if levels != instrumentLevels {
-            instrumentLevels = levels
+            for program in instrumentBallistics.keys where !present.contains(program) {
+                instrumentBallistics[program] = nil
+                instrumentLevels[program] = nil
+            }
         }
     }
 
