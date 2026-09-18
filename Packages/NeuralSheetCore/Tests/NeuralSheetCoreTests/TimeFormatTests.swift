@@ -3,21 +3,24 @@ import Testing
 @testable import NeuralSheetCore
 
 @Test func transportFormatsMinutesSecondsHundredths() {
-    #expect(TimeFormat.transport(61.239) == "01:01.23")
+    #expect(TimeFormat.transport(61.239) == "01:01.24")
+    #expect(TimeFormat.transport(61.234) == "01:01.23")
     #expect(TimeFormat.transport(0) == "00:00.00")
     #expect(TimeFormat.transport(-1) == "00:00.00")
     #expect(TimeFormat.transport(599.99) == "09:59.99")
     #expect(TimeFormat.transportPlaceholder == "--:--.--")
 }
 
-@Test func transportDoesNotLoseAHundredthToBinaryScaling() {
+@Test func transportRoundsToTheNearestHundredth() {
     // 0.29 * 100 == 28.999999999999996 and 1.15 * 100 == 114.99999999999999 in binary64.
     #expect(TimeFormat.transport(0.29) == "00:00.29")
     #expect(TimeFormat.transport(1.15) == "00:01.15")
     #expect(TimeFormat.transport(60.29) == "01:00.29")
-    // Genuine fractions still truncate rather than round up.
-    #expect(TimeFormat.transport(2.675) == "00:02.67")
-    #expect(TimeFormat.transport(0.999) == "00:00.99")
+    // `roundToInt`, not truncation: a fraction above the half rounds up, across the second too.
+    #expect(TimeFormat.transport(2.675) == "00:02.68")
+    #expect(TimeFormat.transport(0.999) == "00:01.00")
+    #expect(TimeFormat.transport(1.004) == "00:01.00")
+    #expect(TimeFormat.transport(59.996) == "01:00.00")
 }
 
 @Test func rulerFormatsMinutesAndPaddedSeconds() {

@@ -3,13 +3,11 @@ import Foundation
 /// The app's text formatters: every readout that turns a number into a label goes through here so
 /// the same value reads the same way everywhere.
 public enum TimeFormat {
-    /// Transport position and total, `mm:ss.dd` (hundredths, truncated).
+    /// Transport position and total, `mm:ss.dd` (hundredths, rounded to the nearest, as
+    /// `TimeDisplay::_format` had it with `roundToInt(seconds * 100)`).
     public static func transport(_ seconds: Double) -> String {
         guard seconds.isFinite, seconds > 0 else { return "00:00.00" }
-        // Nudged before flooring: scaling by 100 in binary64 lands a hair *below* the intended
-        // hundredth for values such as 0.29 (28.999999999999996), which would truncate to .28.
-        // The nudge is a nanosecond wide, far too small to promote a genuine fraction.
-        let hundredths = Int((seconds * 100 + 1e-7).rounded(.down))
+        let hundredths = Int((seconds * 100).rounded())
         return String(
             format: "%02d:%02d.%02d", hundredths / 6000, (hundredths / 100) % 60, hundredths % 100)
     }
