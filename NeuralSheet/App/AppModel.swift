@@ -246,6 +246,12 @@ nonisolated struct UpdateNotice: Equatable, Sendable {
 
     var updateNotice: UpdateNotice?
 
+    // MARK: - Audio failures
+
+    /// Set once the launch's start failure has been shown, so a view appearing twice does not
+    /// show it twice.
+    @ObservationIgnored private var hasReportedLaunchStartFailure = false
+
     // MARK: - Meters
 
     /// The master meter after ballistics and the staleness rule (§2.5).
@@ -285,6 +291,12 @@ nonisolated struct UpdateNotice: Equatable, Sendable {
             self?.handlePlayheadWrapped()
         }
 
+        // Eight rebuilds, backed off, and still nothing: said so, and said again if the next
+        // budget -- Play, or a device pick -- runs out the same way.
+        engine.onHealExhausted = { [weak self] in
+            self?.presentAudioStartFailure()
+        }
+
         // An arbitrary queue: re-read on the main actor rather than trusting the delivered phase,
         // so two hops landing out of order cannot leave a stale one showing.
         downloader.onChange = { @Sendable [weak self] size, _ in
@@ -295,8 +307,9 @@ nonisolated struct UpdateNotice: Equatable, Sendable {
             }
         }
 
-        // `lastStartError` stays on the engine for the UI to show; there is nothing else to do
-        // with an output that will not open, and the engine's own health check keeps trying.
+        // A refusal here leaves the engine's own health check retrying with its backoff; the error
+        // stays in `lastStartError` and is shown once the window can show it
+        // (``presentAudioStartFailureIfAny()``).
         try? engine.start()
 
         startModelPoll()
@@ -609,6 +622,62 @@ nonisolated struct UpdateNotice: Equatable, Sendable {
     private func handlePlayheadWrapped() {
         // The engine has already stopped and rewound.
         syncTransport()
+    }
+
+    // MARK: - Audio devices
+
+    /// What the Audio menu shows as chosen: the engine's own, which it rolls back when a device
+    /// refuses, so the menu re-reads these after every pick.
+    var inputDevice: AudioDevice? { engine.inputDevice }
+    var outputDevice: AudioDevice? { engine.outputDevice }
+
+    /// The Audio menu's Input pick, applied at once (spec §7 deviation 7). A device the engine
+    /// could not use is rolled back and said so.
+    func setInputDevice(_ device: AudioDevice?) {
+        guard device != engine.inputDevice else { return }
+
+        engine.inputDevice = device
+        reportDeviceSwitch()
+    }
+
+    /// The Audio menu's Output pick, as ``setInputDevice(_:)``.
+    func setOutputDevice(_ device: AudioDevice?) {
+        guard device != engine.outputDevice else { return }
+
+        engine.outputDevice = device
+        reportDeviceSwitch()
+    }
+
+    /// The pick rebuilt the graph and, when the engine was not running, was its retry: a device
+    /// that refused is one dialog, an output that then would not start is the other.
+    private func reportDeviceSwitch() {
+        if let status = engine.lastDeviceError {
+            showError("Audio device could not be used", "CoreAudio error \(PlaybackEngine.describe(status)).")
+        } else if !engine.isRunning, engine.lastStartError != nil {
+            presentAudioStartFailure()
+        }
+    }
+
+    /// Once, when the window can show a dialog: a launch whose output would not open -- and that
+    /// the health check has not opened since -- is said so. Its retries carry on underneath.
+    func presentAudioStartFailureIfAny() {
+        guard !hasReportedLaunchStartFailure, !engine.isRunning,
+              engine.lastStartError != nil || engine.healExhausted
+        else { return }
+
+        hasReportedLaunchStartFailure = true
+        presentAudioStartFailure()
+    }
+
+    /// "Audio could not start", with what CoreAudio said. Not before a window exists: the launch
+    /// path picks it up in ``presentAudioStartFailureIfAny()`` instead.
+    private func presentAudioStartFailure() {
+        guard presentError != nil else { return }
+
+        let detail = engine.lastStartError.map { PlaybackEngine.describe($0) + "." }
+            ?? "The audio output did not start."
+
+        showError("Audio could not start", detail)
     }
 
     private func syncTransport() {

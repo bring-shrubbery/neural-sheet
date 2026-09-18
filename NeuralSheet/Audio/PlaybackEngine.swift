@@ -155,9 +155,13 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
     private var shouldRun = false
 
     /// How long the health check waits before its next attempt, and how many it has spent. Both are
-    /// reset by a successful start and by the user choosing a device.
+    /// reset by a successful start, by Play and by the user choosing a device.
     private var healDelay = PlaybackEngine.healBackoffSeconds
     private var healAttempts = 0
+
+    /// True once the health check has spent its budget on an engine that will not start, until a
+    /// fresh budget is handed out. What ``onHealExhausted`` announces.
+    private(set) var healExhausted = false
 
     /// Set while a failed device switch is being rolled back, so the rollback's `didSet` does not
     /// start another reconfiguration.
@@ -174,6 +178,10 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
 
     /// Why the engine last refused to start, or nil if it is running or was stopped deliberately.
     private(set) var lastStartError: Error?
+
+    /// Called on the main queue when the health check gives up: eight rebuilds, backed off to five
+    /// seconds apart, and the engine is still not running. Play or a device pick starts it over.
+    var onHealExhausted: (() -> Void)?
 
     /// The status of the last I/O buffer-size request, or nil if it was accepted. The size that
     /// came back is ``ioBufferFrames``, which is what the HAL settled on rather than what was asked.
@@ -258,11 +266,15 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
 
     var isPlaying: Bool { state.playing.load(ordering: .relaxed) }
 
+    /// Whether the AVAudioEngine is actually rendering, whatever was asked of it.
+    var isRunning: Bool { engine.isRunning }
+
     func play() {
         // A wrap the poll has not picked up yet belongs to the run that just ended: without this,
         // pressing play right after the take finished would immediately re-anchor and announce it.
         supersedePendingWrap()
         state.playing.store(true, ordering: .relaxed)
+        retryStartIfNeeded()
     }
 
     func pause() {
@@ -355,12 +367,15 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
 
     // MARK: - Engine lifecycle
 
+    /// Starts the engine, or throws why it would not. Either way the engine now *should* be
+    /// running: a refusal at launch -- the output device busy, or not there yet -- leaves the poll
+    /// running and the health check retrying with its backoff, so the failure is a delay rather
+    /// than a silent session. The error stays in ``lastStartError`` for the UI to show.
     func start() throws {
         guard !engine.isRunning else { return }
 
         shouldRun = true
-        healAttempts = 0
-        healDelay = Self.healBackoffSeconds
+        resetHealBudget()
 
         applyDevices()
 
@@ -371,17 +386,37 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
 
         engine.prepare()
 
+        // The poll first, whatever `start()` says: it is what carries the retries.
+        startWrapPoll()
+
         do {
             try engine.start()
             lastStartError = nil
         } catch {
             lastStartError = error
-            shouldRun = false
             throw error
         }
 
         readIOBufferSize()
-        startWrapPoll()
+    }
+
+    /// A user gesture that wants the output -- Play, a device pick -- hands the health check a
+    /// fresh budget, and when the engine is not running makes one attempt now rather than at the
+    /// poll's next tick. Not from inside a rebuild, whose own attempt is under way.
+    func retryStartIfNeeded() {
+        guard !isRebuilding else { return }
+
+        resetHealBudget()
+
+        guard !engine.isRunning else { return }
+
+        try? start()
+    }
+
+    private func resetHealBudget() {
+        healAttempts = 0
+        healDelay = Self.healBackoffSeconds
+        healExhausted = false
     }
 
     func stopEngine() {
@@ -442,8 +477,7 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
     private func reconfigureDevices() {
         // A device the user just chose gets a fresh budget: whatever made the last one unstartable
         // has nothing to say about this one.
-        healAttempts = 0
-        healDelay = Self.healBackoffSeconds
+        resetHealBudget()
 
         rebuildGraph { self.applyDevices() }
     }
@@ -463,13 +497,17 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
         rebuildGraph {}
 
         if engine.isRunning {
-            healAttempts = 0
-            healDelay = Self.healBackoffSeconds
+            resetHealBudget()
         } else {
             // Backing off rather than hammering: an engine that cannot start is usually waiting on
             // hardware that is not coming back, and a full graph rebuild four times a second for
             // the rest of the session is worse than giving up and saying so.
             healDelay = Swift.min(healDelay * 2, Self.healBackoffMaxSeconds)
+
+            if healAttempts >= Self.healAttemptLimit {
+                healExhausted = true
+                onHealExhausted?()
+            }
         }
     }
 
@@ -709,6 +747,34 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
             &size)
 
         return status == noErr && deviceID != kAudioObjectUnknown ? deviceID : nil
+    }
+
+    // MARK: - Error text
+
+    /// An `OSStatus` for a dialog: the number, and its four-character code when it has one
+    /// (`560227702 ('!dev')`); a small negative code such as -10851 is the number alone.
+    static func describe(_ status: OSStatus) -> String {
+        let bits = UInt32(bitPattern: status)
+        let bytes = (0..<4).map { UInt8((bits >> (8 * UInt32(3 - $0))) & 0xFF) }
+        let printable = bytes.allSatisfy { $0 >= 0x20 && $0 < 0x7F }
+
+        guard printable, let code = String(bytes: bytes, encoding: .ascii) else {
+            return "\(status)"
+        }
+
+        return "\(status) ('\(code)')"
+    }
+
+    /// An `Error` for a dialog: CoreAudio's status codes as ``describe(_:)`` has them, anything
+    /// else as it describes itself.
+    static func describe(_ error: Error) -> String {
+        let nsError = error as NSError
+
+        if nsError.domain == NSOSStatusErrorDomain || nsError.domain.hasPrefix("com.apple.coreaudio") {
+            return "CoreAudio error \(describe(OSStatus(truncatingIfNeeded: nsError.code)))"
+        }
+
+        return nsError.localizedDescription
     }
 
     /// Asks for the small I/O buffer, before the engine is prepared.

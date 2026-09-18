@@ -14,7 +14,8 @@ struct NeuralSheetApp: App {
     @State private var persistence: Persistence
 
     /// What the Audio menu shows as chosen. The engine's own properties are not observable, and
-    /// they can be rolled back when a device refuses; the menu re-reads them after every choice.
+    /// they can be rolled back when a device refuses; the menu re-reads them off the model after
+    /// every choice.
     @State private var audioMenu = AudioMenuState()
 
     init() {
@@ -50,15 +51,15 @@ struct NeuralSheetApp: App {
         CommandMenu("Audio") {
             Menu("Input") {
                 deviceRows(devices: audioMenu.inputs, chosen: audioMenu.input) { device in
-                    model.engine.inputDevice = device
-                    audioMenu.input = model.engine.inputDevice
+                    model.setInputDevice(device)
+                    audioMenu.input = model.inputDevice
                 }
             }
 
             Menu("Output") {
                 deviceRows(devices: audioMenu.outputs, chosen: audioMenu.output) { device in
-                    model.engine.outputDevice = device
-                    audioMenu.output = model.engine.outputDevice
+                    model.setOutputDevice(device)
+                    audioMenu.output = model.outputDevice
                 }
             }
         }
