@@ -167,7 +167,10 @@ nonisolated final class InstrumentSynthBank: @unchecked Sendable {
         events.reserveCapacity(NoteScheduler.reservedEventCapacity)
 
         engine.attach(subMixer)
-        engine.connect(subMixer, to: mixTarget, format: nil)
+        // At the engine's rate from the first connection, not the mixer's 44.1 kHz default: `nil`
+        // here left the sub-mix converting under a 48 kHz engine until the first device rebuild
+        // came through ``reconnectForCurrentRate()``.
+        engine.connect(subMixer, to: mixTarget, format: renderFormat)
         subMixer.outputVolume = synthGain
     }
 
