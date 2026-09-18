@@ -184,8 +184,10 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
     private var lastAppliedOutputDevice: AudioDevice?
     private var lastAppliedInputDevice: AudioDevice?
 
-    /// The aggregate the I/O unit is on, when a chosen input needed one. Ours to destroy.
-    private var inputAggregate: AudioDeviceID?
+    /// The aggregate the I/O unit is on, when a chosen input needed one, and the pair it stands for.
+    /// Ours to destroy, and reusable for as long as that pair does not change.
+    private var inputAggregate:
+        (device: AudioDeviceID, input: AudioDeviceID, output: AudioDeviceID)?
 
     /// Called on the main queue when the playhead reaches the end. The transport has already been
     /// stopped and rewound by then.
@@ -248,7 +250,7 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
         if meterTapInstalled { engine.mainMixerNode.removeTap(onBus: 0) }
         if inputTapInstalled { engine.inputNode.removeTap(onBus: 0) }
         engine.stop()
-        InputAggregate.destroy(inputAggregate)
+        InputAggregate.destroy(inputAggregate?.device)
     }
 
     // MARK: - Transport
@@ -525,6 +527,10 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
     private func applyDevices() {
         lastDeviceError = nil
 
+        // First: an aggregate of ours is both unwanted by now and in the way, since the unit will
+        // not take a plain device while it is on one.
+        releaseInputAggregateIfUnused()
+
         if let outputDevice {
             let status = Self.setDevice(outputDevice.id, on: engine.outputNode)
             if status == noErr {
@@ -538,13 +544,13 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
         // The input node is only touched once something wants the input: instantiating it asks for
         // microphone access, and playback alone has no business doing that. Dropping a chosen input
         // is the exception -- the aggregate standing behind it has to go either way.
-        if inputTap != nil || inputTapInstalled || inputAggregate != nil {
+        if inputTap != nil || inputTapInstalled {
             applyInputDevice()
         }
     }
 
     /// Points the I/O unit at ``inputDevice``, through a private aggregate when that is a different
-    /// box from the one playing.
+    /// box from the one playing, and takes the aggregate away again once nothing wants the input.
     ///
     /// One unit serves both directions, so this decides where the output goes as well: the aggregate
     /// carries the output device alongside the chosen input, which is the only way the two can be
@@ -552,41 +558,68 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
     private func applyInputDevice() {
         let outputID = outputDevice?.id ?? AudioDevices.defaultOutput()?.id
 
-        guard let inputDevice else {
-            // Nothing wants a particular input any more: back to the device that is playing, and
-            // the aggregate that was only ever there to bolt an input onto it can go.
-            if inputAggregate != nil {
-                if let outputID { Self.setDevice(outputID, on: engine.outputNode) }
-                InputAggregate.destroy(inputAggregate)
-                inputAggregate = nil
-            }
+        // No input wanted, or none in particular: ``releaseInputAggregateIfUnused()`` has already
+        // given back whatever aggregate stood behind the old choice.
+        guard let inputDevice, inputTap != nil || inputTapInstalled else { return }
+
+        // A graph rebuild leaves the unit needing its device set again, but the aggregate behind it
+        // only has to be built again when the pair it stands for has changed.
+        if let existing = inputAggregate, existing.input == inputDevice.id,
+            existing.output == outputID, Self.setDevice(existing.device, on: engine.inputNode) == noErr
+        {
+            lastAppliedInputDevice = inputDevice
             return
         }
 
-        let aggregate = outputID.flatMap { InputAggregate.create(input: inputDevice.id, output: $0) }
-        let status = Self.setDevice(aggregate ?? inputDevice.id, on: engine.inputNode)
+        let created = outputID.flatMap { output in
+            InputAggregate.create(input: inputDevice.id, output: output)
+                .map { (device: $0, input: inputDevice.id, output: output) }
+        }
 
-        // Only once the unit is off it, which the set above has just seen to.
+        let status = Self.setDevice(created?.device ?? inputDevice.id, on: engine.inputNode)
         let previous = inputAggregate
         inputAggregate = nil
 
-        if status == noErr {
-            inputAggregate = aggregate
-            lastAppliedInputDevice = inputDevice
-        } else {
-            InputAggregate.destroy(aggregate)
+        guard status == noErr else {
             lastDeviceError = status
 
-            // A refused switch does not leave the unit as it was: it can clear the device outright,
-            // which silences playback too. Put the one that plays back before publishing anything.
-            if Self.currentDevice(of: engine.outputNode) == nil, let outputID {
-                Self.setDevice(outputID, on: engine.outputNode)
-            }
+            // Both aggregates go, and nothing is put in their place by hand: the unit is refusing
+            // devices, and a second refusal would only clear whatever it still has. The
+            // `prepare()`/`start()` that ends the rebuild this is part of puts it back on a real
+            // device, the same way it does after an ordinary take.
+            InputAggregate.destroy(created?.device)
+            InputAggregate.destroy(previous?.device)
 
+            // Read after both are gone, so the picker can never be handed the name of a private
+            // device the unit was briefly sitting on.
             revert(\.inputDevice, on: engine.inputNode, fallback: lastAppliedInputDevice)
+            return
         }
 
-        InputAggregate.destroy(previous)
+        inputAggregate = created
+        lastAppliedInputDevice = inputDevice
+
+        // Only now that the unit is on the new device, and off this one.
+        InputAggregate.destroy(previous?.device)
+    }
+
+    /// Hands the aggregate back once nothing wants the input any more.
+    ///
+    /// Without this, one take from a chosen microphone leaves the I/O unit -- and so playback -- on
+    /// that microphone's aggregate for the rest of the session.
+    ///
+    /// Destroying it is the whole of it. Pointing the unit somewhere else first does not work: a
+    /// unit whose input side is still enabled refuses a plain output-only device exactly the way it
+    /// refuses an input-only one (`kAudioUnitErr_InvalidPropertyValue`), and the refusal clears the
+    /// device it had, which silences playback. Left alone, the `prepare()`/`start()` at the end of
+    /// the rebuild this is part of puts the unit back on the device it was on before recording.
+    ///
+    /// Only ever called from inside that rebuild, with the engine stopped and the graph down.
+    private func releaseInputAggregateIfUnused() {
+        guard let existing = inputAggregate, inputTap == nil, !inputTapInstalled else { return }
+
+        InputAggregate.destroy(existing.device)
+        inputAggregate = nil
     }
 
     /// Puts the published choice back to the device the I/O unit is really on, so a rejected switch
@@ -709,8 +742,11 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
 
         defer {
             if inputTapInstalled != wasInstalled {
-                // A no-op while a rebuild is already in flight, which is where this call came from.
-                rebuildGraph {}
+                // A no-op while a rebuild is already in flight, which is where this call came
+                // from. Through `applyDevices` rather than empty-handed: a tap that has just come
+                // off is when the aggregate behind it is given back, and the devices have to be
+                // applied again over the top of that.
+                rebuildGraph { self.applyDevices() }
             }
         }
 

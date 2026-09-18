@@ -23,7 +23,9 @@ nonisolated final class Recorder: @unchecked Sendable {
         case fileCreation
         /// The take was written but could not be read back, so there is nothing to play.
         case readBack
-        /// The user has refused microphone access, or never answered.
+        /// A block could not be written, so the file on disk stops part-way through the take.
+        case writeFailed
+        /// Microphone access has been refused, or has never been asked for.
         case permissionDenied
     }
 
@@ -33,14 +35,15 @@ nonisolated final class Recorder: @unchecked Sendable {
     /// The rate the model reads, and the second file's rate.
     private static let transcriptionRate: Double = 16000
 
-    /// How long ``start()`` waits for the answer to a first-run microphone prompt.
-    private static let permissionTimeout: Double = 120
-
     private let engine: PlaybackEngine
     private let paths: AppPaths
 
     /// Peaks over the downsampled stream as it is written, which is what the waveform draws while a
-    /// take is in progress. ``stop()`` replaces them with peaks over the file that came back.
+    /// take is in progress.
+    ///
+    /// Only ever the live view: the take ``stop()`` hands back carries its own peaks, built from the
+    /// file that came off disk. These are cleared when the next take starts, and when a take is
+    /// thrown away.
     let livePeaks = WaveformPeaks()
 
     private(set) var nativeFileURL: URL?
@@ -91,14 +94,17 @@ nonisolated final class Recorder: @unchecked Sendable {
 
     /// Opens both files and starts capturing.
     ///
-    /// Blocks on the microphone prompt the first time it is called, which is why it is a button's
-    /// job and not a view's: the take starts the moment it returns.
+    /// Never waits on a person: microphone access has to have been granted already, which is what
+    /// ``requestMicrophoneAccess(_:)`` is for. An unanswered prompt throws
+    /// ``RecordError/permissionDenied`` like a refusal does.
     func start() throws {
         guard !isRecording else { return }
 
         lastError = nil
 
-        try requestMicrophoneAccess()
+        guard Self.microphoneAuthorization == .authorized else {
+            throw RecordError.permissionDenied
+        }
 
         do {
             try paths.ensureDirectories()
@@ -166,8 +172,9 @@ nonisolated final class Recorder: @unchecked Sendable {
 
     /// Stops capturing, flushes both files and reads them back as the take to play.
     ///
-    /// Returns nil when nothing was captured -- both files are deleted in that case -- and when the
-    /// read-back failed, which leaves ``lastError`` set.
+    /// Returns nil when nothing was captured -- both files are deleted in that case and
+    /// ``lastError`` is left nil, because an empty take is not a failure -- and when the take
+    /// failed, which leaves ``lastError`` set for the UI to turn into a message box.
     func stop() -> SourceAudio? {
         guard isRecording else { return nil }
 
@@ -178,13 +185,23 @@ nonisolated final class Recorder: @unchecked Sendable {
 
         // Drains everything the tap handed over and closes both files, so what is read back below is
         // the whole take and not most of it.
-        queue.sync {
+        let failed = queue.sync { () -> Bool in
             nativeFile = nil
             downsampledFile = nil
             resampler = nil
+            return writeFailed
         }
 
         guard let native = nativeFileURL, let downsampled = downsampledFileURL else { return nil }
+
+        // A write that failed left a file that stops part-way through, and handing that back as the
+        // take would play and transcribe a truncated recording with nothing said about it. The take
+        // is lost instead, the way the original app loses it behind an error box.
+        guard !failed else {
+            lastError = .writeFailed
+            discard()
+            return nil
+        }
 
         // Record then stop before a block arrived: two empty WAVs and nothing to play.
         guard nativeFrames.load(ordering: .relaxed) > 0,
@@ -224,8 +241,8 @@ nonisolated final class Recorder: @unchecked Sendable {
         )
     }
 
-    /// Throws away an empty take: two files that would otherwise sit in the recordings directory
-    /// forever, since nothing else knows they exist.
+    /// Throws away a take nothing will be handed: two files that would otherwise sit in the
+    /// recordings directory forever, since nothing else knows they exist.
     private func discard() {
         if let nativeFileURL { try? FileManager.default.removeItem(at: nativeFileURL) }
         if let downsampledFileURL { try? FileManager.default.removeItem(at: downsampledFileURL) }
@@ -346,8 +363,9 @@ nonisolated final class Recorder: @unchecked Sendable {
         }
 
         // A buffer arrives uninitialised, so a device that lost a channel mid-take would otherwise
-        // write whatever was in that memory into the file.
-        for index in channels.count..<Int(format.channelCount) {
+        // write whatever was in that memory into the file. Clamped, because a caller may hand over
+        // more channels than the format takes, and `5..<2` is a trap rather than an empty range.
+        for index in Swift.min(channels.count, Int(format.channelCount))..<Int(format.channelCount) {
             data[index].update(repeating: 0, count: frames)
         }
 
@@ -391,27 +409,18 @@ nonisolated final class Recorder: @unchecked Sendable {
 
     // MARK: - Permission
 
-    /// Microphone access, waited for rather than asked in the background.
+    /// Whether the microphone has been granted, refused, or never asked about.
+    static var microphoneAuthorization: AVAuthorizationStatus {
+        AVCaptureDevice.authorizationStatus(for: .audio)
+    }
+
+    /// Puts up the system prompt and calls `completion` when it has been answered.
     ///
-    /// The first call puts up the system prompt and blocks until it is answered, which is a stall on
-    /// whatever thread pressed Record; every call after it is a property read. The status is
-    /// re-read rather than taken from the callback, so a prompt that times out reads as a refusal.
-    private func requestMicrophoneAccess() throws {
-        switch AVCaptureDevice.authorizationStatus(for: .audio) {
-        case .authorized:
-            return
-
-        case .notDetermined:
-            let semaphore = DispatchSemaphore(value: 0)
-            AVCaptureDevice.requestAccess(for: .audio) { _ in semaphore.signal() }
-            _ = semaphore.wait(timeout: .now() + Self.permissionTimeout)
-
-            guard AVCaptureDevice.authorizationStatus(for: .audio) == .authorized else {
-                throw RecordError.permissionDenied
-            }
-
-        default:
-            throw RecordError.permissionDenied
-        }
+    /// The callback arrives on an arbitrary queue, and the prompt can stand for as long as the user
+    /// leaves it standing -- which is why this is separate from ``start()`` rather than inside it.
+    /// Whoever owns the Record button pre-flights a ``microphoneAuthorization`` of `.notDetermined`
+    /// through here and starts the take once the answer is in; `start()` itself never waits.
+    static func requestMicrophoneAccess(_ completion: @escaping @Sendable (Bool) -> Void) {
+        AVCaptureDevice.requestAccess(for: .audio, completionHandler: completion)
     }
 }
