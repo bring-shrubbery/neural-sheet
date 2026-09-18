@@ -152,8 +152,8 @@ import SwiftUI
     private func submenuRows(_ which: Submenu, model: AppModel) -> some View {
         switch which {
         case .midiOverflow:
-            ForEach(Self.overflowChoices, id: \.mode) { choice in
-                MenuRow(title: choice.title, isTicked: model.settings.midiOverflowMode == choice.mode) { [weak self] in
+            ForEach(Self.overflowChoices, id: \.mode) { [weak self] choice in
+                MenuRow(title: choice.title, isTicked: model.settings.midiOverflowMode == choice.mode) {
                     self?.close()
                     model.settings.midiOverflowMode = choice.mode
                 }
@@ -162,10 +162,10 @@ import SwiftUI
         case .windowSize:
             let applied = Double(scale)
 
-            ForEach(Array(MainWindowController.presetScales.enumerated()), id: \.offset) { index, preset in
+            ForEach(Array(MainWindowController.presetScales.enumerated()), id: \.offset) { [weak self] index, preset in
                 // What was applied, not what was asked for: a preset the display cannot hold
                 // arrives clamped and ends up unticked.
-                MenuRow(title: Self.scaleTitles[index], isTicked: abs(applied - preset) < 0.005) { [weak self] in
+                MenuRow(title: Self.scaleTitles[index], isTicked: abs(applied - preset) < 0.005) {
                     self?.close()
                     self?.onWindowScale(preset)
                 }

@@ -33,18 +33,20 @@ import SwiftUI
     /// Called once the menu has gone, by whichever route.
     var onDismiss: (() -> Void)?
 
-    /// `getIdealPopupMenuItemSize`: the widest title plus the paddings and the tick column, never
-    /// narrower than the minimum. Authored units in, scaled points out.
+    /// `getIdealPopupMenuItemSize` plus the window's border: the widest title plus the paddings
+    /// and the tick column, never narrower than the minimum, then the 4 px `PopupMenu` border on
+    /// each side (`workOutManualSize`). Authored units in, scaled points out.
     static func width(forTitles titles: [String], scale: CGFloat) -> CGFloat {
         let font = NSFont(name: Fonts.Name.interRegular, size: Fonts.Size.menuItem)
             ?? NSFont.systemFont(ofSize: Fonts.Size.menuItem)
         let tickColumn = MenuMetrics.checkboxSize + MenuMetrics.padX
+        let border = MenuMetrics.listPadY
 
         let widest = titles
             .map { ($0 as NSString).size(withAttributes: [.font: font]).width }
             .max() ?? 0
 
-        return max(MenuMetrics.minWidth, ceil(widest) + 2 * MenuMetrics.padX + tickColumn) * scale
+        return (max(MenuMetrics.minWidth, ceil(widest) + 2 * MenuMetrics.padX + tickColumn) + 2 * border) * scale
     }
 
     /// Shows the menu aligned under `anchor`.
