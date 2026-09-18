@@ -161,7 +161,9 @@ extension AppModel {
     // MARK: - Session
 
     /// Reads every field the snapshot is made of, so the next write to any of them schedules a
-    /// save. The playhead moves every frame during playback, which the debounce absorbs.
+    /// save. The playhead moves every frame during playback: a save already pending absorbs those
+    /// writes, and the timer is re-armed only once it has fired -- so a session that keeps changing
+    /// is written at most twice a second, not once 500 ms after it finally stops.
     private func observeSession() {
         withObservationTracking {
             _ = model.sessionSnapshot()
@@ -176,10 +178,11 @@ extension AppModel {
     }
 
     private func scheduleSessionSave() {
-        sessionSaveTimer?.invalidate()
+        guard sessionSaveTimer == nil else { return }
 
         let timer = Timer(timeInterval: Self.sessionDebounce, repeats: false) { [weak self] _ in
             MainActor.assumeIsolated {
+                self?.sessionSaveTimer = nil
                 self?.saveSessionIfChanged()
             }
         }

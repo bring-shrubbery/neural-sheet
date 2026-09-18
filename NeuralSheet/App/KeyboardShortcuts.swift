@@ -97,7 +97,8 @@ import NeuralSheetCore
 
         guard !shift, let characters = event.charactersIgnoringModifiers else { return false }
 
-        switch characters {
+        // Lowercased: Caps Lock delivers "R" for the same key, and it is the key that is bound.
+        switch characters.lowercased() {
         case "r":
             model.toggleRecord()
             return true

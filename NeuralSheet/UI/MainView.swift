@@ -145,14 +145,22 @@ struct MainView: View {
     // MARK: - Lifecycle
 
     /// The dialogs first, so a session whose file has gone bad can say so; then the session,
-    /// the autosave, the shortcuts and the once-per-window update check.
+    /// the autosave, the shortcuts and the once-per-launch update check.
     private func appear() {
         Dialogs.install(on: model) { [windowController] in windowController.window }
         persistence.restoreOnce()
         persistence.start()
         shortcuts.install()
-        model.checkForUpdates(explicit: false)
+
+        if !Self.hasCheckedForUpdates {
+            Self.hasCheckedForUpdates = true
+            model.checkForUpdates(explicit: false)
+        }
     }
+
+    /// The original checked once per editor open; a SwiftUI view can appear more than once per
+    /// window, and one request per launch is what a courtesy check should cost.
+    private static var hasCheckedForUpdates = false
 
     private func disappear() {
         shortcuts.uninstall()

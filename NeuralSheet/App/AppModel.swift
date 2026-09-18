@@ -166,8 +166,12 @@ nonisolated struct UpdateNotice: Equatable, Sendable {
     var followPlayhead: Bool = true
 
     /// The MUTE button. In the original this cleared the input pass-through before the player ran;
-    /// the standalone never routes the input to the output, so it is state alone here.
-    var inputMuted: Bool = false
+    /// the standalone never routes the input to the output, so here it mutes the app's own output
+    /// (spec §7 deviation 2): the master fader goes to silence while it is on. Never persisted, as
+    /// the original's standalone never stored it.
+    var inputMuted: Bool = false {
+        didSet { engine.muted = inputMuted }
+    }
 
     /// The equal-power crossfade, 0 = source only, 1 = synth only (§5.3).
     var mix: Double = 0.5 {
@@ -269,6 +273,7 @@ nonisolated struct UpdateNotice: Equatable, Sendable {
 
         engine.mix = mix
         engine.masterGainDb = masterGainDb
+        engine.muted = inputMuted
 
         engine.onPlayheadWrapped = { [weak self] in
             self?.handlePlayheadWrapped()

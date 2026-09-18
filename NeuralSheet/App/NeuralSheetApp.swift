@@ -49,14 +49,14 @@ struct NeuralSheetApp: App {
     private func audioMenu(model: AppModel) -> some Commands {
         CommandMenu("Audio") {
             Menu("Input") {
-                deviceRows(devices: AudioDevices.inputs(), chosen: audioMenu.input) { device in
+                deviceRows(devices: audioMenu.inputs, chosen: audioMenu.input) { device in
                     model.engine.inputDevice = device
                     audioMenu.input = model.engine.inputDevice
                 }
             }
 
             Menu("Output") {
-                deviceRows(devices: AudioDevices.outputs(), chosen: audioMenu.output) { device in
+                deviceRows(devices: audioMenu.outputs, chosen: audioMenu.output) { device in
                     model.engine.outputDevice = device
                     audioMenu.output = model.engine.outputDevice
                 }
@@ -80,10 +80,34 @@ struct NeuralSheetApp: App {
     }
 }
 
-/// The devices the Audio menu last put the engine on.
+/// What the Audio menu shows: the hardware lists, re-read from the HAL every time the menu bar
+/// starts being tracked so a device plugged in since the last look is offered, and the devices the
+/// menu last put the engine on.
 @Observable final class AudioMenuState {
+    var inputs: [AudioDevice] = AudioDevices.inputs()
+    var outputs: [AudioDevice] = AudioDevices.outputs()
     var input: AudioDevice?
     var output: AudioDevice?
+
+    @ObservationIgnored private var observer: NSObjectProtocol?
+
+    init() {
+        observer = NotificationCenter.default.addObserver(
+            forName: NSMenu.didBeginTrackingNotification, object: nil, queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated {
+                self?.refresh()
+            }
+        }
+    }
+
+    func refresh() {
+        let inputs = AudioDevices.inputs()
+        let outputs = AudioDevices.outputs()
+
+        if inputs != self.inputs { self.inputs = inputs }
+        if outputs != self.outputs { self.outputs = outputs }
+    }
 }
 
 /// The standalone quits with its window, as the JUCE one did.

@@ -154,6 +154,8 @@ private struct NumericField: NSViewRepresentable {
             if field.stringValue != shown {
                 field.stringValue = shown
             }
+
+            context.coordinator.lastAccepted = shown
         }
 
         // The click flipped `editing`; take focus on the next runloop turn, once the field is
@@ -172,6 +174,10 @@ private struct NumericField: NSViewRepresentable {
         var value: Binding<Double>
         var editing: Binding<Bool>
         weak var field: CenteredTextField?
+
+        /// The text as it last stood after restriction, for a rejected character to fall back to.
+        /// Seeded with the displayed value whenever the field is not being edited.
+        var lastAccepted = ""
 
         init(value: Binding<Double>, editing: Binding<Bool>) {
             self.value = value
@@ -192,10 +198,16 @@ private struct NumericField: NSViewRepresentable {
             let restricted = TempoField.restricted(field.stringValue)
 
             if restricted != field.stringValue {
+                // A disallowed character typed over a selection -- Space, with the value selected
+                // on focus -- would otherwise wipe the value and leave an empty field: the original
+                // refused the character and left the text alone, so the previous text comes back.
                 let editor = field.currentEditor()
-                field.stringValue = restricted
-                editor?.selectedRange = NSRange(location: restricted.count, length: 0)
+                let restored = restricted.isEmpty ? lastAccepted : restricted
+                field.stringValue = restored
+                editor?.selectedRange = NSRange(location: restored.count, length: 0)
             }
+
+            lastAccepted = field.stringValue
 
             if let tempo = TempoField.validTempo(field.stringValue), tempo != value.wrappedValue {
                 value.wrappedValue = tempo
