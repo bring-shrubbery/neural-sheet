@@ -26,7 +26,7 @@ nonisolated enum AudioFileLoader {
 
         guard acceptedExtensions.contains(ext) else { throw LoadError.unsupportedExtension }
 
-        let decoded = ext == "ogg" ? try decodeOgg(url: url) : try decodeWithAVFoundation(url: url)
+        let decoded = try decode(url: url)
 
         guard !decoded.channels.isEmpty, decoded.sampleRate > 0,
             decoded.channels.contains(where: { !$0.isEmpty })
@@ -53,9 +53,18 @@ nonisolated enum AudioFileLoader {
 
     // MARK: - Decoders
 
-    private struct Decoded {
+    struct Decoded {
         var channels: [[Float]]
         var sampleRate: Double
+    }
+
+    /// The file's own samples at its own rate, with none of ``load(url:deviceRate:)``'s conversions.
+    ///
+    /// What the recorder's read-back wants: it has one file to play and another to transcribe, so
+    /// building 16 kHz mono and peaks out of each of them would be work thrown away.
+    static func decode(url: URL) throws -> Decoded {
+        url.pathExtension.lowercased() == "ogg"
+            ? try decodeOgg(url: url) : try decodeWithAVFoundation(url: url)
     }
 
     /// wav / aiff / aif / flac / mp3. `processingFormat` is always deinterleaved float32, so the

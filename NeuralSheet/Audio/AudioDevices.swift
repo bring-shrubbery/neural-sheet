@@ -130,7 +130,7 @@ nonisolated enum AudioDevices {
     ///
     /// Two flags catch them: the device's own hidden flag, and, for an aggregate, the `private` key
     /// in its composition.
-    private static func isPrivate(device: AudioDeviceID) -> Bool {
+    static func isPrivate(device: AudioDeviceID) -> Bool {
         var address = AudioObjectPropertyAddress(
             mSelector: kAudioDevicePropertyIsHidden,
             mScope: kAudioObjectPropertyScopeGlobal,

@@ -184,6 +184,12 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
     private var lastAppliedOutputDevice: AudioDevice?
     private var lastAppliedInputDevice: AudioDevice?
 
+    private typealias Aggregate = (device: AudioDeviceID, input: AudioDeviceID, output: AudioDeviceID)
+
+    /// The private aggregate the I/O unit is on, when the chosen devices needed one, and the pair it
+    /// stands for. Ours to destroy, and reused for as long as that pair does not change.
+    private var aggregate: Aggregate?
+
     /// Called on the main queue when the playhead reaches the end. The transport has already been
     /// stopped and rewound by then.
     var onPlayheadWrapped: (() -> Void)?
@@ -193,6 +199,13 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
     var inputTap: ((AVAudioPCMBuffer, AVAudioTime) -> Void)? {
         didSet { refreshInputTap() }
     }
+
+    /// What the input tap delivers: the rate and channel count a recording is written at.
+    ///
+    /// Read it after ``inputTap`` has been set, never before. Setting the tap is what points the
+    /// input unit at ``inputDevice``, and until then the node answers for the device it was on.
+    /// Reading it also instantiates the input node, which is what asks for microphone access.
+    var inputFormat: AVAudioFormat { engine.inputNode.outputFormat(forBus: 0) }
 
     var outputDevice: AudioDevice? {
         didSet {
@@ -238,6 +251,7 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
         if meterTapInstalled { engine.mainMixerNode.removeTap(onBus: 0) }
         if inputTapInstalled { engine.inputNode.removeTap(onBus: 0) }
         engine.stop()
+        InputAggregate.destroy(aggregate?.device)
     }
 
     // MARK: - Transport
@@ -514,30 +528,136 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
         lastRebuild = Date()
     }
 
+    /// Points the I/O unit at the chosen devices.
+    ///
+    /// One unit serves both directions, so "the chosen input and the chosen output" is one device
+    /// to set, not two. Three shapes of it:
+    ///
+    /// - Nothing chosen: the unit is left on CoreAudio's own default pair, and any aggregate of ours
+    ///   is given back.
+    /// - An output alone, on a unit that has never had an input side: the bare device, as before.
+    /// - Everything else -- a chosen input, or a chosen output on a unit that has had its input side
+    ///   enabled: a private aggregate of the pair. See ``InputAggregate`` for why a bare device
+    ///   cannot do it, and ``applyAggregate(input:output:)`` for what happens when it cannot either.
+    ///
+    /// The input only counts while something is pulling it: the node is only instantiated then, and
+    /// instantiating it is what asks for microphone access.
     private func applyDevices() {
         lastDeviceError = nil
 
-        if let outputDevice {
+        let wantedInput = inputTap != nil || inputTapInstalled ? inputDevice : nil
+
+        guard outputDevice != nil || wantedInput != nil else {
+            releaseAggregate()
+            return
+        }
+
+        let inputID = wantedInput?.id ?? AudioDevices.defaultInput()?.id
+        let outputID = outputDevice?.id ?? AudioDevices.defaultOutput()?.id
+
+        // The aggregate the unit is on already stands for this pair: a rebuild only needs the device
+        // set on the unit again.
+        if let existing = aggregate, existing.input == inputID, existing.output == outputID,
+            Self.setDevice(existing.device, on: engine.outputNode) == noErr
+        {
+            lastAppliedInputDevice = wantedInput
+            lastAppliedOutputDevice = outputDevice
+            return
+        }
+
+        // A bare output device. Right for a unit that has never had an input side, and refused --
+        // with kAudioUnitErr_InvalidPropertyValue, clearing whatever device it had -- by one that
+        // has: measured, and the refusal outlives the tap, the take and the restart. Once the unit
+        // is on an aggregate of ours it has had one, so the attempt is not made again.
+        if let outputDevice, wantedInput == nil, aggregate == nil {
             let status = Self.setDevice(outputDevice.id, on: engine.outputNode)
+
             if status == noErr {
                 lastAppliedOutputDevice = outputDevice
-            } else {
+                return
+            }
+
+            if status != OSStatus(kAudioUnitErr_InvalidPropertyValue) {
                 lastDeviceError = status
                 revert(\.outputDevice, on: engine.outputNode, fallback: lastAppliedOutputDevice)
+                return
             }
         }
 
-        // The input node is only touched once something wants the input: instantiating it asks for
-        // microphone access, and playback alone has no business doing that.
-        if let inputDevice, inputTap != nil || inputTapInstalled {
-            let status = Self.setDevice(inputDevice.id, on: engine.inputNode)
-            if status == noErr {
-                lastAppliedInputDevice = inputDevice
-            } else {
-                lastDeviceError = status
-                revert(\.inputDevice, on: engine.inputNode, fallback: lastAppliedInputDevice)
+        applyAggregate(input: inputID, output: outputID)
+    }
+
+    /// Puts the unit on the aggregate for `input` and `output` -- or on the device itself, when the
+    /// two are one duplex device and there is nothing to aggregate -- replacing whatever aggregate
+    /// it was on; on failure puts the unit back on the one that was working and both pickers back
+    /// to what last took.
+    private func applyAggregate(input: AudioDeviceID?, output: AudioDeviceID?) {
+        let previous = aggregate
+        aggregate = nil
+
+        var created: Aggregate?
+        var status = OSStatus(kAudioHardwareBadDeviceError)
+
+        if let input, let output {
+            switch InputAggregate.create(input: input, output: output) {
+            case .created(let device):
+                created = (device: device, input: input, output: output)
+                status = Self.setDevice(device, on: engine.outputNode)
+
+            case .sameDevice:
+                // A duplex device -- a USB interface, a loopback driver, an aggregate the user made
+                // with both directions -- chosen for both sides takes a bare set: it has the input
+                // streams the unit's input side wants. `aggregate` stays nil, so the bare path is
+                // tried first next time too.
+                status = Self.setDevice(output, on: engine.outputNode)
+
+            case .failed(let error):
+                status = error
             }
         }
+
+        guard status == noErr else {
+            InputAggregate.destroy(created?.device)
+            lastDeviceError = status
+
+            // Back onto the aggregate that was working, and it stays alive: a refused set can have
+            // cleared the unit's device, and nothing later in the rebuild puts one back on a unit
+            // that was cleared rather than orphaned.
+            if let previous, Self.setDevice(previous.device, on: engine.outputNode) == noErr {
+                aggregate = previous
+            } else {
+                InputAggregate.destroy(previous?.device)
+            }
+
+            // Both, because neither choice is in effect. ``revert`` never names a private device.
+            revert(\.inputDevice, on: engine.inputNode, fallback: lastAppliedInputDevice)
+            revert(\.outputDevice, on: engine.outputNode, fallback: lastAppliedOutputDevice)
+            return
+        }
+
+        aggregate = created
+        lastAppliedInputDevice = inputTap != nil || inputTapInstalled ? inputDevice : nil
+        lastAppliedOutputDevice = outputDevice
+
+        // Only now that the unit is on the new one, and off this one.
+        InputAggregate.destroy(previous?.device)
+    }
+
+    /// Gives the aggregate back once nothing is chosen any more, so a take from a chosen microphone
+    /// does not leave the I/O unit -- and so playback -- on that microphone's aggregate for the
+    /// rest of the session.
+    ///
+    /// Destroying it is the whole of it, and it has to be done with the unit still on it: the
+    /// `prepare()`/`start()` that ends the rebuild this is part of puts a unit whose device has gone
+    /// away back on CoreAudio's default pair, but does nothing for one whose device was cleared by a
+    /// refused set. Pointing it somewhere by hand first would be exactly such a set -- a unit whose
+    /// input side has been enabled refuses a bare output-only device -- which is how a finished take
+    /// once silenced playback. Only ever called from inside a rebuild, with the engine stopped.
+    private func releaseAggregate() {
+        guard let existing = aggregate else { return }
+
+        InputAggregate.destroy(existing.device)
+        aggregate = nil
     }
 
     /// Puts the published choice back to the device the I/O unit is really on, so a rejected switch
@@ -548,8 +668,11 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
         fallback: AudioDevice?
     ) {
         // By id, not by looking the id up in the pickers' lists: the unit can be on something the
-        // lists leave out, and naming it is still better than publishing nil.
-        let inUse = Self.currentDevice(of: node).flatMap(AudioDevices.device(withID:))
+        // lists leave out, and naming it is still better than publishing nil. A private device is
+        // the exception -- our own aggregate, or the `CADefaultDeviceAggregate` CoreAudio keeps
+        // behind the defaults -- since no picker should ever show one.
+        let inUse = Self.currentDevice(of: node)
+            .flatMap { AudioDevices.isPrivate(device: $0) ? nil : AudioDevices.device(withID: $0) }
 
         isRevertingDevice = true
         self[keyPath: key] = inUse ?? fallback
@@ -644,22 +767,43 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
         return ioBufferFrames
     }
 
+    /// Puts the tap on or takes it off, and restarts the engine when that changed whether the input
+    /// node is in use at all.
+    ///
+    /// The restart is not optional: the I/O unit enables its input side when the engine starts, from
+    /// whether anything is pulling the input node, so a tap installed on an engine that started
+    /// without one is never called. Coming back through ``rebuildGraph(_:)`` is what re-enables it.
     private func refreshInputTap() {
+        let wasInstalled = inputTapInstalled
+
         if inputTapInstalled {
             engine.inputNode.removeTap(onBus: 0)
             inputTapInstalled = false
         }
 
+        defer {
+            if inputTapInstalled != wasInstalled {
+                // A no-op while a rebuild is already in flight, which is where this call came
+                // from. Through `applyDevices` rather than empty-handed: a tap that has just come
+                // off is when the aggregate behind it is given back, and the devices have to be
+                // applied again over the top of that.
+                rebuildGraph { self.applyDevices() }
+            }
+        }
+
         guard let inputTap else { return }
+
+        // Before the format is read, not after: the node reports the format of the device its unit
+        // is on, and a tap installed with the last device's rate captures at the wrong one.
+        applyDevices()
 
         let format = engine.inputNode.outputFormat(forBus: 0)
         guard format.sampleRate > 0, format.channelCount > 0 else { return }
 
-        if let inputDevice {
-            Self.setDevice(inputDevice.id, on: engine.inputNode)
-        }
-
-        engine.inputNode.installTap(onBus: 0, bufferSize: 1024, format: format) { buffer, time in
+        // nil, not the format just read: a device switch settles a moment after it is asked for, and
+        // an explicit format that no longer matches the node's live one is an uncatchable ObjC
+        // exception out of `installTap`. The tap's own buffers carry the format either way.
+        engine.inputNode.installTap(onBus: 0, bufferSize: 1024, format: nil) { buffer, time in
             inputTap(buffer, time)
         }
         inputTapInstalled = true
