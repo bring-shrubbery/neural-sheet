@@ -82,7 +82,7 @@ struct InstrumentMenu: View {
     private static let footerTracking: Double = 0.04
 
     /// One offer in the list. No group means "Automatic", which is the empty selection.
-    private struct Entry: Identifiable {
+    fileprivate struct Entry: Identifiable {
         let name: String
         let group: InstrumentGroup?
 
@@ -92,7 +92,7 @@ struct InstrumentMenu: View {
     /// "Automatic" first -- nothing selected means the model chooses, which is worth naming rather
     /// than leaving as the state you get by unticking everything -- then the 35 named groups in
     /// enumerator order.
-    private static let entries: [Entry] =
+    fileprivate static let entries: [Entry] =
         [Entry(name: "Automatic (any instrument)", group: nil)]
         + Instruments.all.map { Entry(name: $0.name, group: $0.group) }
 
@@ -117,22 +117,13 @@ struct InstrumentMenu: View {
                 }
 
             ScrollView(.vertical) {
-                VStack(spacing: 0) {
-                    ForEach(Self.entries) { entry in
-                        let ticked = entry.group.map(selected.contains) ?? selected.isEmpty
-
-                        InstrumentMenuRow(title: entry.name, isTicked: ticked) {
-                            if let group = entry.group {
-                                model.setSelected(group, !ticked)
-                            } else {
-                                model.clearSelection()
-                            }
-                        }
-                    }
-                }
-                .padding(.vertical, s(MenuMetrics.listPadY))
+                InstrumentMenuRows(model: model, selected: selected)
+                    .padding(.vertical, s(MenuMetrics.listPadY))
             }
             .scrollBounceBehavior(.basedOnSize)
+            // JUCE's own scrollbar, which the 36 rows always call for: the thumb in
+            // `checkboxBorder`, the rows narrowed by its 8 px.
+            .legacyScrollbar(thumb: Theme.checkboxBorder)
             .frame(height: min(s(MenuMetrics.listMaxHeight), listHeight(s)))
 
             Text(Self.footer)
@@ -160,6 +151,31 @@ struct InstrumentMenu: View {
 
     private func listHeight(_ s: Scaled) -> CGFloat {
         s(CGFloat(Self.entries.count) * MenuMetrics.rowHeight + 2 * MenuMetrics.listPadY)
+    }
+
+    /// The rows, inset on the trailing edge by whatever the scrollbar takes.
+    private struct InstrumentMenuRows: View {
+        let model: AppModel
+        let selected: [InstrumentGroup]
+
+        @Environment(\.legacyScrollbarInset) private var scrollbarInset
+
+        var body: some View {
+            VStack(spacing: 0) {
+                ForEach(InstrumentMenu.entries) { entry in
+                    let ticked = entry.group.map(selected.contains) ?? selected.isEmpty
+
+                    InstrumentMenuRow(title: entry.name, isTicked: ticked) {
+                        if let group = entry.group {
+                            model.setSelected(group, !ticked)
+                        } else {
+                            model.clearSelection()
+                        }
+                    }
+                }
+            }
+            .padding(.trailing, scrollbarInset)
+        }
     }
 }
 

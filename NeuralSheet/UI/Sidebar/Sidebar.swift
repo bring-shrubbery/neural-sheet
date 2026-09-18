@@ -40,17 +40,12 @@ struct Sidebar: View {
             header
 
             ScrollView(.vertical) {
-                VStack(spacing: 0) {
-                    ForEach(model.mixer.entries, id: \.program) { entry in
-                        InstrumentStrip(model: model,
-                                        entry: entry,
-                                        settings: model.mixer.settings[entry.program] ?? InstrumentChannelSettings(),
-                                        level: model.instrumentLevelDb(program: entry.program))
-                            .equatable()
-                    }
-                }
+                StripList(model: model)
             }
             .scrollBounceBehavior(.basedOnSize)
+            // JUCE's own scrollbar once the strips overflow, in the LookAndFeel's default thumb
+            // colour (the scheme's `defaultFill`, the accent); the strips narrow by its 8 px.
+            .legacyScrollbar(thumb: Theme.accent)
             .frame(maxHeight: .infinity)
 
             MasterPanel(level: model.masterLevelDb)
@@ -65,6 +60,27 @@ struct Sidebar: View {
                 .frame(width: k)
         }
         .clipped()
+    }
+
+    /// The strips, each as wide as the column less whatever the scrollbar takes.
+    private struct StripList: View {
+        let model: AppModel
+
+        @Environment(\.uiScale) private var k
+        @Environment(\.legacyScrollbarInset) private var scrollbarInset
+
+        var body: some View {
+            VStack(spacing: 0) {
+                ForEach(model.mixer.entries, id: \.program) { entry in
+                    InstrumentStrip(model: model,
+                                    entry: entry,
+                                    settings: model.mixer.settings[entry.program] ?? InstrumentChannelSettings(),
+                                    level: model.instrumentLevelDb(program: entry.program),
+                                    width: SidebarMetrics.stripWidth - scrollbarInset / k)
+                        .equatable()
+                }
+            }
+        }
     }
 
     // MARK: - Header
