@@ -75,7 +75,8 @@ nonisolated final class Recorder: @unchecked Sendable {
     private var resampler: Resampler?
 
     /// Set once a write has failed. The rest of the take is dropped rather than interleaved into a
-    /// file that is already wrong, and what was written before it still reads back.
+    /// file that is already wrong, and ``stop()`` reports the take as lost instead of reading back
+    /// the part of it that made it to disk.
     private var writeFailed = false
 
     init(engine: PlaybackEngine, paths: AppPaths) {
@@ -414,13 +415,15 @@ nonisolated final class Recorder: @unchecked Sendable {
         AVCaptureDevice.authorizationStatus(for: .audio)
     }
 
-    /// Puts up the system prompt and calls `completion` when it has been answered.
+    /// Puts up the system prompt and calls `completion` on the main queue once it has been answered.
     ///
-    /// The callback arrives on an arbitrary queue, and the prompt can stand for as long as the user
-    /// leaves it standing -- which is why this is separate from ``start()`` rather than inside it.
-    /// Whoever owns the Record button pre-flights a ``microphoneAuthorization`` of `.notDetermined`
-    /// through here and starts the take once the answer is in; `start()` itself never waits.
+    /// The prompt can stand for as long as the user leaves it standing -- which is why this is
+    /// separate from ``start()`` rather than inside it. Whoever owns the Record button pre-flights a
+    /// ``microphoneAuthorization`` of `.notDetermined` through here and starts the take once the
+    /// answer is in; `start()` itself never waits.
     static func requestMicrophoneAccess(_ completion: @escaping @Sendable (Bool) -> Void) {
-        AVCaptureDevice.requestAccess(for: .audio, completionHandler: completion)
+        AVCaptureDevice.requestAccess(for: .audio) { granted in
+            DispatchQueue.main.async { completion(granted) }
+        }
     }
 }
