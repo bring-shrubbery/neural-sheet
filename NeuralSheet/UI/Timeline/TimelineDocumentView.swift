@@ -1,15 +1,11 @@
 import AppKit
 import NeuralSheetCore
 
-/// The scroll view's document: the three bands, and the drop target for audio files
-/// (`CombinedAudioMidiRegion` as a `FileDragAndDropTarget`).
+/// The scroll view's document: the three bands stacked at the content width.
 final class TimelineDocumentView: NSView {
-    weak var container: TimelineContainerView?
-
     override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
         clipsToBounds = true
-        registerForDraggedTypes([.fileURL])
     }
 
     required init?(coder: NSCoder) {
@@ -17,14 +13,23 @@ final class TimelineDocumentView: NSView {
     }
 
     override var isFlipped: Bool { true }
+}
 
-    // MARK: - Drops
-
-    /// Anything but a run in flight or a recording: dropping replaces whatever is loaded (§2.2).
+/// The drop target for audio files: the whole timeline, as `CombinedAudioMidiRegion` was a
+/// `FileDragAndDropTarget` for everything inside its viewport (§2.2). Registered on the container
+/// rather than on the document, so a file let go over the Load button or the Transcribe
+/// call-to-action — which sit over the bands, outside the scroll view — lands too.
+extension TimelineContainerView {
+    /// Anything but a run in flight or a recording: dropping replaces whatever is loaded.
     private var acceptsDrops: Bool {
-        guard let state = container?.model.state else { return false }
+        let state = model.state
 
         return state == .empty || state == .audioLoaded || state == .populated
+    }
+
+    /// The viewport's own area: the gutter and the keyboard were never part of the target.
+    private func isOverBands(_ sender: NSDraggingInfo) -> Bool {
+        scrollView.frame.contains(convert(sender.draggingLocation, from: nil))
     }
 
     private func droppedURL(_ sender: NSDraggingInfo) -> URL? {
@@ -39,30 +44,37 @@ final class TimelineDocumentView: NSView {
     }
 
     override func draggingEntered(_ sender: NSDraggingInfo) -> NSDragOperation {
-        guard acceptsDrops, let url = droppedURL(sender) else { return [] }
+        draggingUpdated(sender)
+    }
+
+    override func draggingUpdated(_ sender: NSDraggingInfo) -> NSDragOperation {
+        guard acceptsDrops, isOverBands(sender), let url = droppedURL(sender) else {
+            waveform.isFileOver = false
+            return []
+        }
 
         // The zone lights up for a file that can be loaded; an unsupported one is still accepted,
-        // so the drop can say why it was refused.
-        container?.waveform.isFileOver = TimelineDocumentView.isSupported(url)
+        // so the drop can say why it was refused (`fileDragEnter` / `filesDropped`).
+        waveform.isFileOver = TimelineContainerView.isSupported(url)
 
         return .copy
     }
 
     override func draggingExited(_ sender: NSDraggingInfo?) {
-        container?.waveform.isFileOver = false
+        waveform.isFileOver = false
     }
 
     override func draggingEnded(_ sender: NSDraggingInfo) {
-        container?.waveform.isFileOver = false
+        waveform.isFileOver = false
     }
 
     override func performDragOperation(_ sender: NSDraggingInfo) -> Bool {
-        container?.waveform.isFileOver = false
+        waveform.isFileOver = false
 
-        guard acceptsDrops, let url = droppedURL(sender), let container else { return false }
+        guard acceptsDrops, isOverBands(sender), let url = droppedURL(sender) else { return false }
 
         // `loadAudio` refuses an unsupported extension with the "Could not load the file." message.
-        container.model.loadAudio(url: url)
+        model.loadAudio(url: url)
 
         return true
     }

@@ -35,14 +35,15 @@ final class KeyboardView: NSView {
 
     override var isOpaque: Bool { true }
 
-    override func draw(_ dirtyRect: NSRect) {
+    override func draw(_ rect: NSRect) {
         guard let ctx = NSGraphicsContext.current?.cgContext else { return }
 
+        let dirtyRect = rect.intersection(bounds)
         let k = geometry.scale
         let range = geometry.pitchRange
 
         // `Keyboard::drawKeyboardBackground`.
-        ctx.fill(bounds, TimelinePalette.bgGutter)
+        ctx.fill(dirtyRect, TimelinePalette.bgGutter)
         ctx.fill(CGRect(x: bounds.width - k, y: 0, width: k, height: bounds.height), TimelinePalette.divStrong)
 
         guard geometry.keyWidth > 0, range.low <= range.high else { return }

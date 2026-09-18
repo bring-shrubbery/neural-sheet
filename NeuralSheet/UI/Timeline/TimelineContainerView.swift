@@ -42,6 +42,7 @@ final class TimelineContainerView: NSView {
     /// What the last sync saw, so a change notification repaints only what moved.
     struct Snapshot: Equatable {
         var state: AppState = .empty
+        var isPlaying = false
         var duration: Double = 0
         var zoomLevel: Double = 1
         var verticalZoom: Double = -1
@@ -61,12 +62,20 @@ final class TimelineContainerView: NSView {
 
     /// The decode frontier on show, so a resize can lay its shade out again.
     var frontierSeconds: Double?
-    var syncScheduled = false
+
+    /// True while an observation tracker is waiting for the next write; one at a time.
+    var isObservationArmed = false
 
     /// `VisualizationPanel::mPrevStateForRange`: the state the pitch range last settled on.
     var previousStateForRange: AppState = .empty
 
     var displayLink: CADisplayLink?
+    private let displayLinkProxy = DisplayLinkProxy()
+
+    /// Ticks seen with nothing moving; the link pauses after a few (`Playhead` stopped repainting
+    /// too, and a paused link costs nothing).
+    var idleTicks = 0
+
     var clipObserver: NSObjectProtocol?
 
     // MARK: - Init
@@ -91,12 +100,15 @@ final class TimelineContainerView: NSView {
         document.addSubview(waveform)
         document.addSubview(ruler)
         document.addSubview(roll)
-        document.container = self
         scrollView.documentView = document
         addSubview(scrollView)
 
-        waveform.onSeek = { [weak self] seconds in self?.model.seek(toSeconds: seconds) }
-        roll.onSeek = { [weak self] seconds in self?.model.seek(toSeconds: seconds) }
+        // The whole timeline is the drop target (§2.2), overlays included.
+        registerForDraggedTypes([.fileURL])
+        displayLinkProxy.target = self
+
+        waveform.onSeek = { [weak self] seconds in self?.seek(toSeconds: seconds) }
+        roll.onSeek = { [weak self] seconds in self?.seek(toSeconds: seconds) }
         keyboard.onWheel = { [weak self] event in self?.scrollPitch(with: WheelGesture(event)) }
 
         scrollView.contentView.postsFrameChangedNotifications = true
@@ -143,13 +155,25 @@ final class TimelineContainerView: NSView {
         // Arms the observation as it finishes.
         sync()
 
-        let link = displayLink(target: self, selector: #selector(displayLinkFired))
+        // Through a proxy: the link retains its target, and this view must not outlive its window
+        // because of it.
+        let link = displayLink(target: displayLinkProxy, selector: #selector(DisplayLinkProxy.fire))
         link.add(to: .main, forMode: .common)
         displayLink = link
+        idleTicks = 0
     }
 
-    @objc private func displayLinkFired(_ link: CADisplayLink) {
-        tick()
+    /// Wakes the link for anything that moves the playhead or the view outside the transport:
+    /// a seek, a sync, a resize. It pauses itself again once nothing is moving.
+    func resumeDisplayLink() {
+        idleTicks = 0
+        displayLink?.isPaused = false
+    }
+
+    /// Click-to-seek from the waveform and the roll (§5.1).
+    private func seek(toSeconds seconds: Double) {
+        model.seek(toSeconds: seconds)
+        resumeDisplayLink()
     }
 
     // MARK: - Layout
@@ -165,8 +189,6 @@ final class TimelineContainerView: NSView {
         gutter.frame = CGRect(x: 0, y: 0, width: columnWidth, height: gutterHeight)
         keyboard.frame = CGRect(x: 0, y: gutterHeight, width: columnWidth, height: max(0, bounds.height - gutterHeight))
         scrollView.frame = CGRect(x: columnWidth, y: 0, width: max(0, bounds.width - columnWidth), height: bounds.height)
-
-        gutter.scale = k
 
         // The keyboard's height is what an automatic zoom is fitted against, and what decides how
         // many octaves have to be on screen.
@@ -199,6 +221,7 @@ final class TimelineContainerView: NSView {
 
         if viewportChanged || keyboardHeightChanged {
             updatePlayhead()
+            resumeDisplayLink()
         }
     }
 
@@ -263,6 +286,7 @@ final class TimelineContainerView: NSView {
         waveform.configure()
         ruler.configure()
         roll.configure()
+        gutter.scale = scale
         keyboard.needsDisplay = true
         gutter.needsDisplay = true
     }
@@ -322,3 +346,14 @@ final class TimelineContainerView: NSView {
         }
     }
 }
+
+/// The display link's target: weak on the view, so the link's own retain never keeps the
+/// container alive.
+final class DisplayLinkProxy: NSObject {
+    weak var target: TimelineContainerView?
+
+    @objc func fire(_ link: CADisplayLink) {
+        target?.tick()
+    }
+}
+

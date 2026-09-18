@@ -8,11 +8,17 @@ extension TimelineContainerView {
     // MARK: - Model observation
 
     /// Reads everything the timeline draws from, so the next write to any of it schedules a sync.
-    /// One shot: re-armed by ``sync()``.
+    /// One shot: re-armed by ``sync()``, and never doubled — a tracker that has not fired yet is
+    /// still valid.
     private func observeModel() {
+        guard !isObservationArmed else { return }
+
+        isObservationArmed = true
+
         withObservationTracking {
             let model = self.model
             _ = model.state
+            _ = model.isPlaying
             _ = model.duration
             _ = model.zoomLevel
             _ = model.verticalZoom
@@ -28,11 +34,13 @@ extension TimelineContainerView {
             // Called before the new value lands, from whichever context wrote it: the read has to
             // wait for the next run-loop pass, which also folds a burst of writes into one sync.
             DispatchQueue.main.async {
+                self?.isObservationArmed = false
                 self?.scheduleSync()
             }
         }
     }
 
+    /// Off-window the change is dropped without re-arming; `viewDidMoveToWindow` syncs, and arms.
     private func scheduleSync() {
         guard window != nil else { return }
 
@@ -43,6 +51,7 @@ extension TimelineContainerView {
     func sync() {
         let model = self.model
         let new = Snapshot(state: model.state,
+                           isPlaying: model.isPlaying,
                            duration: model.duration,
                            zoomLevel: model.zoomLevel,
                            verticalZoom: model.verticalZoom,
@@ -127,6 +136,7 @@ extension TimelineContainerView {
         }
 
         updatePlayhead()
+        resumeDisplayLink()
         observeModel()
     }
 

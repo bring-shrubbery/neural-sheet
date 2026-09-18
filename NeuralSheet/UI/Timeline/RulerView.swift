@@ -97,7 +97,11 @@ final class RulerView: NSView {
 /// each label centred on the exact y its amplitude maps to. The ruler's share is deliberately empty.
 final class GutterView: NSView {
     var scale: CGFloat = 1 {
-        didSet { needsDisplay = true }
+        didSet {
+            if scale != oldValue {
+                needsDisplay = true
+            }
+        }
     }
 
     override init(frame frameRect: NSRect) {
@@ -116,13 +120,13 @@ final class GutterView: NSView {
 
     override func hitTest(_ point: NSPoint) -> NSView? { nil }
 
-    override func draw(_ dirtyRect: NSRect) {
+    override func draw(_ rect: NSRect) {
         guard let ctx = NSGraphicsContext.current?.cgContext else { return }
 
         let k = scale
         let waveformHeight = TimelineMetrics.waveformHeight * k
 
-        ctx.fill(bounds, TimelinePalette.bgGutter)
+        ctx.fill(rect.intersection(bounds), TimelinePalette.bgGutter)
         ctx.fill(CGRect(x: bounds.width - k, y: 0, width: k, height: bounds.height), TimelinePalette.divStrong)
         ctx.fill(CGRect(x: 0, y: waveformHeight - k, width: bounds.width, height: k), TimelinePalette.divSoft)
         ctx.fill(CGRect(x: 0, y: bounds.height - k, width: bounds.width, height: k), TimelinePalette.divSoft)

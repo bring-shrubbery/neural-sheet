@@ -70,13 +70,14 @@ final class PianoRollView: NSView {
     // MARK: - Content
 
     /// Replaces the notes and rebuilds the second buckets. Whole-view repaint: the caller decides.
+    /// A note with a non-finite time cannot be placed and is left out rather than trapped on.
     func setNotes(_ newNotes: [NoteEvent]) {
-        notes = newNotes
+        notes = newNotes.filter { $0.startTime.isFinite && $0.endTime.isFinite }
 
-        let seconds = Int((newNotes.map { PianoRollView.drawnEnd(of: $0) }.max() ?? 0).rounded(.up)) + 1
+        let seconds = Int((notes.map { PianoRollView.drawnEnd(of: $0) }.max() ?? 0).rounded(.up)) + 1
         var newBuckets = [[Int]](repeating: [], count: max(1, seconds))
 
-        for (index, note) in newNotes.enumerated() {
+        for (index, note) in notes.enumerated() {
             let first = max(0, Int(note.startTime))
             let last = max(first, Int(PianoRollView.drawnEnd(of: note)))
 

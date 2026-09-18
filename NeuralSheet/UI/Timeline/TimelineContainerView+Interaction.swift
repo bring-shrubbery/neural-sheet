@@ -111,6 +111,8 @@ extension TimelineContainerView {
         handleMagnify(event.magnification)
     }
 
+    /// The factor JUCE handed the C++ (`redirectMagnify` in `juce_NSViewComponentPeer_mac.mm`):
+    /// `1 / (1 − magnification)`, so the gesture feels exactly as it did there.
     func handleMagnify(_ magnification: CGFloat) {
         let inverse = 1 - magnification
 
@@ -144,7 +146,9 @@ extension TimelineContainerView {
     func tick() {
         guard hasSynced else { return }
 
-        if model.state == .recording {
+        let recording = model.state == .recording
+
+        if recording {
             growRecording()
         }
 
@@ -152,6 +156,20 @@ extension TimelineContainerView {
 
         if model.followPlayhead, model.state.canPlay, model.isPlaying {
             centreViewOnPlayhead()
+        }
+
+        // Nothing moves on its own unless the transport runs or a take grows: after a few quiet
+        // frames the link stops until a sync, a seek or a resize wakes it. A few rather than one,
+        // so the model's own tick — which mirrors the engine after this one may have run — still
+        // gets seen.
+        if model.isPlaying || recording {
+            idleTicks = 0
+        } else {
+            idleTicks += 1
+
+            if idleTicks >= 4 {
+                displayLink?.isPaused = true
+            }
         }
     }
 
