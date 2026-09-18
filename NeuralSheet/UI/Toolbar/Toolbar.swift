@@ -14,6 +14,8 @@ struct Toolbar: View {
 
     @Environment(\.uiScale) private var k
     @State private var clearMenu = PopupMenuPresenter()
+    @State private var dragHovered = false
+    @State private var dragPressed = false
 
     /// `NnToolbar.cpp` and `nn::metrics`, authored at 1x.
     enum Metrics {
@@ -144,46 +146,54 @@ struct Toolbar: View {
     // MARK: - Drag
 
     /// The one accent-outlined control in the window: this is the primary way a transcription
-    /// leaves the app. There is no plain-click action; a drag writes the MIDI to the scratch
-    /// directory (`writeMidiForDrag`) and hands the DAW the file's URL. The pointing-hand cursor
-    /// comes from the `FlatButton` underneath.
+    /// leaves the app. There is no plain-click action.
+    ///
+    /// Not a `FlatButton`: its press gesture would take the mouse-down and the platform drag would
+    /// never start. The surface is drawn here with the same `Theme.surface` / `Theme.foreground`
+    /// rules every button uses, from the hover and press that `MidiDragSource` -- an AppKit view
+    /// on top -- reports; that view owns the mouse, the cursor and the drag session.
     private func dragButton(canExport: Bool) -> some View {
         let s = Scaled(k: k)
         let shape = RoundedRectangle(cornerRadius: s(Metrics.corner), style: .circular)
+        let state = ButtonVisualState(isHovered: canExport && dragHovered,
+                                      isPressed: canExport && dragPressed,
+                                      isOn: false,
+                                      isEnabled: canExport)
+        let surface = Theme.surface(idle: Theme.accentFillButton,
+                                    on: Theme.bgControlActive,
+                                    isOn: false,
+                                    isHovered: state.isHovered,
+                                    isPressed: state.isPressed,
+                                    isEnabled: canExport)
+        let foreground = Theme.foreground(idle: Theme.accentText,
+                                          on: Theme.textBright,
+                                          isOn: false,
+                                          isHovered: state.isHovered)
 
-        return FlatButton(isEnabled: canExport,
-                          idle: Theme.accentFillButton,
-                          on: Theme.bgControlActive,
-                          foregroundIdle: Theme.accentText,
-                          foregroundOn: Theme.textBright,
-                          corner: s(Metrics.corner),
-                          action: {}) { _ in
-            HStack(spacing: s(Metrics.iconLabelGap)) {
-                Icons.DownloadStroked()
-                    .stroke(Theme.accentText, style: Icons.strokeStyle(scale: k))
-                    .frame(width: s(Metrics.iconSize), height: s(Metrics.iconSize))
+        return HStack(spacing: s(Metrics.iconLabelGap)) {
+            Icons.DownloadStroked()
+                .stroke(foreground, style: Icons.strokeStyle(scale: k))
+                .frame(width: s(Metrics.iconSize), height: s(Metrics.iconSize))
 
-                Text("Drag MIDI out")
-                    .font(Fonts.buttonLabel(k))
-                    .fixedSize()
-            }
-            .padding(.horizontal, s(Metrics.buttonPadX))
-            .frame(height: s(Metrics.buttonHeight))
+            Text("Drag MIDI out")
+                .font(Fonts.buttonLabel(k))
+                .foregroundStyle(foreground)
+                .fixedSize()
         }
+        .padding(.horizontal, s(Metrics.buttonPadX))
+        .frame(height: s(Metrics.buttonHeight))
+        .background(shape.fill(surface))
         // strokeBorder, as JUCE insets the outline by half a pixel so the 1 px line lands inside
-        // the fill. Outside the button so it takes the same disabled alpha the button paints.
-        .overlay(shape.strokeBorder(Theme.accent, lineWidth: k)
-            .opacity(canExport ? 1 : Theme.disabledAlpha)
-            .allowsHitTesting(false))
-        .onDrag {
-            // Written on drag detection, as `MidiFileDrag::mouseDown` wrote it: an empty provider
-            // while disabled or when the file could not be written simply drags nothing.
-            guard canExport, let url = model.writeMidiForDrag() else { return NSItemProvider() }
-
-            return NSItemProvider(contentsOf: url) ?? NSItemProvider()
-        }
+        // the fill.
+        .overlay(shape.strokeBorder(Theme.accent, lineWidth: k))
+        .opacity(canExport ? 1 : Theme.disabledAlpha)
+        .overlay(MidiDragSource(isEnabled: canExport,
+                                fileURL: { model.writeMidiForDrag() },
+                                onHover: { dragHovered = $0 },
+                                onPress: { dragPressed = $0 }))
         .tooltip("Drag the transcribed MIDI into your DAW")
         .accessibilityLabel("Drag MIDI out")
+        .accessibilityAddTraits(.isButton)
     }
 
     // MARK: - Clear
@@ -318,6 +328,180 @@ private struct RightClickCatcher: NSViewRepresentable {
             default:
                 return false
             }
+        }
+    }
+}
+
+// MARK: - MIDI drag source
+
+/// The AppKit view over the Drag MIDI out button that starts the external file drag
+/// (`MidiFileDrag`, `performExternalDragDropOfFiles`). It draws nothing; the SwiftUI surface
+/// underneath is what is seen, and it is told about hover and press so it can paint them.
+///
+/// The mouse-down is taken here, where no SwiftUI gesture can pre-empt it. Once the pointer has
+/// moved a few points the file is written and `beginDraggingSession` starts the platform drag with
+/// the file's URL on the pasteboard and the file's own icon under the pointer, as the original did.
+/// The drag session swallows the mouse-up, so the press is released when the session ends.
+struct MidiDragSource: NSViewRepresentable {
+    let isEnabled: Bool
+    /// Called as the drag starts; nil means there is nothing to drag (the model has said why).
+    let fileURL: () -> URL?
+    let onHover: (Bool) -> Void
+    let onPress: (Bool) -> Void
+
+    /// Points the pointer must travel before a drag begins, so a click never starts one.
+    static let dragThreshold: CGFloat = 3
+
+    func makeNSView(context: Context) -> SourceView {
+        let view = SourceView(frame: .zero)
+        configure(view)
+
+        return view
+    }
+
+    func updateNSView(_ nsView: SourceView, context: Context) {
+        configure(nsView)
+    }
+
+    private func configure(_ view: SourceView) {
+        view.isEnabled = isEnabled
+        view.fileURL = fileURL
+        view.onHover = onHover
+        view.onPress = onPress
+        view.window?.invalidateCursorRects(for: view)
+    }
+
+    final class SourceView: NSView, NSDraggingSource {
+        var isEnabled = true {
+            didSet {
+                if !isEnabled, isPressed {
+                    setPressed(false)
+                }
+            }
+        }
+
+        var fileURL: () -> URL? = { nil }
+        var onHover: (Bool) -> Void = { _ in }
+        var onPress: (Bool) -> Void = { _ in }
+
+        /// Set by a test harness to observe the session start without a live pointer.
+        var onSessionBegin: ((URL) -> Void)?
+
+        private var tracking: NSTrackingArea?
+        private var pressOrigin: NSPoint?
+        private var isPressed = false
+        private var sessionActive = false
+
+        override var acceptsFirstResponder: Bool { false }
+
+        /// Nothing is drawn: the surface is SwiftUI's.
+        override func draw(_ dirtyRect: NSRect) {}
+
+        /// The whole button, whenever it is live; nothing at all when it is not, so a disabled
+        /// button neither reacts nor changes the cursor.
+        override func hitTest(_ point: NSPoint) -> NSView? {
+            isEnabled ? super.hitTest(point) : nil
+        }
+
+        override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
+
+        // MARK: Hover and cursor
+
+        override func updateTrackingAreas() {
+            super.updateTrackingAreas()
+
+            if let tracking {
+                removeTrackingArea(tracking)
+            }
+
+            let area = NSTrackingArea(rect: .zero,
+                                      options: [.mouseEnteredAndExited, .activeAlways, .inVisibleRect],
+                                      owner: self,
+                                      userInfo: nil)
+            addTrackingArea(area)
+            tracking = area
+        }
+
+        override func mouseEntered(with event: NSEvent) {
+            if isEnabled {
+                onHover(true)
+            }
+        }
+
+        override func mouseExited(with event: NSEvent) {
+            onHover(false)
+        }
+
+        /// `NnFlatButton`'s pointing hand, only while the button is live.
+        override func resetCursorRects() {
+            if isEnabled {
+                addCursorRect(bounds, cursor: .pointingHand)
+            }
+        }
+
+        // MARK: Mouse
+
+        override func mouseDown(with event: NSEvent) {
+            guard isEnabled else { return }
+
+            pressOrigin = convert(event.locationInWindow, from: nil)
+            setPressed(true)
+        }
+
+        override func mouseDragged(with event: NSEvent) {
+            guard isEnabled, let origin = pressOrigin, !sessionActive else { return }
+
+            let point = convert(event.locationInWindow, from: nil)
+
+            guard hypot(point.x - origin.x, point.y - origin.y) >= MidiDragSource.dragThreshold else { return }
+
+            pressOrigin = nil
+            beginDrag(with: event, at: point)
+        }
+
+        override func mouseUp(with event: NSEvent) {
+            pressOrigin = nil
+            setPressed(false)
+        }
+
+        private func setPressed(_ pressed: Bool) {
+            guard pressed != isPressed else { return }
+
+            isPressed = pressed
+            onPress(pressed)
+        }
+
+        // MARK: The session
+
+        /// `MidiFileDrag::mouseDown`: the file is written as the drag starts, and its own icon is
+        /// what travels under the pointer, in a 32 px frame centred on it.
+        private func beginDrag(with event: NSEvent, at point: NSPoint) {
+            guard let url = fileURL() else {
+                setPressed(false)
+                return
+            }
+
+            let item = NSDraggingItem(pasteboardWriter: url as NSURL)
+            item.setDraggingFrame(CGRect(x: point.x - 16, y: point.y - 16, width: 32, height: 32),
+                                  contents: NSWorkspace.shared.icon(forFile: url.path))
+
+            onSessionBegin?(url)
+            sessionActive = true
+
+            let session = beginDraggingSession(with: [item], event: event, source: self)
+            session.animatesToStartingPositionsOnCancelOrFail = true
+        }
+
+        func draggingSession(_ session: NSDraggingSession,
+                             sourceOperationMaskFor context: NSDraggingContext) -> NSDragOperation {
+            .copy
+        }
+
+        /// The mouse-up that would normally end the press went to the drag session instead.
+        func draggingSession(_ session: NSDraggingSession, endedAt screenPoint: NSPoint, operation: NSDragOperation) {
+            sessionActive = false
+            pressOrigin = nil
+            setPressed(false)
         }
     }
 }
