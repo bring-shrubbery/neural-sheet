@@ -245,6 +245,9 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
     var isPlaying: Bool { state.playing.load(ordering: .relaxed) }
 
     func play() {
+        // A wrap the poll has not picked up yet belongs to the run that just ended: without this,
+        // pressing play right after the take finished would immediately re-anchor and announce it.
+        supersedePendingWrap()
         state.playing.store(true, ordering: .relaxed)
     }
 
@@ -664,8 +667,17 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
 
     // MARK: - Gains
 
+    /// Re-applies the gains from outside. The mix depends on whether the scheduler has any notes
+    /// (§5.3), which changes when a decoded chunk arrives rather than when a control moves.
+    func refreshGains() {
+        updateGains()
+    }
+
     private func updateGains() {
-        let angle = min(max(mix, 0), 1) * Double.pi / 2
+        // No notes means nothing on the synth side to fade to, so the mix is forced to all-source
+        // and the pill dims (§5.3).
+        let position = synthBank.scheduler.hasNotes ? min(max(mix, 0), 1) : 0
+        let angle = position * Double.pi / 2
         let db = min(max(masterGainDb, Self.minGainDb), Self.maxGainDb)
         // -36 dB is the fader's silent end, not a very quiet one.
         let master = muted || db <= Self.minGainDb ? 0 : pow(10.0, db / 20.0)
@@ -735,6 +747,7 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
             let startSeconds = Double(playhead) / rate
             var endSeconds = startSeconds
             var rendered = false
+            var wrapped = false
 
             if playing, let source, source.frameCount > 0, frames > 0 {
                 let total = source.frameCount
@@ -770,11 +783,18 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
                 if playhead - frames >= total {
                     playhead = 0
                     state.playing.store(false, ordering: .relaxed)
-                    state.wrapGeneration.wrappingAdd(1, ordering: .relaxed)
+                    wrapped = true
                 }
             }
 
             state.playheadFrames.store(playhead, ordering: .relaxed)
+
+            // After the playhead store, not before: the poll re-anchors the scheduler to
+            // ``playheadSeconds``, and bumping the generation first would let it read the position
+            // the block is about to replace.
+            if wrapped {
+                state.wrapGeneration.wrappingAdd(1, ordering: .relaxed)
+            }
 
             // Every block, playing or not: a stop, a seek or a swapped note list all leave
             // note-offs to deliver and this is what delivers them.
