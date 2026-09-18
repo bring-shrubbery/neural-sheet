@@ -584,24 +584,36 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
         applyAggregate(input: inputID, output: outputID)
     }
 
-    /// Builds the aggregate for `input` and `output` and puts the unit on it, replacing the one it
-    /// was on; on failure puts the unit back on the one that was working and both pickers back to
-    /// what last took.
+    /// Puts the unit on the aggregate for `input` and `output` -- or on the device itself, when the
+    /// two are one duplex device and there is nothing to aggregate -- replacing whatever aggregate
+    /// it was on; on failure puts the unit back on the one that was working and both pickers back
+    /// to what last took.
     private func applyAggregate(input: AudioDeviceID?, output: AudioDeviceID?) {
-        let created: Aggregate? = {
-            guard let input, let output else { return nil }
-            return InputAggregate.create(input: input, output: output)
-                .map { (device: $0, input: input, output: output) }
-        }()
-
         let previous = aggregate
         aggregate = nil
 
-        let status =
-            created.map { Self.setDevice($0.device, on: engine.outputNode) }
-            ?? OSStatus(kAudioHardwareUnspecifiedError)
+        var created: Aggregate?
+        var status = OSStatus(kAudioHardwareBadDeviceError)
 
-        guard status == noErr, let created else {
+        if let input, let output {
+            switch InputAggregate.create(input: input, output: output) {
+            case .created(let device):
+                created = (device: device, input: input, output: output)
+                status = Self.setDevice(device, on: engine.outputNode)
+
+            case .sameDevice:
+                // A duplex device -- a USB interface, a loopback driver, an aggregate the user made
+                // with both directions -- chosen for both sides takes a bare set: it has the input
+                // streams the unit's input side wants. `aggregate` stays nil, so the bare path is
+                // tried first next time too.
+                status = Self.setDevice(output, on: engine.outputNode)
+
+            case .failed(let error):
+                status = error
+            }
+        }
+
+        guard status == noErr else {
             InputAggregate.destroy(created?.device)
             lastDeviceError = status
 
@@ -614,7 +626,7 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
                 InputAggregate.destroy(previous?.device)
             }
 
-            // Both, because neither choice is in effect. ``revert`` never names our own aggregate.
+            // Both, because neither choice is in effect. ``revert`` never names a private device.
             revert(\.inputDevice, on: engine.inputNode, fallback: lastAppliedInputDevice)
             revert(\.outputDevice, on: engine.outputNode, fallback: lastAppliedOutputDevice)
             return
@@ -653,11 +665,11 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
         fallback: AudioDevice?
     ) {
         // By id, not by looking the id up in the pickers' lists: the unit can be on something the
-        // lists leave out, and naming it is still better than publishing nil. Our own aggregate is
-        // the exception -- a private device is nothing a picker should ever show.
-        let inUseID = Self.currentDevice(of: node)
-        let inUse =
-            inUseID == aggregate?.device ? nil : inUseID.flatMap(AudioDevices.device(withID:))
+        // lists leave out, and naming it is still better than publishing nil. A private device is
+        // the exception -- our own aggregate, or the `CADefaultDeviceAggregate` CoreAudio keeps
+        // behind the defaults -- since no picker should ever show one.
+        let inUse = Self.currentDevice(of: node)
+            .flatMap { AudioDevices.isPrivate(device: $0) ? nil : AudioDevices.device(withID: $0) }
 
         isRevertingDevice = true
         self[keyPath: key] = inUse ?? fallback

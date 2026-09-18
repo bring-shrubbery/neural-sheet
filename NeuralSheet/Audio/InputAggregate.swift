@@ -30,28 +30,38 @@ nonisolated enum InputAggregate {
         static let driftCompensation = "drift"
     }
 
-    /// An aggregate presenting `input`'s input channels and `output`'s output channels, or nil when
-    /// one of them has no UID, when they come to the same device (nothing to aggregate) or when
-    /// CoreAudio refuses.
+    /// What asking for an aggregate came to.
+    enum Outcome {
+        /// A new private aggregate the caller owns and must ``destroy(_:)`` once the unit is off it.
+        case created(AudioDeviceID)
+        /// `input` and `output` come to the same device, or the same set of devices: nothing to
+        /// aggregate, and a duplex device takes a bare set on both sides.
+        case sameDevice
+        /// One of them has no UID, or CoreAudio refused.
+        case failed(OSStatus)
+    }
+
+    /// An aggregate presenting `input`'s input channels and `output`'s output channels.
     ///
     /// Either may itself be an aggregate -- a Multi-Output Device is a common thing to choose as the
-    /// output -- and CoreAudio will not nest one, so its members are used in its place.
-    ///
-    /// The caller owns the result and must ``destroy(_:)`` it once the unit is off it.
-    static func create(input: AudioDeviceID, output: AudioDeviceID) -> AudioDeviceID? {
-        let inputUIDs = memberUIDs(of: input)
-        let outputUIDs = memberUIDs(of: output)
+    /// output -- and CoreAudio will not nest one, so its members are used in its place, with its own
+    /// clock device kept as the clock.
+    static func create(input: AudioDeviceID, output: AudioDeviceID) -> Outcome {
+        let inputMembers = members(of: input)
+        let outputMembers = members(of: output)
 
-        guard let main = outputUIDs.first, !inputUIDs.isEmpty, inputUIDs != outputUIDs else {
-            return nil
+        guard let main = outputMembers.main, !inputMembers.uids.isEmpty else {
+            return .failed(OSStatus(kAudioHardwareBadDeviceError))
         }
+
+        guard inputMembers.uids != outputMembers.uids else { return .sameDevice }
 
         // The input is listed first, so its channels are the aggregate's first input channels and a
         // recording takes them rather than whatever inputs the output device happens to have.
         //
-        // The output is the main sub-device: it owns the clock, and it is the side whose timing
-        // cannot be nudged without the user hearing it. Everything else is drift-compensated.
-        let members = inputUIDs + outputUIDs.filter { !inputUIDs.contains($0) }
+        // The output side owns the clock: it is the side whose timing cannot be nudged without the
+        // user hearing it. Everything else is drift-compensated.
+        let uids = inputMembers.uids + outputMembers.uids.filter { !inputMembers.uids.contains($0) }
 
         let description: [String: Any] = [
             Key.name: "NeuralSheet Input",
@@ -59,7 +69,7 @@ nonisolated enum InputAggregate {
             Key.isPrivate: 1,
             Key.isStacked: 0,
             Key.mainSubDevice: main,
-            Key.subDeviceList: members.map { uid -> [String: Any] in
+            Key.subDeviceList: uids.map { uid -> [String: Any] in
                 uid == main ? [Key.uid: uid] : [Key.uid: uid, Key.driftCompensation: 1]
             },
         ]
@@ -67,9 +77,12 @@ nonisolated enum InputAggregate {
         var device = AudioDeviceID(0)
         let status = AudioHardwareCreateAggregateDevice(description as CFDictionary, &device)
 
-        guard status == noErr, device != kAudioObjectUnknown else { return nil }
+        guard status == noErr else { return .failed(status) }
+        guard device != kAudioObjectUnknown else {
+            return .failed(OSStatus(kAudioHardwareUnspecifiedError))
+        }
 
-        return device
+        return .created(device)
     }
 
     /// Tears one down. Harmless for `nil` and for a device that is already gone; never call it while
@@ -80,11 +93,34 @@ nonisolated enum InputAggregate {
         AudioHardwareDestroyAggregateDevice(device)
     }
 
-    /// The UIDs a composition should name for `device`: its own, or, for an aggregate, its members'
-    /// in their own order. Empty when it has no UID at all.
-    private static func memberUIDs(of device: AudioDeviceID) -> [String] {
+    /// The UIDs a composition should name for `device`, and which of them keeps the clock.
+    ///
+    /// A plain device is itself, both ways. An aggregate is its members in their own order -- all of
+    /// them, so a member the user has switched off still comes along disabled rather than being
+    /// silently lost -- and its clock is the main sub-device it was configured with, or failing
+    /// that its first active member. `uids` is empty when the device has no UID at all.
+    private static func members(of device: AudioDeviceID) -> (uids: [String], main: String?) {
+        let all = stringList(of: device, selector: kAudioAggregateDevicePropertyFullSubDeviceList)
+
+        guard !all.isEmpty else {
+            let uid = uid(of: device)
+            return (uid.map { [$0] } ?? [], uid)
+        }
+
+        let main =
+            string(of: device, selector: kAudioAggregateDevicePropertyMainSubDevice)
+            ?? stringList(of: device, selector: kAudioAggregateDevicePropertyActiveSubDeviceList)
+                .first
+            ?? all.first
+
+        return (all, main)
+    }
+
+    private static func stringList(
+        of device: AudioDeviceID, selector: AudioObjectPropertySelector
+    ) -> [String] {
         var address = AudioObjectPropertyAddress(
-            mSelector: kAudioAggregateDevicePropertyFullSubDeviceList,
+            mSelector: selector,
             mScope: kAudioObjectPropertyScopeGlobal,
             mElement: kAudioObjectPropertyElementMain
         )
@@ -96,11 +132,31 @@ nonisolated enum InputAggregate {
             AudioObjectGetPropertyData(device, &address, 0, nil, &size, pointer)
         }
 
-        if status == noErr, let members = list?.takeRetainedValue() as? [String], !members.isEmpty {
-            return members
+        guard status == noErr, let list else { return [] }
+
+        return list.takeRetainedValue() as? [String] ?? []
+    }
+
+    private static func string(of device: AudioDeviceID, selector: AudioObjectPropertySelector)
+        -> String?
+    {
+        var address = AudioObjectPropertyAddress(
+            mSelector: selector,
+            mScope: kAudioObjectPropertyScopeGlobal,
+            mElement: kAudioObjectPropertyElementMain
+        )
+
+        var value: Unmanaged<CFString>?
+        var size = UInt32(MemoryLayout<Unmanaged<CFString>?>.size)
+
+        let status = withUnsafeMutablePointer(to: &value) { pointer -> OSStatus in
+            AudioObjectGetPropertyData(device, &address, 0, nil, &size, pointer)
         }
 
-        return uid(of: device).map { [$0] } ?? []
+        guard status == noErr, let value else { return nil }
+
+        let string = value.takeRetainedValue() as String
+        return string.isEmpty ? nil : string
     }
 
     /// A device's persistent UID, which is how a composition names its sub-devices.
