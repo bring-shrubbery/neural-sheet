@@ -20,7 +20,7 @@ import SwiftUI
 @MainActor final class SettingsMenuController {
     private let menu = PopupMenuPresenter()
     private var submenu: Submenu?
-    private var window: NSWindow?
+    private weak var window: NSWindow?
     private var scale: CGFloat = 1
     private var model: AppModel?
     private var onWindowScale: (Double) -> Void = { _ in }
