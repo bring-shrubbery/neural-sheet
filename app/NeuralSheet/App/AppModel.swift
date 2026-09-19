@@ -44,8 +44,9 @@ nonisolated struct UpdateNotice: Equatable, Sendable {
     /// confirms at once, which is what happens before a window exists.
     @ObservationIgnored var presentConfirm: ((String, String, String, @escaping (Bool) -> Void) -> Void)?
 
-    /// Cancels the roll drag in progress, if the roll has one; installed by the edit controller.
-    @ObservationIgnored var dragCanceller: (() -> Void)?
+    /// Cancels the roll drag in progress and says whether there was one; installed by the edit
+    /// controller, a no-op without a drag.
+    @ObservationIgnored var dragCanceller: (() -> Bool)?
 
     /// Every dialog goes through here: a message with nobody to show it is a wiring bug, which
     /// a debug build says so about rather than swallowing.
@@ -164,7 +165,7 @@ nonisolated struct UpdateNotice: Equatable, Sendable {
         guard workspace != self.workspace else { return }
         guard workspace == .transcribe || canEdit else { return }
 
-        dragCanceller?()
+        _ = dragCanceller?()
         self.workspace = workspace
     }
 
@@ -458,7 +459,7 @@ nonisolated struct UpdateNotice: Equatable, Sendable {
             presentMicrophoneDenied()
             return
         } catch {
-            clear()
+            clearNow()
             showError("Error", "File creation for recording failed.")
             return
         }
@@ -474,7 +475,7 @@ nonisolated struct UpdateNotice: Equatable, Sendable {
                 presentRecordingFailure(error)
             }
 
-            clear()
+            clearNow()
             return
         }
 
@@ -576,7 +577,8 @@ nonisolated struct UpdateNotice: Equatable, Sendable {
         }
     }
 
-    /// `clear()` past the question: the pipeline's, for a take too short to run.
+    /// `clear()` past the question: the pipeline's, for a take too short to run and for a
+    /// recording that failed -- neither has edits to ask about.
     func clearNow() {
         if state == .recording {
             // The take is discarded whatever came of it; the files go below.
@@ -617,7 +619,7 @@ nonisolated struct UpdateNotice: Equatable, Sendable {
         staging.reset()
         document = nil
         editor.selection = []
-        dragCanceller?()
+        _ = dragCanceller?()
 
         // Otherwise the synth keeps playing the notes of the transcription just thrown away.
         engine.synthBank.scheduler.swap(notes: [])

@@ -124,6 +124,7 @@ struct NeuralSheetApp: App {
                 }
             }
             .keyboardShortcut("a", modifiers: .command)
+            .disabled(!Self.textFieldHasFocus && model.workspace != .edit)
 
             Button("Deselect All") { model.deselectAll() }
                 .keyboardShortcut("a", modifiers: [.command, .shift])

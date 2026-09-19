@@ -71,6 +71,8 @@ extension AppModel {
     /// For the two builders that allocate ids: the copy they ran on becomes the document, then the
     /// batch is committed on it.
     func replaceDocumentAndCommit(_ document: NoteDocument, _ batch: EditBatch) {
+        guard !batch.isEmpty else { return }
+
         self.document = document
         commit(batch)
     }
@@ -83,7 +85,7 @@ extension AppModel {
     func undo() {
         guard var document, document.canUndo else { return }
 
-        dragCanceller?()
+        _ = dragCanceller?()
         document.undo()
         self.document = document
         applyDocument()
@@ -92,7 +94,7 @@ extension AppModel {
     func redo() {
         guard var document, document.canRedo else { return }
 
-        dragCanceller?()
+        _ = dragCanceller?()
         document.redo()
         self.document = document
         applyDocument()
@@ -105,7 +107,7 @@ extension AppModel {
         confirmDiscardingEdits(action: "Reverting to the transcription") { [weak self] in
             guard let self else { return }
 
-            dragCanceller?()
+            _ = dragCanceller?()
             installDocument(rawNotes: transcription.rawNotes)
         }
     }
@@ -167,17 +169,15 @@ extension AppModel {
 
     /// Escape: a drag in progress is cancelled; otherwise the selection goes.
     func escapePressed() {
-        if let dragCanceller {
-            dragCanceller()
-        } else {
-            deselectAll()
-        }
+        if dragCanceller?() == true { return }
+
+        deselectAll()
     }
 
     // MARK: - Tools and grid
 
     func setTool(_ tool: EditorState.Tool) {
-        dragCanceller?()
+        _ = dragCanceller?()
         editor.tool = tool
     }
 
