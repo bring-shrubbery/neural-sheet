@@ -34,4 +34,11 @@ else
     echo "FAIL no previous tag should list the tree"; failures=$((failures + 1))
 fi
 
+# An unknown tag is an error, never "nothing to release".
+if "$SCRIPT" no-such-tag-0000 >/dev/null 2>&1; then
+    echo "FAIL an unknown tag should exit non-zero"; failures=$((failures + 1))
+else
+    echo "ok   unknown tag exits non-zero"
+fi
+
 [ "$failures" -eq 0 ] && echo "all passed" || { echo "$failures failed"; exit 1; }

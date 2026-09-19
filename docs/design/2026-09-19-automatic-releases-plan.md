@@ -200,7 +200,7 @@ git commit -m "chore: release-version.sh computes the next patch version from th
 
 **Interfaces:**
 - Consumes: `git`, a tag name or empty string.
-- Produces: `app/Scripts/release-changes.sh <previous-tag-or-empty>` prints, one per line, the paths changed since that tag (all tracked paths when the argument is empty) that are *not* docs-only; empty output means nothing to release. Exit 0 either way. Env override for tests: `RELEASE_PATHS` (newline-separated path list replacing the git query).
+- Produces: `app/Scripts/release-changes.sh <previous-tag-or-empty>` prints, one per line, the paths changed since that tag (all tracked paths when the argument is empty) that are *not* docs-only; empty output means nothing to release. Exit 0 with or without output; a failing git query (an unknown tag) exits non-zero so the workflow stops rather than skipping a release. Env override for tests: `RELEASE_PATHS` (newline-separated path list replacing the git query).
 
 - [ ] **Step 1: Write the failing test**
 

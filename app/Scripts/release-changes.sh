@@ -1,6 +1,8 @@
 #!/bin/bash
 # Prints the paths changed since the previous release tag that are worth a
 # release, one per line; prints nothing when only documentation changed.
+# A git query that fails (an unknown tag) exits non-zero; the workflow must stop,
+# not treat it as nothing to release.
 #
 #   release-changes.sh v1.0.2   paths changed between v1.0.2 and HEAD
 #   release-changes.sh ""       every tracked path (no release exists yet)
