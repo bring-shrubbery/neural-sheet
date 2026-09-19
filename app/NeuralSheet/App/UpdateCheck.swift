@@ -12,8 +12,8 @@ import NeuralSheetCore
 /// no-op, as it was: the check is a courtesy, not a feature the app waits on.
 enum UpdateCheck {
     /// Spec §7 deviation 4: the NeuralSheet repository, until a release exists there.
-    nonisolated static let latestReleaseAPI = URL(string: "https://api.github.com/repos/antoni/neural-sheet/releases/latest")!
-    nonisolated static let latestReleasePage = URL(string: "https://github.com/antoni/neural-sheet/releases/latest")!
+    nonisolated static let latestReleaseAPI = URL(string: "https://api.github.com/repos/bring-shrubbery/neural-sheet/releases/latest")!
+    nonisolated static let latestReleasePage = URL(string: "https://github.com/bring-shrubbery/neural-sheet/releases/latest")!
 
     /// How long a notice stands on its own.
     static let noticeDuration: TimeInterval = 10

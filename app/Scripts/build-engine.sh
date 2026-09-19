@@ -12,12 +12,13 @@ if [ ! -f "$SRC/CMakeLists.txt" ]; then
     exit 1
 fi
 
-# .stamp is touched once the archives are in place, so a stamp newer than the
-# engine's CMakeLists means the copies in lib/ are current.
+# .stamp records the submodule commit the archives in lib/ were built from, so
+# a submodule bump (even one that touches no CMakeLists) rebuilds them.
+ENGINE_REV=$(git -C "$ROOT/ThirdParty/muscriptor.cpp" rev-parse HEAD 2>/dev/null || echo unknown)
 if [ -f "$OUT/lib/libmuscriptor_ggml.a" ] \
     && [ -f "$OUT/.stamp" ] \
-    && [ "$OUT/.stamp" -nt "$SRC/CMakeLists.txt" ]; then
-    echo "engine: up to date"
+    && [ "$(cat "$OUT/.stamp")" = "$ENGINE_REV" ]; then
+    echo "engine: up to date ($ENGINE_REV)"
     exit 0
 fi
 
@@ -52,5 +53,5 @@ for archive in libmuscriptor_ggml.a libpffft.a libggml.a libggml-base.a libggml-
     cp "$found" "$OUT/lib/$archive"
 done
 
-touch "$OUT/.stamp"
+echo "$ENGINE_REV" > "$OUT/.stamp"
 echo "engine: built $OUT/lib"
