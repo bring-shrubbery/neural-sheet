@@ -80,12 +80,12 @@ nonisolated final class NoteScheduler: @unchecked Sendable {
     /// thread" a guarantee rather than a hope.
     static let reservedEventCapacity = eventCapacity + maxActiveNotes
 
-    /// The note's amplitude as a MIDI velocity, 1…127. Integer arithmetic only: this runs on the
-    /// render thread.
+    /// The note's amplitude as a MIDI velocity, 1…127. No allocation and no lock: one multiply, a
+    /// round and a clamp, on the render thread. A non-finite amplitude falls back to the model's
+    /// 100/127.
     static func velocity(forAmplitude amplitude: Double) -> UInt8 {
-        let scaled = Int((amplitude * 127).rounded())
-
-        return UInt8(clamping: Swift.min(Swift.max(scaled, 1), 127))
+        let unit = amplitude.isFinite ? Swift.min(Swift.max(amplitude, 0), 1) : NoteEvent.defaultAmplitude
+        return UInt8(Swift.max(Int((unit * 127).rounded()), 1))
     }
 
     /// A note this class has started and not yet stopped.
