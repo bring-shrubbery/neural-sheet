@@ -470,7 +470,7 @@ so the roll never draws a note twice.
 
 ### 8.1 Session
 
-`SessionState` gains
+`SessionState` gains (the transcription block is still decoded from an older `session.json` that embeds it)
 
 ```swift
 public struct SessionTranscription: Codable, Equatable, Sendable {
@@ -487,8 +487,9 @@ public var targetProgram: Int? = nil
 ```
 
 (`exportTempo` stays and is the grid's BPM.) Missing keys fall back to defaults as today, so an
-older `session.json` still opens. Saved through the existing throttled autosave; ~0.5 MB of JSON
-for a 7 000-note song is fine there.
+older `session.json` still opens. The transcription is written to `transcription.json` beside
+`session.json` (compact JSON, ids as integers), only when it changed; `session.json` stays small so
+the playhead's twice-a-second save costs nothing.
 
 `restoreSession`: after `restoreAudio` succeeds and `source.mono16k.count == sourceSampleCount`,
 install `rawNotes` and `document`, `applyDocument()`, `transition(to: .populated)`, then the

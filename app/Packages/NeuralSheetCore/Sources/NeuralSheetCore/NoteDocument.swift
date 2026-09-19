@@ -13,10 +13,19 @@ public struct NoteID: Hashable, Comparable, Codable, Sendable {
         lhs.raw < rhs.raw
     }
 
-    // A bare integer in the file, not `{"raw": n}`: thousands of notes are written per save.
+    // A bare integer in the file, not `{"raw": n}`: thousands of notes are written per save. The
+    // keyed form is still read, since a session this branch wrote earlier embeds ids that way.
+
+    private enum CodingKeys: String, CodingKey {
+        case raw
+    }
 
     public init(from decoder: Decoder) throws {
-        raw = try decoder.singleValueContainer().decode(Int.self)
+        if let bare = try? decoder.singleValueContainer().decode(Int.self) {
+            raw = bare
+        } else {
+            raw = try decoder.container(keyedBy: CodingKeys.self).decode(Int.self, forKey: .raw)
+        }
     }
 
     public func encode(to encoder: Encoder) throws {

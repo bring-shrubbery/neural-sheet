@@ -217,3 +217,39 @@ private func makeSessionTempDirectory() throws -> URL {
     #expect(paths.transcription.lastPathComponent == "transcription.json")
     #expect(paths.transcription.deletingLastPathComponent() == paths.session.deletingLastPathComponent())
 }
+
+@Test func sessionWithAnOlderEmbeddedTranscriptionLoadsWhole() throws {
+    let directory = try makeSessionTempDirectory()
+    defer { try? FileManager.default.removeItem(at: directory) }
+    let url = directory.appendingPathComponent("session.json")
+    // As this branch's earlier commits wrote it: the transcription inside, ids as `{"raw": n}`.
+    let json = """
+        {"exportTempo": 90, "zoomLevel": 2, "sourceAudioPath": "/tmp/take.wav", "workspace": "edit",
+         "transcription": {"sourceSampleCount": 16000,
+           "rawNotes": [{"startTime": 0, "endTime": 1, "pitch": 60, "amplitude": 0.8, "program": 0}],
+           "document": {"notes": [{"id": {"raw": 0}, "note": {"startTime": 0, "endTime": 1, "pitch": 60, "amplitude": 0.8, "program": 0}}],
+                        "isEdited": false, "nextID": 1}}}
+        """
+    try Data(json.utf8).write(to: url)
+
+    let loaded = SessionState.load(from: url)
+    #expect(loaded.exportTempo == 90)
+    #expect(loaded.zoomLevel == 2)
+    #expect(loaded.sourceAudioPath == "/tmp/take.wav")
+    #expect(loaded.workspace == .edit)
+    let transcription = try #require(loaded.transcription)
+    #expect(transcription.sourceSampleCount == 16000)
+    #expect(transcription.document.notes.map(\.id) == [NoteID(0)])
+}
+
+@Test func sessionWithAGarbageTranscriptionKeepsItsOtherFields() throws {
+    let directory = try makeSessionTempDirectory()
+    defer { try? FileManager.default.removeItem(at: directory) }
+    let url = directory.appendingPathComponent("session.json")
+    try Data(#"{"exportTempo": 90, "zoomLevel": 2, "transcription": 5}"#.utf8).write(to: url)
+
+    let loaded = SessionState.load(from: url)
+    #expect(loaded.exportTempo == 90)
+    #expect(loaded.zoomLevel == 2)
+    #expect(loaded.transcription == nil)
+}

@@ -37,7 +37,8 @@ public struct SessionTranscription: Codable, Equatable, Sendable {
 ///
 /// `sourceAudioPath` is a path rather than the audio itself — reopening a session re-reads the file
 /// from disk. The transcription lives in its own file (`SessionTranscription`); the `transcription`
-/// property is still decoded so a session written when it was embedded here restores its notes.
+/// property is still decoded so a session written when it was embedded here restores its notes,
+/// and an embedded block that cannot be decoded costs only the notes, never the rest of the file.
 ///
 /// Stored as JSON at whatever URL the caller passes, with sorted keys and indentation so two saves of
 /// the same state give the same bytes and a session file stays readable (and diffable) by hand.
@@ -136,7 +137,8 @@ public struct SessionState: Codable, Equatable, Sendable {
         mixer =
             try container.decodeIfPresent([Int: InstrumentChannelSettings].self, forKey: .mixer)
             ?? defaults.mixer
-        transcription = try container.decodeIfPresent(SessionTranscription.self, forKey: .transcription)
+        // A block this version cannot read drops the notes alone; the session around it survives.
+        transcription = (try? container.decodeIfPresent(SessionTranscription.self, forKey: .transcription)) ?? nil
         workspace = try container.decodeIfPresent(Workspace.self, forKey: .workspace) ?? defaults.workspace
         gridOffsetSeconds =
             try container.decodeIfPresent(Double.self, forKey: .gridOffsetSeconds) ?? defaults.gridOffsetSeconds

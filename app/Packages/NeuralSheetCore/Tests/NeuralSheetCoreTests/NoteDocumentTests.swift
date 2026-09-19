@@ -129,3 +129,8 @@ private func note(_ start: Double, _ end: Double, pitch: Int, program: Int = 0, 
 
     #expect(document.allocateID() == NoteID(10))
 }
+
+@Test func noteIdDecodesFromABareIntegerOrTheOlderKeyedForm() throws {
+    #expect(try JSONDecoder().decode(NoteID.self, from: Data("7".utf8)) == NoteID(7))
+    #expect(try JSONDecoder().decode(NoteID.self, from: Data(#"{"raw":7}"#.utf8)) == NoteID(7))
+}
