@@ -181,7 +181,33 @@ nonisolated struct UpdateNotice: Equatable, Sendable {
 
     /// The equal-power crossfade, 0 = source only, 1 = synth only (§5.3).
     var mix: Double = 0.5 {
-        didSet { engine.mix = mix }
+        didSet { engine.mix = effectiveMix }
+    }
+
+    /// A crossfade held in place of ``mix`` for as long as the top bar's ORIG or MIDI label is
+    /// pressed, to hear one side alone; nil otherwise. Never written to ``mix``, so letting go
+    /// puts back exactly what was set.
+    private(set) var mixHold: Double?
+
+    /// What the engine plays: the hold while there is one, the set mix otherwise.
+    var effectiveMix: Double { mixHold ?? mix }
+
+    enum MixSide {
+        case source
+        case synth
+    }
+
+    /// Mouse-down on ORIG or MIDI: that side alone until ``endMixHold()``.
+    func beginMixHold(_ side: MixSide) {
+        mixHold = side == .source ? 0 : 1
+        engine.mix = effectiveMix
+    }
+
+    func endMixHold() {
+        guard mixHold != nil else { return }
+
+        mixHold = nil
+        engine.mix = effectiveMix
     }
 
     /// The master fader, −36 (silence) … +6 dB.
@@ -286,7 +312,7 @@ nonisolated struct UpdateNotice: Equatable, Sendable {
         installedModels = modelStore.installed()
         lastRenderedFrames = engine.synthBank.renderedFrames
 
-        engine.mix = mix
+        engine.mix = effectiveMix
         engine.masterGainDb = masterGainDb
         engine.muted = inputMuted
 
