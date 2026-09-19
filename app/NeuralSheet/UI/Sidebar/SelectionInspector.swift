@@ -3,13 +3,16 @@ import NeuralSheetCore
 import SwiftUI
 
 /// The sidebar's SELECTION panel in the Edit tab (design §6.3): what is selected, and five fields
-/// that set it. Every commit is one batch over the whole selection.
+/// that set it. Every commit is one batch over the whole selection; a field whose notes disagree
+/// shows "—".
 struct SelectionInspector: View {
     let model: AppModel
 
     @Environment(\.uiScale) private var k
     @State private var instrumentMenu = PopupMenuPresenter()
     @State private var instrumentAnchor: NSView?
+    /// The velocity the fader is being dragged to, committed as one batch when the drag ends.
+    @State private var draftVelocity: Int?
 
     static let height: CGFloat = 150
     private static let paddingSide: CGFloat = 14
@@ -50,34 +53,19 @@ struct SelectionInspector: View {
             VStack(spacing: s(Self.rowGap)) {
                 row("Instrument") { instrumentControl(notes: notes) }
                 row("Start") {
-                    NumberField(value: notes.first?.startTime ?? 0, range: 0 ... 36_000, decimals: 3, step: 0.01, width: 72) { value in
+                    NumberField(value: shared(notes.map(\.startTime)) ?? (notes.isEmpty ? 0 : nil), range: 0 ... 36_000,
+                                decimals: 3, step: 0.01, width: 72) { value in
                         commit { $0.setStart(model.editor.selection, seconds: value) }
                     }
-                    .opacity(mixed(notes.map(\.startTime)) ? 0.5 : 1)
                 }
                 row("Length") {
-                    NumberField(value: notes.first.map { $0.endTime - $0.startTime } ?? 0, range: NoteDocument.minimumLength ... 3_600,
-                                decimals: 3, step: 0.01, width: 72) { value in
+                    NumberField(value: shared(notes.map { $0.endTime - $0.startTime }) ?? (notes.isEmpty ? 0 : nil),
+                                range: NoteDocument.minimumLength ... 3_600, decimals: 3, step: 0.01, width: 72) { value in
                         commit { $0.setLength(model.editor.selection, seconds: value) }
                     }
-                    .opacity(mixed(notes.map { $0.endTime - $0.startTime }) ? 0.5 : 1)
                 }
                 row("Pitch") { pitchControl(notes: notes) }
-                row("Velocity") {
-                    HStack(spacing: s(6)) {
-                        // A binding, as the strips' faders have it: every drag step is one small
-                        // batch, each its own undo step.
-                        PillSlider(value: Binding(get: { Double(notes.first?.velocity ?? 100) },
-                                                  set: { value in commit { $0.setVelocity(model.editor.selection, velocity: Int(value)) } }),
-                                   range: 1 ... 127, step: 1, width: s(60),
-                                   fill: Theme.accent.opacity(0.85), track: Theme.faderTrack, thumb: Theme.faderThumb,
-                                   onDoubleClick: { commit { $0.setVelocity(model.editor.selection, velocity: 100) } })
-
-                        NumberField(value: Double(notes.first?.velocity ?? 100), range: 1 ... 127, decimals: 0, width: 40) { value in
-                            commit { $0.setVelocity(model.editor.selection, velocity: Int(value)) }
-                        }
-                    }
-                }
+                row("Velocity") { velocityControl(notes: notes) }
             }
             .padding(.top, s(8))
             .disabled(!enabled)
@@ -126,6 +114,11 @@ struct SelectionInspector: View {
         return values.contains { $0 != first }
     }
 
+    /// The one value every note has, or nil when the selection is empty or disagrees.
+    private func shared<T: Equatable>(_ values: [T]) -> T? {
+        mixed(values) ? nil : values.first
+    }
+
     /// One batch on the document, through the model.
     private func commit(_ build: (NoteDocument) -> EditBatch) {
         guard let document = model.document else { return }
@@ -169,6 +162,41 @@ struct SelectionInspector: View {
                 }
             }
         }
+    }
+
+    // MARK: - Velocity
+
+    /// The fader stages its value while dragging and commits once when the drag ends, so a drag is
+    /// one undo step; the field beside it shows the draft while there is one.
+    private func velocityControl(notes: [NoteEvent]) -> some View {
+        let s = Scaled(k: k)
+        let velocities = notes.map(\.velocity)
+        let shown = shared(velocities) ?? (velocities.isEmpty ? 100 : nil)
+        // A disagreeing selection puts the thumb at the mean, so a drag moves every note from there.
+        let mean = velocities.isEmpty ? 100 : Int((Double(velocities.reduce(0, +)) / Double(velocities.count)).rounded())
+
+        return HStack(spacing: s(6)) {
+            PillSlider(value: Binding(get: { Double(draftVelocity ?? shown ?? mean) },
+                                      set: { draftVelocity = Int($0) }),
+                       range: 1 ... 127, step: 1, width: s(60),
+                       fill: Theme.accent.opacity(0.85), track: Theme.faderTrack, thumb: Theme.faderThumb,
+                       onDoubleClick: {
+                           draftVelocity = nil
+                           commit { $0.setVelocity(model.editor.selection, velocity: 100) }
+                       },
+                       onDragEnded: {
+                           guard let velocity = draftVelocity else { return }
+
+                           draftVelocity = nil
+                           commit { $0.setVelocity(model.editor.selection, velocity: velocity) }
+                       })
+
+            NumberField(value: (draftVelocity ?? shown).map(Double.init), range: 1 ... 127, decimals: 0, width: 40) { value in
+                commit { $0.setVelocity(model.editor.selection, velocity: Int(value)) }
+            }
+        }
+        // A drag the system cancelled never ends; the next selection must not inherit its draft.
+        .onChange(of: model.editor.selection) { _, _ in draftVelocity = nil }
     }
 
     // MARK: - Pitch

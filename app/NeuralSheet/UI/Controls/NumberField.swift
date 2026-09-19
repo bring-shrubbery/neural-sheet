@@ -4,13 +4,16 @@ import SwiftUI
 /// A small numeric field in the timeline's mono face: commits on Return or focus loss, steps by
 /// `step` on ↑/↓ (×10 with ⇧), and clamps into `range`. Shared by the Edit toolbar and the
 /// selection inspector.
+///
+/// A nil `value` -- a selection whose notes disagree -- shows "—" and still takes a number; any
+/// number then commits, since there is no single value it could equal.
 struct NumberField: View {
-    let value: Double
+    let value: Double?
     let range: ClosedRange<Double>
     let decimals: Int
-    var step: Double = 1
+    let step: Double
     /// Authored width.
-    var width: CGFloat = 52
+    let width: CGFloat
     let onCommit: (Double) -> Void
 
     @Environment(\.uiScale) private var k
@@ -19,6 +22,22 @@ struct NumberField: View {
 
     static let height: CGFloat = 22
     static let corner: CGFloat = 4
+
+    init(value: Double?, range: ClosedRange<Double>, decimals: Int, step: Double = 1, width: CGFloat = 52,
+         onCommit: @escaping (Double) -> Void) {
+        self.value = value
+        self.range = range
+        self.decimals = decimals
+        self.step = step
+        self.width = width
+        self.onCommit = onCommit
+    }
+
+    /// The single-value form the toolbar uses.
+    init(value: Double, range: ClosedRange<Double>, decimals: Int, step: Double = 1, width: CGFloat = 52,
+         onCommit: @escaping (Double) -> Void) {
+        self.init(value: Optional(value), range: range, decimals: decimals, step: step, width: width, onCommit: onCommit)
+    }
 
     var body: some View {
         let s = Scaled(k: k)
@@ -80,16 +99,19 @@ struct NumberField: View {
     }
 
     /// Steps from what is typed, not from `value`, so an edit in progress is stepped rather than
-    /// replaced.
+    /// replaced. Nothing to step from -- "—" and no entry -- steps nothing.
     private func nudge(by delta: Double) {
-        let current = Double(text.trimmingCharacters(in: .whitespaces)) ?? value
+        guard let current = Double(text.trimmingCharacters(in: .whitespaces)) ?? value else { return }
+
         let next = min(max(current + delta, range.lowerBound), range.upperBound)
         text = Self.format(next, decimals: decimals)
         onCommit(next)
     }
 
-    static func format(_ value: Double, decimals: Int) -> String {
-        String(format: "%.\(decimals)f", value)
+    static func format(_ value: Double?, decimals: Int) -> String {
+        guard let value else { return "—" }
+
+        return String(format: "%.\(decimals)f", value)
     }
 }
 

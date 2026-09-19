@@ -18,6 +18,9 @@ struct PillSlider: View {
     let thumb: Color?
     /// What a double-click resets to, if anything. Every fader in the original resets this way.
     let onDoubleClick: (() -> Void)?
+    /// Called once the drag gesture ends, after the last value write, for a caller that stages the
+    /// value while dragging and commits it as one step. The strips do not need it.
+    let onDragEnded: (() -> Void)?
 
     @Environment(\.uiScale) private var k
     @Environment(\.isEnabled) private var isEnabled
@@ -36,7 +39,8 @@ struct PillSlider: View {
          fill: Color,
          track: Color,
          thumb: Color? = nil,
-         onDoubleClick: (() -> Void)? = nil) {
+         onDoubleClick: (() -> Void)? = nil,
+         onDragEnded: (() -> Void)? = nil) {
         self._value = value
         self.range = range
         self.step = step
@@ -45,6 +49,7 @@ struct PillSlider: View {
         self.track = track
         self.thumb = thumb
         self.onDoubleClick = onDoubleClick
+        self.onDragEnded = onDragEnded
     }
 
     var body: some View {
@@ -78,7 +83,10 @@ struct PillSlider: View {
                              including: (isEnabled && onDoubleClick != nil) ? .all : .subviews)
         .gesture(DragGesture(minimumDistance: 0)
             .onChanged { setValue(atX: $0.location.x, travel: travel, indent: indent) }
-            .onEnded { setValue(atX: $0.location.x, travel: travel, indent: indent) },
+            .onEnded {
+                setValue(atX: $0.location.x, travel: travel, indent: indent)
+                onDragEnded?()
+            },
             including: isEnabled ? .all : .subviews)
         .pointerStyle(isEnabled ? .link : nil)
         .accessibilityValue(Text(String(format: "%.2f", value)))
