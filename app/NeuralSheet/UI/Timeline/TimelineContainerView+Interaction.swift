@@ -1,7 +1,8 @@
 import AppKit
 import NeuralSheetCore
 
-/// Zoom, scroll and the transport: `CombinedAudioMidiRegion`'s wheel, magnify and vblank rules.
+/// Zoom, scroll and the transport: `CombinedAudioMidiRegion`'s wheel, magnify and vblank rules,
+/// plus the vertical zoom by trackpad NeuralNote never had.
 extension TimelineContainerView {
     // MARK: - Horizontal zoom
 
@@ -73,9 +74,10 @@ extension TimelineContainerView {
         scrollView.reflectScrolledClipView(clip)
     }
 
-    /// `mouseWheelMove`: ⌘-wheel zooms about the left edge, a vertical wheel over the roll scrolls
-    /// pitch, and everything else scrolls time — unless the view is following the playhead, where
-    /// a scroll would be undone on the next frame.
+    /// `mouseWheelMove`: ⌘-wheel zooms time about the left edge, ⌥-wheel over the roll zooms
+    /// pitch about the pointer, a plain vertical wheel over the roll scrolls pitch, and
+    /// everything else scrolls time — unless the view is following the playhead, where a scroll
+    /// would be undone on the next frame.
     override func scrollWheel(with event: NSEvent) {
         handleWheel(WheelGesture(event), at: convert(event.locationInWindow, from: nil))
     }
@@ -89,6 +91,11 @@ extension TimelineContainerView {
         }
 
         let overRoll = point.y >= scrollView.frame.minY + TimelineMetrics.pianoRollY * scale
+
+        if overRoll, wheel.isOptionDown {
+            zoomPitch(byWheel: wheel.juceDeltaY, at: point)
+            return
+        }
 
         if overRoll, wheel.juceDeltaY != 0 {
             scrollPitch(byWheel: wheel.juceDeltaY)
@@ -106,9 +113,16 @@ extension TimelineContainerView {
         scroll(toX: scrollView.contentView.bounds.minX - dx)
     }
 
-    /// `mouseMagnify`: the pinch multiplies the zoom, anchored on the left edge.
+    /// `mouseMagnify`: the pinch multiplies the time zoom, anchored on the left edge; with ⌥ held
+    /// it multiplies the pitch zoom instead, anchored under the pointer.
     override func magnify(with event: NSEvent) {
-        handleMagnify(event.magnification)
+        let point = convert(event.locationInWindow, from: nil)
+
+        if event.modifierFlags.contains(.option) {
+            handleMagnifyVertically(event.magnification, at: point)
+        } else {
+            handleMagnify(event.magnification)
+        }
     }
 
     /// The factor JUCE handed the C++ (`redirectMagnify` in `juce_NSViewComponentPeer_mac.mm`):
@@ -121,9 +135,17 @@ extension TimelineContainerView {
         setZoomAnchored(geometry.zoom / Double(inverse))
     }
 
-    /// A wheel over the key column itself (`KeyboardComponentBase::mouseWheelMove`).
-    func scrollPitch(with wheel: WheelGesture) {
-        if wheel.juceDeltaY != 0 {
+    func handleMagnifyVertically(_ magnification: CGFloat, at point: CGPoint) {
+        setVerticalZoom(ZoomMath.verticalZoom(from: currentVerticalNorm, magnification: Double(magnification)),
+                        anchoringAt: point)
+    }
+
+    /// A wheel over the key column itself (`KeyboardComponentBase::mouseWheelMove`): ⌥ zooms
+    /// pitch, as over the roll; otherwise it scrolls.
+    func scrollPitch(with wheel: WheelGesture, at point: CGPoint) {
+        if wheel.isOptionDown {
+            zoomPitch(byWheel: wheel.juceDeltaY, at: point)
+        } else if wheel.juceDeltaY != 0 {
             scrollPitch(byWheel: wheel.juceDeltaY)
         }
     }
@@ -137,6 +159,41 @@ extension TimelineContainerView {
             keyboard.needsDisplay = true
             roll.needsDisplay = true
         }
+    }
+
+    // MARK: - Vertical zoom
+
+    /// The slider position the roll is drawn at now, whether the zoom is set or automatic: a
+    /// gesture continues from what is on screen, not from the stored value.
+    private var currentVerticalNorm: Double {
+        ZoomMath.norm(forRowHeight: Double(geometry.rowHeight))
+    }
+
+    private func zoomPitch(byWheel delta: Double, at point: CGPoint) {
+        guard delta != 0 else { return }
+
+        setVerticalZoom(ZoomMath.verticalZoom(from: currentVerticalNorm, wheelDelta: delta), anchoringAt: point)
+    }
+
+    /// Applies a vertical zoom about the pitch under `point` (this view's coordinates) and writes
+    /// it to the model as a set zoom -- a gesture takes the zoom off automatic, as the slider does
+    /// (§7.2). `applyVerticalZoom` is not used: it holds the centre, not the pointer.
+    private func setVerticalZoom(_ norm: Double, anchoringAt point: CGPoint) {
+        let anchorY = (point.y - keyboard.frame.minY) / scale
+
+        guard geometry.setRowHeight(CGFloat(ZoomMath.rowHeight(norm: norm)), anchoringY: anchorY) else { return }
+
+        keyboard.needsDisplay = true
+        roll.needsDisplay = true
+        updateNoteRange(mayShrink: model.state != .processing)
+
+        if abs(model.verticalZoom - norm) > 1e-9 {
+            model.verticalZoom = norm
+        }
+
+        // The mirror sees the write before the observation does; keep the two in step, or the
+        // sync would re-apply the zoom about the centre.
+        snapshot.verticalZoom = norm
     }
 
     // MARK: - Display link
@@ -221,11 +278,13 @@ struct WheelGesture {
     var pixelDeltaY: CGFloat
     var juceDeltaY: Double
     var isCommandDown: Bool
+    var isOptionDown: Bool
 
     init(_ event: NSEvent) {
         pixelDeltaX = event.scrollingDeltaX
         pixelDeltaY = event.scrollingDeltaY
         isCommandDown = event.modifierFlags.contains(.command)
+        isOptionDown = event.modifierFlags.contains(.option)
 
         if event.hasPreciseScrollingDeltas {
             juceDeltaY = Double(event.scrollingDeltaY) * 0.5 / 256
@@ -234,10 +293,11 @@ struct WheelGesture {
         }
     }
 
-    init(pixelDeltaX: CGFloat, pixelDeltaY: CGFloat, isCommandDown: Bool) {
+    init(pixelDeltaX: CGFloat, pixelDeltaY: CGFloat, isCommandDown: Bool, isOptionDown: Bool = false) {
         self.pixelDeltaX = pixelDeltaX
         self.pixelDeltaY = pixelDeltaY
         self.isCommandDown = isCommandDown
+        self.isOptionDown = isOptionDown
         juceDeltaY = Double(pixelDeltaY) * 0.5 / 256
     }
 }

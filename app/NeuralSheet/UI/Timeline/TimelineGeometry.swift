@@ -203,15 +203,29 @@ final class TimelineGeometry {
             / CGFloat(TimelineMetrics.whiteKeysPerOctave)).rounded())
     }
 
-    /// `Keyboard::setWhiteKeyHeight`: a zoom holds the middle of the view still. Answers whether
-    /// anything moved.
+    /// `Keyboard::setWhiteKeyHeight`: a zoom holds the middle of the view still -- or, given
+    /// `anchorY` (authored pixels from the top of the column), the pitch under that point, which
+    /// is what a zoom under the pointer wants. Answers whether anything moved.
     @discardableResult
-    func setRowHeight(_ newRowHeight: CGFloat) -> Bool {
+    func setRowHeight(_ newRowHeight: CGFloat, anchoringY anchorY: CGFloat? = nil) -> Bool {
         guard abs(newRowHeight - rowHeight) > 1e-6 else { return false }
 
-        let centre = Int(firstKey) + visibleSemitones / 2
+        guard let anchorY, keyWidth > 0, keyboardHeight > 0 else {
+            let centre = Int(firstKey) + visibleSemitones / 2
+            rowHeight = newRowHeight
+            firstKey = Double(centre - visibleSemitones / 2)
+            settleFirstKey()
+
+            return true
+        }
+
+        // The semitone under the anchor, fractional, measured up from the first key; after the
+        // change it has to sit the same number of pixels above the bottom of the column.
+        let pixelsAboveBottom = Double(keyboardHeight - anchorY)
+        let anchorSemitone = firstKey + pixelsAboveBottom / Double(rowHeight)
+
         rowHeight = newRowHeight
-        firstKey = Double(centre - visibleSemitones / 2)
+        firstKey = anchorSemitone - pixelsAboveBottom / Double(rowHeight)
         settleFirstKey()
 
         return true

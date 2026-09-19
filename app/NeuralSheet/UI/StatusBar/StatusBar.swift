@@ -115,7 +115,7 @@ struct StatusBar: View {
                        fill: Theme.zoomFill,
                        track: Theme.zoomTrack,
                        thumb: Theme.zoomThumb)
-                .tooltip("Piano roll vertical zoom")
+                .tooltip("Piano roll vertical zoom | ⌥ + scroll or ⌥ + pinch on the roll")
                 .accessibilityLabel("Piano roll vertical zoom")
         }
     }

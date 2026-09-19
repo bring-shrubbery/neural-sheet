@@ -109,7 +109,11 @@ final class TimelineContainerView: NSView {
 
         waveform.onSeek = { [weak self] seconds in self?.seek(toSeconds: seconds) }
         roll.onSeek = { [weak self] seconds in self?.seek(toSeconds: seconds) }
-        keyboard.onWheel = { [weak self] event in self?.scrollPitch(with: WheelGesture(event)) }
+        keyboard.onWheel = { [weak self] event in
+            guard let self else { return }
+
+            scrollPitch(with: WheelGesture(event), at: convert(event.locationInWindow, from: nil))
+        }
 
         scrollView.contentView.postsFrameChangedNotifications = true
         clipObserver = NotificationCenter.default.addObserver(

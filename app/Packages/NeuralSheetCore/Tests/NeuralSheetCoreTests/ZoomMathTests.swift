@@ -63,3 +63,45 @@ import Testing
             == ZoomMath.normForFit(visibleHeight: 480, semitones: 12))
     #expect(ZoomMath.normForFit(visibleHeight: 480, semitones: 0) == ZoomMath.normForFit(visibleHeight: 480, semitones: 12))
 }
+
+@Test func normForRowHeightInvertsRowHeight() {
+    #expect(ZoomMath.norm(forRowHeight: 6) == 0)
+    #expect(abs(ZoomMath.norm(forRowHeight: 43.6) - 1) < 1e-12)
+    #expect(abs(ZoomMath.norm(forRowHeight: 24.8) - 0.5) < 1e-12)
+
+    for norm in stride(from: 0.0, through: 1.0, by: 0.125) {
+        #expect(abs(ZoomMath.norm(forRowHeight: ZoomMath.rowHeight(norm: norm)) - norm) < 1e-12)
+    }
+
+    // Out of range heights clamp, and nonsense reads as zoomed out.
+    #expect(ZoomMath.norm(forRowHeight: 1) == 0)
+    #expect(ZoomMath.norm(forRowHeight: 100) == 1)
+    #expect(ZoomMath.norm(forRowHeight: .nan) == 0)
+}
+
+@Test func verticalWheelStepsTheNormAndClamps() {
+    // A wheel unit is worth half the slider: two full JUCE units run it end to end.
+    #expect(ZoomMath.verticalWheelSensitivity == 0.5)
+    #expect(abs(ZoomMath.verticalZoom(from: 0.5, wheelDelta: 0.2) - 0.6) < 1e-12)
+    #expect(abs(ZoomMath.verticalZoom(from: 0.5, wheelDelta: -0.2) - 0.4) < 1e-12)
+    #expect(ZoomMath.verticalZoom(from: 0.9, wheelDelta: 1) == 1)
+    #expect(ZoomMath.verticalZoom(from: 0.1, wheelDelta: -1) == 0)
+    #expect(ZoomMath.verticalZoom(from: 0.5, wheelDelta: .nan) == 0.5)
+}
+
+@Test func verticalPinchScalesTheRowHeight() {
+    // A pinch multiplies the lane height by `1 / (1 - magnification)`, as the horizontal one does
+    // the zoom, so the two gestures feel the same.
+    let start = ZoomMath.norm(forRowHeight: 20)
+    let zoomedIn = ZoomMath.verticalZoom(from: start, magnification: 0.5)
+    #expect(abs(ZoomMath.rowHeight(norm: zoomedIn) - 40) < 1e-9)
+
+    let zoomedOut = ZoomMath.verticalZoom(from: start, magnification: -1)
+    #expect(abs(ZoomMath.rowHeight(norm: zoomedOut) - 10) < 1e-9)
+
+    // The ends clamp, and a magnification of 1 or more (a degenerate factor) changes nothing.
+    #expect(ZoomMath.verticalZoom(from: 0.99, magnification: 0.9) == 1)
+    #expect(ZoomMath.verticalZoom(from: 0.01, magnification: -5) == 0)
+    #expect(ZoomMath.verticalZoom(from: 0.5, magnification: 1) == 0.5)
+    #expect(ZoomMath.verticalZoom(from: 0.5, magnification: 0) == 0.5)
+}
