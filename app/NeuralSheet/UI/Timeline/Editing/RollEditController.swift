@@ -66,6 +66,10 @@ import SwiftUI
     func uninstall() {
         cancelDrag()
         roll.interaction = nil
+        // `cancelDrag()` only invalidates when there was a live drag; leaving Edit mode idle is
+        // the common case, and the roll's cursor rect for the old tool would otherwise survive
+        // the tab switch.
+        roll.window?.invalidateCursorRects(for: roll)
         roll.setSelection([])
         model.dragCanceller = nil
         // The pointer may be resting on the roll with the tool's cursor.
@@ -100,11 +104,13 @@ import SwiftUI
                 }
             } else if model.editor.tool == .select {
                 if !shift { model.deselectAll() }
-                if event.clickCount == 2 { insertNote(at: point); return }
+                if event.clickCount == 2 { insertNote(at: point, modifiers: event.modifierFlags); return }
             } else {
                 // Draw on empty: the note starts now and follows the drag. Off every lane there is
-                // nothing to draw on, and no session.
-                guard let drawn = drawnNote(anchor: point, current: point) else { return }
+                // nothing to draw on, and no session. ⌘ inverts snap for the gesture, as it does
+                // for every other drag.
+                let snapEnabled = model.editor.snapEnabled != event.modifierFlags.contains(.command)
+                guard let drawn = drawnNote(anchor: point, current: point, snapEnabled: snapEnabled) else { return }
 
                 session.kind = .draw
                 session.drawn = drawn
@@ -237,8 +243,11 @@ import SwiftUI
     // MARK: - Helpers
 
     /// Double-click on empty in Select: one division at the target program; nothing off the lanes.
-    func insertNote(at point: CGPoint) {
-        guard var document = model.document, let note = drawnNote(anchor: point, current: point) else { return }
+    /// ⌘ inverts snap for the click, as it does for every other gesture.
+    func insertNote(at point: CGPoint, modifiers: NSEvent.ModifierFlags) {
+        let snapEnabled = model.editor.snapEnabled != modifiers.contains(.command)
+
+        guard var document = model.document, let note = drawnNote(anchor: point, current: point, snapEnabled: snapEnabled) else { return }
 
         let batch = document.insert(note)
         model.replaceDocumentAndCommit(document, batch)
@@ -247,13 +256,13 @@ import SwiftUI
 
     /// The Draw tool's note between the anchor and the pointer, at the anchor's pitch; nil when
     /// the anchor is off every lane.
-    func drawnNote(anchor: CGPoint, current: CGPoint) -> NoteEvent? {
+    func drawnNote(anchor: CGPoint, current: CGPoint, snapEnabled: Bool) -> NoteEvent? {
         guard let pitch = geometry.pitch(forY: anchor.y) else { return nil }
 
         let span = EditGestureMath.drawnNote(anchor: geometry.seconds(forX: anchor.x),
                                              current: geometry.seconds(forX: current.x),
                                              grid: model.editor.grid,
-                                             snapEnabled: model.editor.snapEnabled)
+                                             snapEnabled: snapEnabled)
 
         return NoteEvent(startTime: span.start, endTime: span.end, pitch: pitch, program: model.editor.targetProgram)
     }

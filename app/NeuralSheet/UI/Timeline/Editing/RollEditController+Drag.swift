@@ -63,8 +63,9 @@ extension RollEditController {
             model.setSelection(session.additive ? session.initialSelection.union(inside) : inside)
 
         case .draw:
-            // The anchor had a lane when the session began, so this cannot come back nil.
-            guard let drawn = drawnNote(anchor: session.anchorPoint, current: point) else { break }
+            // The anchor had a lane when the session began, so this cannot come back nil. `snap`
+            // already carries ⌘'s inversion for the gesture.
+            guard let drawn = drawnNote(anchor: session.anchorPoint, current: point, snapEnabled: snap != nil) else { break }
             session.drawn = drawn
             roll.setPreview(DragPreview(kind: .draw(drawn), ids: []))
 
