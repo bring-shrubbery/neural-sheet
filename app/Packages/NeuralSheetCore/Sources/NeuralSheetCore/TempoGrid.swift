@@ -77,6 +77,15 @@ public struct TempoGrid: Equatable, Codable, Sendable {
     /// Seconds per division.
     public var step: Double { secondsPerBeat * division.beats }
 
+    /// What the MIDI writer adds to every note time so the grid's bar lines land on the file's:
+    /// the audio's downbeat shifted earlier by the offset, then forward by whole bars until nothing
+    /// would fall before tick 0. Zero when the offset is zero.
+    public var exportStartOffsetSeconds: Double {
+        let bar = secondsPerBeat * Double(TempoGrid.beatsPerBar)
+        guard bar > 0, offsetSeconds > 0 else { return 0 }
+        return (offsetSeconds / bar).rounded(.up) * bar - offsetSeconds
+    }
+
     /// The nearest grid line, never before 0.
     public func snap(_ seconds: Double) -> Double {
         max(0, offsetSeconds + ((seconds - offsetSeconds) / step).rounded() * step)

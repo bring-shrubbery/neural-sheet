@@ -282,8 +282,9 @@ func setTargetProgram(_:)
 ```
 
 `exportTempo` is replaced by `editor.grid.bpm` (the Export dialog and the session read and write
-it there). `midiData()` passes `startOffsetSeconds: editor.grid.offsetSeconds` so bar 1 in the
-file is bar 1 on the grid.
+it there). `startOffsetSeconds` is `grid.exportStartOffsetSeconds` — the downbeat offset rounded
+up to a whole bar and subtracted, so the grid's bar lines coincide with the file's and nothing
+falls before tick 0.
 
 ### 5.3 Editor state
 
@@ -496,8 +497,10 @@ audio file drops the transcription silently, as the audio is dropped today.
 
 ### 8.2 Export and drag
 
-Unchanged path: `midiData()` reads `notes` and the grid's BPM; `startOffsetSeconds` is the grid
-offset. The writer already emits `amplitude` as velocity, so edited velocities come out.
+Unchanged path: `midiData()` reads `notes` and the grid's BPM; `startOffsetSeconds` is
+`grid.exportStartOffsetSeconds` — the downbeat offset rounded up to a whole bar and subtracted, so
+the grid's bar lines coincide with the file's and nothing falls before tick 0. The writer already
+emits `amplitude` as velocity, so edited velocities come out.
 
 ## 9. Departures from the inventory
 

@@ -62,3 +62,11 @@ import Testing
     #expect(TempoGrid.clampedBpm(5000) == 999)
     #expect(TempoGrid.clampedBpm(96.5) == 96.5)
 }
+
+@Test func exportStartOffsetShiftsTheDownbeatEarlierByWholeBars() {
+    // 120 BPM: a bar is 2 s. Bar 1 at 0.5 s is written at the file's bar 2 (0.5 + 1.5 = 2).
+    #expect(abs(TempoGrid(bpm: 120, offsetSeconds: 0.5, division: .quarter).exportStartOffsetSeconds - 1.5) < 1e-12)
+    // A downbeat already a whole bar in needs no shift.
+    #expect(TempoGrid(bpm: 120, offsetSeconds: 2.0, division: .quarter).exportStartOffsetSeconds == 0)
+    #expect(TempoGrid(bpm: 120, offsetSeconds: 0, division: .quarter).exportStartOffsetSeconds == 0)
+}

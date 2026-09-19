@@ -284,6 +284,28 @@ private func trackNameMeta(_ name: String) -> [UInt8] {
     #expect(contains(track, [0x87, 0x40, 0x80, 0x3C, 0x00]))
 }
 
+@Test func gridExportOffsetPutsTheDownbeatOnAFileBarLine() {
+    let grid = TempoGrid(bpm: 120, offsetSeconds: 0.5, division: .quarter)
+    let data = MidiFileWriter.data(
+        notes: [note(grid.offsetSeconds, grid.offsetSeconds + 0.5, pitch: 60, program: 0)],
+        bpm: grid.bpm, startOffsetSeconds: grid.exportStartOffsetSeconds, mode: .reuseChannels)
+    let track = chunks(data)[2].body
+
+    // The note on is the first event after the track name and the program change; its delta
+    // time from tick 0 is the note's tick.
+    let name = Instruments.info(forProgram: 0).name
+    var i = 1 + trackNameMeta(name).count + 3
+    var tick = 0
+    while i < track.count {
+        tick = tick << 7 | Int(track[i] & 0x7F)
+        if track[i] & 0x80 == 0 { break }
+        i += 1
+    }
+    #expect(Array(track[(i + 1)..<(i + 4)]) == [0x90, 0x3C, 0x64])
+    #expect(tick > 0)
+    #expect(tick % (MidiFileWriter.ticksPerQuarterNote * 4) == 0)
+}
+
 @Test func noteOffComesBeforeNoteOnAtTheSameTick() {
     let data = MidiFileWriter.data(
         notes: [

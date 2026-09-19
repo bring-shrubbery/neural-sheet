@@ -894,7 +894,8 @@ nonisolated struct UpdateNotice: Equatable, Sendable {
         guard canExport else { return nil }
 
         return MidiFileWriter.data(
-            notes: notes, bpm: exportTempo, startOffsetSeconds: editor.grid.offsetSeconds, mode: settings.midiOverflowMode)
+            notes: notes, bpm: exportTempo, startOffsetSeconds: editor.grid.exportStartOffsetSeconds,
+            mode: settings.midiOverflowMode)
     }
 
     /// `<source>_NNTranscription.mid`, or `NNTranscription.mid` for a recorded take.
