@@ -1,3 +1,3 @@
 [submodule "ThirdParty/muscriptor.cpp"]
-	path = ThirdParty/muscriptor.cpp
+	path = app/ThirdParty/muscriptor.cpp
 	url = https://github.com/DamRsn/muscriptor.cpp.git
