@@ -16,7 +16,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 # Releases queue rather than race: two runs computing the same version would
 # fight over the tag.
@@ -30,7 +30,7 @@ jobs:
     # Only a green CI run of a push to main (not a pull request build whose head
     # branch happens to be main) or a manual dispatch releases.
     if: >-
-      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
       (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
     runs-on: ubuntu-latest
     outputs:
@@ -70,6 +70,8 @@ jobs:
     needs: version
     if: needs.version.outputs.release == 'true'
     runs-on: macos-26
+    permissions:
+      contents: write
     env:
       VERSION: ${{ needs.version.outputs.version }}
       TAG: ${{ needs.version.outputs.tag }}
@@ -184,9 +186,11 @@ jobs:
           ASC_API_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
           ASC_API_ISSUER_ID: ${{ secrets.ASC_API_ISSUER_ID }}
         run: |
+          set -o pipefail
           APP=build/NeuralSheet.xcarchive/Products/Applications/NeuralSheet.app
           DMG="build/NeuralSheet-$TAG-macos-arm64.dmg"
           KEY="$RUNNER_TEMP/AuthKey.p8"
+          trap 'rm -f "$KEY"' EXIT
           printf '%s\n' "$ASC_API_KEY_P8" > "$KEY"
 
           codesign --sign "$IDENTITY" --timestamp "$DMG"
@@ -198,11 +202,10 @@ jobs:
           status=$(python3 -c 'import json,sys; print(json.load(sys.stdin).get("status", ""))' < build/notarize.json)
           if [ "$status" != "Accepted" ]; then
             id=$(python3 -c 'import json,sys; print(json.load(sys.stdin).get("id", ""))' < build/notarize.json)
-            [ -n "$id" ] && xcrun notarytool log "$id" --key "$KEY" --key-id "$ASC_API_KEY_ID" --issuer "$ASC_API_ISSUER_ID"
+            [ -n "$id" ] && xcrun notarytool log "$id" --key "$KEY" --key-id "$ASC_API_KEY_ID" --issuer "$ASC_API_ISSUER_ID" || true
             echo "::error::notarization ended with status '${status:-unknown}'"
             exit 1
           fi
-          rm "$KEY"
 
           # The ticket covers the app inside the image too; staple both so the
           # DMG and the zipped app each work offline.
