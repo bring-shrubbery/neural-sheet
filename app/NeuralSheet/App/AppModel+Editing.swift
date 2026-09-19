@@ -82,8 +82,11 @@ extension AppModel {
     var undoMenuTitle: String { document?.undoTitle.map { "Undo \($0)" } ?? "Undo" }
     var redoMenuTitle: String { document?.redoTitle.map { "Redo \($0)" } ?? "Redo" }
 
+    // Undo, redo and select-all are guarded on the workspace here as well as at the menu, since
+    // the menu items stay enabled whatever the tab (their routing is decided when chosen).
+
     func undo() {
-        guard var document, document.canUndo else { return }
+        guard workspace == .edit, var document, document.canUndo else { return }
 
         _ = dragCanceller?()
         document.undo()
@@ -92,7 +95,7 @@ extension AppModel {
     }
 
     func redo() {
-        guard var document, document.canRedo else { return }
+        guard workspace == .edit, var document, document.canRedo else { return }
 
         _ = dragCanceller?()
         document.redo()
@@ -141,7 +144,7 @@ extension AppModel {
     }
 
     func selectAll() {
-        guard let document else { return }
+        guard workspace == .edit, let document else { return }
 
         editor.selection = Set(document.notes.map(\.id))
     }

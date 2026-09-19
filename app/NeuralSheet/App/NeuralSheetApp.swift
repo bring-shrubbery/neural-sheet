@@ -76,31 +76,35 @@ struct NeuralSheetApp: App {
 
     // MARK: - Edit menu
 
-    /// Undo/Redo and the note commands, live in the Edit tab only. A text field that has the
-    /// keyboard keeps its own undo, select-all and delete: the actions go down the responder
-    /// chain in that case, as the system items would have.
+    /// Undo/Redo and the note commands. A text field that has the keyboard keeps its own undo,
+    /// select-all and delete: the actions go down the responder chain in that case, as the
+    /// system items would have.
+    ///
+    /// Undo, Redo and Select All are always enabled and route when chosen: which responder has
+    /// the keyboard is not observable, so a `disabled` that read it would go stale the moment a
+    /// field took focus, and ⌘Z would be dead inside it. Outside the Edit tab, with no field
+    /// focused, they do nothing; the model guards its side too. The items whose enablement is
+    /// model state alone stay disabled outside the Edit tab.
     @CommandsBuilder
     private func editMenu(model: AppModel) -> some Commands {
         CommandGroup(replacing: .undoRedo) {
             Button(model.undoMenuTitle) {
                 if Self.textFieldHasFocus {
                     NSApp.sendAction(Selector(("undo:")), to: nil, from: nil)
-                } else {
+                } else if model.workspace == .edit {
                     model.undo()
                 }
             }
             .keyboardShortcut("z", modifiers: .command)
-            .disabled(!Self.textFieldHasFocus && !(model.workspace == .edit && model.canUndo))
 
             Button(model.redoMenuTitle) {
                 if Self.textFieldHasFocus {
                     NSApp.sendAction(Selector(("redo:")), to: nil, from: nil)
-                } else {
+                } else if model.workspace == .edit {
                     model.redo()
                 }
             }
             .keyboardShortcut("z", modifiers: [.command, .shift])
-            .disabled(!Self.textFieldHasFocus && !(model.workspace == .edit && model.canRedo))
         }
 
         CommandGroup(replacing: .pasteboard) {
@@ -119,12 +123,11 @@ struct NeuralSheetApp: App {
             Button("Select All") {
                 if Self.textFieldHasFocus {
                     NSApp.sendAction(#selector(NSText.selectAll(_:)), to: nil, from: nil)
-                } else {
+                } else if model.workspace == .edit {
                     model.selectAll()
                 }
             }
             .keyboardShortcut("a", modifiers: .command)
-            .disabled(!Self.textFieldHasFocus && model.workspace != .edit)
 
             Button("Deselect All") { model.deselectAll() }
                 .keyboardShortcut("a", modifiers: [.command, .shift])
