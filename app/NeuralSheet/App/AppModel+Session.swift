@@ -4,7 +4,8 @@ import NeuralSheetCore
 import Observation
 
 /// What the app remembers (inventory §8): the session -- the take's path, the transport, the zoom,
-/// the selection, the mix and, once finished, the transcription -- and the global settings.
+/// the selection and the mix -- the finished transcription in a file of its own beside it, and the
+/// global settings.
 extension AppModel {
     // MARK: - Session
 
@@ -29,20 +30,43 @@ extension AppModel {
         session.snapEnabled = editor.snapEnabled
         session.targetProgram = editor.targetProgram
 
-        if state == .populated, let document, let source {
-            session.transcription = SessionTranscription(sourceSampleCount: source.mono16k.count,
-                                                         rawNotes: transcription.rawNotes,
-                                                         document: document)
-        }
-
         return session
     }
 
-    /// Writes the session now. A failure is not worth a dialog: the session is a convenience,
-    /// and the next save will try again.
+    /// The transcription as it stands, or nil until one has finished. Not part of the session
+    /// snapshot: it is megabytes for a long take, and the session is rewritten as the playhead
+    /// moves.
+    func transcriptionSnapshot() -> SessionTranscription? {
+        guard state == .populated, let document, let source else { return nil }
+
+        return SessionTranscription(sourceSampleCount: source.mono16k.count,
+                                    rawNotes: transcription.rawNotes,
+                                    document: document)
+    }
+
+    /// Writes the session now, and the transcription beside it. A failure is not worth a dialog:
+    /// the session is a convenience, and the next save will try again.
     func saveSession() {
+        saveSessionState()
+        saveTranscription()
+    }
+
+    /// The session file alone: the small one, written as the playhead moves.
+    func saveSessionState() {
         try? paths.ensureDirectories()
         try? sessionSnapshot().save(to: paths.session)
+    }
+
+    /// The transcription file alone, or its removal when there is no finished transcription, so a
+    /// stale one is never restored against a later take.
+    func saveTranscription() {
+        try? paths.ensureDirectories()
+
+        if let snapshot = transcriptionSnapshot() {
+            try? snapshot.save(to: paths.transcription)
+        } else {
+            try? FileManager.default.removeItem(at: paths.transcription)
+        }
     }
 
     /// Restores the session at `paths.session` (§8.2): the audio is re-read from its path when
@@ -79,10 +103,11 @@ extension AppModel {
             restoreAudio(url: URL(fileURLWithPath: session.sourceAudioPath))
         }
 
-        // The notes only with the very audio they were made from.
-        if state == .audioLoaded, let saved = session.transcription, let source,
-            source.mono16k.count == saved.sourceSampleCount
-        {
+        // The notes only with the very audio they were made from. A session written before the
+        // transcription had its own file still carries it.
+        let saved = SessionTranscription.load(from: paths.transcription) ?? session.transcription
+
+        if state == .audioLoaded, let saved, let source, source.mono16k.count == saved.sourceSampleCount {
             installDocument(rawNotes: saved.rawNotes, document: saved.document)
             transition(to: .populated)
 
@@ -115,13 +140,15 @@ extension AppModel {
 }
 
 /// Keeps the files on disk in step with the model: the global settings on every change, the
-/// session 500 ms after the last change to any of its fields and again as the app terminates,
-/// when the MIDI drag scratch is removed too. One per app, created beside the model.
+/// session and the transcription 500 ms after the last change to any of their fields -- each file
+/// only when its own contents changed -- and again as the app terminates, when the MIDI drag
+/// scratch is removed too. One per app, created beside the model.
 @MainActor final class Persistence {
     private let model: AppModel
     private var sessionSaveTimer: Timer?
     private var terminateObserver: NSObjectProtocol?
     private var lastSavedSession: SessionState?
+    private var lastSavedTranscription: SessionTranscription?
     private var hasRestored = false
 
     /// Between the last change and the write.
@@ -147,6 +174,7 @@ extension AppModel {
 
         Tooltips.enabled = model.settings.tooltipsVisible
         lastSavedSession = model.sessionSnapshot()
+        lastSavedTranscription = model.transcriptionSnapshot()
 
         observeSettings()
         observeSession()
@@ -190,13 +218,15 @@ extension AppModel {
 
     // MARK: - Session
 
-    /// Reads every field the snapshot is made of, so the next write to any of them schedules a
-    /// save. The playhead moves every frame during playback: a save already pending absorbs those
-    /// writes, and the timer is re-armed only once it has fired -- so a session that keeps changing
-    /// is written at most twice a second, not once 500 ms after it finally stops.
+    /// Reads every field the two snapshots are made of, so the next write to any of them -- an
+    /// edit included -- schedules a save. The playhead moves every frame during playback: a save
+    /// already pending absorbs those writes, and the timer is re-armed only once it has fired -- so
+    /// a session that keeps changing is written at most twice a second, not once 500 ms after it
+    /// finally stops.
     private func observeSession() {
         withObservationTracking {
             _ = model.sessionSnapshot()
+            _ = model.transcriptionSnapshot()
         } onChange: { [weak self] in
             DispatchQueue.main.async {
                 guard let self else { return }
@@ -222,13 +252,22 @@ extension AppModel {
         sessionSaveTimer = timer
     }
 
-    /// A playhead that stopped where it was, or a mix set back to what it was, costs no write.
+    /// A playhead that stopped where it was, or a mix set back to what it was, costs no write; and
+    /// a playhead that moved never rewrites the transcription, which is written only when a note
+    /// changed.
     private func saveSessionIfChanged() {
-        let snapshot = model.sessionSnapshot()
+        let session = model.sessionSnapshot()
 
-        guard snapshot != lastSavedSession else { return }
+        if session != lastSavedSession {
+            lastSavedSession = session
+            model.saveSessionState()
+        }
 
-        lastSavedSession = snapshot
-        model.saveSession()
+        let transcription = model.transcriptionSnapshot()
+
+        if transcription != lastSavedTranscription {
+            lastSavedTranscription = transcription
+            model.saveTranscription()
+        }
     }
 }

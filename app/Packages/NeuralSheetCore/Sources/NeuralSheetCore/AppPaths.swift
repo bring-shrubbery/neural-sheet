@@ -16,6 +16,9 @@ public struct AppPaths: Sendable {
     public var recordings: URL
     public var globalSettings: URL
     public var session: URL
+    /// The finished transcription, beside the session: its own file, so the session's small and
+    /// frequent writes never carry the notes.
+    public var transcription: URL
 
     /// `~/Library/NeuralNote/models`: checkpoints an earlier NeuralNote installed, read-only.
     public var secondaryModels: URL
@@ -32,6 +35,7 @@ public struct AppPaths: Sendable {
         recordings = root.appendingPathComponent("recordings", isDirectory: true)
         globalSettings = root.appendingPathComponent("global.settings")
         session = root.appendingPathComponent("session.json")
+        transcription = root.appendingPathComponent("transcription.json")
         self.secondaryModels = secondaryModels
         midiScratch = temp.appendingPathComponent("neuralsheet", isDirectory: true)
         musicFolder = music

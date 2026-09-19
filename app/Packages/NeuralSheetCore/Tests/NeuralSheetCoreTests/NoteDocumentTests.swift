@@ -112,3 +112,20 @@ private func note(_ start: Double, _ end: Double, pitch: Int, program: Int = 0, 
     // The id counter survives, so a new note never collides with a restored one.
     #expect(decoded.allocateID().raw > inserted.id.raw)
 }
+
+@Test func noteIdEncodesAsABareInteger() throws {
+    let data = try JSONEncoder().encode(EditableNote(id: NoteID(7), note: note(0, 1, pitch: 60)))
+    let json = try #require(String(data: data, encoding: .utf8))
+
+    #expect(json.contains("\"id\":7"))
+    #expect(!json.contains("raw"))
+    #expect(try JSONDecoder().decode(EditableNote.self, from: data).id == NoteID(7))
+}
+
+@Test func decodedIdCounterNeverCollidesWithAStoredId() throws {
+    // A hand-edited file whose counter lags its ids: the counter moves past them.
+    let json = #"{"notes":[{"id":9,"note":{"startTime":0,"endTime":1,"pitch":60,"amplitude":0.8,"program":0}}],"isEdited":false,"nextID":2}"#
+    var document = try JSONDecoder().decode(NoteDocument.self, from: Data(json.utf8))
+
+    #expect(document.allocateID() == NoteID(10))
+}

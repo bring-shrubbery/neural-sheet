@@ -2,6 +2,9 @@ import Foundation
 
 /// The transcription as the session keeps it: the model's own output, the edited document, and
 /// the sample count of the audio it belongs to — a reloaded file of another length gets no notes.
+///
+/// Its own file (`AppPaths.transcription`), written compact: it is megabytes for a long take and
+/// changes only when an edit lands, where the session changes with every playhead move.
 public struct SessionTranscription: Codable, Equatable, Sendable {
     public var sourceSampleCount: Int
     public var rawNotes: [NoteEvent]
@@ -12,14 +15,29 @@ public struct SessionTranscription: Codable, Equatable, Sendable {
         self.rawNotes = rawNotes
         self.document = document
     }
+
+    // MARK: - Files
+
+    /// The transcription at `url`, or nil if there is no file, it cannot be read, or it is not JSON
+    /// this version understands.
+    public static func load(from url: URL) -> SessionTranscription? {
+        guard let data = try? Data(contentsOf: url) else { return nil }
+
+        return try? JSONDecoder().decode(SessionTranscription.self, from: data)
+    }
+
+    /// Writes the transcription as JSON, replacing whatever was there.
+    public func save(to url: URL) throws {
+        try JSONEncoder().encode(self).write(to: url, options: .atomic)
+    }
 }
 
 /// One document's worth of state: what audio it was working on, where the playhead and the zoom
 /// were, which instrument groups the user picked and how the mix was set.
 ///
 /// `sourceAudioPath` is a path rather than the audio itself — reopening a session re-reads the file
-/// from disk. The transcription is part of it once one has finished: the model's output and the
-/// edited document, guarded by the audio's sample count.
+/// from disk. The transcription lives in its own file (`SessionTranscription`); the `transcription`
+/// property is still decoded so a session written when it was embedded here restores its notes.
 ///
 /// Stored as JSON at whatever URL the caller passes, with sorted keys and indentation so two saves of
 /// the same state give the same bytes and a session file stays readable (and diffable) by hand.
@@ -38,7 +56,7 @@ public struct SessionState: Codable, Equatable, Sendable {
     public var selectedGroups: [Int32] = []
     /// The mix, keyed by program; an absent program is `InstrumentChannelSettings()`.
     public var mixer: [Int: InstrumentChannelSettings] = [:]
-    /// The transcription, once there is a finished one; never while a run is in flight.
+    /// The transcription an older session file embedded; nothing writes it any more.
     public var transcription: SessionTranscription? = nil
     public var workspace: Workspace = .transcribe
     public var gridOffsetSeconds: Double = 0

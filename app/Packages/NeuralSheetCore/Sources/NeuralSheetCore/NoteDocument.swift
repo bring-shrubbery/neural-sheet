@@ -12,6 +12,17 @@ public struct NoteID: Hashable, Comparable, Codable, Sendable {
     public static func < (lhs: NoteID, rhs: NoteID) -> Bool {
         lhs.raw < rhs.raw
     }
+
+    // A bare integer in the file, not `{"raw": n}`: thousands of notes are written per save.
+
+    public init(from decoder: Decoder) throws {
+        raw = try decoder.singleValueContainer().decode(Int.self)
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        try container.encode(raw)
+    }
 }
 
 /// A note with its identity.
@@ -194,8 +205,10 @@ public struct NoteDocument: Equatable, Codable, Sendable {
         let decoded = try container.decode([EditableNote].self, forKey: .notes)
         notes = decoded.sorted(by: NoteDocument.ordered)
         isEdited = try container.decodeIfPresent(Bool.self, forKey: .isEdited) ?? false
-        nextID = try container.decodeIfPresent(Int.self, forKey: .nextID)
-            ?? ((decoded.map(\.id.raw).max() ?? -1) + 1)
+        // Past every stored id whatever the file's counter says, so a hand-edited file cannot
+        // make `allocateID` hand out an id a note already has.
+        let pastStoredIDs = (decoded.map(\.id.raw).max() ?? -1) + 1
+        nextID = max(try container.decodeIfPresent(Int.self, forKey: .nextID) ?? 0, pastStoredIDs)
     }
 
     public func encode(to encoder: Encoder) throws {

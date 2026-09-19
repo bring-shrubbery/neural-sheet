@@ -186,3 +186,34 @@ private func makeSessionTempDirectory() throws -> URL {
     #expect(loaded.transcription == nil)
     #expect(loaded.workspace == .transcribe)
 }
+
+@Test func sessionTranscriptionRoundTripsThroughItsOwnFile() throws {
+    let directory = try makeSessionTempDirectory()
+    defer { try? FileManager.default.removeItem(at: directory) }
+    let url = directory.appendingPathComponent("transcription.json")
+
+    let raw = [NoteEvent(startTime: 0, endTime: 1, pitch: 60, program: 0)]
+    var document = NoteDocument(events: raw)
+    document.commit(document.delete([document.notes[0].id]))
+    let transcription = SessionTranscription(sourceSampleCount: 16_000, rawNotes: raw, document: document)
+
+    #expect(SessionTranscription.load(from: url) == nil)
+    try transcription.save(to: url)
+
+    let loaded = try #require(SessionTranscription.load(from: url))
+    #expect(loaded.sourceSampleCount == 16_000)
+    #expect(loaded.rawNotes == raw)
+    #expect(loaded.document.notes == document.notes)
+    #expect(loaded.document.isEdited)
+    // The history is not in the file, so the document is equal field by field, not as a whole.
+    #expect(!loaded.document.canUndo)
+}
+
+@Test func appPathsKeepTheTranscriptionBesideTheSession() {
+    let paths = AppPaths(
+        root: URL(fileURLWithPath: "/tmp/ns-root"), secondaryModels: URL(fileURLWithPath: "/tmp/ns-secondary"),
+        temp: URL(fileURLWithPath: "/tmp"), music: URL(fileURLWithPath: "/tmp/music"))
+
+    #expect(paths.transcription.lastPathComponent == "transcription.json")
+    #expect(paths.transcription.deletingLastPathComponent() == paths.session.deletingLastPathComponent())
+}
