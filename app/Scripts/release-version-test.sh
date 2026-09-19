@@ -34,6 +34,7 @@ check 1.1.0 "v1.0.9"                        1.1.0  v1.0.9
 check 1.0.0 "v1.1.2 v1.0.9"                 1.1.3  v1.1.2
 check 1.0.0 "v1.0 v1.0.0-rc1 1.2.3 v2"      1.0.0  ""
 check 2.0.0 "v1.9.9"                        2.0.0  v1.9.9
+check 1.0.0 "v1.0.08"                       1.0.9  v1.0.08
 
 # A pbxproj without a strict x.y.z MARKETING_VERSION is an error.
 printf 'MARKETING_VERSION = 1.0;\n' > "$TMP/project.pbxproj"

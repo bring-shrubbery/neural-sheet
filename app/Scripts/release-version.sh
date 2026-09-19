@@ -57,5 +57,5 @@ if [ -z "$previous" ]; then
 fi
 
 IFS=. read -r major minor patch <<< "$previous"
-next="$major.$minor.$((patch + 1))"
+next="$major.$minor.$((10#$patch + 1))"
 printf '%s\n%s\n' "$floor" "$next" | sort_versions | tail -1
