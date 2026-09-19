@@ -24,6 +24,17 @@ public struct NoteEvent: Equatable, Hashable, Codable, Sendable {
     /// Whether this note is a drum hit. A complete test on its own, see ``drumProgram``.
     public var isDrum: Bool { program == NoteEvent.drumProgram }
 
+    /// The MIDI velocity this note's amplitude stands for, 1…127. The model gives every note
+    /// 100; the editor sets others.
+    public var velocity: Int {
+        min(max(Int((amplitude * 127).rounded()), 1), 127)
+    }
+
+    /// The amplitude that reads back as `velocity`, clamped to 1…127.
+    public static func amplitude(forVelocity velocity: Int) -> Double {
+        Double(min(max(velocity, 1), 127)) / 127.0
+    }
+
     public init(
         startTime: Double,
         endTime: Double,
