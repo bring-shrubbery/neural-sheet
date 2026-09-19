@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!-- Three piano-roll notes, centred as a group (x 179.5–844.5, y 216.5–807.5).
+       Top and bottom: Theme.accent; middle: Theme.accentText. -->
+  <rect x="179.5" y="216.5" width="410" height="153" rx="76.5" fill="#6E9BFF"/>
+  <rect x="384.5" y="435.5" width="460" height="153" rx="76.5" fill="#A8C2FF"/>
+  <rect x="179.5" y="654.5" width="556" height="153" rx="76.5" fill="#6E9BFF"/>
+</svg>

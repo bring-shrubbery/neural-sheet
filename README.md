@@ -1,3 +1,5 @@
+<p align="center"><img src="docs/icon.png" width="128" alt="NeuralSheet icon"></p>
+
 # NeuralSheet
 
 **Audio-to-MIDI transcription as a native macOS app.** Record or drop a track, pick the instruments, and NeuralSheet turns it into MIDI you can play back, mix, and drag straight into your DAW. Transcription runs entirely on your machine.
@@ -95,7 +97,7 @@ NeuralSheet is developed by a small team working with AI coding agents that we r
 
 ## Roadmap
 
-- A proper app icon and notarized releases
+- Notarized releases
 - UX improvements beyond parity: this is where v2 starts
 - Note editing in the piano roll
 - MIDI out to other apps with per-instrument channels

@@ -14,6 +14,7 @@ app/                       The macOS app (Xcode project, scheme NeuralSheet)
   NeuralSheet/App/         AppModel state machine, window, shortcuts, session, dialogs
   NeuralSheet/Audio/       PlaybackEngine, Recorder, NoteScheduler, InstrumentSynthBank, devices
   NeuralSheet/Engine/      C bridge (nsheet_engine.h/.cpp) + TranscriptionEngine wrapper
+  NeuralSheet/AppIcon.icon The app icon (Icon Composer document; gradient fill + notes.svg layer)
   NeuralSheet/UI/          Theme, Fonts, Icons, controls, top bar, sidebar, toolbar, status bar,
                            model panel, and the AppKit timeline (waveform, ruler, piano roll, keyboard)
   Packages/NeuralSheetCore Pure Swift logic with tests (notes, instruments, MIDI writer, peaks,

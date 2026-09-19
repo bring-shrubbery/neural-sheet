@@ -6,6 +6,10 @@ All notable changes to NeuralSheet are recorded here. The format follows [Keep a
 
 Work towards v2 starts here: user-experience improvements beyond NeuralNote parity, chosen from [Discussions](https://github.com/bring-shrubbery/neural-sheet/discussions).
 
+### Added
+
+- An app icon: three piano-roll notes on graphite, as a layered macOS 26 icon (`app/NeuralSheet/AppIcon.icon`).
+
 ## [1.0.0-checkpoint] — 2026-09-19
 
 The first complete build. Feature parity with the NeuralNote v2 standalone app, reimplemented natively for macOS.
