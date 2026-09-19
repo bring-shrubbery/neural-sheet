@@ -339,7 +339,7 @@ padding). Left to right:
 2. **Snap**: a toggle `FlatButton` with `Icons.magnet` (new), pressed look when on; tooltip
    "Snap to grid". Beside it the **division** button, label from `GridDivision.label` ("1/16"),
    opening a `MenuPanel` listing the eight divisions with the current one ticked.
-3. **Tempo pill**, a numeric text field in the Export dialog's tempo-field style (20…300): label `TEMPO`, the BPM field; then label
+3. **Tempo pill**, a numeric text field in the Export dialog's tempo-field style (20…999, as that field has it): label `TEMPO`, the BPM field; then label
    `BEAT 1 AT`, a seconds field (`0.000`, three decimals, ≥ 0), and a 28 × 28 `FlatButton` with
    `Icons.playheadTarget` (new) whose tooltip is "Set from playhead".
 4. **Quantize**: a labelled `FlatButton`; tooltip "Quantize selection (⌘U)". Acts on the selection
