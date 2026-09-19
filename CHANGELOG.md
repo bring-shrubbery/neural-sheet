@@ -13,7 +13,7 @@ Work towards v2 starts here: user-experience improvements beyond NeuralNote pari
 
 ### Changed
 
-- The synth plays per-note velocity; the export tempo is set on the Edit toolbar.
+- The synth plays per-note velocity; the export tempo is the project tempo, set on the Edit toolbar (and still in the Export dialog).
 
 ## [1.0.0-checkpoint] — 2026-09-19
 

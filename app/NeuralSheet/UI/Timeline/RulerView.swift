@@ -138,7 +138,8 @@ final class RulerView: NSView {
             case .bar:
                 ctx.fill(CGRect(x: x, y: 0, width: k, height: height), TimelinePalette.divStrong)
 
-                if (position.bar - 1) % barsPerLabel == 0 {
+                // A floored remainder: bars before the downbeat (0, −1…) keep the same cadence.
+                if (((position.bar - 1) % barsPerLabel) + barsPerLabel) % barsPerLabel == 0 {
                     TimelineText.draw("\(position.bar)", font: font, colour: TimelinePalette.textBright,
                                       in: CGRect(x: x + labelInset, y: 0, width: labelWidth, height: height),
                                       anchor: .centredLeft, context: ctx)

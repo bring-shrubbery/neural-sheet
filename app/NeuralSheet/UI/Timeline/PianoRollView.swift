@@ -395,4 +395,18 @@ final class PianoRollView: NSView {
     override func mouseUp(with event: NSEvent) {
         interaction?.mouseUp(at: convert(event.locationInWindow, from: nil), event: event)
     }
+
+    /// A right click selects like a click (design §7); the up resolves the press. A right drag
+    /// is not forwarded and does nothing.
+    override func rightMouseDown(with event: NSEvent) {
+        guard let interaction else { return super.rightMouseDown(with: event) }
+
+        interaction.mouseDown(at: convert(event.locationInWindow, from: nil), event: event)
+    }
+
+    override func rightMouseUp(with event: NSEvent) {
+        guard let interaction else { return super.rightMouseUp(with: event) }
+
+        interaction.mouseUp(at: convert(event.locationInWindow, from: nil), event: event)
+    }
 }

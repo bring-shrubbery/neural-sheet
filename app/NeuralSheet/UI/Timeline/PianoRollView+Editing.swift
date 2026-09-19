@@ -6,7 +6,6 @@ struct RollHit: Equatable {
     var id: NoteID
     var zone: NoteHitZone
     var note: NoteEvent
-    var index: Int
 }
 
 /// A drag in progress, as the roll draws it (design §6.5): the document is untouched until the
@@ -134,7 +133,7 @@ extension PianoRollView {
                                                      minimumWidthForEdges: RollEditController.minimumWidthForEdges * k)
             else { continue }
 
-            return RollHit(id: ids[index], zone: zone, note: note, index: index)
+            return RollHit(id: ids[index], zone: zone, note: note)
         }
 
         return nil
