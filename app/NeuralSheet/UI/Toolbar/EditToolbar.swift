@@ -163,16 +163,3 @@ struct EditToolbar: View {
         }
     }
 }
-
-/// Hands the caller the AppKit view under a SwiftUI control, to anchor a popup to it.
-private struct AnchorCatcher: NSViewRepresentable {
-    let found: (NSView) -> Void
-
-    func makeNSView(context: Context) -> NSView {
-        let view = NSView()
-        DispatchQueue.main.async { found(view) }
-        return view
-    }
-
-    func updateNSView(_ nsView: NSView, context: Context) {}
-}

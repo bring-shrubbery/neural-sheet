@@ -19,6 +19,10 @@ struct InstrumentStrip: View {
     /// The strip's own width in authored points: the sidebar's column, which is the sidebar less
     /// its 1 px border.
     var width: CGFloat = SidebarMetrics.stripWidth
+    /// Edit tab: this strip's instrument is where new and reassigned notes go (design §6.2).
+    var isTarget = false
+    /// Edit tab: a click on the chip or the name makes this the target. Nil in the Transcribe tab.
+    var onChooseTarget: (() -> Void)?
 
     @Environment(\.uiScale) private var k
 
@@ -66,35 +70,42 @@ struct InstrumentStrip: View {
         VStack(alignment: .leading, spacing: 0) {
             // Identity row: chip, name over meta, and the M/S pair.
             HStack(alignment: .top, spacing: 0) {
-                chip(colour: colour, alpha: alpha, s: s)
+                // The chip and the name are one click target in the Edit tab: the strip becomes
+                // the target instrument. Inert in the Transcribe tab.
+                HStack(alignment: .top, spacing: 0) {
+                    chip(colour: colour, alpha: alpha, s: s)
 
-                VStack(alignment: .leading, spacing: 0) {
-                    ZStack(alignment: .leading) {
-                        Text(entry.info.name)
-                            .font(Fonts.instrumentName(k))
-                            .foregroundStyle((muted ? Theme.textLabel : Theme.textStrong).opacity(alpha))
+                    VStack(alignment: .leading, spacing: 0) {
+                        ZStack(alignment: .leading) {
+                            Text(entry.info.name)
+                                .font(Fonts.instrumentName(k))
+                                .foregroundStyle((muted ? Theme.textLabel : Theme.textStrong).opacity(alpha))
+                                .lineLimit(1)
+                                .truncationMode(.tail)
+
+                            if muted {
+                                // A 1 px line across the name's own width, at the row's centre.
+                                Rectangle()
+                                    .fill(Theme.textLabel.opacity(alpha))
+                                    .frame(width: min(nameWidth(), s(nameColumnWidth(contentWidth))), height: k)
+                            }
+                        }
+                        .frame(height: s(Self.nameRowHeight), alignment: .leading)
+
+                        Text(meta)
+                            .font(Fonts.meta(k))
+                            .foregroundStyle(Theme.textFaintest.opacity(alpha))
                             .lineLimit(1)
                             .truncationMode(.tail)
-
-                        if muted {
-                            // A 1 px line across the name's own width, at the row's centre.
-                            Rectangle()
-                                .fill(Theme.textLabel.opacity(alpha))
-                                .frame(width: min(nameWidth(), s(nameColumnWidth(contentWidth))), height: k)
-                        }
+                            .frame(height: s(Self.identityRowHeight - Self.nameRowHeight - Self.metaGap))
+                            .padding(.top, s(Self.metaGap))
                     }
-                    .frame(height: s(Self.nameRowHeight), alignment: .leading)
-
-                    Text(meta)
-                        .font(Fonts.meta(k))
-                        .foregroundStyle(Theme.textFaintest.opacity(alpha))
-                        .lineLimit(1)
-                        .truncationMode(.tail)
-                        .frame(height: s(Self.identityRowHeight - Self.nameRowHeight - Self.metaGap))
-                        .padding(.top, s(Self.metaGap))
+                    .frame(width: s(nameColumnWidth(contentWidth)), height: s(Self.identityRowHeight), alignment: .topLeading)
+                    .padding(.leading, s(Self.textInset - Self.chipSize))
                 }
-                .frame(width: s(nameColumnWidth(contentWidth)), height: s(Self.identityRowHeight), alignment: .topLeading)
-                .padding(.leading, s(Self.textInset - Self.chipSize))
+                .contentShape(Rectangle())
+                .onTapGesture { onChooseTarget?() }
+                .allowsHitTesting(onChooseTarget != nil)
 
                 Spacer(minLength: 0)
 
@@ -157,6 +168,13 @@ struct InstrumentStrip: View {
         .padding(.top, s(Self.paddingTop))
         .frame(width: s(width), height: s(SidebarMetrics.stripHeight), alignment: .topLeading)
         .background(settings.soloed ? Theme.soloRowTint : Color.clear)
+        .overlay(alignment: .leading) {
+            if isTarget {
+                Rectangle()
+                    .fill(Theme.accent)
+                    .frame(width: s(2))
+            }
+        }
         .overlay(alignment: .bottom) {
             Rectangle()
                 .fill(Theme.divRow)
@@ -245,15 +263,21 @@ struct InstrumentStrip: View {
     }
 }
 
-extension InstrumentStrip: Equatable {
+/// Main-actor isolated, as the view is: the comparison only ever runs on the main thread, and
+/// it needs to look at the target closure.
+extension InstrumentStrip: @MainActor Equatable {
     /// The model is one object for the life of the window, so identity is the comparison; the rest
-    /// is the strip's inputs, and a strip whose inputs stand still is left alone.
-    nonisolated static func == (lhs: InstrumentStrip, rhs: InstrumentStrip) -> Bool {
+    /// is the strip's inputs, and a strip whose inputs stand still is left alone. The target
+    /// closure is compared by presence only: it is the same call for the life of a tab, but a
+    /// strip must re-lay out when the tab changes or its name would keep the old tab's hit test.
+    static func == (lhs: InstrumentStrip, rhs: InstrumentStrip) -> Bool {
         lhs.model === rhs.model
             && lhs.entry == rhs.entry
             && lhs.settings == rhs.settings
             && lhs.level == rhs.level
             && lhs.width == rhs.width
+            && lhs.isTarget == rhs.isTarget
+            && (lhs.onChooseTarget == nil) == (rhs.onChooseTarget == nil)
     }
 }
 

@@ -1,3 +1,4 @@
+import AppKit
 import SwiftUI
 
 /// A small numeric field in the timeline's mono face: commits on Return or focus loss, steps by
@@ -90,4 +91,18 @@ struct NumberField: View {
     static func format(_ value: Double, decimals: Int) -> String {
         String(format: "%.\(decimals)f", value)
     }
+}
+
+/// Hands the caller the AppKit view under a SwiftUI control, to anchor a popup to it. Shared by
+/// the Edit toolbar's division menu and the selection inspector's instrument menu.
+struct AnchorCatcher: NSViewRepresentable {
+    let found: (NSView) -> Void
+
+    func makeNSView(context: Context) -> NSView {
+        let view = NSView()
+        DispatchQueue.main.async { found(view) }
+        return view
+    }
+
+    func updateNSView(_ nsView: NSView, context: Context) {}
 }

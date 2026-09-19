@@ -48,6 +48,10 @@ struct Sidebar: View {
             .legacyScrollbar(thumb: Theme.accent)
             .frame(maxHeight: .infinity)
 
+            if model.workspace == .edit {
+                SelectionInspector(model: model)
+            }
+
             MasterPanel(level: model.masterLevelDb)
         }
         .frame(width: s(SidebarMetrics.stripWidth))
@@ -70,13 +74,17 @@ struct Sidebar: View {
         @Environment(\.legacyScrollbarInset) private var scrollbarInset
 
         var body: some View {
+            let editing = model.workspace == .edit
+
             VStack(spacing: 0) {
                 ForEach(model.mixer.entries, id: \.program) { entry in
                     InstrumentStrip(model: model,
                                     entry: entry,
                                     settings: model.mixer.settings[entry.program] ?? InstrumentChannelSettings(),
                                     level: model.instrumentLevelDb(program: entry.program),
-                                    width: SidebarMetrics.stripWidth - scrollbarInset / k)
+                                    width: SidebarMetrics.stripWidth - scrollbarInset / k,
+                                    isTarget: editing && model.editor.targetProgram == entry.program,
+                                    onChooseTarget: editing ? { model.setTargetProgram(entry.program) } : nil)
                         .equatable()
                 }
             }
