@@ -1,0 +1,25 @@
+NeuralSheet
+Copyright 2026 Antoni Silvestrovic and the NeuralSheet contributors
+
+This product is a native macOS reimplementation of NeuralNote
+(https://github.com/DamRsn/NeuralNote), an audio-to-MIDI transcription
+application by Damien Ronssin, licensed under the Apache License 2.0.
+
+NeuralSheet was started from NeuralNote v2 at commit
+20ca45a ("NeuralNote v2 initial commit") and diverged on 2026-09-17.
+The Swift code was written from scratch against NeuralNote's observed
+behaviour; the note scheduler, resampler, waveform peak pyramid, MIDI
+writer, piano-roll geometry and the user interface design are ported
+from the original C++ sources. Portions of the design documentation
+under docs/design describe NeuralNote's behaviour in detail.
+
+NeuralNote v2 was developed by Damien Ronssin. NeuralNote v1 was
+developed by Damien Ronssin and Tibor Vass; its user interface was
+designed by Perrine Morel.
+
+NeuralSheet transcribes with muscriptor.cpp (https://github.com/DamRsn/muscriptor.cpp),
+a C++/ggml port of the MuScriptor model by Kyutai and Mirelo, included as a
+git submodule. The MuScriptor model weights are NOT part of this
+distribution: the application downloads them from Hugging Face at run time,
+and they are licensed CC BY-NC 4.0 (non-commercial use only). See
+THIRD_PARTY_NOTICES.md for every third-party component and its licence.

@@ -9,9 +9,9 @@ build/
 # Swift Package Manager
 .build/
 .swiftpm/
-Packages/*/.build/
+app/Packages/*/.build/
 
-# SDD scratch
+# Agent scratch
 .superpowers/
 
 # macOS

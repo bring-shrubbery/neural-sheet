@@ -1,0 +1,85 @@
+name: Release
+
+# Builds a Release archive when a v* tag is pushed. Signing and notarization
+# run only when the Developer ID secrets below exist; without them the job
+# produces an unsigned zip as a build artifact, not a GitHub release.
+#
+# Secrets to add for signed, notarized releases:
+#   MACOS_CERTIFICATE_P12      base64 of the Developer ID Application .p12
+#   MACOS_CERTIFICATE_PASSWORD password of that .p12
+#   MACOS_SIGNING_IDENTITY     e.g. "Developer ID Application: Name (TEAMID)"
+#   APPLE_ID, APPLE_TEAM_ID, APPLE_APP_PASSWORD   for notarytool
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_27.app
+      - name: Install CMake
+        run: brew install cmake
+
+      - name: Import signing certificate
+        if: ${{ secrets.MACOS_CERTIFICATE_P12 != '' }}
+        env:
+          P12: ${{ secrets.MACOS_CERTIFICATE_P12 }}
+          P12_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+        run: |
+          echo "$P12" | base64 --decode > cert.p12
+          security create-keychain -p ci build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p ci build.keychain
+          security import cert.p12 -k build.keychain -P "$P12_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple: -s -k ci build.keychain
+
+      - name: Archive
+        working-directory: app
+        env:
+          IDENTITY: ${{ secrets.MACOS_SIGNING_IDENTITY }}
+        run: |
+          set -o pipefail
+          if [ -n "$IDENTITY" ]; then
+            SIGN=(CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY="$IDENTITY" DEVELOPMENT_TEAM="${{ secrets.APPLE_TEAM_ID }}")
+          else
+            SIGN=(CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO)
+          fi
+          xcodebuild -project NeuralSheet.xcodeproj -scheme NeuralSheet -configuration Release \
+            -destination 'platform=macOS,arch=arm64' -archivePath build/NeuralSheet.xcarchive \
+            "${SIGN[@]}" archive 2>&1 | tail -30
+          ditto -c -k --keepParent build/NeuralSheet.xcarchive/Products/Applications/NeuralSheet.app \
+            build/NeuralSheet-${GITHUB_REF_NAME}-macos-arm64.zip
+
+      - name: Notarize and staple
+        if: ${{ secrets.APPLE_APP_PASSWORD != '' }}
+        working-directory: app
+        run: |
+          xcrun notarytool submit build/NeuralSheet-${GITHUB_REF_NAME}-macos-arm64.zip \
+            --apple-id "${{ secrets.APPLE_ID }}" --team-id "${{ secrets.APPLE_TEAM_ID }}" \
+            --password "${{ secrets.APPLE_APP_PASSWORD }}" --wait
+          xcrun stapler staple build/NeuralSheet.xcarchive/Products/Applications/NeuralSheet.app
+          rm build/NeuralSheet-${GITHUB_REF_NAME}-macos-arm64.zip
+          ditto -c -k --keepParent build/NeuralSheet.xcarchive/Products/Applications/NeuralSheet.app \
+            build/NeuralSheet-${GITHUB_REF_NAME}-macos-arm64.zip
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: NeuralSheet-${{ github.ref_name }}-macos-arm64
+          path: app/build/NeuralSheet-${{ github.ref_name }}-macos-arm64.zip
+
+      - name: Publish GitHub release
+        if: ${{ secrets.APPLE_APP_PASSWORD != '' }}
+        uses: softprops/action-gh-release@v2
+        with:
+          files: app/build/NeuralSheet-${{ github.ref_name }}-macos-arm64.zip
+          generate_release_notes: true

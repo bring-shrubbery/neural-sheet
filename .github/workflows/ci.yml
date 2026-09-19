@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  core-tests:
+    name: Core package tests
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v4
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_27.app
+      - name: swift test
+        working-directory: app/Packages/NeuralSheetCore
+        run: swift test 2>&1 | tail -30
+
+  app-build:
+    name: Build the app
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_27.app
+      - name: Install CMake
+        run: brew install cmake
+      - name: Cache the engine build
+        uses: actions/cache@v4
+        with:
+          path: app/build/engine
+          key: engine-${{ runner.os }}-${{ hashFiles('.gitmodules') }}-${{ hashFiles('app/Scripts/build-engine.sh') }}
+      - name: Build (Debug, unsigned)
+        working-directory: app
+        run: |
+          set -o pipefail
+          xcodebuild -project NeuralSheet.xcodeproj -scheme NeuralSheet \
+            -configuration Debug -destination 'platform=macOS,arch=arm64' \
+            CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO \
+            build 2>&1 | tee build.log | tail -40
+      - name: Fail on warnings in our own sources
+        working-directory: app
+        run: |
+          if grep -E "/app/(NeuralSheet|Packages)/.*warning:" build.log; then
+            echo "::error::warnings in NeuralSheet sources"; exit 1
+          fi
+          echo "no warnings in NeuralSheet sources"
