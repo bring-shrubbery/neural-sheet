@@ -1,92 +1,245 @@
 name: Release
 
-# Builds a Release archive when a v* tag is pushed. Signing and notarization
-# run only when the Developer ID secrets below exist; without them the job
-# produces an unsigned zip as a build artifact, not a GitHub release.
-#
-# Secrets to add for signed, notarized releases:
-#   MACOS_CERTIFICATE_P12      base64 of the Developer ID Application .p12
-#   MACOS_CERTIFICATE_PASSWORD password of that .p12
-#   MACOS_SIGNING_IDENTITY     e.g. "Developer ID Application: Name (TEAMID)"
-#   APPLE_ID, APPLE_TEAM_ID, APPLE_APP_PASSWORD   for notarytool
+# Every code change that lands on main and passes CI becomes a patch release:
+# a signed, notarized NeuralSheet-vX.Y.Z-macos-arm64.dmg (and zip) on a GitHub
+# release, tagged vX.Y.Z. The version is the higher of MARKETING_VERSION in the
+# Xcode project and the last release tag's patch + 1; raise MARKETING_VERSION in
+# Xcode to ship a minor or major. Changes to docs/, *.md, LICENSE, NOTICE and
+# .github/ (except the workflows) do not release. docs/release.md explains the
+# secrets and the flow.
 
 on:
-  push:
-    tags: ['v*']
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: write
 
+# Releases queue rather than race: two runs computing the same version would
+# fight over the tag.
+concurrency:
+  group: release
+  cancel-in-progress: false
+
 jobs:
-  release:
-    runs-on: macos-26
-    # The secrets context is not allowed in step conditions, so the checks
-    # are made here and the steps test these flags.
-    env:
-      HAS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE_P12 != '' }}
-      HAS_NOTARY: ${{ secrets.APPLE_APP_PASSWORD != '' }}
+  version:
+    name: Decide the version
+    # Only a green CI run of a push to main (not a pull request build whose head
+    # branch happens to be main) or a manual dispatch releases.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
+    runs-on: ubuntu-latest
+    outputs:
+      release: ${{ steps.decide.outputs.release }}
+      version: ${{ steps.decide.outputs.version }}
+      tag: ${{ steps.decide.outputs.tag }}
+      sha: ${{ steps.decide.outputs.sha }}
     steps:
       - uses: actions/checkout@v4
         with:
+          # The commit CI built, not main's tip, which may have moved on.
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          fetch-depth: 0
+      - name: Compare with the last release
+        id: decide
+        run: |
+          previous=$(app/Scripts/release-version.sh --previous)
+          changed=$(app/Scripts/release-changes.sh "$previous")
+          sha=$(git rev-parse HEAD)
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          if [ -z "$changed" ]; then
+            echo "no code changes since ${previous:-the first commit}; nothing to release"
+            echo "release=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          version=$(app/Scripts/release-version.sh)
+          echo "releasing v$version from $sha (previous release: ${previous:-none}); changed:"
+          echo "$changed"
+          {
+            echo "release=true"
+            echo "version=$version"
+            echo "tag=v$version"
+          } >> "$GITHUB_OUTPUT"
+
+  release:
+    name: Build and publish
+    needs: version
+    if: needs.version.outputs.release == 'true'
+    runs-on: macos-26
+    env:
+      VERSION: ${{ needs.version.outputs.version }}
+      TAG: ${{ needs.version.outputs.tag }}
+      SHA: ${{ needs.version.outputs.sha }}
+    steps:
+      - name: Check the signing secrets
+        env:
+          MACOS_CERTIFICATE_P12: ${{ secrets.MACOS_CERTIFICATE_P12 }}
+          MACOS_CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+          MACOS_SIGNING_IDENTITY: ${{ secrets.MACOS_SIGNING_IDENTITY }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          ASC_API_KEY_P8: ${{ secrets.ASC_API_KEY_P8 }}
+          ASC_API_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
+          ASC_API_ISSUER_ID: ${{ secrets.ASC_API_ISSUER_ID }}
+        run: |
+          missing=()
+          for name in MACOS_CERTIFICATE_P12 MACOS_CERTIFICATE_PASSWORD MACOS_SIGNING_IDENTITY \
+                      APPLE_TEAM_ID ASC_API_KEY_P8 ASC_API_KEY_ID ASC_API_ISSUER_ID; do
+            [ -n "${!name}" ] || missing+=("$name")
+          done
+          if [ "${#missing[@]}" -gt 0 ]; then
+            echo "::error::missing repository secrets: ${missing[*]}; see docs/release.md"
+            exit 1
+          fi
+          echo "all signing secrets present"
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.SHA }}
           submodules: recursive
       - name: Select the newest installed Xcode
         run: |
+          # shellcheck disable=SC2012  # /Applications/Xcode_*.app names are well-known; ls -d | sort -V is intentional.
           XCODE=$(ls -d /Applications/Xcode_*.app | sort -V | tail -1)
           echo "using $XCODE"
           sudo xcode-select -s "$XCODE"
           xcodebuild -version
+      - name: Cache the engine build
+        uses: actions/cache@v4
+        with:
+          path: app/build/engine
+          key: engine-${{ runner.os }}-${{ hashFiles('.gitmodules') }}-${{ hashFiles('app/Scripts/build-engine.sh') }}
 
-      - name: Import signing certificate
-        if: env.HAS_CERTIFICATE == 'true'
+      - name: Import the signing certificate
         env:
           P12: ${{ secrets.MACOS_CERTIFICATE_P12 }}
           P12_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
         run: |
-          echo "$P12" | base64 --decode > cert.p12
+          echo "$P12" | base64 --decode > "$RUNNER_TEMP/cert.p12"
           security create-keychain -p ci build.keychain
           security default-keychain -s build.keychain
           security unlock-keychain -p ci build.keychain
-          security import cert.p12 -k build.keychain -P "$P12_PASSWORD" -T /usr/bin/codesign
+          security set-keychain-settings -lut 3600 build.keychain
+          security import "$RUNNER_TEMP/cert.p12" -k build.keychain -P "$P12_PASSWORD" -T /usr/bin/codesign
           security set-key-partition-list -S apple-tool:,apple: -s -k ci build.keychain
+          rm "$RUNNER_TEMP/cert.p12"
+          security find-identity -v -p codesigning build.keychain
 
       - name: Archive
         working-directory: app
         env:
           IDENTITY: ${{ secrets.MACOS_SIGNING_IDENTITY }}
+          TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: |
           set -o pipefail
-          if [ -n "$IDENTITY" ]; then
-            SIGN=(CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY="$IDENTITY" DEVELOPMENT_TEAM="${{ secrets.APPLE_TEAM_ID }}")
-          else
-            SIGN=(CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO)
-          fi
           xcodebuild -project NeuralSheet.xcodeproj -scheme NeuralSheet -configuration Release \
             -destination 'platform=macOS,arch=arm64' -archivePath build/NeuralSheet.xcarchive \
-            "${SIGN[@]}" archive 2>&1 | tail -30
-          ditto -c -k --keepParent build/NeuralSheet.xcarchive/Products/Applications/NeuralSheet.app \
-            build/NeuralSheet-${GITHUB_REF_NAME}-macos-arm64.zip
+            CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY="$IDENTITY" DEVELOPMENT_TEAM="$TEAM_ID" \
+            MARKETING_VERSION="$VERSION" CURRENT_PROJECT_VERSION="$GITHUB_RUN_NUMBER" \
+            archive 2>&1 | tee build.log | tail -30
+          APP=build/NeuralSheet.xcarchive/Products/Applications/NeuralSheet.app
+          codesign --verify --deep --strict --verbose=2 "$APP"
+          echo "built $(defaults read "$PWD/$APP/Contents/Info.plist" CFBundleShortVersionString)" \
+               "($(defaults read "$PWD/$APP/Contents/Info.plist" CFBundleVersion))"
 
-      - name: Notarize and staple
-        if: env.HAS_NOTARY == 'true'
+      - name: Build the disk image
         working-directory: app
         run: |
-          xcrun notarytool submit build/NeuralSheet-${GITHUB_REF_NAME}-macos-arm64.zip \
-            --apple-id "${{ secrets.APPLE_ID }}" --team-id "${{ secrets.APPLE_TEAM_ID }}" \
-            --password "${{ secrets.APPLE_APP_PASSWORD }}" --wait
-          xcrun stapler staple build/NeuralSheet.xcarchive/Products/Applications/NeuralSheet.app
-          rm build/NeuralSheet-${GITHUB_REF_NAME}-macos-arm64.zip
-          ditto -c -k --keepParent build/NeuralSheet.xcarchive/Products/Applications/NeuralSheet.app \
-            build/NeuralSheet-${GITHUB_REF_NAME}-macos-arm64.zip
+          brew install create-dmg
+          APP=build/NeuralSheet.xcarchive/Products/Applications/NeuralSheet.app
+          DMG="build/NeuralSheet-$TAG-macos-arm64.dmg"
+          rm -rf build/dmg-root && mkdir -p build/dmg-root
+          cp -R "$APP" build/dmg-root/
+          volicon=()
+          if [ -f "$APP/Contents/Resources/AppIcon.icns" ]; then
+            volicon=(--volicon "$APP/Contents/Resources/AppIcon.icns")
+          fi
+          # create-dmg exits 2 when the image is fine but Finder could not lay
+          # out the window (headless runners sometimes refuse); that is a
+          # cosmetic loss, not a failed release.
+          set +e
+          create-dmg \
+            --volname "NeuralSheet $TAG" "${volicon[@]}" \
+            --window-pos 200 120 --window-size 540 380 --icon-size 128 \
+            --icon NeuralSheet.app 140 180 --app-drop-link 400 180 \
+            --no-internet-enable --hdiutil-quiet \
+            "$DMG" build/dmg-root
+          status=$?
+          set -e
+          if [ "$status" -eq 2 ]; then
+            echo "::warning::create-dmg could not apply the window layout; the image is still valid"
+          elif [ "$status" -ne 0 ]; then
+            exit "$status"
+          fi
+          ls -l "$DMG"
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: NeuralSheet-${{ github.ref_name }}-macos-arm64
-          path: app/build/NeuralSheet-${{ github.ref_name }}-macos-arm64.zip
+      - name: Sign, notarize and staple
+        working-directory: app
+        env:
+          IDENTITY: ${{ secrets.MACOS_SIGNING_IDENTITY }}
+          ASC_API_KEY_P8: ${{ secrets.ASC_API_KEY_P8 }}
+          ASC_API_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
+          ASC_API_ISSUER_ID: ${{ secrets.ASC_API_ISSUER_ID }}
+        run: |
+          APP=build/NeuralSheet.xcarchive/Products/Applications/NeuralSheet.app
+          DMG="build/NeuralSheet-$TAG-macos-arm64.dmg"
+          KEY="$RUNNER_TEMP/AuthKey.p8"
+          printf '%s\n' "$ASC_API_KEY_P8" > "$KEY"
 
-      - name: Publish GitHub release
-        if: env.HAS_NOTARY == 'true'
+          codesign --sign "$IDENTITY" --timestamp "$DMG"
+          codesign --verify --verbose=2 "$DMG"
+
+          xcrun notarytool submit "$DMG" --key "$KEY" --key-id "$ASC_API_KEY_ID" \
+            --issuer "$ASC_API_ISSUER_ID" --wait --timeout 45m --output-format json \
+            | tee build/notarize.json
+          status=$(python3 -c 'import json,sys; print(json.load(sys.stdin).get("status", ""))' < build/notarize.json)
+          if [ "$status" != "Accepted" ]; then
+            id=$(python3 -c 'import json,sys; print(json.load(sys.stdin).get("id", ""))' < build/notarize.json)
+            [ -n "$id" ] && xcrun notarytool log "$id" --key "$KEY" --key-id "$ASC_API_KEY_ID" --issuer "$ASC_API_ISSUER_ID"
+            echo "::error::notarization ended with status '${status:-unknown}'"
+            exit 1
+          fi
+          rm "$KEY"
+
+          # The ticket covers the app inside the image too; staple both so the
+          # DMG and the zipped app each work offline.
+          xcrun stapler staple "$DMG"
+          xcrun stapler staple "$APP"
+          spctl --assess --type open --context context:primary-signature --verbose=2 "$DMG"
+          ditto -c -k --keepParent "$APP" "build/NeuralSheet-$TAG-macos-arm64.zip"
+
+      - name: Remove the signing keychain
+        if: always()
+        run: security delete-keychain build.keychain || true
+
+      - name: Tag the commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "$TAG" -m "NeuralSheet $TAG" "$SHA"
+          git push origin "refs/tags/$TAG"
+
+      - name: Publish the GitHub release
         uses: softprops/action-gh-release@v2
         with:
-          files: app/build/NeuralSheet-${{ github.ref_name }}-macos-arm64.zip
+          tag_name: ${{ env.TAG }}
+          target_commitish: ${{ env.SHA }}
+          name: NeuralSheet ${{ env.TAG }}
           generate_release_notes: true
+          fail_on_unmatched_files: true
+          files: |
+            app/build/NeuralSheet-${{ env.TAG }}-macos-arm64.dmg
+            app/build/NeuralSheet-${{ env.TAG }}-macos-arm64.zip
+
+      - name: Summary
+        run: |
+          {
+            echo "## NeuralSheet $TAG"
+            echo
+            echo "- commit \`$SHA\`"
+            echo "- build $GITHUB_RUN_NUMBER"
+            echo "- https://github.com/$GITHUB_REPOSITORY/releases/tag/$TAG"
+          } >> "$GITHUB_STEP_SUMMARY"
