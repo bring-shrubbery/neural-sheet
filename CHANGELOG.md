@@ -9,6 +9,11 @@ Work towards v2 starts here: user-experience improvements beyond NeuralNote pari
 ### Added
 
 - An app icon: three piano-roll notes on graphite, as a layered macOS 26 icon (`app/NeuralSheet/AppIcon.icon`).
+- An Edit tab with full MIDI editing on the piano roll (select, move, resize, draw, erase, duplicate, reassign instrument, velocity, snap and quantize to a tempo grid, undo/redo, revert to transcription); the transcription is saved in the session.
+
+### Changed
+
+- The synth plays per-note velocity; the export tempo is set on the Edit toolbar.
 
 ## [1.0.0-checkpoint] — 2026-09-19
 

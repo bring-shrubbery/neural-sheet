@@ -17,6 +17,7 @@ NeuralSheet is a from-scratch Swift rewrite of [NeuralNote](https://github.com/D
 - **Transcribe with MuScriptor.** A 100M to 1.4B parameter transformer from Kyutai and Mirelo, running locally on the GPU through Metal. Restrict it to the instruments you know are in the mix, or let it detect them.
 - **Watch the notes arrive.** The piano roll fills in as each five-second chunk is decoded. You can start playing back the part that is done while the rest is still running.
 - **Listen and mix.** Play the transcription through the built-in synthesizer, blend it with the original audio, and set the level, mute and solo of every instrument.
+- **Edit the notes.** Switch to the Edit tab: move, resize, draw and erase notes, reassign them to other instruments, set velocities, snap and quantize to a tempo grid, with undo. Edits are saved with the session.
 - **Get the MIDI out.** Drag the result onto a track in your DAW, or export a multi-track `.mid` file with one track per instrument.
 
 ## Why a rewrite
@@ -35,9 +36,10 @@ The transcription engine itself, [muscriptor.cpp](https://github.com/DamRsn/musc
 2. **Choose instruments.** Use **+** in the sidebar to tick the instruments in the recording, or leave it on *Automatic*. Transcriptions are better when the model is told what to listen for.
 3. **Transcribe.** The first run downloads a model (see below). Progress shows in the status bar; you can cancel at any time.
 4. **Listen.** Space plays and pauses. The **ORIG / MIDI** slider blends the source audio with the synthesized notes; each instrument has its own fader, mute and solo.
-5. **Export.** Drag the **MIDI** button onto a track in your DAW, or use **Export** to save a `.mid` file. The export tempo sets how seconds map to beats.
+5. **Edit.** `⌘2` opens the Edit tab. `V` selects, `D` draws, `E` erases; drag notes, or their ends; `⌥`-drag duplicates; arrows nudge. Set the tempo and where bar 1 falls in the toolbar.
+6. **Export.** Drag the **MIDI** button onto a track in your DAW, or use **Export** to save a `.mid` file. The export tempo sets how seconds map to beats.
 
-Shortcuts: `Space` play/pause · `Shift+Space` go to start · `r` record · `m` mute · `c` centre the playhead · `Shift+Backspace` clear · `⌘`+scroll or pinch to zoom the timeline.
+Shortcuts: `Space` play/pause · `Shift+Space` go to start · `r` record · `m` mute · `c` centre the playhead · `Shift+Backspace` clear · `⌘`+scroll or pinch to zoom the timeline · `⌘1`/`⌘2` tabs · `⌘Z` undo · `⌘U` quantize.
 
 ## Models
 
