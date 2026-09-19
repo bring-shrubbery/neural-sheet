@@ -79,6 +79,7 @@ final class TimelineContainerView: NSView {
         var goToStartGeneration = 0
         var finalizedThrough: Double = 0
         var mixer = InstrumentMixerState()
+        var highlightedProgram: Int?
         var hasModel = false
         var transcribeLabel = ""
         var canTranscribe = false

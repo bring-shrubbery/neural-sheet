@@ -220,7 +220,9 @@ extension PianoRollView {
         // Edit mode: velocity 1…127 → 0.45…1 (§6.5); the Transcribe tab draws every note solid,
         // as it always has. Muted wins in both.
         let velocityAlpha = grid != nil ? 0.45 + 0.55 * CGFloat(note.velocity - 1) / 126 : 1
-        let alpha = audible[program] ? velocityAlpha : PianoRollView.mutedNoteAlpha
+        // A highlighted instrument keeps its alpha; the others step back behind it.
+        let highlightAlpha: CGFloat = highlightedProgram.map { $0 == program ? 1 : PianoRollView.unhighlightedNoteAlpha } ?? 1
+        let alpha = audible[program] ? velocityAlpha * highlightAlpha : PianoRollView.mutedNoteAlpha
         let edgeWidth = PianoRollView.onsetEdgeWidth * k
 
         ctx.setAlpha(alpha)

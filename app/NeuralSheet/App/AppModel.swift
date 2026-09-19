@@ -141,6 +141,28 @@ nonisolated struct UpdateNotice: Equatable, Sendable {
     /// The editor's tool, selection, target instrument, snap and grid.
     var editor = EditorState()
 
+    /// The instrument a strip click singled out: the roll fades every other instrument while it
+    /// is set. Both tabs; not part of the session.
+    private(set) var highlightedProgram: Int?
+
+    /// A strip click: singles the instrument out in the roll, or clears the highlight when it is
+    /// the one already singled out. In the Edit tab the same click also makes it the target,
+    /// which never clears. Beside ``highlightedProgram`` because its setter is this file's.
+    func toggleHighlight(program: Int) {
+        guard mixer.entries.contains(where: { $0.program == program }) else { return }
+
+        highlightedProgram = highlightedProgram == program ? nil : program
+
+        if workspace == .edit {
+            setTargetProgram(program)
+        }
+    }
+
+    /// For an instrument that has left the mix.
+    func clearHighlight() {
+        highlightedProgram = nil
+    }
+
     /// The one place the state changes. The pipeline's and the commands'; views never call it.
     func transition(to newState: AppState) {
         guard newState != state else { return }
@@ -619,6 +641,7 @@ nonisolated struct UpdateNotice: Equatable, Sendable {
         staging.reset()
         document = nil
         editor.selection = []
+        highlightedProgram = nil
         _ = dragCanceller?()
 
         // Otherwise the synth keeps playing the notes of the transcription just thrown away.

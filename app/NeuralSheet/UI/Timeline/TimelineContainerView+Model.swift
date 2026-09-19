@@ -26,6 +26,7 @@ extension TimelineContainerView {
             _ = model.notes
             _ = model.finalizedThrough
             _ = model.mixer
+            _ = model.highlightedProgram
             _ = model.installedModels
             _ = model.transcribeLabel
             _ = model.canTranscribe
@@ -63,6 +64,7 @@ extension TimelineContainerView {
                            goToStartGeneration: model.goToStartGeneration,
                            finalizedThrough: model.finalizedThrough,
                            mixer: model.mixer,
+                           highlightedProgram: model.highlightedProgram,
                            hasModel: !model.installedModels.isEmpty,
                            transcribeLabel: model.transcribeLabel,
                            canTranscribe: model.canTranscribe,
@@ -135,6 +137,10 @@ extension TimelineContainerView {
 
         if first || new.mixer != old.mixer {
             roll.setMixer(new.mixer)
+        }
+
+        if first || new.highlightedProgram != old.highlightedProgram {
+            roll.setHighlightedProgram(new.highlightedProgram)
         }
 
         // The controller sets the selection as it is installed; from then on the roll follows the

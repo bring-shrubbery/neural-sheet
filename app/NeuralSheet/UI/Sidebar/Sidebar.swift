@@ -84,7 +84,8 @@ struct Sidebar: View {
                                     level: model.instrumentLevelDb(program: entry.program),
                                     width: SidebarMetrics.stripWidth - scrollbarInset / k,
                                     isTarget: editing && model.editor.targetProgram == entry.program,
-                                    onChooseTarget: editing ? { model.setTargetProgram(entry.program) } : nil)
+                                    isHighlighted: model.highlightedProgram == entry.program,
+                                    onSelect: { model.toggleHighlight(program: entry.program) })
                         .equatable()
                 }
             }

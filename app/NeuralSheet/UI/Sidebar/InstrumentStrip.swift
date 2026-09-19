@@ -21,8 +21,12 @@ struct InstrumentStrip: View {
     var width: CGFloat = SidebarMetrics.stripWidth
     /// Edit tab: this strip's instrument is where new and reassigned notes go (design §6.2).
     var isTarget = false
-    /// Edit tab: a click on the chip or the name makes this the target. Nil in the Transcribe tab.
-    var onChooseTarget: (() -> Void)?
+    /// This strip's instrument is singled out in the roll, the others faded; the chip's border
+    /// lights up in the accent so the sidebar says so without competing with the roll.
+    var isHighlighted = false
+    /// A click on the chip or the name: toggles the highlight, and in the Edit tab makes this the
+    /// target too. Nil for a strip that cannot be clicked.
+    var onSelect: (() -> Void)?
 
     @Environment(\.uiScale) private var k
 
@@ -104,8 +108,8 @@ struct InstrumentStrip: View {
                     .padding(.leading, s(Self.textInset - Self.chipSize))
                 }
                 .contentShape(Rectangle())
-                .onTapGesture { onChooseTarget?() }
-                .allowsHitTesting(onChooseTarget != nil)
+                .onTapGesture { onSelect?() }
+                .allowsHitTesting(onSelect != nil)
 
                 Spacer(minLength: 0)
 
@@ -193,7 +197,7 @@ struct InstrumentStrip: View {
         // multiplied it in, rather than as one group: the border overlaps the fill.
         return ZStack {
             shape.fill(Theme.chipFill(colour).opacity(alpha))
-            shape.strokeBorder(Theme.chipBorder(colour).opacity(alpha), lineWidth: k)
+            shape.strokeBorder((isHighlighted ? Theme.accent : Theme.chipBorder(colour)).opacity(alpha), lineWidth: k)
             Text(entry.info.abbreviation)
                 .font(Fonts.mono(8, weight: 600, scale: k))
                 .foregroundStyle(colour.opacity(alpha))
@@ -267,9 +271,9 @@ struct InstrumentStrip: View {
 /// it needs to look at the target closure.
 extension InstrumentStrip: @MainActor Equatable {
     /// The model is one object for the life of the window, so identity is the comparison; the rest
-    /// is the strip's inputs, and a strip whose inputs stand still is left alone. The target
-    /// closure is compared by presence only: it is the same call for the life of a tab, but a
-    /// strip must re-lay out when the tab changes or its name would keep the old tab's hit test.
+    /// is the strip's inputs, and a strip whose inputs stand still is left alone. The select
+    /// closure is compared by presence only: it is the same call for the life of the window, and
+    /// what it does on a click is the model's decision, not the strip's.
     static func == (lhs: InstrumentStrip, rhs: InstrumentStrip) -> Bool {
         lhs.model === rhs.model
             && lhs.entry == rhs.entry
@@ -277,7 +281,8 @@ extension InstrumentStrip: @MainActor Equatable {
             && lhs.level == rhs.level
             && lhs.width == rhs.width
             && lhs.isTarget == rhs.isTarget
-            && (lhs.onChooseTarget == nil) == (rhs.onChooseTarget == nil)
+            && lhs.isHighlighted == rhs.isHighlighted
+            && (lhs.onSelect == nil) == (rhs.onSelect == nil)
     }
 }
 

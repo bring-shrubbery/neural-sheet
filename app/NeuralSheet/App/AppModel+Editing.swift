@@ -49,12 +49,17 @@ extension AppModel {
         validateTargetProgram()
     }
 
-    /// If the target instrument has left the mix, the first strip takes over.
+    /// If the target instrument has left the mix, the first strip takes over; a highlight on an
+    /// instrument that has gone simply goes with it.
     private func validateTargetProgram() {
         let programs = mixer.entries.map(\.program)
 
         if !programs.contains(editor.targetProgram), let first = programs.first {
             editor.targetProgram = first
+        }
+
+        if let highlighted = highlightedProgram, !programs.contains(highlighted) {
+            clearHighlight()
         }
     }
 

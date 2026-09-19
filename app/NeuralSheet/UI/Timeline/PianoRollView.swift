@@ -49,6 +49,9 @@ final class PianoRollView: NSView {
     private(set) var audible = [Bool](repeating: true, count: NoteEvent.drumProgram + 1)
     private(set) var colours: [CGColor] = []
 
+    /// The instrument a strip click singled out: every other instrument fades while it is set.
+    private(set) var highlightedProgram: Int?
+
     /// Design §6.5: the selection's outline, a drag's preview, and the indices the preview names.
     private(set) var selection: Set<NoteID> = []
     private(set) var preview: DragPreview?
@@ -59,6 +62,8 @@ final class PianoRollView: NSView {
     /// How far a drum hit is widened for drawing (`DRUM_MIN_DRAWN_SECONDS`).
     static let drumMinDrawnSeconds = 0.1
     static let mutedNoteAlpha: CGFloat = 0.16
+    /// What the other instruments fade to while one is highlighted: still legible, clearly behind.
+    static let unhighlightedNoteAlpha: CGFloat = 0.35
     static let noteCorner: CGFloat = 2
     static let onsetEdgeWidth: CGFloat = 2
 
@@ -152,6 +157,14 @@ final class PianoRollView: NSView {
         if changed {
             needsDisplay = true
         }
+    }
+
+    /// The instrument singled out from the sidebar, or nil for none. Repaints what is on screen.
+    func setHighlightedProgram(_ program: Int?) {
+        guard program != highlightedProgram else { return }
+
+        highlightedProgram = program
+        setNeedsDisplay(visibleRect)
     }
 
     static func drawnEnd(of note: NoteEvent) -> Double {

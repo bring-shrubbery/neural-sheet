@@ -145,21 +145,41 @@ struct SelectionInspector: View {
         .background(AnchorCatcher { instrumentAnchor = $0 })
     }
 
+    /// The instruments already in the mix first, with their colours, so moving notes onto a
+    /// strip that exists is one look away; then everything else.
     private func showInstrumentMenu() {
         guard let anchor = instrumentAnchor else { return }
 
         let menu = instrumentMenu
         let model = model
         let current = Set(selected.map(\.program))
+        let inMix = model.mixer.entries.map(\.info)
+        let inMixPrograms = Set(inMix.map(\.program))
+        let others = Instruments.all.filter { !inMixPrograms.contains($0.program) }
         let titles = Instruments.all.map(\.name)
         let width = PopupMenuPresenter.width(forTitles: titles, scale: k)
 
+        func row(_ info: InstrumentInfo, chip: Color?) -> MenuRow {
+            MenuRow(title: info.name, isTicked: current == [info.program], chip: chip) {
+                menu.dismiss()
+                commit { $0.setProgram(model.editor.selection, program: info.program) }
+            }
+        }
+
         menu.show(from: anchor, width: width, scale: k) {
-            ForEach(Instruments.all, id: \.program) { info in
-                MenuRow(title: info.name, isTicked: current == [info.program]) {
-                    menu.dismiss()
-                    commit { $0.setProgram(model.editor.selection, program: info.program) }
+            if !inMix.isEmpty {
+                MenuSectionLabel(title: "IN THE MIX")
+
+                ForEach(inMix, id: \.program) { info in
+                    row(info, chip: Color(info.colour))
                 }
+
+                MenuSeparator()
+                MenuSectionLabel(title: "ALL INSTRUMENTS")
+            }
+
+            ForEach(others, id: \.program) { info in
+                row(info, chip: nil)
             }
         }
     }
@@ -267,5 +287,13 @@ private struct PitchField: View {
         let midi = (octave + 1) * 12 + pitchClass
 
         return (0...127).contains(midi) ? midi : nil
+    }
+}
+
+private extension Color {
+    /// The model's colour type as SwiftUI's, for the picker's chips. File scope, as the strip
+    /// keeps its own copy: two visible overloads would collide.
+    init(_ rgba: NeuralSheetCore.RGBA) {
+        self.init(.sRGB, red: rgba.r, green: rgba.g, blue: rgba.b, opacity: rgba.a)
     }
 }

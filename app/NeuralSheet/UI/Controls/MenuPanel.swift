@@ -92,15 +92,32 @@ struct MenuRow: View {
     let title: String
     var isTicked: Bool = false
     var isEnabled: Bool = true
+    /// An instrument's colour, shown as a small swatch before the title; nil draws none.
+    var chip: Color? = nil
     let action: () -> Void
 
     @Environment(\.uiScale) private var k
     @State private var isHovered = false
 
+    private static let chipSize: CGFloat = 10
+    private static let chipCorner: CGFloat = 2.5
+    private static let chipGap: CGFloat = 8
+
     var body: some View {
         let s = Scaled(k: k)
 
         HStack(spacing: 0) {
+            if let chip {
+                let shape = RoundedRectangle(cornerRadius: s(Self.chipCorner), style: .circular)
+
+                ZStack {
+                    shape.fill(Theme.chipFill(chip))
+                    shape.strokeBorder(Theme.chipBorder(chip), lineWidth: k)
+                }
+                .frame(width: s(Self.chipSize), height: s(Self.chipSize))
+                .padding(.trailing, s(Self.chipGap))
+            }
+
             Text(title)
                 .font(isTicked ? Fonts.menuItemTicked(k) : Fonts.menuItem(k))
                 .foregroundStyle(isTicked ? Theme.popupItemTicked : Theme.popupItem)
@@ -122,6 +139,29 @@ struct MenuRow: View {
         .onTapGesture { if isEnabled { action() } }
         .pointerStyle(isEnabled ? .link : nil)
         .accessibilityAddTraits(.isButton)
+    }
+}
+
+/// A section's label inside a menu: the header typography at a row's inset, for a list that
+/// falls into groups.
+struct MenuSectionLabel: View {
+    let title: String
+
+    @Environment(\.uiScale) private var k
+
+    private static let height: CGFloat = 22
+
+    var body: some View {
+        let s = Scaled(k: k)
+
+        Text(title)
+            .font(Fonts.sectionHeader(k))
+            .kerning(Fonts.tracking(Fonts.Tracking.sectionHeader, pointSize: Fonts.Size.sectionHeader, scale: k))
+            .foregroundStyle(Theme.popupTitle)
+            .lineLimit(1)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, s(MenuMetrics.padX))
+            .frame(height: s(Self.height))
     }
 }
 
