@@ -16,7 +16,7 @@ pushing a tag. This replaces the tag-triggered `release.yml`.
   have moved on), with submodules.
 - Docs-only changes do not release. The diff between the previous release tag
   (or, when there is none, the empty tree) and the built commit is filtered
-  through `.github/release-ignore` (gitignore syntax): `docs/`, `*.md`,
+  by `app/Scripts/release-changes.sh`, which ignores `docs/`, `*.md`,
   `.github/` except `.github/workflows/`, `LICENSE`, `NOTICE`. When every changed
   path is ignored, the job logs "no code changes since vA.B.C" and stops green.
 
@@ -44,8 +44,8 @@ With no strict tag the result is the pbxproj version itself. Examples:
 The version is passed to `xcodebuild` as `MARKETING_VERSION=<x.y.z>` and
 `CURRENT_PROJECT_VERSION=<github.run_number>`; `project.pbxproj` is never
 committed to by CI, there is no bot commit and no workflow loop. The script also
-accepts `--changed-since` to print the previous tag for the path filter, and is
-runnable locally with a fake tag list for testing.
+accepts `--previous` to print the previous release tag for the path filter, and
+is runnable locally with a fake tag list for testing.
 
 The tag `vX.Y.Z` is created by the workflow (annotated, message
 `NeuralSheet vX.Y.Z`) on the built commit through the GitHub API, after the
@@ -95,7 +95,7 @@ these and the `gh secret set` commands.
 ## Files
 
 - `.github/workflows/release.yml` — rewritten.
-- `.github/release-ignore` — the docs-only filter.
+- `app/Scripts/release-changes.sh` — the docs-only filter; tested locally.
 - `app/Scripts/release-version.sh` — version computation; tested locally.
 - `docs/release.md` — maintainer setup and how minor/major releases are made.
 - `AGENTS.md`, `CHANGELOG.md` — the release paragraph and an Unreleased entry.

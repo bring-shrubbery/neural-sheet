@@ -10,6 +10,7 @@ Work towards v2 starts here: user-experience improvements beyond NeuralNote pari
 
 - An app icon: three piano-roll notes on graphite, as a layered macOS 26 icon (`app/NeuralSheet/AppIcon.icon`).
 - An Edit tab with full MIDI editing on the piano roll (select, move, resize, draw, erase, duplicate, reassign instrument, velocity, snap and quantize to a tempo grid, undo/redo, revert to transcription); the transcription is saved in the session.
+- Automatic releases: every code change on `main` that passes CI is published as a signed, notarized `.dmg` (and zip) on a GitHub release, tagged with the next patch version (`docs/release.md`).
 
 ### Changed
 

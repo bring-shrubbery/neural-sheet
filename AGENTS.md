@@ -60,4 +60,4 @@ Requirements: macOS 26, Xcode 27, CMake on PATH (`/opt/homebrew/bin/cmake` is al
 
 ## Maintainer workflow
 
-Maintainers run the agents that write NeuralSheet. New features are chosen from Discussions, specified against the inventory and design docs, implemented on `main` or a short-lived branch, reviewed (spec compliance and code quality) before landing, and tagged `vX.Y.Z` for release. The release workflow signs and notarizes only when the Developer ID secrets are configured.
+Maintainers run the agents that write NeuralSheet. New features are chosen from Discussions, specified against the inventory and design docs, implemented on `main` or a short-lived branch, reviewed (spec compliance and code quality) before landing. Every code change that lands on `main` and passes CI is released automatically as a signed, notarized disk image tagged `vX.Y.Z` (patch + 1; raise `MARKETING_VERSION` in Xcode for a minor or major). Never push a `v*` tag by hand. See `docs/release.md`.
