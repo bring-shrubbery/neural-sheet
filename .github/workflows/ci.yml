@@ -19,8 +19,12 @@ jobs:
     runs-on: macos-26
     steps:
       - uses: actions/checkout@v4
-      - name: Select Xcode
-        run: sudo xcode-select -s /Applications/Xcode_27.app
+      - name: Select the newest installed Xcode
+        run: |
+          XCODE=$(ls -d /Applications/Xcode_*.app | sort -V | tail -1)
+          echo "using $XCODE"
+          sudo xcode-select -s "$XCODE"
+          xcodebuild -version
       - name: swift test
         working-directory: app/Packages/NeuralSheetCore
         run: swift test 2>&1 | tail -30
@@ -32,10 +36,12 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
-      - name: Select Xcode
-        run: sudo xcode-select -s /Applications/Xcode_27.app
-      - name: Install CMake
-        run: brew install cmake
+      - name: Select the newest installed Xcode
+        run: |
+          XCODE=$(ls -d /Applications/Xcode_*.app | sort -V | tail -1)
+          echo "using $XCODE"
+          sudo xcode-select -s "$XCODE"
+          xcodebuild -version
       - name: Cache the engine build
         uses: actions/cache@v4
         with:
