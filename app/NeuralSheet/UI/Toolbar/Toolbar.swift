@@ -5,10 +5,11 @@ import SwiftUI
 /// The row above the timeline (`NnToolbar`): what is loaded on the left, what can be done with the
 /// transcription on the right.
 ///
-/// Right to left: the bin, Drag MIDI out, Export MIDI out and the EXPORT TEMPO pill, each a
-/// `toolbarButton` (28) tall with 12 between them. The export group is dimmed rather than absent
-/// before there is a transcription to export: it holds its place either way, and an empty gap
-/// there reads as something failing to draw.
+/// Right to left: the bin and Drag MIDI out, each a `toolbarButton` (28) tall with 12 between
+/// them. Drag is dimmed rather than absent before there is a transcription to export: it holds
+/// its place either way, and an empty gap there reads as something failing to draw. The Export
+/// button and the EXPORT TEMPO pill NeuralNote had here are File → Export MIDI… (⇧⌘E) now, with
+/// the tempo asked for in its dialog.
 struct Toolbar: View {
     let model: AppModel
 
@@ -27,12 +28,6 @@ struct Toolbar: View {
         static let iconSize: CGFloat = 13
         static let buttonPadX: CGFloat = 12
         static let iconLabelGap: CGFloat = 7
-        static let pillPadding: CGFloat = 10
-        static let pillGap: CGFloat = 8
-        static let spinnerWidth: CGFloat = 7
-        static let spinnerHeight: CGFloat = 4
-        static let spinnerGap: CGFloat = 2
-        static let labelTracking: Double = 0.09
     }
 
     var body: some View {
@@ -59,8 +54,6 @@ struct Toolbar: View {
                     Spacer(minLength: 0)
                 }
 
-                tempoPill(canExport: canExport)
-                exportButton(canExport: canExport)
                 dragButton(canExport: canExport)
                 clearButton(canClear: canClear)
             }
@@ -76,71 +69,6 @@ struct Toolbar: View {
         .frame(height: s(Metrics.height))
         .frame(maxWidth: .infinity)
         .background(Theme.bgRoot)
-    }
-
-    // MARK: - Export tempo
-
-    private func tempoPill(canExport: Bool) -> some View {
-        let s = Scaled(k: k)
-
-        return HStack(spacing: 0) {
-            TrackedLabel(string: "EXPORT TEMPO",
-                        em: Metrics.labelTracking,
-                        pointSize: Fonts.Size.pillLabel,
-                        font: Fonts.pillLabel(k),
-                        scale: k)
-                .foregroundStyle(Theme.textDim)
-                .fixedSize()
-
-            Spacer().frame(width: s(Metrics.pillGap))
-
-            TempoField(model: model, isEnabled: canExport)
-
-            Spacer().frame(width: s(Metrics.pillGap))
-
-            // Stacked triangles rather than a spinner control: the value is typed, and these say
-            // the field is a number without pretending to be a second way of setting it.
-            VStack(spacing: s(Metrics.spinnerGap)) {
-                Icons.TriangleUp()
-                    .fill(Theme.textDim)
-                    .frame(width: s(Metrics.spinnerWidth), height: s(Metrics.spinnerHeight))
-                Icons.TriangleDown()
-                    .fill(Theme.textDim)
-                    .frame(width: s(Metrics.spinnerWidth), height: s(Metrics.spinnerHeight))
-            }
-        }
-        .padding(.horizontal, s(Metrics.pillPadding))
-        .frame(height: s(Metrics.buttonHeight))
-        .background(RoundedRectangle(cornerRadius: s(Metrics.corner), style: .circular).fill(Theme.bgControlAlt))
-        .opacity(canExport ? 1 : Theme.disabledAlpha)
-    }
-
-    // MARK: - Export
-
-    private func exportButton(canExport: Bool) -> some View {
-        let s = Scaled(k: k)
-
-        return FlatButton(isEnabled: canExport,
-                          idle: Theme.bgControlAlt,
-                          on: Theme.bgControlActive,
-                          foregroundIdle: Theme.textButton,
-                          foregroundOn: Theme.textBright,
-                          corner: s(Metrics.corner),
-                          action: model.exportMidi) { _ in
-            HStack(spacing: s(Metrics.iconLabelGap)) {
-                Icons.FolderStroked()
-                    .stroke(Theme.textIconSoft, style: Icons.strokeStyle(scale: k))
-                    .frame(width: s(Metrics.iconSize), height: s(Metrics.iconSize))
-
-                Text("Export MIDI out")
-                    .font(Fonts.buttonLabel(k))
-                    .fixedSize()
-            }
-            .padding(.horizontal, s(Metrics.buttonPadX))
-            .frame(height: s(Metrics.buttonHeight))
-        }
-        .tooltip("Write the transcribed MIDI to a file")
-        .accessibilityLabel("Export MIDI out")
     }
 
     // MARK: - Drag

@@ -1,8 +1,8 @@
 import NeuralSheetCore
 import SwiftUI
 
-/// Settings → General: the tooltips switch and what the MIDI writer does with more instruments
-/// than the file has channels (inventory §11.3), plus the update check.
+/// Settings → General: the tooltips switch and the update check. The MIDI overflow rule
+/// (inventory §11.3) is an export setting, asked for in the export dialog.
 struct GeneralSettingsView: View {
     @Bindable var model: AppModel
 
@@ -10,17 +10,6 @@ struct GeneralSettingsView: View {
         Form {
             Section {
                 Toggle("Show tooltips", isOn: $model.settings.tooltipsVisible)
-            }
-
-            Section {
-                Picker("When a MIDI export has too many instruments:", selection: $model.settings.midiOverflowMode) {
-                    Text("Reuse the last channels").tag(MidiOverflowMode.reuseChannels)
-                    Text("Drop the extra instruments").tag(MidiOverflowMode.dropExtraInstruments)
-                }
-                .pickerStyle(.radioGroup)
-            } footer: {
-                Text("A MIDI file has 16 channels, one of which is reserved for drums.")
-                    .foregroundStyle(.secondary)
             }
 
             Section {

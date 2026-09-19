@@ -15,7 +15,7 @@ import NeuralSheetCore
 /// | c | centre playhead toggle |
 /// | Esc | close the instrument picker |
 ///
-/// A press while a text field has the keyboard -- the tempo -- is the field's; so is anything
+/// A press while a text field has the keyboard is the field's; so is anything
 /// with Command, Control or Option down, which are the menu bar's. Only the main window's own
 /// events count: the Settings window, a menu panel or a sheet has the key when it is up, and a
 /// Space meant for it must not start playback underneath. Escape goes to whichever popup is
@@ -59,7 +59,7 @@ import NeuralSheetCore
     private func handle(_ event: NSEvent) -> Bool {
         guard let window = event.window, window === mainWindow(), window.attachedSheet == nil else { return false }
 
-        // The field editor, while the tempo is being typed.
+        // The field editor, while something is being typed.
         if window.firstResponder is NSText || window.firstResponder is NSTextField {
             return false
         }

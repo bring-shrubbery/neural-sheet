@@ -39,6 +39,10 @@ struct MainView: View {
         .frame(minWidth: MainWindowController.minContentSize.width,
                minHeight: MainWindowController.minContentSize.height)
         .background(MainWindowHost(controller: windowController, model: model))
+        .sheet(isPresented: Binding(get: { model.isExportDialogPresented },
+                                    set: { model.isExportDialogPresented = $0 })) {
+            ExportDialog(model: model)
+        }
         .onAppear(perform: appear)
         .onDisappear(perform: disappear)
     }

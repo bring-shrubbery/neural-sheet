@@ -36,6 +36,7 @@ struct NeuralSheetApp: App {
         .windowResizability(.contentMinSize)
         .commands {
             appMenu(model: model)
+            fileMenu(model: model)
             viewMenu(model: model)
             audioMenu(model: model)
         }
@@ -54,6 +55,21 @@ struct NeuralSheetApp: App {
             Button("Check for Updates…") {
                 model.checkForUpdates(explicit: true)
             }
+        }
+    }
+
+    /// Export MIDI…, which the toolbar used to hold as a button beside the tempo field: the two
+    /// export settings are asked for in a dialog on the way to the save panel. Only once there is
+    /// a finished transcription.
+    private func fileMenu(model: AppModel) -> some Commands {
+        CommandGroup(after: .saveItem) {
+            Divider()
+
+            Button("Export MIDI…") {
+                model.requestExport()
+            }
+            .keyboardShortcut("e", modifiers: [.command, .shift])
+            .disabled(!model.canExport)
         }
     }
 

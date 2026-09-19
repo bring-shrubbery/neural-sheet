@@ -42,7 +42,6 @@ enum Fonts {
         static let buttonLabel: CGFloat = 11.5
         static let menuItem: CGFloat = 11.5
         static let menuItemTicked: CGFloat = 11.5
-        static let tempoValue: CGFloat = 11.5
         static let sectionHeader: CGFloat = 10
         static let pillLabel: CGFloat = 9.5
         static let statusBar: CGFloat = 9.5
@@ -104,8 +103,6 @@ enum Fonts {
     /// A ticked row is the one thing in a menu the eye should land on, so it carries weight as well
     /// as the accent box.
     static func menuItemTicked(_ s: CGFloat) -> Font { sans(Size.menuItemTicked, weight: 500, scale: s) }
-
-    static func tempoValue(_ s: CGFloat) -> Font { mono(Size.tempoValue, weight: 400, scale: s) }
 
     static func sectionHeader(_ s: CGFloat) -> Font { sans(Size.sectionHeader, weight: 600, scale: s) }
 

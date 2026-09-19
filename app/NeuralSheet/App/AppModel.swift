@@ -238,6 +238,9 @@ nonisolated struct UpdateNotice: Equatable, Sendable {
     /// The Settings window's tab. Set before opening the window to land on a particular one.
     var settingsTab: SettingsTab = .general
 
+    /// File → Export MIDI…: the sheet that asks for the export settings before the save panel.
+    var isExportDialogPresented = false
+
     @ObservationIgnored private var modelPollTimer: Timer?
 
     var isInstrumentMenuOpen: Bool = false
@@ -835,8 +838,15 @@ nonisolated struct UpdateNotice: Equatable, Sendable {
         return url
     }
 
-    /// The Export button: a save panel titled "Export MIDI" in the Music folder, `.mid` only, the
-    /// overwrite warning left on (§6.1).
+    /// File → Export MIDI…: the dialog, which then calls ``exportMidi()``.
+    func requestExport() {
+        guard canExport else { return }
+
+        isExportDialogPresented = true
+    }
+
+    /// The export dialog's Export…: a save panel titled "Export MIDI" in the Music folder, `.mid`
+    /// only, the overwrite warning left on (§6.1).
     func exportMidi() {
         guard let data = midiData() else { return }
 
