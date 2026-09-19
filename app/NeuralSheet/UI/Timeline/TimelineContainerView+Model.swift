@@ -146,6 +146,7 @@ extension TimelineContainerView {
 
             if new.tool != old.tool {
                 roll.refreshCursor()
+                roll.window?.invalidateCursorRects(for: roll)
             }
         }
 

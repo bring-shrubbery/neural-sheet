@@ -194,6 +194,7 @@ import SwiftUI
         session = nil
         roll.marquee.isHidden = true
         roll.setPreview(nil)
+        roll.window?.invalidateCursorRects(for: roll)
 
         return true
     }

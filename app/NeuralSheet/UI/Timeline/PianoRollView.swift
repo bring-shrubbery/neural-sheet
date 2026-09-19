@@ -355,6 +355,15 @@ final class PianoRollView: NSView {
 
     // MARK: - Mouse
 
+    /// The tool's base cursor for the whole roll; `mouseMoved` and `cursorUpdate` refine it over
+    /// edges. Without an installed interaction the roll has no cursor rect and AppKit's arrow
+    /// stands.
+    override func resetCursorRects() {
+        guard let interaction else { return }
+
+        addCursorRect(visibleRect, cursor: interaction.cursor(at: CGPoint(x: -1, y: -1)))
+    }
+
     /// Tracks the pointer for the edit cursor; `mouseMoved` and `cursorUpdate` ask the controller.
     override func updateTrackingAreas() {
         super.updateTrackingAreas()
