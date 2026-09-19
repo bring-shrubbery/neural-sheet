@@ -29,6 +29,8 @@ final class PianoRollView: NSView {
 
     /// The edit controller, in Edit mode; without one a click seeks.
     weak var interaction: RollEditController?
+    /// Where the last right press landed, so its release resolves there.
+    private var rightPressPoint: CGPoint?
 
     let playhead = PlayheadView(drawsTriangle: false)
     let wash = FillView(colour: TimelinePalette.accentWashRoll)
@@ -396,17 +398,23 @@ final class PianoRollView: NSView {
         interaction?.mouseUp(at: convert(event.locationInWindow, from: nil), event: event)
     }
 
-    /// A right click selects like a click (design §7); the up resolves the press. A right drag
-    /// is not forwarded and does nothing.
+    /// A right click selects like a click (design §7): the up resolves the press at the point it
+    /// went down, however far the mouse moved in between, so a right press-move-release never
+    /// turns into a move, a resize, a marquee or an erase that showed no preview. A right drag
+    /// is not forwarded.
     override func rightMouseDown(with event: NSEvent) {
         guard let interaction else { return super.rightMouseDown(with: event) }
 
-        interaction.mouseDown(at: convert(event.locationInWindow, from: nil), event: event)
+        let point = convert(event.locationInWindow, from: nil)
+        rightPressPoint = point
+        interaction.mouseDown(at: point, event: event)
     }
 
     override func rightMouseUp(with event: NSEvent) {
         guard let interaction else { return super.rightMouseUp(with: event) }
 
-        interaction.mouseUp(at: convert(event.locationInWindow, from: nil), event: event)
+        let point = rightPressPoint ?? convert(event.locationInWindow, from: nil)
+        rightPressPoint = nil
+        interaction.mouseUp(at: point, event: event)
     }
 }
