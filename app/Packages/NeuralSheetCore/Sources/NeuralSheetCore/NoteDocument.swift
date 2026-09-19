@@ -103,18 +103,6 @@ public struct NoteDocument: Equatable, Codable, Sendable {
         notes.contains { $0.id == id }
     }
 
-    /// Index by id, built once per batch rather than searched per note.
-    func indexByID() -> [NoteID: Int] {
-        var map: [NoteID: Int] = [:]
-        map.reserveCapacity(notes.count)
-
-        for (index, note) in notes.enumerated() {
-            map[note.id] = index
-        }
-
-        return map
-    }
-
     /// A fresh id for a note about to be inserted. Taking one without committing is harmless.
     public mutating func allocateID() -> NoteID {
         defer { nextID += 1 }
