@@ -35,8 +35,6 @@ enum Fonts {
 
     /// Authored point heights, for laying a row out around a label and for `tracking`.
     enum Size {
-        static let wordmark: CGFloat = 15
-        static let wordmarkVersion: CGFloat = 9
         static let transportTime: CGFloat = 15
         static let transportTotal: CGFloat = 11
         static let filename: CGFloat = 12.5
@@ -55,8 +53,6 @@ enum Fonts {
 
     /// Letter-spacing as a fraction of the em, as in CSS. Pass one of these to `tracking`.
     enum Tracking {
-        static let wordmark: Double = 0.14
-        static let wordmarkVersion: Double = 0.06
         static let sectionHeader: Double = 0.13
         /// The top bar's pills run their section headers tighter.
         static let sectionHeaderPill: Double = 0.09
@@ -92,10 +88,6 @@ enum Fonts {
     }
 
     // MARK: - The ramp
-
-    static func wordmark(_ s: CGFloat) -> Font { sans(Size.wordmark, weight: 600, scale: s) }
-
-    static func wordmarkVersion(_ s: CGFloat) -> Font { mono(Size.wordmarkVersion, weight: 500, scale: s) }
 
     static func transportTime(_ s: CGFloat) -> Font { mono(Size.transportTime, weight: 500, scale: s) }
 

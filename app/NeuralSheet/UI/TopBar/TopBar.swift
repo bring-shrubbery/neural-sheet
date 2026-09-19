@@ -2,14 +2,14 @@ import CoreText
 import NeuralSheetCore
 import SwiftUI
 
-/// The window's top strip (`TopBar.cpp`): wordmark, transport, position readout, model, mix, output
-/// level, the input mute and the settings button. Authored 54 px tall, every extent scaled by
+/// The window's top strip (`TopBar.cpp`): transport, position readout, model, mix, output level,
+/// the input mute and the settings button. Authored 54 px tall, every extent scaled by
 /// `\.uiScale`.
 ///
-/// Left to right: wordmark (reserved 230), five transport buttons, `TimeDisplay`, the Model button,
-/// a flexible gap, the mix pill, the volume pill, MUTE, settings. Every control is 30 tall and sits
-/// at y = 11 in the 53 px above the 1 px bottom border, which is where JUCE's integer
-/// `withSizeKeepingCentre` put them.
+/// Left to right: five transport buttons, `TimeDisplay`, the Model button, a flexible gap, the mix
+/// pill, the volume pill, MUTE, settings. Every control is 30 tall and sits at y = 11 in the 53 px
+/// above the 1 px bottom border, which is where JUCE's integer `withSizeKeepingCentre` put them.
+/// The wordmark NeuralNote drew on the left is gone: it only took room from the transport.
 struct TopBar: View {
     @Bindable private var model: AppModel
     private let onSettings: () -> Void
@@ -30,12 +30,6 @@ struct TopBar: View {
         static let paddingRight: CGFloat = 14
         static let groupGap: CGFloat = 16
         static let transportGap: CGFloat = 2
-
-        static let wordmarkWidth: CGFloat = 230
-        static let wordmarkSquare: CGFloat = 9
-        static let wordmarkSquareCorner: CGFloat = 2
-        static let wordmarkVersionGap: CGFloat = 9
-        static let wordmarkVersionDrop: CGFloat = 2
 
         static let transportButtonW: CGFloat = 34
         static let transportButtonH: CGFloat = 30
@@ -66,10 +60,6 @@ struct TopBar: View {
         ZStack(alignment: .topLeading) {
             Theme.bgTopBar
 
-            wordmark
-                .padding(.leading, s(Metrics.paddingLeft))
-                .frame(height: s(Metrics.height - 1))
-
             HStack(spacing: 0) {
                 transport
 
@@ -93,7 +83,7 @@ struct TopBar: View {
                 settingsButton
             }
             .frame(height: s(Metrics.controlHeight))
-            .padding(.leading, s(Metrics.paddingLeft + Metrics.wordmarkWidth))
+            .padding(.leading, s(Metrics.paddingLeft))
             .padding(.trailing, s(Metrics.paddingRight))
             // (53 - 30) / 2 in integers: the row sits at 11, not 11.5.
             .padding(.top, s(11))
@@ -110,56 +100,6 @@ struct TopBar: View {
     private var gap: some View {
         Spacer(minLength: 0)
             .frame(width: Scaled(k: k)(Metrics.groupGap))
-    }
-
-    // MARK: - Wordmark
-
-    /// A 9 x 9 accent square, the name in `wordmark` with 0.14 em tracking, then the version tag
-    /// 9 px on and nudged 2 px down against the name's cap height.
-    private var wordmark: some View {
-        let s = Scaled(k: k)
-        let nameTracking = Fonts.tracking(Fonts.Tracking.wordmark, pointSize: Fonts.Size.wordmark, scale: k)
-        let versionTracking = Fonts.tracking(Fonts.Tracking.wordmarkVersion,
-                                             pointSize: Fonts.Size.wordmarkVersion,
-                                             scale: k)
-        // The exact tracked width, as `paintWordmark` measured it: the version tag is placed
-        // against it, not against a rounded-up box.
-        let nameWidth = TrackedText.width("NEURALSHEET",
-                                          fontName: Fonts.sansName(600),
-                                          pointSize: Fonts.Size.wordmark,
-                                          trackingEm: Fonts.Tracking.wordmark)
-
-        return HStack(alignment: .center, spacing: 0) {
-            RoundedRectangle(cornerRadius: s(Metrics.wordmarkSquareCorner), style: .circular)
-                .fill(Theme.accent)
-                .frame(width: s(Metrics.wordmarkSquare), height: s(Metrics.wordmarkSquare))
-                // `paintWordmark` centred the square on the *integer* centre of the 53 px strip
-                // (26, not 26.5), half a pixel above where the text is centred. A transform rather
-                // than `offset`, which SwiftUI snaps to whole points.
-                .transformEffect(CGAffineTransform(translationX: 0, y: -s(0.5)))
-
-            Spacer(minLength: 0)
-                .frame(width: s(Metrics.wordmarkSquare))
-
-            Text("NEURALSHEET")
-                .font(Fonts.wordmark(k))
-                .kerning(nameTracking)
-                .foregroundStyle(Theme.textBright)
-                .fixedSize()
-                .frame(width: s(nameWidth), alignment: .leading)
-
-            Spacer(minLength: 0)
-                .frame(width: s(Metrics.wordmarkVersionGap))
-
-            Text("v1")
-                .font(Fonts.wordmarkVersion(k))
-                .kerning(versionTracking)
-                .foregroundStyle(Theme.textFaint)
-                .fixedSize()
-                .offset(y: s(Metrics.wordmarkVersionDrop))
-        }
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel("NeuralSheet v1")
     }
 
     // MARK: - Transport
