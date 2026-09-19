@@ -21,7 +21,7 @@ changed_paths() {
     elif [ -n "$previous" ]; then
         git -C "$ROOT" diff --name-only "$previous" HEAD
     else
-        git -C "$ROOT" ls-tree -r --name-only HEAD
+        git -C "$ROOT" ls-tree -r --full-tree --name-only HEAD
     fi
 }
 

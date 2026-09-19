@@ -119,16 +119,19 @@ jobs:
         env:
           P12: ${{ secrets.MACOS_CERTIFICATE_P12 }}
           P12_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+          IDENTITY: ${{ secrets.MACOS_SIGNING_IDENTITY }}
         run: |
           echo "$P12" | base64 --decode > "$RUNNER_TEMP/cert.p12"
           security create-keychain -p ci build.keychain
           security default-keychain -s build.keychain
           security unlock-keychain -p ci build.keychain
-          security set-keychain-settings -lut 3600 build.keychain
+          security set-keychain-settings -lut 21600 build.keychain
           security import "$RUNNER_TEMP/cert.p12" -k build.keychain -P "$P12_PASSWORD" -T /usr/bin/codesign
           security set-key-partition-list -S apple-tool:,apple: -s -k ci build.keychain
           rm "$RUNNER_TEMP/cert.p12"
-          security find-identity -v -p codesigning build.keychain
+          if ! security find-identity -v -p codesigning build.keychain | tee /dev/stderr | grep -q "$IDENTITY"; then
+            echo "::error::the imported certificate does not yield the identity $IDENTITY"; exit 1
+          fi
 
       - name: Archive
         working-directory: app
@@ -144,8 +147,11 @@ jobs:
             archive 2>&1 | tee build.log | tail -30
           APP=build/NeuralSheet.xcarchive/Products/Applications/NeuralSheet.app
           codesign --verify --deep --strict --verbose=2 "$APP"
-          echo "built $(defaults read "$PWD/$APP/Contents/Info.plist" CFBundleShortVersionString)" \
-               "($(defaults read "$PWD/$APP/Contents/Info.plist" CFBundleVersion))"
+          built=$(defaults read "$PWD/$APP/Contents/Info.plist" CFBundleShortVersionString)
+          if [ "$built" != "$VERSION" ]; then
+            echo "::error::built CFBundleShortVersionString is $built, expected $VERSION"; exit 1
+          fi
+          echo "built $built ($(defaults read "$PWD/$APP/Contents/Info.plist" CFBundleVersion))"
 
       - name: Build the disk image
         working-directory: app
@@ -159,22 +165,18 @@ jobs:
           if [ -f "$APP/Contents/Resources/AppIcon.icns" ]; then
             volicon=(--volicon "$APP/Contents/Resources/AppIcon.icns")
           fi
-          # create-dmg exits 2 when the image is fine but Finder could not lay
-          # out the window (headless runners sometimes refuse); that is a
-          # cosmetic loss, not a failed release.
-          set +e
-          create-dmg \
-            --volname "NeuralSheet $TAG" "${volicon[@]}" \
-            --window-pos 200 120 --window-size 540 380 --icon-size 128 \
-            --icon NeuralSheet.app 140 180 --app-drop-link 400 180 \
-            --no-internet-enable --hdiutil-quiet \
-            "$DMG" build/dmg-root
-          status=$?
-          set -e
-          if [ "$status" -eq 2 ]; then
-            echo "::warning::create-dmg could not apply the window layout; the image is still valid"
-          elif [ "$status" -ne 0 ]; then
-            exit "$status"
+          # create-dmg exits 64 with no DMG produced when the Finder AppleScript
+          # that lays out the window fails, which happens intermittently on
+          # headless runners; retry once without the Finder layout.
+          args=(
+            --volname "NeuralSheet $TAG" "${volicon[@]}"
+            --window-pos 200 120 --window-size 540 380 --icon-size 128
+            --icon NeuralSheet.app 140 180 --app-drop-link 400 180
+            --no-internet-enable --hdiutil-quiet
+          )
+          if ! create-dmg "${args[@]}" "$DMG" build/dmg-root; then
+            echo "::warning::create-dmg could not lay out the window; retrying without the Finder layout"
+            create-dmg "${args[@]}" --skip-jenkins "$DMG" build/dmg-root
           fi
           ls -l "$DMG"
 
@@ -196,9 +198,11 @@ jobs:
           codesign --sign "$IDENTITY" --timestamp "$DMG"
           codesign --verify --verbose=2 "$DMG"
 
-          xcrun notarytool submit "$DMG" --key "$KEY" --key-id "$ASC_API_KEY_ID" \
+          if ! xcrun notarytool submit "$DMG" --key "$KEY" --key-id "$ASC_API_KEY_ID" \
             --issuer "$ASC_API_ISSUER_ID" --wait --timeout 45m --output-format json \
-            | tee build/notarize.json
+            | tee build/notarize.json; then
+            echo "::warning::notarytool exited non-zero; reading its status"
+          fi
           status=$(python3 -c 'import json,sys; print(json.load(sys.stdin).get("status", ""))' < build/notarize.json)
           if [ "$status" != "Accepted" ]; then
             id=$(python3 -c 'import json,sys; print(json.load(sys.stdin).get("id", ""))' < build/notarize.json)
@@ -213,6 +217,15 @@ jobs:
           xcrun stapler staple "$APP"
           spctl --assess --type open --context context:primary-signature --verbose=2 "$DMG"
           ditto -c -k --keepParent "$APP" "build/NeuralSheet-$TAG-macos-arm64.zip"
+
+      - name: Keep the assets as run artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: NeuralSheet-${{ env.TAG }}-macos-arm64
+          path: |
+            app/build/NeuralSheet-${{ env.TAG }}-macos-arm64.dmg
+            app/build/NeuralSheet-${{ env.TAG }}-macos-arm64.zip
+          if-no-files-found: error
 
       - name: Remove the signing keychain
         if: always()

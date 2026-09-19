@@ -48,9 +48,9 @@ accepts `--previous` to print the previous release tag for the path filter, and
 is runnable locally with a fake tag list for testing.
 
 The tag `vX.Y.Z` is created by the workflow (annotated, message
-`NeuralSheet vX.Y.Z`) on the built commit through the GitHub API, after the
-notarized DMG exists and just before the release is published. If the tag
-already exists the job fails rather than overwrite.
+`NeuralSheet vX.Y.Z`) on the built commit with `git tag` and `git push` from
+the runner, after the notarized DMG exists and just before the release is
+published. If the tag already exists the job fails rather than overwrite.
 
 ## Build, package, sign, notarize, publish
 

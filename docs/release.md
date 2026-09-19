@@ -64,11 +64,17 @@ rm AuthKey_XXXXXXXXXX.p8
 
 ### 3. The first release
 
-Push a code change to `main` (or run the Release workflow from the Actions
-tab with **Run workflow** (from `main`; other branches are ignored)). The `Decide the version` job prints the version and
-the changed paths; `Build and publish` takes about fifteen minutes, most of it
-the engine build the first time and Apple's notarization queue. The release
-appears at https://github.com/bring-shrubbery/neural-sheet/releases.
+Push a code change to `main`, or run the Release workflow from the Actions tab
+with **Run workflow** (only `main` is honoured). The `Decide the version` job
+prints the version and the changed paths; `Build and publish` takes about
+fifteen minutes, most of it the engine build the first time and Apple's
+notarization queue. The release appears at
+https://github.com/bring-shrubbery/neural-sheet/releases.
+
+Until the seven secrets exist, every code push produces one red Release run
+that stops at the secrets check; that is expected. Quick successive pushes
+queue; GitHub keeps one pending run per queue, so a run marked *cancelled* is
+not a failure — the next run covers its commits.
 
 ## When it fails
 
@@ -79,6 +85,9 @@ appears at https://github.com/bring-shrubbery/neural-sheet/releases.
   changed.
 - **create-dmg could not apply the window layout** — a warning only; the
   image is valid, it just lacks the icon arrangement.
-- **The tag exists** — a previous run tagged but failed to publish. Delete the
-  tag (`git push origin :refs/tags/vX.Y.Z`) and re-run, or publish the release
-  by hand from the run's artifacts.
+- **The tag exists** — a previous run tagged but failed to publish. The notarized
+  DMG and zip are attached to that run as artifacts (the run page, *Artifacts*).
+  Either publish them by hand as release `vX.Y.Z`, or delete the tag
+  (`git push origin :refs/tags/vX.Y.Z`) and the release if one was created,
+  then re-run. Re-running without deleting the tag prints "no code changes
+  since vX.Y.Z" and releases nothing.
