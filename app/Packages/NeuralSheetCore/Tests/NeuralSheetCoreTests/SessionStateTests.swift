@@ -132,3 +132,57 @@ private func makeSessionTempDirectory() throws -> URL {
 
     #expect(SessionState.parseSelectedGroups(all) == InstrumentGroup.allCases.map(\.rawValue))
 }
+
+@Test func sessionStateNewFieldsDefault() {
+    let state = SessionState()
+    #expect(state.transcription == nil)
+    #expect(state.workspace == .transcribe)
+    #expect(state.gridOffsetSeconds == 0)
+    #expect(state.gridDivision == .sixteenth)
+    #expect(state.snapEnabled)
+    #expect(state.targetProgram == nil)
+}
+
+@Test func sessionStateRoundTripsATranscription() throws {
+    let directory = try makeSessionTempDirectory()
+    defer { try? FileManager.default.removeItem(at: directory) }
+    let url = directory.appendingPathComponent("session.json")
+
+    let raw = [NoteEvent(startTime: 0, endTime: 1, pitch: 60, program: 0), NoteEvent(startTime: 1, endTime: 2, pitch: 38, program: 128)]
+    var document = NoteDocument(events: raw)
+    document.commit(document.delete([document.notes[0].id]))
+
+    var state = SessionState()
+    state.transcription = SessionTranscription(sourceSampleCount: 160_000, rawNotes: raw, document: document)
+    state.workspace = .edit
+    state.gridOffsetSeconds = 0.25
+    state.gridDivision = .eighthTriplet
+    state.snapEnabled = false
+    state.targetProgram = 128
+
+    try state.save(to: url)
+    let loaded = SessionState.load(from: url)
+
+    #expect(loaded.transcription?.sourceSampleCount == 160_000)
+    #expect(loaded.transcription?.rawNotes == raw)
+    #expect(loaded.transcription?.document.notes == document.notes)
+    #expect(loaded.transcription?.document.isEdited == true)
+    #expect(loaded.workspace == .edit)
+    #expect(loaded.gridOffsetSeconds == 0.25)
+    #expect(loaded.gridDivision == .eighthTriplet)
+    #expect(!loaded.snapEnabled)
+    #expect(loaded.targetProgram == 128)
+}
+
+@Test func sessionStateWithoutTheNewKeysStillLoads() throws {
+    let directory = try makeSessionTempDirectory()
+    defer { try? FileManager.default.removeItem(at: directory) }
+    let url = directory.appendingPathComponent("session.json")
+    try Data(#"{"exportTempo": 90, "zoomLevel": 2}"#.utf8).write(to: url)
+
+    let loaded = SessionState.load(from: url)
+    #expect(loaded.exportTempo == 90)
+    #expect(loaded.zoomLevel == 2)
+    #expect(loaded.transcription == nil)
+    #expect(loaded.workspace == .transcribe)
+}

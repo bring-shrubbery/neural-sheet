@@ -1,11 +1,25 @@
 import Foundation
 
+/// The transcription as the session keeps it: the model's own output, the edited document, and
+/// the sample count of the audio it belongs to — a reloaded file of another length gets no notes.
+public struct SessionTranscription: Codable, Equatable, Sendable {
+    public var sourceSampleCount: Int
+    public var rawNotes: [NoteEvent]
+    public var document: NoteDocument
+
+    public init(sourceSampleCount: Int, rawNotes: [NoteEvent], document: NoteDocument) {
+        self.sourceSampleCount = sourceSampleCount
+        self.rawNotes = rawNotes
+        self.document = document
+    }
+}
+
 /// One document's worth of state: what audio it was working on, where the playhead and the zoom
 /// were, which instrument groups the user picked and how the mix was set.
 ///
 /// `sourceAudioPath` is a path rather than the audio itself — reopening a session re-reads the file
-/// from disk — and the transcription is deliberately not part of this: a reloaded session gives the
-/// audio back, not the notes.
+/// from disk. The transcription is part of it once one has finished: the model's output and the
+/// edited document, guarded by the audio's sample count.
 ///
 /// Stored as JSON at whatever URL the caller passes, with sorted keys and indentation so two saves of
 /// the same state give the same bytes and a session file stays readable (and diffable) by hand.
@@ -24,6 +38,14 @@ public struct SessionState: Codable, Equatable, Sendable {
     public var selectedGroups: [Int32] = []
     /// The mix, keyed by program; an absent program is `InstrumentChannelSettings()`.
     public var mixer: [Int: InstrumentChannelSettings] = [:]
+    /// The transcription, once there is a finished one; never while a run is in flight.
+    public var transcription: SessionTranscription? = nil
+    public var workspace: Workspace = .transcribe
+    public var gridOffsetSeconds: Double = 0
+    public var gridDivision: GridDivision = .sixteenth
+    public var snapEnabled = true
+    /// The instrument new and reassigned notes go to; nil means the first strip.
+    public var targetProgram: Int? = nil
 
     public init() {}
 
@@ -69,6 +91,7 @@ public struct SessionState: Codable, Equatable, Sendable {
     private enum CodingKeys: String, CodingKey {
         case exportTempo, midiOverflowMode, sourceAudioPath, playheadSeconds, playheadCentered
         case zoomLevel, verticalZoom, selectedGroups, mixer
+        case transcription, workspace, gridOffsetSeconds, gridDivision, snapEnabled, targetProgram
     }
 
     /// Every key falls back to its default, so a file written by a version that did not have one
@@ -95,5 +118,12 @@ public struct SessionState: Codable, Equatable, Sendable {
         mixer =
             try container.decodeIfPresent([Int: InstrumentChannelSettings].self, forKey: .mixer)
             ?? defaults.mixer
+        transcription = try container.decodeIfPresent(SessionTranscription.self, forKey: .transcription)
+        workspace = try container.decodeIfPresent(Workspace.self, forKey: .workspace) ?? defaults.workspace
+        gridOffsetSeconds =
+            try container.decodeIfPresent(Double.self, forKey: .gridOffsetSeconds) ?? defaults.gridOffsetSeconds
+        gridDivision = try container.decodeIfPresent(GridDivision.self, forKey: .gridDivision) ?? defaults.gridDivision
+        snapEnabled = try container.decodeIfPresent(Bool.self, forKey: .snapEnabled) ?? defaults.snapEnabled
+        targetProgram = try container.decodeIfPresent(Int.self, forKey: .targetProgram)
     }
 }
