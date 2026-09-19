@@ -15,8 +15,6 @@ struct Toolbar: View {
 
     @Environment(\.uiScale) private var k
     @State private var clearMenu = PopupMenuPresenter()
-    @State private var dragHovered = false
-    @State private var dragPressed = false
 
     /// `NnToolbar.cpp` and `nn::metrics`, authored at 1x.
     enum Metrics {
@@ -32,7 +30,6 @@ struct Toolbar: View {
 
     var body: some View {
         let s = Scaled(k: k)
-        let canExport = model.canExport
         // The bin is live as soon as there is anything to throw away, audio with no transcription
         // included. Not while a run is in flight: stopping one is the status bar's cancel.
         let canClear = model.state == .audioLoaded || model.state == .populated
@@ -54,7 +51,7 @@ struct Toolbar: View {
                     Spacer(minLength: 0)
                 }
 
-                dragButton(canExport: canExport)
+                MidiDragButton(model: model)
                 clearButton(canClear: canClear)
             }
             .frame(height: s(Metrics.buttonHeight))
@@ -69,59 +66,6 @@ struct Toolbar: View {
         .frame(height: s(Metrics.height))
         .frame(maxWidth: .infinity)
         .background(Theme.bgRoot)
-    }
-
-    // MARK: - Drag
-
-    /// The one accent-outlined control in the window: this is the primary way a transcription
-    /// leaves the app. There is no plain-click action.
-    ///
-    /// Not a `FlatButton`: its press gesture would take the mouse-down and the platform drag would
-    /// never start. The surface is drawn here with the same `Theme.surface` / `Theme.foreground`
-    /// rules every button uses, from the hover and press that `MidiDragSource` -- an AppKit view
-    /// on top -- reports; that view owns the mouse, the cursor and the drag session.
-    private func dragButton(canExport: Bool) -> some View {
-        let s = Scaled(k: k)
-        let shape = RoundedRectangle(cornerRadius: s(Metrics.corner), style: .circular)
-        let state = ButtonVisualState(isHovered: canExport && dragHovered,
-                                      isPressed: canExport && dragPressed,
-                                      isOn: false,
-                                      isEnabled: canExport)
-        let surface = Theme.surface(idle: Theme.accentFillButton,
-                                    on: Theme.bgControlActive,
-                                    isOn: false,
-                                    isHovered: state.isHovered,
-                                    isPressed: state.isPressed,
-                                    isEnabled: canExport)
-        let foreground = Theme.foreground(idle: Theme.accentText,
-                                          on: Theme.textBright,
-                                          isOn: false,
-                                          isHovered: state.isHovered)
-
-        return HStack(spacing: s(Metrics.iconLabelGap)) {
-            Icons.DownloadStroked()
-                .stroke(foreground, style: Icons.strokeStyle(scale: k))
-                .frame(width: s(Metrics.iconSize), height: s(Metrics.iconSize))
-
-            Text("Drag MIDI out")
-                .font(Fonts.buttonLabel(k))
-                .foregroundStyle(foreground)
-                .fixedSize()
-        }
-        .padding(.horizontal, s(Metrics.buttonPadX))
-        .frame(height: s(Metrics.buttonHeight))
-        .background(shape.fill(surface))
-        // strokeBorder, as JUCE insets the outline by half a pixel so the 1 px line lands inside
-        // the fill.
-        .overlay(shape.strokeBorder(Theme.accent, lineWidth: k))
-        .opacity(canExport ? 1 : Theme.disabledAlpha)
-        .overlay(MidiDragSource(isEnabled: canExport,
-                                fileURL: { model.writeMidiForDrag() },
-                                onHover: { dragHovered = $0 },
-                                onPress: { dragPressed = $0 }))
-        .tooltip("Drag the transcribed MIDI into your DAW")
-        .accessibilityLabel("Drag MIDI out")
-        .accessibilityAddTraits(.isButton)
     }
 
     // MARK: - Clear
@@ -168,6 +112,73 @@ struct Toolbar: View {
                 model.clearTranscription()
             }
         }
+    }
+}
+
+// MARK: - Drag
+
+/// The one accent-outlined control in the window: this is the primary way a transcription leaves
+/// the app. There is no plain-click action. Both toolbars -- Transcribe and Edit -- end with it.
+///
+/// Not a `FlatButton`: its press gesture would take the mouse-down and the platform drag would
+/// never start. The surface is drawn here with the same `Theme.surface` / `Theme.foreground`
+/// rules every button uses, from the hover and press that `MidiDragSource` -- an AppKit view
+/// on top -- reports; that view owns the mouse, the cursor and the drag session.
+///
+/// Dimmed rather than absent before there is a transcription to export: it holds its place
+/// either way, and an empty gap there reads as something failing to draw.
+struct MidiDragButton: View {
+    let model: AppModel
+
+    @Environment(\.uiScale) private var k
+    @State private var dragHovered = false
+    @State private var dragPressed = false
+
+    private typealias Metrics = Toolbar.Metrics
+
+    var body: some View {
+        let s = Scaled(k: k)
+        let canExport = model.canExport
+        let shape = RoundedRectangle(cornerRadius: s(Metrics.corner), style: .circular)
+        let state = ButtonVisualState(isHovered: canExport && dragHovered,
+                                      isPressed: canExport && dragPressed,
+                                      isOn: false,
+                                      isEnabled: canExport)
+        let surface = Theme.surface(idle: Theme.accentFillButton,
+                                    on: Theme.bgControlActive,
+                                    isOn: false,
+                                    isHovered: state.isHovered,
+                                    isPressed: state.isPressed,
+                                    isEnabled: canExport)
+        let foreground = Theme.foreground(idle: Theme.accentText,
+                                          on: Theme.textBright,
+                                          isOn: false,
+                                          isHovered: state.isHovered)
+
+        HStack(spacing: s(Metrics.iconLabelGap)) {
+            Icons.DownloadStroked()
+                .stroke(foreground, style: Icons.strokeStyle(scale: k))
+                .frame(width: s(Metrics.iconSize), height: s(Metrics.iconSize))
+
+            Text("Drag MIDI out")
+                .font(Fonts.buttonLabel(k))
+                .foregroundStyle(foreground)
+                .fixedSize()
+        }
+        .padding(.horizontal, s(Metrics.buttonPadX))
+        .frame(height: s(Metrics.buttonHeight))
+        .background(shape.fill(surface))
+        // strokeBorder, as JUCE insets the outline by half a pixel so the 1 px line lands inside
+        // the fill.
+        .overlay(shape.strokeBorder(Theme.accent, lineWidth: k))
+        .opacity(canExport ? 1 : Theme.disabledAlpha)
+        .overlay(MidiDragSource(isEnabled: canExport,
+                                fileURL: { model.writeMidiForDrag() },
+                                onHover: { dragHovered = $0 },
+                                onPress: { dragPressed = $0 }))
+        .tooltip("Drag the transcribed MIDI into your DAW")
+        .accessibilityLabel("Drag MIDI out")
+        .accessibilityAddTraits(.isButton)
     }
 }
 

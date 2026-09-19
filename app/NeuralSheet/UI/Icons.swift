@@ -351,6 +351,127 @@ enum Icons {
             return IconGeometry.fitted(p, in: rect)
         }
     }
+
+    // MARK: - Editor
+
+    /// The Select tool's pointer arrow.
+    nonisolated struct ArrowStroked: Shape {
+        func path(in rect: CGRect) -> Path {
+            var p = Path()
+            p.move(to: CGPoint(x: 4.0, y: 2.5))
+            p.addLine(to: CGPoint(x: 4.0, y: 13.0))
+            p.addLine(to: CGPoint(x: 7.0, y: 10.2))
+            p.addLine(to: CGPoint(x: 9.2, y: 14.0))
+            p.addLine(to: CGPoint(x: 11.0, y: 13.1))
+            p.addLine(to: CGPoint(x: 8.9, y: 9.4))
+            p.addLine(to: CGPoint(x: 12.5, y: 9.2))
+            p.closeSubpath()
+
+            return IconGeometry.fitted(p, in: rect)
+        }
+    }
+
+    /// The Draw tool: a pencil with its ferrule line.
+    nonisolated struct PencilStroked: Shape {
+        func path(in rect: CGRect) -> Path {
+            var p = Path()
+            p.move(to: CGPoint(x: 3.0, y: 13.0))
+            p.addLine(to: CGPoint(x: 3.6, y: 10.2))
+            p.addLine(to: CGPoint(x: 10.8, y: 3.0))
+            p.addLine(to: CGPoint(x: 13.0, y: 5.2))
+            p.addLine(to: CGPoint(x: 5.8, y: 12.4))
+            p.closeSubpath()
+            p.move(to: CGPoint(x: 9.2, y: 4.6))
+            p.addLine(to: CGPoint(x: 11.4, y: 6.8))
+
+            return IconGeometry.fitted(p, in: rect)
+        }
+    }
+
+    /// The Erase tool: a tilted block with its rubbing edge and the baseline it sits on.
+    nonisolated struct EraserStroked: Shape {
+        func path(in rect: CGRect) -> Path {
+            var p = Path()
+            p.move(to: CGPoint(x: 6.0, y: 13.0))
+            p.addLine(to: CGPoint(x: 2.8, y: 9.8))
+            p.addLine(to: CGPoint(x: 9.6, y: 3.0))
+            p.addLine(to: CGPoint(x: 13.2, y: 6.6))
+            p.addLine(to: CGPoint(x: 6.8, y: 13.0))
+            p.closeSubpath()
+            p.move(to: CGPoint(x: 5.6, y: 7.0))
+            p.addLine(to: CGPoint(x: 9.2, y: 10.6))
+            p.move(to: CGPoint(x: 7.5, y: 13.0))
+            p.addLine(to: CGPoint(x: 13.5, y: 13.0))
+
+            return IconGeometry.fitted(p, in: rect)
+        }
+    }
+
+    /// Snap to grid: a horseshoe magnet with its two pole caps.
+    nonisolated struct MagnetStroked: Shape {
+        func path(in rect: CGRect) -> Path {
+            var p = Path()
+            p.move(to: CGPoint(x: 4.0, y: 3.0))
+            p.addLine(to: CGPoint(x: 4.0, y: 9.0))
+            p.addArc(center: CGPoint(x: 8.0, y: 9.0), radius: 4.0, startAngle: .degrees(180), endAngle: .degrees(0), clockwise: true)
+            p.addLine(to: CGPoint(x: 12.0, y: 3.0))
+            p.move(to: CGPoint(x: 2.5, y: 5.5))
+            p.addLine(to: CGPoint(x: 5.5, y: 5.5))
+            p.move(to: CGPoint(x: 10.5, y: 5.5))
+            p.addLine(to: CGPoint(x: 13.5, y: 5.5))
+
+            return IconGeometry.fitted(p, in: rect)
+        }
+    }
+
+    /// A curled arrow back to the left; `RedoStroked` is its mirror.
+    nonisolated struct UndoStroked: Shape {
+        func path(in rect: CGRect) -> Path {
+            var p = Path()
+            p.move(to: CGPoint(x: 6.0, y: 3.5))
+            p.addLine(to: CGPoint(x: 3.0, y: 6.5))
+            p.addLine(to: CGPoint(x: 6.0, y: 9.5))
+            p.move(to: CGPoint(x: 3.0, y: 6.5))
+            p.addLine(to: CGPoint(x: 10.0, y: 6.5))
+            p.addArc(center: CGPoint(x: 10.0, y: 9.5), radius: 3.0, startAngle: .degrees(-90), endAngle: .degrees(90), clockwise: false)
+            p.addLine(to: CGPoint(x: 6.5, y: 12.5))
+
+            return IconGeometry.fitted(p, in: rect)
+        }
+    }
+
+    nonisolated struct RedoStroked: Shape {
+        func path(in rect: CGRect) -> Path {
+            var p = Path()
+            p.move(to: CGPoint(x: 10.0, y: 3.5))
+            p.addLine(to: CGPoint(x: 13.0, y: 6.5))
+            p.addLine(to: CGPoint(x: 10.0, y: 9.5))
+            p.move(to: CGPoint(x: 13.0, y: 6.5))
+            p.addLine(to: CGPoint(x: 6.0, y: 6.5))
+            p.addArc(center: CGPoint(x: 6.0, y: 9.5), radius: 3.0, startAngle: .degrees(-90), endAngle: .degrees(90), clockwise: true)
+            p.addLine(to: CGPoint(x: 9.5, y: 12.5))
+
+            return IconGeometry.fitted(p, in: rect)
+        }
+    }
+
+    /// A ring with four ticks: "set the downbeat from the playhead".
+    nonisolated struct PlayheadTargetStroked: Shape {
+        func path(in rect: CGRect) -> Path {
+            var p = Path()
+            p.addEllipse(in: CGRect(x: 4.5, y: 4.5, width: 7.0, height: 7.0))
+            p.move(to: CGPoint(x: 8.0, y: 1.5))
+            p.addLine(to: CGPoint(x: 8.0, y: 4.5))
+            p.move(to: CGPoint(x: 8.0, y: 11.5))
+            p.addLine(to: CGPoint(x: 8.0, y: 14.5))
+            p.move(to: CGPoint(x: 1.5, y: 8.0))
+            p.addLine(to: CGPoint(x: 4.5, y: 8.0))
+            p.move(to: CGPoint(x: 11.5, y: 8.0))
+            p.addLine(to: CGPoint(x: 14.5, y: 8.0))
+
+            return IconGeometry.fitted(p, in: rect)
+        }
+    }
 }
 
 /// The square every icon above is authored in, and the mapping onto the rect it is drawn into.

@@ -61,7 +61,7 @@ struct MainView: View {
 
                 VStack(spacing: 0) {
                     if model.workspace == .edit {
-                        Toolbar(model: model)
+                        EditToolbar(model: model)
                     } else {
                         Toolbar(model: model)
                     }
