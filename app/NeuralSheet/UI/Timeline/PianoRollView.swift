@@ -230,7 +230,8 @@ final class PianoRollView: NSView {
         let beatPixels = grid.secondsPerBeat * pixelsPerSecond
         let drawDivisions = divisionPixels >= 6
         let drawBeats = beatPixels >= 3
-        let division: GridDivision = drawDivisions ? grid.division : .quarter
+        // A division coarser than a beat still shows the beats.
+        let division: GridDivision = drawDivisions && grid.division.beats < 1 ? grid.division : .quarter
 
         // One authored pixel of slack on the left: a line's x is rounded, so one just outside the
         // sliver can land inside it.
@@ -304,8 +305,9 @@ final class PianoRollView: NSView {
             guard noteRect.maxX >= dirtyRect.minX, noteRect.minX <= dirtyRect.maxX else { continue }
 
             let program = min(max(note.program, 0), NoteEvent.drumProgram)
-            // Velocity 1…127 → 0.45…1, so an edited velocity shows (§6.5); muted wins.
-            let velocityAlpha = 0.45 + 0.55 * CGFloat(note.velocity - 1) / 126
+            // Edit mode: velocity 1…127 → 0.45…1 (§6.5); the Transcribe tab draws every note solid,
+            // as it always has. Muted wins in both.
+            let velocityAlpha = grid != nil ? 0.45 + 0.55 * CGFloat(note.velocity - 1) / 126 : 1
             let alpha = audible[program] ? velocityAlpha : PianoRollView.mutedNoteAlpha
 
             ctx.setAlpha(alpha)
