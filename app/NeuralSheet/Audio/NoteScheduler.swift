@@ -12,6 +12,8 @@ nonisolated struct SynthEvent: Equatable, Sendable {
     var program: Int
     var pitch: Int
     var isOn: Bool
+    /// 1…127 for a note-on, 0 for a note-off.
+    var velocity: UInt8
 }
 
 /// The note list as the render thread sees it: a flat, immutable buffer it can index without
@@ -77,6 +79,14 @@ nonisolated final class NoteScheduler: @unchecked Sendable {
     /// onset pass left sounding. Reserving both is what makes "never reallocates on the render
     /// thread" a guarantee rather than a hope.
     static let reservedEventCapacity = eventCapacity + maxActiveNotes
+
+    /// The note's amplitude as a MIDI velocity, 1…127. Integer arithmetic only: this runs on the
+    /// render thread.
+    static func velocity(forAmplitude amplitude: Double) -> UInt8 {
+        let scaled = Int((amplitude * 127).rounded())
+
+        return UInt8(clamping: Swift.min(Swift.max(scaled, 1), 127))
+    }
 
     /// A note this class has started and not yet stopped.
     private struct ActiveNote {
@@ -324,7 +334,8 @@ nonisolated final class NoteScheduler: @unchecked Sendable {
 
             events.append(
                 SynthEvent(
-                    sampleOffset: offset, program: note.program, pitch: note.pitch, isOn: true))
+                    sampleOffset: offset, program: note.program, pitch: note.pitch, isOn: true,
+                    velocity: NoteScheduler.velocity(forAmplitude: note.amplitude)))
         }
 
         // Again, for notes that both start and end inside this block. A drum hit lasts 10 ms, which
@@ -369,7 +380,9 @@ nonisolated final class NoteScheduler: @unchecked Sendable {
             activeCount += 1
 
             events.append(
-                SynthEvent(sampleOffset: 0, program: note.program, pitch: note.pitch, isOn: true))
+                SynthEvent(
+                    sampleOffset: 0, program: note.program, pitch: note.pitch, isOn: true,
+                    velocity: NoteScheduler.velocity(forAmplitude: note.amplitude)))
         }
     }
 
@@ -421,7 +434,8 @@ nonisolated final class NoteScheduler: @unchecked Sendable {
 
         events.append(
             SynthEvent(
-                sampleOffset: sampleOffset, program: note.program, pitch: note.pitch, isOn: false))
+                sampleOffset: sampleOffset, program: note.program, pitch: note.pitch, isOn: false,
+                velocity: 0))
 
         for i in (index + 1)..<activeCount {
             active[i - 1] = active[i]

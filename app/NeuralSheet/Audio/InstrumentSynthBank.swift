@@ -77,8 +77,8 @@ nonisolated final class InstrumentSynthBank: @unchecked Sendable {
     private static let melodicBankMSB: UInt8 = 121
     private static let drumBankMSB: UInt8 = 120
 
-    /// Fixed, as the spec has it: the model's amplitude drives the fader, not the note.
-    private static let velocity: UInt8 = 100
+    // Velocity is per note now (`SynthEvent.velocity`); the design's fixed 100 is what every
+    // model note still carries, so nothing sounds different until one is edited.
 
     private static let noteOnStatus: UInt8 = 0x90
     private static let noteOffStatus: UInt8 = 0x80
@@ -418,7 +418,7 @@ nonisolated final class InstrumentSynthBank: @unchecked Sendable {
                         ? InstrumentSynthBank.noteOnStatus : InstrumentSynthBank.noteOffStatus)
                     | channel
                 bytes[1] = UInt8(Swift.min(Swift.max(event.pitch, 0), 127))
-                bytes[2] = event.isOn ? InstrumentSynthBank.velocity : 0
+                bytes[2] = event.isOn ? event.velocity : 0
 
                 block(base + AUEventSampleTime(event.sampleOffset), 0, 3, UnsafePointer(bytes))
             }
