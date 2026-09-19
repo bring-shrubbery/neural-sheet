@@ -2,12 +2,12 @@ import AppKit
 import NeuralSheetCore
 import SwiftUI
 
-/// The window (`NeuralNoteMainView`, inventory §1.2): top bar over a full-height sidebar beside the
-/// toolbar, the timeline and the status bar, laid out to whatever size the window is -- the
-/// sidebar keeps its width, the timeline takes the rest -- with the overlays on top in the order the
-/// original stacked them: the no-model notice (centred on the piano roll), the update notice
-/// above the status bar, the instrument picker off the sidebar. The settings are a window of
-/// their own (⌘,).
+/// The window (`NeuralNoteMainView`, inventory §1.2): top bar over the tab strip over a
+/// full-height sidebar beside the toolbar, the timeline and the status bar, laid out to whatever
+/// size the window is -- the sidebar keeps its width, the timeline takes the rest -- with the
+/// overlays on top in the order the original stacked them: the no-model notice (centred on the
+/// piano roll), the update notice above the status bar, the instrument picker off the sidebar.
+/// The settings are a window of their own (⌘,).
 ///
 /// Also where the app's window-bound pieces are installed: the dialogs, the shortcuts, the display
 /// link, the session restore and the launch-time update check.
@@ -54,19 +54,22 @@ struct MainView: View {
     private var composition: some View {
         VStack(spacing: 0) {
             TopBar(model: model)
+            TabStrip(model: model)
 
             HStack(spacing: 0) {
                 Sidebar(model: model)
 
                 VStack(spacing: 0) {
-                    Toolbar(model: model)
+                    if model.workspace == .edit {
+                        Toolbar(model: model)
+                    } else {
+                        Toolbar(model: model)
+                    }
 
                     TimelineView(model: model)
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                         .overlay {
-                            if model.needsModelNotice {
-                                // Centred on the roll's viewport: right of the key column, under
-                                // the waveform and the ruler.
+                            if model.workspace == .transcribe, model.needsModelNotice {
                                 NoModelNotice(model: model)
                                     .padding(.leading, TimelineMetrics.gutterWidth)
                                     .padding(.top, TimelineMetrics.pianoRollY)
