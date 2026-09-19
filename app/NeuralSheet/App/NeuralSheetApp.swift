@@ -35,7 +35,36 @@ struct NeuralSheetApp: App {
         // The content's minimum frame is the window's minimum; there is no maximum.
         .windowResizability(.contentMinSize)
         .commands {
+            appMenu(model: model)
+            viewMenu(model: model)
             audioMenu(model: model)
+        }
+
+        // ⌘, and the app menu's "Settings…", for free.
+        Settings {
+            SettingsView(model: model, audioDevices: audioMenu)
+        }
+    }
+
+    // MARK: - App and View menus
+
+    /// "Check for Updates…" where macOS apps keep it, under About.
+    private func appMenu(model: AppModel) -> some Commands {
+        CommandGroup(after: .appInfo) {
+            Button("Check for Updates…") {
+                model.checkForUpdates(explicit: true)
+            }
+        }
+    }
+
+    /// Reset Zoom, which the gear menu used to hold: horizontal back to 1, vertical back to
+    /// automatic. ⌘0, as every other app has it.
+    private func viewMenu(model: AppModel) -> some Commands {
+        CommandMenu("View") {
+            Button("Reset Zoom") {
+                model.resetZoom()
+            }
+            .keyboardShortcut("0", modifiers: .command)
         }
     }
 
@@ -79,9 +108,9 @@ struct NeuralSheetApp: App {
     }
 }
 
-/// What the Audio menu shows: the hardware lists, re-read from the HAL every time the menu bar
-/// starts being tracked so a device plugged in since the last look is offered, and the devices the
-/// menu last put the engine on.
+/// What the Audio menu and Settings → Audio show: the hardware lists, re-read from the HAL every
+/// time the menu bar starts being tracked (and when the Audio tab appears) so a device plugged in
+/// since the last look is offered, and the devices last put on the engine.
 @Observable final class AudioMenuState {
     var inputs: [AudioDevice] = AudioDevices.inputs()
     var outputs: [AudioDevice] = AudioDevices.outputs()

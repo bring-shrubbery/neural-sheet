@@ -17,11 +17,12 @@ import NeuralSheetCore
 ///
 /// A press while a text field has the keyboard -- the tempo -- is the field's; so is anything
 /// with Command, Control or Option down, which are the menu bar's. Only the main window's own
-/// events count: a menu panel or a sheet has the key when it is up, and a Space meant for it must
-/// not start playback underneath. Escape goes to whichever popup is open; the instrument picker
-/// and the settings menu each listen for it themselves, so it only has to be left alone here.
+/// events count: the Settings window, a menu panel or a sheet has the key when it is up, and a
+/// Space meant for it must not start playback underneath. Escape goes to whichever popup is
+/// open; the instrument picker listens for it itself, so it only has to be left alone here.
 @MainActor final class KeyboardShortcuts {
     private let model: AppModel
+    private var mainWindow: () -> NSWindow? = { nil }
     private var monitor: Any?
 
     private enum KeyCode {
@@ -33,8 +34,12 @@ import NeuralSheetCore
         self.model = model
     }
 
-    func install() {
+    /// - Parameter mainWindow: The window the shortcuts belong to; presses in any other are left
+    ///   alone.
+    func install(mainWindow: @escaping () -> NSWindow?) {
         guard monitor == nil else { return }
+
+        self.mainWindow = mainWindow
 
         monitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
             guard let self, self.handle(event) else { return event }
@@ -52,7 +57,7 @@ import NeuralSheetCore
 
     /// True when the press was one of ours and has been acted on.
     private func handle(_ event: NSEvent) -> Bool {
-        guard let window = event.window, !(window is NSPanel), window.attachedSheet == nil else { return false }
+        guard let window = event.window, window === mainWindow(), window.attachedSheet == nil else { return false }
 
         // The field editor, while the tempo is being typed.
         if window.firstResponder is NSText || window.firstResponder is NSTextField {

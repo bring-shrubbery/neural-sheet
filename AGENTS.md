@@ -16,7 +16,8 @@ app/                       The macOS app (Xcode project, scheme NeuralSheet)
   NeuralSheet/Engine/      C bridge (nsheet_engine.h/.cpp) + TranscriptionEngine wrapper
   NeuralSheet/AppIcon.icon The app icon (Icon Composer document; gradient fill + notes.svg layer)
   NeuralSheet/UI/          Theme, Fonts, Icons, controls, top bar, sidebar, toolbar, status bar,
-                           model panel, and the AppKit timeline (waveform, ruler, piano roll, keyboard)
+                           the Settings window (General / Model / Audio), and the AppKit timeline
+                           (waveform, ruler, piano roll, keyboard)
   Packages/NeuralSheetCore Pure Swift logic with tests (notes, instruments, MIDI writer, peaks,
                            resampler, meters, zoom math, settings, session, downloader)
   ThirdParty/muscriptor.cpp The transcription engine, git submodule (do not edit)
@@ -41,7 +42,7 @@ Requirements: macOS 26, Xcode 27, CMake on PATH (`/opt/homebrew/bin/cmake` is al
 - **The render thread is sacred.** Anything reachable from `PlaybackEngine`'s `AVAudioSourceNode` render block, `NoteScheduler.collect`, `InstrumentSynthBank.schedule` or `RmsMeter.push` must not allocate, lock, call Objective-C properties, or grow a Swift array. State crosses to the render thread through single-word atomics and `Unmanaged` boxes with a retirement grace period. Read the existing code and its comments before touching it.
 - **Actor isolation.** The app target uses `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor`. Audio and engine types are declared `nonisolated` and are `@unchecked Sendable` with explicit locking; callbacks from them hop to the main actor. `TranscriptionEngine`'s callbacks are `@Sendable` on purpose.
 - **Views use the `AppModel` public contract only.** Never call `transition(to:)`, touch `transcription`, `engine`, `synthBank` or `recorder` from a view. Add a method on `AppModel` instead.
-- **Parity is a requirement, not a guideline.** Every metric, colour, font, string and rule in `docs/design/2026-09-17-neuralnote-feature-inventory.md` is binding unless `docs/design/2026-09-17-neuralsheet-design.md` §7 or the parity gap file says otherwise. Where the inventory and NeuralNote's C++ source disagree, the C++ wins. Do not "improve" the UI as a side effect of another change; UX changes are decided in Discussions.
+- **The inventory is the reference, not the law.** NeuralSheet started as a parity rewrite of NeuralNote and is now evolving on its own. `docs/design/2026-09-17-neuralnote-feature-inventory.md` still describes every behaviour we have not deliberately changed, and a metric, colour, font, string or rule found there is kept unless a maintainer asks for it to change; a change that has been asked for is made in full, and the doc comments that cite the inventory are updated to say what changed and why. Deliberate departures so far: the window reflows instead of scaling a fixed 1280 x 800 canvas; the settings are a standard Settings window (⌘,) rather than the gear menu and the model panel; the top bar has no wordmark; the piano roll zooms vertically from the trackpad (⌥ + wheel / ⌥ + pinch). Do not "improve" the UI as a side effect of an unrelated change.
 - **Real-time and lifecycle are reviewed harder than anything else.** Display links, event monitors, notification observers, CoreAudio aggregate devices and temp files must be released on every path.
 - **Keep files focused.** Split before a file passes roughly 400 lines; follow the existing `+Extension.swift` pattern.
 - **Warnings are errors** in our own sources. Third-party code is vendored verbatim (`stb_vorbis.c` is wrapped in diagnostic pragmas; leave it).

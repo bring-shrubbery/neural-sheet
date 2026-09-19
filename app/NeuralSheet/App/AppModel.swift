@@ -229,19 +229,14 @@ nonisolated struct UpdateNotice: Equatable, Sendable {
 
     private(set) var downloadPhases: [ModelSize: DownloadPhase] = [:]
 
-    /// Open when asked for, and forced open while ``isModelPanelMandatory`` (§3.2). Setting it
-    /// false while mandatory is remembered, so the panel goes away once a model is installed.
-    var isModelPanelOpen: Bool {
-        get { modelPanelRequested || isModelPanelMandatory }
-        set { modelPanelRequested = newValue }
-    }
-
-    private var modelPanelRequested = false
-
-    /// No model installed and nothing else to do on the roll: the panel cannot be closed.
-    var isModelPanelMandatory: Bool {
+    /// No model installed and nothing else to do on the roll: the roll says so, and points at
+    /// Settings (§3.2).
+    var needsModelNotice: Bool {
         installedModels.isEmpty && (state == .empty || state == .audioLoaded)
     }
+
+    /// The Settings window's tab. Set before opening the window to land on a particular one.
+    var settingsTab: SettingsTab = .general
 
     @ObservationIgnored private var modelPollTimer: Timer?
 
@@ -868,7 +863,7 @@ nonisolated struct UpdateNotice: Equatable, Sendable {
     /// Asks the releases endpoint whether a newer version exists and sets ``updateNotice`` (§9).
     /// `UpdateCheck` does the request off the main actor and lands the answer back here.
     ///
-    /// - Parameter explicit: True from Settings → Check for updates, which is the only time
+    /// - Parameter explicit: True from Check for Updates…, which is the only time
     ///   "You are on the latest version" is worth a notice.
     func checkForUpdates(explicit: Bool) {
         UpdateCheck.run(for: self, explicit: explicit)
@@ -880,7 +875,7 @@ nonisolated struct UpdateNotice: Equatable, Sendable {
 
     // MARK: - Zoom
 
-    /// Settings → Reset Zoom: horizontal back to 1, vertical back to automatic (§11.3).
+    /// View → Reset Zoom: horizontal back to 1, vertical back to automatic (§11.3).
     func resetZoom() {
         zoomLevel = 1
         verticalZoom = -1

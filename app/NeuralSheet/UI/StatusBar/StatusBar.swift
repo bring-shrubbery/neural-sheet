@@ -50,13 +50,15 @@ struct StatusBar: View {
 
     // MARK: - Figures
 
-    /// `"<n> instrument(s)"`, `"<n> notes"`, then the pitch range and the duration, each only once
-    /// it means something: an instrument can be selected before it has been transcribed, and its
-    /// empty range would otherwise read as "C-1 - C-1".
+    /// The model in use first -- the top bar's Model button used to say it, and it is worth
+    /// knowing without opening Settings -- then `"<n> instrument(s)"`, `"<n> notes"`, the pitch
+    /// range and the duration, each only once it means something: an instrument can be selected
+    /// before it has been transcribed, and its empty range would otherwise read as "C-1 - C-1".
     var segments: [String] {
         let status = model.statusLine
 
         var segments = [
+            "Model: " + (model.modelSize?.displayName ?? "None"),
             "\(status.instruments) " + (status.instruments == 1 ? "instrument" : "instruments"),
             "\(status.notes) notes",
         ]

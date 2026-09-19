@@ -5,9 +5,9 @@ import SwiftUI
 /// The window (`NeuralNoteMainView`, inventory §1.2): top bar over a full-height sidebar beside the
 /// toolbar, the timeline and the status bar, laid out to whatever size the window is -- the
 /// sidebar keeps its width, the timeline takes the rest -- with the overlays on top in the order the
-/// original stacked them: the model panel (centred on the timeline), the update notice above the
-/// status bar, the instrument picker off the sidebar; the settings menu opens in its own window
-/// under the gear.
+/// original stacked them: the no-model notice (centred on the piano roll), the update notice
+/// above the status bar, the instrument picker off the sidebar. The settings are a window of
+/// their own (⌘,).
 ///
 /// Also where the app's window-bound pieces are installed: the dialogs, the shortcuts, the display
 /// link, the session restore and the launch-time update check.
@@ -17,7 +17,6 @@ struct MainView: View {
 
     @State private var windowController = MainWindowController()
     @State private var shortcuts: KeyboardShortcuts
-    @State private var settingsMenu = SettingsMenuController()
 
     init(model: AppModel, persistence: Persistence) {
         self.model = model
@@ -50,7 +49,7 @@ struct MainView: View {
     /// and the sidebar runs to the bottom of the window with its master panel.
     private var composition: some View {
         VStack(spacing: 0) {
-            TopBar(model: model, onSettings: openSettingsMenu)
+            TopBar(model: model)
 
             HStack(spacing: 0) {
                 Sidebar(model: model)
@@ -61,7 +60,13 @@ struct MainView: View {
                     TimelineView(model: model)
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                         .overlay {
-                            ModelPanelOverlay(model: model)
+                            if model.needsModelNotice {
+                                // Centred on the roll's viewport: right of the key column, under
+                                // the waveform and the ruler.
+                                NoModelNotice(model: model)
+                                    .padding(.leading, TimelineMetrics.gutterWidth)
+                                    .padding(.top, TimelineMetrics.pianoRollY)
+                            }
                         }
                         .overlay(alignment: .bottomTrailing) {
                             if let notice = model.updateNotice {
@@ -74,13 +79,6 @@ struct MainView: View {
             }
             .frame(maxHeight: .infinity)
         }
-    }
-
-    /// The gear: the settings menu in its own window under the button (§11.3).
-    private func openSettingsMenu() {
-        guard let window = windowController.window else { return }
-
-        settingsMenu.open(in: window, model: model)
     }
 
     // MARK: - Lifecycle
@@ -96,7 +94,7 @@ struct MainView: View {
         }
         persistence.restoreOnce()
         persistence.start()
-        shortcuts.install()
+        shortcuts.install { [windowController] in windowController.window }
 
         if !Self.hasCheckedForUpdates {
             Self.hasCheckedForUpdates = true
@@ -111,6 +109,5 @@ struct MainView: View {
     private func disappear() {
         shortcuts.uninstall()
         windowController.detach()
-        settingsMenu.close()
     }
 }

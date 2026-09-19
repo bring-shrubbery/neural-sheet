@@ -2,24 +2,21 @@ import CoreText
 import NeuralSheetCore
 import SwiftUI
 
-/// The window's top strip (`TopBar.cpp`): transport, position readout, model, mix, output level,
-/// the input mute and the settings button. Authored 54 px tall, every extent scaled by
-/// `\.uiScale`.
+/// The window's top strip (`TopBar.cpp`): transport, position readout, mix, output level and
+/// the input mute. Authored 54 px tall, every extent scaled by `\.uiScale`.
 ///
-/// Left to right: five transport buttons, `TimeDisplay`, the Model button, a flexible gap, the mix
-/// pill, the volume pill, MUTE, settings. Every control is 30 tall and sits at y = 11 in the 53 px
-/// above the 1 px bottom border, which is where JUCE's integer `withSizeKeepingCentre` put them.
-/// The wordmark NeuralNote drew on the left is gone: it only took room from the transport.
+/// Left to right: five transport buttons, `TimeDisplay`, a flexible gap, the mix pill, the volume
+/// pill, MUTE. Every control is 30 tall and sits at y = 11 in the 53 px above the 1 px bottom
+/// border, which is where JUCE's integer `withSizeKeepingCentre` put them. The wordmark, the
+/// Model button and the gear NeuralNote had here are gone: the model and the settings live in
+/// the Settings window (⌘,), and the wordmark only took room from the transport.
 struct TopBar: View {
     @Bindable private var model: AppModel
-    private let onSettings: () -> Void
 
     @Environment(\.uiScale) private var k
 
-    /// - Parameter onSettings: Opens the settings menu (Task 20's `SettingsMenu`) from the gear.
-    init(model: AppModel, onSettings: @escaping () -> Void) {
+    init(model: AppModel) {
         _model = Bindable(wrappedValue: model)
-        self.onSettings = onSettings
     }
 
     // MARK: - Authored metrics (`TopBar.cpp`, `NnLook.h`)
@@ -48,8 +45,6 @@ struct TopBar: View {
         static let volumeValueWidth: CGFloat = 30
         static let speakerIconSize: CGFloat = 13
         static let muteIconSize: CGFloat = 14
-        static let settingsWidth: CGFloat = 32
-        static let settingsIconSize: CGFloat = 14
     }
 
     // MARK: - Body
@@ -66,9 +61,6 @@ struct TopBar: View {
                 gap
                 TimeDisplay(model: model)
 
-                gap
-                modelButton
-
                 Spacer(minLength: 0)
 
                 mixPill
@@ -78,9 +70,6 @@ struct TopBar: View {
 
                 gap
                 muteButton
-
-                gap
-                settingsButton
             }
             .frame(height: s(Metrics.controlHeight))
             .padding(.leading, s(Metrics.paddingLeft))
@@ -202,26 +191,7 @@ struct TopBar: View {
         }
     }
 
-    // MARK: - Model
-
-    private var modelButton: some View {
-        let s = Scaled(k: k)
-        // "Model: Small" upper-cased, as `syncModelButton` builds it.
-        let label = ("Model: " + (model.modelSize?.displayName ?? "None")).uppercased()
-
-        return FlatButton(isOn: model.isModelPanelOpen,
-                          idle: Theme.bgControl,
-                          on: Theme.accentFillActive,
-                          foregroundIdle: Theme.textButton,
-                          foregroundOn: Theme.accentText,
-                          corner: s(Metrics.controlCorner),
-                          action: { model.isModelPanelOpen.toggle() }) { _ in
-            labelledContent(contentWidth: sectionLabelWidth(label)) {
-                sectionLabel(label)
-            }
-        }
-        .tooltip("Choose the transcription model, or download another")
-    }
+    // MARK: - Labels
 
     /// The rounded-up tracked width `NnFlatButton::getIdealWidth` gave a `sectionHeader` label, in
     /// authored points.
@@ -232,8 +202,8 @@ struct TopBar: View {
                           trackingEm: Fonts.Tracking.sectionHeaderPill).rounded(.up)
     }
 
-    /// The Model and MUTE labels: `sectionHeader` with the pills' tighter 0.09 em tracking, boxed at
-    /// the width `sectionLabelWidth` gives.
+    /// The MUTE label: `sectionHeader` with the pills' tighter 0.09 em tracking, boxed at the
+    /// width `sectionLabelWidth` gives.
     private func sectionLabel(_ text: String) -> some View {
         Text(text)
             .font(Fonts.sectionHeader(k))
@@ -367,24 +337,6 @@ struct TopBar: View {
         .tooltip("Mute / Unmute input | m")
     }
 
-    // MARK: - Settings
-
-    private var settingsButton: some View {
-        let s = Scaled(k: k)
-
-        return FlatButton(idle: Theme.bgControl,
-                          on: Theme.bgControlActive,
-                          foregroundIdle: Theme.textIcon,
-                          foregroundOn: Theme.textPrimary,
-                          corner: s(Metrics.controlCorner),
-                          action: onSettings) { _ in
-            Icons.SettingsStroked()
-                .stroke(style: Icons.strokeStyle(scale: k))
-                .frame(width: s(Metrics.settingsIconSize), height: s(Metrics.settingsIconSize))
-                .frame(width: s(Metrics.settingsWidth), height: s(Metrics.controlHeight))
-        }
-        .tooltip("Settings")
-    }
 }
 
 // MARK: - Tracked text measurement
@@ -415,22 +367,21 @@ enum TrackedText {
 
     let model = AppModel()
 
-    return TopBar(model: model, onSettings: {})
+    return TopBar(model: model)
         .frame(width: 1280)
         .background(Theme.bgRoot)
 }
 
-#Preview("Top bar, model panel open, muted, follow off") {
+#Preview("Top bar, muted, follow off") {
     FontRegistry.registerBundledFonts()
 
     let model = AppModel()
-    model.isModelPanelOpen = true
     model.inputMuted = true
     model.followPlayhead = false
     model.mix = 0.25
     model.masterGainDb = -6
 
-    return TopBar(model: model, onSettings: {})
+    return TopBar(model: model)
         .frame(width: 1280)
         .background(Theme.bgRoot)
 }
@@ -440,7 +391,7 @@ enum TrackedText {
 
     let model = AppModel()
 
-    return TopBar(model: model, onSettings: {})
+    return TopBar(model: model)
         .uiScale(1.5)
         .frame(width: 1920)
         .background(Theme.bgRoot)

@@ -22,6 +22,11 @@ struct UpdateNoticeView: View {
 
     /// Between the message, the button and the cross.
     private static let contentGap: CGFloat = 9
+
+    /// The cross: the model panel's, which is gone; the status bar's cancel is drawn the same.
+    private static let crossHitSize: CGFloat = 16
+    private static let crossGlyphSize: CGFloat = 9
+    private static let crossCorner: CGFloat = 4
     private static let buttonHeight: CGFloat = 24
     private static let buttonPadX: CGFloat = 12
     private static let buttonCorner: CGFloat = 6
@@ -94,12 +99,12 @@ struct UpdateNoticeView: View {
 
         return FlatButton(idle: .clear,
                           on: Theme.bgControlActive,
-                          corner: s(ModelPanelMetrics.cancelCorner),
+                          corner: s(Self.crossCorner),
                           action: model.dismissUpdateNotice) { _ in
             Icons.CrossStroked()
                 .stroke(style: Icons.strokeStyle(scale: k))
-                .frame(width: s(ModelPanelMetrics.cancelGlyphSize), height: s(ModelPanelMetrics.cancelGlyphSize))
-                .frame(width: s(ModelPanelMetrics.cancelHitSize), height: s(ModelPanelMetrics.cancelHitSize))
+                .frame(width: s(Self.crossGlyphSize), height: s(Self.crossGlyphSize))
+                .frame(width: s(Self.crossHitSize), height: s(Self.crossHitSize))
         }
         .tooltip("Dismiss")
         .accessibilityLabel("Dismiss")
