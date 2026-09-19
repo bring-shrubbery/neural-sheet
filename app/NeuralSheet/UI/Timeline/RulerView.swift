@@ -2,7 +2,8 @@ import AppKit
 import NeuralSheetCore
 
 /// The 22 px time ruler (`TimeRuler`): absolute seconds only, a 1 px tick per division and an
-/// `m:ss` label 6 px to its right. Nothing is drawn unless the transport can play.
+/// `m:ss` label 6 px to its right. In the Edit tab it reads bars and beats off the tempo grid
+/// instead (design §6.4). Nothing is drawn unless the transport can play.
 final class RulerView: NSView {
     let geometry: TimelineGeometry
 
@@ -13,6 +14,12 @@ final class RulerView: NSView {
             }
         }
     }
+
+    /// Bars and beats instead of seconds, in the Edit tab; nil labels seconds.
+    var grid: TempoGrid?
+
+    /// The click is a seek; the container owns the model.
+    var onSeek: ((Double) -> Void)?
 
     let playhead = PlayheadView(drawsTriangle: false)
 
@@ -58,6 +65,11 @@ final class RulerView: NSView {
 
         guard canPlay else { return }
 
+        if let grid {
+            drawBarsAndBeats(ctx, grid: grid, in: dirtyRect)
+            return
+        }
+
         let pixelsPerSecond = Double(geometry.pixelsPerSecond / k)
         let division = RulerTicks.division(pixelsPerSecond: pixelsPerSecond)
         let font = TimelineFonts.meta(k)
@@ -91,14 +103,96 @@ final class RulerView: NSView {
             index += 1
         }
     }
+
+    /// Design §6.4: a bar tick full height with its number, a beat tick half height with
+    /// `bar.beat`; labels thinned to every 2nd, 4th, 8th… bar until they clear the minimum gap.
+    private func drawBarsAndBeats(_ ctx: CGContext, grid: TempoGrid, in dirtyRect: CGRect) {
+        let k = geometry.scale
+        let height = bounds.height
+        let pixelsPerSecond = Double(geometry.pixelsPerSecond / k)
+        let font = TimelineFonts.meta(k)
+        let labelInset = 6 * k
+        let labelWidth = 40 * k
+        let barPixels = grid.secondsPerBeat * Double(TempoGrid.beatsPerBar) * pixelsPerSecond
+        let beatPixels = grid.secondsPerBeat * pixelsPerSecond
+
+        guard barPixels > 0 else { return }
+
+        var barsPerLabel = 1
+        while Double(barsPerLabel) * barPixels < RulerTicks.minLabelGap { barsPerLabel *= 2 }
+        let labelBeats = beatPixels >= RulerTicks.minLabelGap
+
+        // Only the lines whose tick or label can touch the exposed sliver: the label extends
+        // `labelInset + labelWidth` to the right of its tick.
+        let from = geometry.seconds(forX: dirtyRect.minX - labelInset - labelWidth)
+        let to = geometry.seconds(forX: dirtyRect.maxX)
+
+        for line in grid.lines(from: max(0, from), to: to, division: .quarter) {
+            let x = CGFloat((line.seconds * pixelsPerSecond).rounded()) * k
+
+            guard x < bounds.width else { break }
+
+            let position = grid.barBeat(at: line.seconds + 1e-6)
+
+            switch line.kind {
+            case .bar:
+                ctx.fill(CGRect(x: x, y: 0, width: k, height: height), TimelinePalette.divStrong)
+
+                if (position.bar - 1) % barsPerLabel == 0 {
+                    TimelineText.draw("\(position.bar)", font: font, colour: TimelinePalette.textBright,
+                                      in: CGRect(x: x + labelInset, y: 0, width: labelWidth, height: height),
+                                      anchor: .centredLeft, context: ctx)
+                }
+
+            case .beat:
+                ctx.fill(CGRect(x: x, y: height / 2, width: k, height: height / 2), TimelinePalette.divOctave)
+
+                if labelBeats {
+                    TimelineText.draw(grid.barBeatLabel(at: line.seconds + 1e-6), font: font, colour: TimelinePalette.textFaint,
+                                      in: CGRect(x: x + labelInset, y: 0, width: labelWidth, height: height),
+                                      anchor: .centredLeft, context: ctx)
+                }
+
+            case .division:
+                break
+            }
+        }
+    }
+
+    // MARK: - Mouse
+
+    override func mouseDown(with event: NSEvent) {
+        let x = convert(event.locationInWindow, from: nil).x
+        onSeek?(geometry.seconds(forX: x))
+    }
 }
 
 /// The 46 px column beside the waveform and the ruler (`TimelineGutter`): the amplitude scale,
 /// each label centred on the exact y its amplitude maps to. The ruler's share is deliberately empty.
+/// Beside the Edit tab's strip there is no room for the scale, so only the rules are drawn.
 final class GutterView: NSView {
     var scale: CGFloat = 1 {
         didSet {
             if scale != oldValue {
+                needsDisplay = true
+            }
+        }
+    }
+
+    /// The waveform band's height in authored pixels; the container keeps it in step with the
+    /// geometry, which this view does not hold.
+    var waveformHeight: CGFloat = TimelineMetrics.waveformHeight {
+        didSet {
+            if waveformHeight != oldValue {
+                needsDisplay = true
+            }
+        }
+    }
+
+    /// Beside the Edit tab's strip: no amplitude labels.
+    var isCompact = false {
+        didSet {
+            if isCompact != oldValue {
                 needsDisplay = true
             }
         }
@@ -124,19 +218,22 @@ final class GutterView: NSView {
         guard let ctx = NSGraphicsContext.current?.cgContext else { return }
 
         let k = scale
-        let waveformHeight = TimelineMetrics.waveformHeight * k
+        let bandHeight = waveformHeight * k
 
         ctx.fill(rect.intersection(bounds), TimelinePalette.bgGutter)
         ctx.fill(CGRect(x: bounds.width - k, y: 0, width: k, height: bounds.height), TimelinePalette.divStrong)
-        ctx.fill(CGRect(x: 0, y: waveformHeight - k, width: bounds.width, height: k), TimelinePalette.divSoft)
+        ctx.fill(CGRect(x: 0, y: bandHeight - k, width: bounds.width, height: k), TimelinePalette.divSoft)
         ctx.fill(CGRect(x: 0, y: bounds.height - k, width: bounds.width, height: k), TimelinePalette.divSoft)
+
+        guard !isCompact else { return }
 
         let font = TimelineFonts.scaleLabel(k)
         let labelHeight = 9 * k
         let labelWidth = bounds.width - 6 * k
+        let centreY = waveformHeight * 0.5 + 0.5
 
         func labelRect(amplitude: CGFloat) -> CGRect {
-            let y = (TimelineMetrics.waveformCentreY - amplitude * TimelineMetrics.waveformAmpHalfSpan) * k
+            let y = (centreY - amplitude * TimelineMetrics.waveformAmpHalfSpan) * k
 
             return CGRect(x: 0, y: y - labelHeight / 2, width: labelWidth, height: labelHeight)
         }

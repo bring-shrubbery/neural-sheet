@@ -7,14 +7,17 @@ enum TimelineMetrics {
     static let gutterWidth: CGFloat = 46
     static let waveformHeight: CGFloat = 126
     static let rulerHeight: CGFloat = 22
+    /// The roll's top in the Transcribe tab; the geometry's `rollY` is the live value.
     static let pianoRollY: CGFloat = waveformHeight + rulerHeight
+
+    /// The waveform band in the Edit tab (design §3.4): a strip, its amplitude scale to match.
+    static let waveformHeightEdit: CGFloat = 40
+    static let waveformAmpHalfSpanEdit: CGFloat = 14
 
     static let barWidth: CGFloat = 3
     static let barPitch: CGFloat = 4
 
-    /// Centre of the 1 px line drawn at `waveformHeight / 2`, so amplitude 0 lands mid-pixel.
-    static let waveformCentreY: CGFloat = waveformHeight * 0.5 + 0.5
-    /// Where amplitude ±1.0 lands, measured from `waveformCentreY`.
+    /// Where amplitude ±1.0 lands, measured from the band's centre, in the Transcribe tab.
     static let waveformAmpHalfSpan: CGFloat = 51
 
     /// The horizontal scrollbar's thickness (`LookAndFeel_V4::getDefaultScrollbarWidth`).
@@ -45,6 +48,15 @@ final class TimelineGeometry {
 
     /// The clip view's width, in real points.
     var viewportWidth: CGFloat = 0
+
+    /// The waveform band's height in authored pixels: 126 in the Transcribe tab, 40 in Edit.
+    var waveformHeight: CGFloat = TimelineMetrics.waveformHeight
+    /// Where amplitude ±1.0 lands, measured from the band's centre.
+    var waveformAmpHalfSpan: CGFloat = TimelineMetrics.waveformAmpHalfSpan
+    /// Centre of the 1 px line drawn at `waveformHeight / 2`, so amplitude 0 lands mid-pixel.
+    var waveformCentreY: CGFloat { waveformHeight * 0.5 + 0.5 }
+    /// The roll's top, in authored pixels.
+    var rollY: CGFloat { waveformHeight + TimelineMetrics.rulerHeight }
 
     /// Real points per second.
     var pixelsPerSecond: CGFloat { CGFloat(ZoomMath.basePixelsPerSecond * zoom) * scale }
@@ -151,6 +163,21 @@ final class TimelineGeometry {
         }
 
         return (y * scale, height * scale)
+    }
+
+    /// The pitch whose lane contains `y` (real points), or nil off the lanes.
+    func pitch(forY y: CGFloat) -> Int? {
+        guard pitchRange.low <= pitchRange.high else { return nil }
+
+        for pitch in pitchRange.low...pitchRange.high {
+            let lane = lane(forPitch: pitch)
+
+            if y >= lane.y, y < lane.y + lane.height {
+                return pitch
+            }
+        }
+
+        return nil
     }
 
     private func noteBottomY(_ note: Int) -> CGFloat {

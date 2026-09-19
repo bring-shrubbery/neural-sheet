@@ -2,7 +2,8 @@ import AppKit
 import NeuralSheetCore
 
 /// The piano roll (`PianoRoll`): one lane per semitone on show, the notes in their instruments'
-/// colours, the wash left of the playhead and the shade past the decode frontier.
+/// colours, the wash left of the playhead and the shade past the decode frontier. In the Edit tab
+/// the tempo grid runs over the lanes and each note's velocity shows in its alpha (design §6.5).
 ///
 /// The lanes are measured off the same geometry the key column is drawn with. Notes are bucketed by
 /// second so a repaint of one sliver — the playhead moving, a chunk landing — touches only the
@@ -18,6 +19,10 @@ final class PianoRollView: NSView {
             }
         }
     }
+
+    /// The tempo grid drawn over the lanes, in the Edit tab; nil draws none. Whole-view repaint:
+    /// the caller decides.
+    var grid: TempoGrid?
 
     /// The click is a seek; the container owns the model.
     var onSeek: ((Double) -> Void)?
@@ -204,11 +209,44 @@ final class PianoRollView: NSView {
             ctx.fill(laneRect, colour)
 
             // An octave separator on each C, which is the only thing standing in for the vertical
-            // grid the design deliberately does without.
+            // grid the Transcribe tab deliberately does without.
             if note % 12 == 0 {
                 ctx.fill(CGRect(x: dirtyRect.minX, y: lane.y + lane.height - k, width: dirtyRect.width, height: k),
                          empty ? TimelinePalette.divOctaveEmpty : TimelinePalette.divOctave)
             }
+        }
+
+        if let grid {
+            drawGrid(ctx, grid: grid, in: dirtyRect)
+        }
+    }
+
+    /// Design §6.5: bar, beat and division lines over the lanes; the finer kinds drop out as
+    /// they crowd.
+    private func drawGrid(_ ctx: CGContext, grid: TempoGrid, in dirtyRect: CGRect) {
+        let k = geometry.scale
+        let pixelsPerSecond = Double(geometry.pixelsPerSecond / k)
+        let divisionPixels = grid.step * pixelsPerSecond
+        let beatPixels = grid.secondsPerBeat * pixelsPerSecond
+        let drawDivisions = divisionPixels >= 6
+        let drawBeats = beatPixels >= 3
+        let division: GridDivision = drawDivisions ? grid.division : .quarter
+
+        // One authored pixel of slack on the left: a line's x is rounded, so one just outside the
+        // sliver can land inside it.
+        for line in grid.lines(from: max(0, geometry.seconds(forX: dirtyRect.minX - k)),
+                               to: geometry.seconds(forX: dirtyRect.maxX), division: division) {
+            let colour: CGColor
+
+            switch line.kind {
+            case .bar: colour = TimelinePalette.divStrong
+            case .beat where drawBeats: colour = TimelinePalette.divOctave
+            case .division where drawDivisions: colour = TimelinePalette.gridDivision
+            default: continue
+            }
+
+            let x = CGFloat((line.seconds * pixelsPerSecond).rounded()) * k
+            ctx.fill(CGRect(x: x, y: dirtyRect.minY, width: k, height: dirtyRect.height), colour)
         }
     }
 
@@ -266,7 +304,9 @@ final class PianoRollView: NSView {
             guard noteRect.maxX >= dirtyRect.minX, noteRect.minX <= dirtyRect.maxX else { continue }
 
             let program = min(max(note.program, 0), NoteEvent.drumProgram)
-            let alpha = audible[program] ? 1 : PianoRollView.mutedNoteAlpha
+            // Velocity 1…127 → 0.45…1, so an edited velocity shows (§6.5); muted wins.
+            let velocityAlpha = 0.45 + 0.55 * CGFloat(note.velocity - 1) / 126
+            let alpha = audible[program] ? velocityAlpha : PianoRollView.mutedNoteAlpha
 
             ctx.setAlpha(alpha)
             ctx.fillRoundedRect(noteRect, corner: corner, colours[program])

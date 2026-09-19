@@ -13,6 +13,32 @@ final class TimelineContainerView: NSView {
     let model: AppModel
     let geometry = TimelineGeometry()
 
+    /// Transcribe or Edit (design §3.4): the waveform's height, what the ruler labels, what the
+    /// roll draws and whether it edits. Zoom, scroll and pitch range carry across.
+    var mode: TimelineMode = .transcribe {
+        didSet {
+            guard mode != oldValue else { return }
+
+            let editing = mode == .edit
+            geometry.waveformHeight = editing ? TimelineMetrics.waveformHeightEdit : TimelineMetrics.waveformHeight
+            geometry.waveformAmpHalfSpan = editing ? TimelineMetrics.waveformAmpHalfSpanEdit : TimelineMetrics.waveformAmpHalfSpan
+            gutter.waveformHeight = geometry.waveformHeight
+            gutter.isCompact = editing
+            waveform.isCompact = editing
+            ruler.grid = editing ? model.editor.grid : nil
+            roll.grid = editing ? model.editor.grid : nil
+            needsLayout = true
+            layoutDocument()
+            configureViews()
+            placeOverlays()
+            waveform.needsDisplay = true
+            ruler.needsDisplay = true
+            roll.needsDisplay = true
+            roll.setFrontier(seconds: frontierSeconds)
+            updatePlayhead()
+        }
+    }
+
     var scale: CGFloat {
         didSet {
             if scale != oldValue {
@@ -53,6 +79,8 @@ final class TimelineContainerView: NSView {
         var transcribeLabel = ""
         var canTranscribe = false
         var peaksIdentity: ObjectIdentifier?
+        var workspace: Workspace = .transcribe
+        var grid = TempoGrid()
     }
 
     var snapshot = Snapshot()
@@ -109,6 +137,7 @@ final class TimelineContainerView: NSView {
 
         waveform.onSeek = { [weak self] seconds in self?.seek(toSeconds: seconds) }
         roll.onSeek = { [weak self] seconds in self?.seek(toSeconds: seconds) }
+        ruler.onSeek = { [weak self] seconds in self?.seek(toSeconds: seconds) }
         keyboard.onWheel = { [weak self] event in
             guard let self else { return }
 
@@ -174,7 +203,7 @@ final class TimelineContainerView: NSView {
         displayLink?.isPaused = false
     }
 
-    /// Click-to-seek from the waveform and the roll (§5.1).
+    /// Click-to-seek from the waveform, the ruler and the roll (§5.1).
     private func seek(toSeconds seconds: Double) {
         model.seek(toSeconds: seconds)
         resumeDisplayLink()
@@ -188,7 +217,7 @@ final class TimelineContainerView: NSView {
 
         let k = scale
         let columnWidth = TimelineMetrics.gutterWidth * k
-        let gutterHeight = TimelineMetrics.pianoRollY * k
+        let gutterHeight = geometry.rollY * k
 
         gutter.frame = CGRect(x: 0, y: 0, width: columnWidth, height: gutterHeight)
         keyboard.frame = CGRect(x: 0, y: gutterHeight, width: columnWidth, height: max(0, bounds.height - gutterHeight))
@@ -252,9 +281,9 @@ final class TimelineContainerView: NSView {
         }
 
         let width = geometry.contentWidth
-        let waveformHeight = TimelineMetrics.waveformHeight * k
+        let waveformHeight = geometry.waveformHeight * k
         let rulerHeight = TimelineMetrics.rulerHeight * k
-        let rollY = TimelineMetrics.pianoRollY * k
+        let rollY = geometry.rollY * k
 
         let documentFrame = CGRect(x: 0, y: 0, width: width, height: height)
         let documentChanged = document.frame != documentFrame
@@ -325,11 +354,11 @@ final class TimelineContainerView: NSView {
         if let ctaHost {
             ctaHost.rootView = TranscribeCTA(label: model.transcribeLabel, isEnabled: state == .audioLoaded, scale: k,
                                              action: { [weak self] in self?.model.launchTranscription() })
-            ctaHost.isHidden = !(rollIsIdle && hasModel)
+            ctaHost.isHidden = !(rollIsIdle && hasModel) || mode == .edit
 
             let viewport = scrollView.frame
-            let rollRegion = CGRect(x: viewport.minX, y: viewport.minY + TimelineMetrics.pianoRollY * k,
-                                    width: viewport.width, height: max(0, viewport.height - TimelineMetrics.pianoRollY * k))
+            let rollRegion = CGRect(x: viewport.minX, y: viewport.minY + geometry.rollY * k,
+                                    width: viewport.width, height: max(0, viewport.height - geometry.rollY * k))
 
             ctaHost.place(centredIn: rollRegion)
         }
@@ -340,15 +369,20 @@ final class TimelineContainerView: NSView {
 
                 self.model.loadAudio(url: url)
             })
-            loadHost.isHidden = state != .empty
+            loadHost.isHidden = state != .empty || mode == .edit
 
             let viewport = scrollView.frame
             let waveformRegion = CGRect(x: viewport.minX, y: viewport.minY, width: viewport.width,
-                                        height: TimelineMetrics.waveformHeight * k)
+                                        height: geometry.waveformHeight * k)
 
             loadHost.place(centredIn: waveformRegion, top: waveformRegion.minY + WaveformView.loadButtonY(scale: k))
         }
     }
+}
+
+/// Which tab the timeline is drawn for; the container derives it from the model's workspace.
+enum TimelineMode: Equatable {
+    case transcribe, edit
 }
 
 /// The display link's target: weak on the view, so the link's own retain never keeps the

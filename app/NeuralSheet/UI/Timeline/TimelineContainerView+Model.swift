@@ -30,6 +30,8 @@ extension TimelineContainerView {
             _ = model.transcribeLabel
             _ = model.canTranscribe
             _ = model.peaks
+            _ = model.workspace
+            _ = model.editor.grid
         } onChange: { [weak self] in
             // Called before the new value lands, from whichever context wrote it: the read has to
             // wait for the next run-loop pass, which also folds a burst of writes into one sync.
@@ -61,7 +63,9 @@ extension TimelineContainerView {
                            hasModel: !model.installedModels.isEmpty,
                            transcribeLabel: model.transcribeLabel,
                            canTranscribe: model.canTranscribe,
-                           peaksIdentity: ObjectIdentifier(model.peaks))
+                           peaksIdentity: ObjectIdentifier(model.peaks),
+                           workspace: model.workspace,
+                           grid: model.editor.grid)
         let old = snapshot
         let first = !hasSynced
         let notes = model.notes
@@ -78,6 +82,19 @@ extension TimelineContainerView {
         if audioChanged {
             waveform.peaks = model.peaks
             geometry.duration = new.duration
+        }
+
+        // Before the zoom and state handling, so the bands are laid out for the tab's waveform
+        // height in the same pass.
+        if first || new.workspace != old.workspace {
+            mode = new.workspace == .edit ? .edit : .transcribe
+        }
+
+        if mode == .edit, first || new.grid != old.grid || new.workspace != old.workspace {
+            ruler.grid = new.grid
+            roll.grid = new.grid
+            ruler.needsDisplay = true
+            roll.needsDisplay = true
         }
 
         if zoomChanged {

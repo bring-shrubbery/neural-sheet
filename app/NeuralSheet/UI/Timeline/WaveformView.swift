@@ -2,7 +2,8 @@ import AppKit
 import NeuralSheetCore
 
 /// The 126 px waveform strip (`AudioRegion`): bars over the take's peaks, the played wash, the
-/// corner label, and the dashed drop zone while there is nothing loaded.
+/// corner label, and the dashed drop zone while there is nothing loaded. In the Edit tab it is a
+/// 40 px strip (design §3.4): the same bars over a smaller span, no label, no drop zone.
 ///
 /// As wide as the whole timeline, so `draw` only ever touches the exposed sliver: the bars are
 /// anchored to absolute content pixels and read straight off the peaks pyramid under one lock.
@@ -16,6 +17,16 @@ final class WaveformView: NSView {
     var isFileOver = false {
         didSet {
             if isFileOver != oldValue {
+                needsDisplay = true
+            }
+        }
+    }
+
+    /// The Edit tab's strip: the bars only, the corner label and the drop zone withheld.
+    var isCompact = false {
+        didSet {
+            if isCompact != oldValue {
+                cornerLabel.isHidden = isCompact || (peaks?.sampleCount ?? 0) == 0
                 needsDisplay = true
             }
         }
@@ -97,20 +108,26 @@ final class WaveformView: NSView {
         ctx.fill(dirtyRect, TimelinePalette.bgPanel)
         ctx.fill(CGRect(x: dirtyRect.minX, y: height - k, width: dirtyRect.width, height: k), TimelinePalette.divSoft)
 
-        // The corner label goes with the audio (`AudioRegion::paint` returns after the drop zone).
+        // The corner label goes with the audio (`AudioRegion::paint` returns after the drop zone),
+        // and the strip has no room for it.
         let hasAudio = (peaks?.sampleCount ?? 0) > 0
+        let showLabel = hasAudio && !isCompact
 
-        if cornerLabel.isHidden == hasAudio {
-            cornerLabel.isHidden = !hasAudio
+        if cornerLabel.isHidden == showLabel {
+            cornerLabel.isHidden = !showLabel
         }
 
         guard let peaks, hasAudio else {
-            drawDropZone(ctx)
+            // The strip is not a drop target's face: the load button lives in the Transcribe tab.
+            if !isCompact {
+                drawDropZone(ctx)
+            }
+
             return
         }
 
         // The centre line at `height / 2`, one authored pixel tall.
-        ctx.fill(CGRect(x: dirtyRect.minX, y: (TimelineMetrics.waveformHeight / 2).rounded(.down) * k,
+        ctx.fill(CGRect(x: dirtyRect.minX, y: (geometry.waveformHeight / 2).rounded(.down) * k,
                         width: dirtyRect.width, height: k), TimelinePalette.waveCentreLine)
 
         drawBars(ctx, peaks: peaks, from: dirtyRect.minX, to: dirtyRect.maxX)
@@ -124,8 +141,8 @@ final class WaveformView: NSView {
         let barWidth = TimelineMetrics.barWidth * k
         let pixelsPerSecond = Double(geometry.pixelsPerSecond / k)
         let pitchAuthored = Double(TimelineMetrics.barPitch)
-        let centreY = TimelineMetrics.waveformCentreY * k
-        let halfSpan = TimelineMetrics.waveformAmpHalfSpan * k
+        let centreY = geometry.waveformCentreY * k
+        let halfSpan = geometry.waveformAmpHalfSpan * k
         let minHeight = 1 * k
 
         guard pixelsPerSecond > 0 else { return }
@@ -218,6 +235,7 @@ final class WaveformView: NSView {
 
     /// The button and the hint below it are centred as a column, so the button's own centre sits
     /// slightly above the region's (`AudioRegion::resized`). Authored integer arithmetic, scaled.
+    /// Against the Transcribe tab's height: the empty state never shows in the Edit tab's strip.
     static func loadButtonY(scale: CGFloat) -> CGFloat {
         let column = loadButtonHeight + dropHintGap + dropHintHeight
 

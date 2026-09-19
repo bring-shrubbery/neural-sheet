@@ -90,7 +90,7 @@ extension TimelineContainerView {
             return
         }
 
-        let overRoll = point.y >= scrollView.frame.minY + TimelineMetrics.pianoRollY * scale
+        let overRoll = point.y >= scrollView.frame.minY + geometry.rollY * scale
 
         if overRoll, wheel.isOptionDown {
             zoomPitch(byWheel: wheel.juceDeltaY, at: point)

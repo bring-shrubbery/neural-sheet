@@ -46,6 +46,9 @@ enum TimelinePalette {
     /// `nn::colours::bgRoot.withAlpha(0.75f)`, the unfinished stretch of a running transcription.
     static let frontierShade = cg(Theme.bgRoot, alpha: 0.75)
 
+    /// The Edit tab's finest grid line (design §6.5): `divSoft` at half strength, under the beats.
+    static let gridDivision = cg(Theme.divSoft, alpha: 0.5)
+
     static func cg(_ colour: Color, alpha: Double? = nil) -> CGColor {
         let rgba = colour.rgba
 
