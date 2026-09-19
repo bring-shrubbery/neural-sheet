@@ -34,9 +34,9 @@ struct NumberField: View {
             .overlay(RoundedRectangle(cornerRadius: s(Self.corner), style: .circular)
                 .strokeBorder(isFocused ? Theme.accent : Theme.divStrong, lineWidth: k))
             .onAppear { text = Self.format(value, decimals: decimals) }
-            .onChange(of: value) { _, new in
-                if !isFocused { text = Self.format(new, decimals: decimals) }
-            }
+            // An outside change wins over whatever is half-typed: ⌖ while this field has focus
+            // must show the playhead, not the old number.
+            .onChange(of: value) { _, new in text = Self.format(new, decimals: decimals) }
             .onChange(of: isFocused) { _, focused in
                 if !focused { commit() }
             }
