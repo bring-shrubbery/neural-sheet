@@ -23,6 +23,9 @@ extension RollEditController {
                 session.kind = .resize(.end)
             case (.select, nil):
                 session.kind = .marquee
+            case (.erase, nil):
+                // From empty: whatever the pointer passes over goes.
+                session.kind = .erase
             default:
                 self.session = nil
                 return
@@ -60,7 +63,8 @@ extension RollEditController {
             model.setSelection(session.additive ? session.initialSelection.union(inside) : inside)
 
         case .draw:
-            let drawn = drawnNote(anchor: session.anchorPoint, current: point)
+            // The anchor had a lane when the session began, so this cannot come back nil.
+            guard let drawn = drawnNote(anchor: session.anchorPoint, current: point) else { break }
             session.drawn = drawn
             roll.setPreview(DragPreview(kind: .draw(drawn), ids: []))
 

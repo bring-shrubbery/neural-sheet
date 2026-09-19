@@ -43,6 +43,8 @@ import SwiftUI
         var resolvedSemitones = 0
         var drawn: NoteEvent?
         var erased: Set<NoteID> = []
+        /// ⇧ on a note: toggled on release, once the press is known to be a click and not a drag.
+        var shiftToggle: NoteID?
     }
 
     var session: DragSession?
@@ -66,6 +68,8 @@ import SwiftUI
         roll.interaction = nil
         roll.setSelection([])
         model.dragCanceller = nil
+        // The pointer may be resting on the roll with the tool's cursor.
+        NSCursor.arrow.set()
     }
 
     // MARK: - Mouse
@@ -83,20 +87,25 @@ import SwiftUI
         case .select, .draw:
             if let hit {
                 if shift {
-                    var selection = model.editor.selection
-                    if selection.contains(hit.id) { selection.remove(hit.id) } else { selection.insert(hit.id) }
-                    model.setSelection(selection)
-                } else if !model.editor.selection.contains(hit.id) {
-                    model.setSelection([hit.id])
-                }
+                    // Not yet a toggle: a ⇧-drag moves the pressed note with the selection, and
+                    // only a ⇧-click (decided on release) adds or removes it.
+                    session.shiftToggle = hit.id
+                    session.ids = model.editor.selection.union([hit.id])
+                } else {
+                    if !model.editor.selection.contains(hit.id) {
+                        model.setSelection([hit.id])
+                    }
 
-                session.ids = model.editor.selection
+                    session.ids = model.editor.selection
+                }
             } else if model.editor.tool == .select {
                 if !shift { model.deselectAll() }
                 if event.clickCount == 2 { insertNote(at: point); return }
             } else {
-                // Draw on empty: the note starts now and follows the drag.
-                let drawn = drawnNote(anchor: point, current: point)
+                // Draw on empty: the note starts now and follows the drag. Off every lane there is
+                // nothing to draw on, and no session.
+                guard let drawn = drawnNote(anchor: point, current: point) else { return }
+
                 session.kind = .draw
                 session.drawn = drawn
                 roll.setPreview(DragPreview(kind: .draw(drawn), ids: []))
@@ -136,7 +145,15 @@ import SwiftUI
         guard let document = model.document else { return }
 
         switch session.kind {
-        case .pending, .marquee:
+        case .pending:
+            // A ⇧-click after all: toggle the note it landed on.
+            if let id = session.shiftToggle {
+                var selection = model.editor.selection
+                if selection.contains(id) { selection.remove(id) } else { selection.insert(id) }
+                model.setSelection(selection)
+            }
+
+        case .marquee:
             break
 
         case .move:
@@ -218,23 +235,24 @@ import SwiftUI
 
     // MARK: - Helpers
 
-    /// Double-click on empty in Select: one division at the target program.
+    /// Double-click on empty in Select: one division at the target program; nothing off the lanes.
     func insertNote(at point: CGPoint) {
-        guard var document = model.document, let pitch = geometry.pitch(forY: point.y) else { return }
+        guard var document = model.document, let note = drawnNote(anchor: point, current: point) else { return }
 
-        let span = drawnNote(anchor: point, current: point)
-        let batch = document.insert(NoteEvent(startTime: span.startTime, endTime: span.endTime, pitch: pitch, program: model.editor.targetProgram))
+        let batch = document.insert(note)
         model.replaceDocumentAndCommit(document, batch)
         model.setSelection(Set(batch.inserted.map(\.id)))
     }
 
-    /// The Draw tool's note between the anchor and the pointer, at the anchor's pitch.
-    func drawnNote(anchor: CGPoint, current: CGPoint) -> NoteEvent {
+    /// The Draw tool's note between the anchor and the pointer, at the anchor's pitch; nil when
+    /// the anchor is off every lane.
+    func drawnNote(anchor: CGPoint, current: CGPoint) -> NoteEvent? {
+        guard let pitch = geometry.pitch(forY: anchor.y) else { return nil }
+
         let span = EditGestureMath.drawnNote(anchor: geometry.seconds(forX: anchor.x),
                                              current: geometry.seconds(forX: current.x),
                                              grid: model.editor.grid,
                                              snapEnabled: model.editor.snapEnabled)
-        let pitch = geometry.pitch(forY: anchor.y) ?? 60
 
         return NoteEvent(startTime: span.start, endTime: span.end, pitch: pitch, program: model.editor.targetProgram)
     }

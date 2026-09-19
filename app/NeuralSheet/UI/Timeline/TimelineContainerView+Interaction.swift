@@ -211,7 +211,8 @@ extension TimelineContainerView {
 
         updatePlayhead()
 
-        if model.followPlayhead, model.state.canPlay, model.isPlaying {
+        // Not under a drag: the follow and the auto-scroll would fight over the viewport.
+        if model.followPlayhead, model.state.canPlay, model.isPlaying, editController?.session == nil {
             centreViewOnPlayhead()
         }
 
