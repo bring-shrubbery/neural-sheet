@@ -144,3 +144,55 @@ private func near(_ a: Double, _ b: Double) -> Bool { abs(a - b) < 1e-9 }
     document.commit(document.insert(note(1, 2, pitch: 60)))
     #expect(document.events == [note(0, 1, pitch: 60), note(1, 2, pitch: 60)])
 }
+
+@Test func insertingJustBeforeAnExistingNoteInsertsNothing() {
+    // The inserted note is the earlier one and would be trimmed to under 10 ms: it is simply not
+    // inserted, and the batch is empty.
+    var document = NoteDocument(events: [note(1, 2, pitch: 60)])
+    let before = document.notes
+
+    let batch = document.insert(note(0.995, 3, pitch: 60))
+    #expect(batch.inserted.isEmpty)
+    #expect(batch.isEmpty)
+
+    document.commit(batch)
+    #expect(document.notes == before)
+    #expect(!document.isEdited)
+    #expect(!document.canUndo)
+}
+
+@Test func movingANoteToJustBeforeAnotherDeletesTheMovedNote() {
+    var document = NoteDocument(events: [note(0, 1, pitch: 60), note(3, 4, pitch: 60)])
+    let moved = document.notes[0]
+    let other = document.notes[1]
+
+    // 5 ms before the other note: the move becomes a deletion of the original.
+    let batch = document.move([moved.id], deltaSeconds: 2.995, deltaSemitones: 0)
+    #expect(batch.changed.isEmpty)
+    #expect(batch.deleted == [moved])
+
+    document.commit(batch)
+    #expect(document.notes == [other])
+
+    document.undo()
+    #expect(document.notes == [moved, other])
+}
+
+@Test func oneMoveOverlappingTwoNeighboursTrimsBothSidesInOneBatch() {
+    var document = NoteDocument(events: [note(0, 2, pitch: 60), note(3, 5, pitch: 60), note(6, 8, pitch: 60)])
+    let original = document.notes
+    let last = document.notes[2]
+
+    // The last note dropped between the other two: the first is trimmed to where it lands, and it
+    // is trimmed itself to where the middle one starts.
+    let batch = document.move([last.id], deltaSeconds: -4.5, deltaSemitones: 0)
+    #expect(batch.changed.count == 2)
+    #expect(batch.deleted.isEmpty)
+
+    document.commit(batch)
+    #expect(document.events == [note(0, 1.5, pitch: 60), note(1.5, 3, pitch: 60), note(3, 5, pitch: 60)])
+    #expect(document.notes.map(\.id) == [original[0].id, last.id, original[1].id])
+
+    document.undo()
+    #expect(document.notes == original)
+}
