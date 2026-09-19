@@ -215,11 +215,14 @@ extension TimelineContainerView {
             centreViewOnPlayhead()
         }
 
-        // Nothing moves on its own unless the transport runs or a take grows: after a few quiet
-        // frames the link stops until a sync, a seek or a resize wakes it. A few rather than one,
-        // so the model's own tick — which mirrors the engine after this one may have run — still
-        // gets seen.
-        if model.isPlaying || recording {
+        // A drag held past an edge of the viewport scrolls it a step a frame.
+        let dragging = editController?.autoScrollTick() ?? false
+
+        // Nothing moves on its own unless the transport runs, a take grows or a drag scrolls:
+        // after a few quiet frames the link stops until a sync, a seek, a resize or a mouse move
+        // wakes it. A few rather than one, so the model's own tick — which mirrors the engine
+        // after this one may have run — still gets seen.
+        if model.isPlaying || recording || dragging {
             idleTicks = 0
         } else {
             idleTicks += 1

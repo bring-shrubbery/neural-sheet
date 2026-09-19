@@ -27,19 +27,32 @@ final class PianoRollView: NSView {
     /// The click is a seek; the container owns the model.
     var onSeek: ((Double) -> Void)?
 
+    /// The edit controller, in Edit mode; without one a click seeks.
+    weak var interaction: RollEditController?
+
     let playhead = PlayheadView(drawsTriangle: false)
     let wash = FillView(colour: TimelinePalette.accentWashRoll)
     let frontierShade = FillView(colour: TimelinePalette.frontierShade)
     let frontierLine = FillView(colour: TimelinePalette.divStrong)
+    let marquee = MarqueeView(frame: .zero)
 
-    private var notes: [NoteEvent] = []
+    private(set) var notes: [NoteEvent] = []
+    /// `ids[i]` identifies `notes[i]`; placeholder ids while a run streams (nothing hit-tests them).
+    private(set) var ids: [NoteID] = []
 
     /// `buckets[s]` holds the indices of every note drawn over second `s`, in note order.
-    private var buckets: [[Int]] = []
+    private(set) var buckets: [[Int]] = []
 
     /// Per program: whether it is heard, and the colour it draws in.
-    private var audible = [Bool](repeating: true, count: NoteEvent.drumProgram + 1)
-    private var colours: [CGColor] = []
+    private(set) var audible = [Bool](repeating: true, count: NoteEvent.drumProgram + 1)
+    private(set) var colours: [CGColor] = []
+
+    /// Design §6.5: the selection's outline, a drag's preview, and the indices the preview names.
+    private(set) var selection: Set<NoteID> = []
+    private(set) var preview: DragPreview?
+    var previewIndices: [Int] = []
+
+    private var trackingArea: NSTrackingArea?
 
     /// How far a drum hit is widened for drawing (`DRUM_MIN_DRAWN_SECONDS`).
     static let drumMinDrawnSeconds = 0.1
@@ -53,10 +66,12 @@ final class PianoRollView: NSView {
         wantsLayer = true
         clipsToBounds = true
 
-        // The order `PianoRoll::paint` draws them in, over the lanes and the notes.
+        // The order `PianoRoll::paint` draws them in, over the lanes and the notes; the marquee
+        // under the playhead so the line stays on top.
         addSubview(wash)
         addSubview(frontierShade)
         addSubview(frontierLine)
+        addSubview(marquee)
         addSubview(playhead)
 
         colours = (0...NoteEvent.drumProgram).map { program in
@@ -76,9 +91,15 @@ final class PianoRollView: NSView {
 
     /// Replaces the notes and rebuilds the second buckets. Whole-view repaint: the caller decides.
     /// A note with a non-finite time cannot be placed and is left out rather than trapped on.
-    func setNotes(_ newNotes: [NoteEvent]) {
-        notes = newNotes.filter { $0.startTime.isFinite && $0.endTime.isFinite }
+    func setNotes(_ newNotes: [EditableNote]) {
+        let placeable = newNotes.filter { $0.note.startTime.isFinite && $0.note.endTime.isFinite }
+        notes = placeable.map(\.note)
+        ids = placeable.map(\.id)
+        rebuildBuckets()
+        refreshPreviewIndices()
+    }
 
+    private func rebuildBuckets() {
         let seconds = Int((notes.map { PianoRollView.drawnEnd(of: $0) }.max() ?? 0).rounded(.up)) + 1
         var newBuckets = [[Int]](repeating: [], count: max(1, seconds))
 
@@ -95,6 +116,23 @@ final class PianoRollView: NSView {
     }
 
     var hasNotes: Bool { !notes.isEmpty }
+
+    /// Repaints the notes whose outline changes.
+    func setSelection(_ new: Set<NoteID>) {
+        guard new != selection else { return }
+
+        selection = new
+        setNeedsDisplay(visibleRect)
+    }
+
+    /// The drag in progress, or nil once it ends; the named notes are drawn where they would land.
+    func setPreview(_ new: DragPreview?) {
+        guard new != preview else { return }
+
+        preview = new
+        refreshPreviewIndices()
+        setNeedsDisplay(visibleRect)
+    }
 
     /// Which instruments are heard, from the mixer. Repaints only if something changed.
     func setMixer(_ mixer: InstrumentMixerState) {
@@ -114,7 +152,7 @@ final class PianoRollView: NSView {
         }
     }
 
-    private static func drawnEnd(of note: NoteEvent) -> Double {
+    static func drawnEnd(of note: NoteEvent) -> Double {
         note.isDrum ? max(note.endTime, note.startTime + drumMinDrawnSeconds) : note.endTime
     }
 
@@ -122,6 +160,7 @@ final class PianoRollView: NSView {
 
     func configure() {
         playhead.configure(scale: geometry.scale, height: bounds.height)
+        marquee.scale = geometry.scale
     }
 
     /// The playhead and the wash left of it; nil hides both (`PianoRoll::updateEnablements`).
@@ -251,22 +290,48 @@ final class PianoRollView: NSView {
         }
     }
 
-    /// `PianoRoll::_drawNotes`, over the notes whose seconds cross the exposed sliver.
+    /// `PianoRoll::_drawNotes`, over the notes whose seconds cross the exposed sliver; then the
+    /// notes a drag previews, wherever they land now, and the Draw tool's note in progress.
     private func drawNotes(_ ctx: CGContext, in dirtyRect: CGRect) {
-        guard !notes.isEmpty, !buckets.isEmpty else { return }
+        let previewSet = Set(previewIndices)
 
-        let k = geometry.scale
-        let range = geometry.pitchRange
-        let height = bounds.height
-        let corner = PianoRollView.noteCorner * k
-        let edgeWidth = PianoRollView.onsetEdgeWidth * k
+        for index in indices(crossing: dirtyRect) where !previewSet.contains(index) {
+            let note = notes[index]
+
+            guard let rect = noteRect(note), rect.maxX >= dirtyRect.minX, rect.minX <= dirtyRect.maxX else { continue }
+
+            drawNote(note, in: rect, selected: selection.contains(ids[index]), ctx: ctx)
+        }
+
+        // The preview's notes, wherever they land now. Not clipped to the sliver: the preview
+        // invalidates the whole visible rect, and a moved note has to leave where it was.
+        for index in previewIndices {
+            let original = notes[index]
+
+            if previewDuplicates, let rect = noteRect(original) {
+                drawNote(original, in: rect, selected: false, ctx: ctx)
+            }
+
+            guard let shown = previewed(original, id: ids[index]), let rect = noteRect(shown) else { continue }
+
+            drawNote(shown, in: rect, selected: true, ctx: ctx)
+        }
+
+        if let drawn = drawnPreview, let rect = noteRect(drawn) {
+            drawNote(drawn, in: rect, selected: true, ctx: ctx)
+        }
+    }
+
+    /// The indices of the notes whose seconds cross `dirtyRect`, in note order.
+    private func indices(crossing dirtyRect: CGRect) -> [Int] {
+        guard !notes.isEmpty, !buckets.isEmpty else { return [] }
 
         let fromSeconds = max(0, geometry.seconds(forX: dirtyRect.minX))
         let toSeconds = geometry.seconds(forX: dirtyRect.maxX)
         let firstBucket = min(Int(fromSeconds), buckets.count - 1)
         let lastBucket = min(Int(toSeconds), buckets.count - 1)
 
-        guard firstBucket <= lastBucket else { return }
+        guard firstBucket <= lastBucket else { return [] }
 
         // Gathered and sorted rather than drawn bucket by bucket, so overlapping notes stack in the
         // order the transcription lists them, wherever their buckets start.
@@ -285,47 +350,40 @@ final class PianoRollView: NSView {
 
         indices.sort()
 
-        for index in indices {
-            let note = notes[index]
-
-            // The range always covers the whole transcription, so this only skips a note in the
-            // window between it arriving and the range being told about it.
-            guard note.pitch >= range.low, note.pitch <= range.high else { continue }
-
-            let lane = geometry.lane(forPitch: note.pitch)
-
-            if lane.y < 0 || lane.height >= height {
-                continue
-            }
-
-            let x = geometry.x(forSeconds: note.startTime)
-            let width = max(1 * k, geometry.x(forSeconds: PianoRollView.drawnEnd(of: note)) - x - 1 * k)
-            let noteRect = CGRect(x: x, y: lane.y, width: width, height: lane.height)
-
-            guard noteRect.maxX >= dirtyRect.minX, noteRect.minX <= dirtyRect.maxX else { continue }
-
-            let program = min(max(note.program, 0), NoteEvent.drumProgram)
-            // Edit mode: velocity 1…127 → 0.45…1 (§6.5); the Transcribe tab draws every note solid,
-            // as it always has. Muted wins in both.
-            let velocityAlpha = grid != nil ? 0.45 + 0.55 * CGFloat(note.velocity - 1) / 126 : 1
-            let alpha = audible[program] ? velocityAlpha : PianoRollView.mutedNoteAlpha
-
-            ctx.setAlpha(alpha)
-            ctx.fillRoundedRect(noteRect, corner: corner, colours[program])
-
-            // A note-on marker. Without it a run of repeated notes at one pitch reads as one long one.
-            if width > 2 * edgeWidth {
-                ctx.fill(CGRect(x: x, y: lane.y, width: edgeWidth, height: lane.height), TimelinePalette.noteOnsetEdge)
-            }
-
-            ctx.setAlpha(1)
-        }
+        return indices
     }
 
     // MARK: - Mouse
 
+    /// Tracks the pointer for the edit cursor; `mouseMoved` and `cursorUpdate` ask the controller.
+    override func updateTrackingAreas() {
+        super.updateTrackingAreas()
+
+        if let trackingArea {
+            removeTrackingArea(trackingArea)
+        }
+
+        let area = NSTrackingArea(rect: bounds, options: [.mouseMoved, .activeInKeyWindow, .inVisibleRect, .cursorUpdate],
+                                  owner: self)
+        addTrackingArea(area)
+        trackingArea = area
+    }
+
     override func mouseDown(with event: NSEvent) {
-        let x = convert(event.locationInWindow, from: nil).x
-        onSeek?(geometry.seconds(forX: x))
+        let point = convert(event.locationInWindow, from: nil)
+
+        if let interaction {
+            interaction.mouseDown(at: point, event: event)
+        } else {
+            onSeek?(geometry.seconds(forX: point.x))
+        }
+    }
+
+    override func mouseDragged(with event: NSEvent) {
+        interaction?.mouseDragged(at: convert(event.locationInWindow, from: nil), event: event)
+    }
+
+    override func mouseUp(with event: NSEvent) {
+        interaction?.mouseUp(at: convert(event.locationInWindow, from: nil), event: event)
     }
 }

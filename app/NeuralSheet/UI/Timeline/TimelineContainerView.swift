@@ -36,6 +36,7 @@ final class TimelineContainerView: NSView {
             roll.needsDisplay = true
             roll.setFrontier(seconds: frontierSeconds)
             updatePlayhead()
+            syncEditController()
         }
     }
 
@@ -63,6 +64,9 @@ final class TimelineContainerView: NSView {
     var ctaHost: OverlayHost<TranscribeCTA>?
     var loadHost: OverlayHost<LoadAudioButton>?
 
+    /// Alive while the timeline is in Edit mode and in a window (`+Editing`).
+    var editController: RollEditController?
+
     // MARK: - Model mirror
 
     /// What the last sync saw, so a change notification repaints only what moved.
@@ -81,10 +85,14 @@ final class TimelineContainerView: NSView {
         var peaksIdentity: ObjectIdentifier?
         var workspace: Workspace = .transcribe
         var grid = TempoGrid()
+        var selection: Set<NoteID> = []
+        var tool: EditorState.Tool = .select
     }
 
     var snapshot = Snapshot()
     var lastNotes: [NoteEvent] = []
+    /// With `lastNotes`: a document replacing a run's placeholders re-identifies unmoved notes.
+    var lastNoteIDs: [NoteID] = []
     var hasSynced = false
     var lastLaidOutBounds = CGRect.zero
 
@@ -181,6 +189,9 @@ final class TimelineContainerView: NSView {
 
         displayLink?.invalidate()
         displayLink = nil
+
+        // Off-window the edit controller goes too; back in one it is made again.
+        syncEditController()
 
         guard window != nil else { return }
 

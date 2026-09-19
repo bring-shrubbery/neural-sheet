@@ -49,6 +49,11 @@ enum TimelinePalette {
     /// The Edit tab's finest grid line (design §6.5): `divSoft` at half strength, under the beats.
     static let gridDivision = cg(Theme.divSoft, alpha: 0.5)
 
+    /// Design §6.5: a selected note's outline, and the marquee in the accent.
+    static let textPrimary = cg(Theme.textPrimary)
+    static let marqueeBorder = cg(Theme.accent)
+    static let marqueeFill = cg(Theme.accent, alpha: 0.12)
+
     static func cg(_ colour: Color, alpha: Double? = nil) -> CGColor {
         let rgba = colour.rgba
 

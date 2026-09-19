@@ -31,7 +31,10 @@ extension TimelineContainerView {
             _ = model.canTranscribe
             _ = model.peaks
             _ = model.workspace
+            _ = model.document
             _ = model.editor.grid
+            _ = model.editor.selection
+            _ = model.editor.tool
         } onChange: { [weak self] in
             // Called before the new value lands, from whichever context wrote it: the read has to
             // wait for the next run-loop pass, which also folds a burst of writes into one sync.
@@ -65,11 +68,16 @@ extension TimelineContainerView {
                            canTranscribe: model.canTranscribe,
                            peaksIdentity: ObjectIdentifier(model.peaks),
                            workspace: model.workspace,
-                           grid: model.editor.grid)
+                           grid: model.editor.grid,
+                           selection: model.editor.selection,
+                           tool: model.editor.tool)
         let old = snapshot
         let first = !hasSynced
+        // The document's identified notes, or the run's placeholders (ids nothing hit-tests).
         let notes = model.notes
-        let notesChanged = first || notes != lastNotes
+        let identified = model.document?.notes ?? notes.enumerated().map { EditableNote(id: NoteID($0.offset), note: $0.element) }
+        let ids = identified.map(\.id)
+        let notesChanged = first || notes != lastNotes || ids != lastNoteIDs
 
         snapshot = new
         hasSynced = true
@@ -120,12 +128,26 @@ extension TimelineContainerView {
 
         if notesChanged {
             lastNotes = notes
-            roll.setNotes(notes)
+            lastNoteIDs = ids
+            roll.setNotes(identified)
             roll.needsDisplay = true
         }
 
         if first || new.mixer != old.mixer {
             roll.setMixer(new.mixer)
+        }
+
+        // The controller sets the selection as it is installed; from then on the roll follows the
+        // model (a marquee, a key, an undo). Outside Edit mode the roll shows none.
+        if mode == .edit {
+            if new.selection != old.selection {
+                roll.setSelection(new.selection)
+            }
+
+            if new.tool != old.tool {
+                roll.window?.invalidateCursorRects(for: roll)
+                roll.refreshCursor()
+            }
         }
 
         // The range: every state change settles it on what is there, a chunk may only widen it,
