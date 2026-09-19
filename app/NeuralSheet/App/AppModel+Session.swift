@@ -4,7 +4,7 @@ import NeuralSheetCore
 import Observation
 
 /// What the app remembers (inventory §8): the session -- the take's path, the transport, the zoom,
-/// the selection and the mix, never the transcription -- and the global settings.
+/// the selection, the mix and, once finished, the transcription -- and the global settings.
 extension AppModel {
     // MARK: - Session
 
@@ -23,6 +23,17 @@ extension AppModel {
         session.verticalZoom = verticalZoom
         session.selectedGroups = selectedGroups.map(\.rawValue)
         session.mixer = mixer.settings
+        session.workspace = workspace
+        session.gridOffsetSeconds = editor.grid.offsetSeconds
+        session.gridDivision = editor.grid.division
+        session.snapEnabled = editor.snapEnabled
+        session.targetProgram = editor.targetProgram
+
+        if state == .populated, let document, let source {
+            session.transcription = SessionTranscription(sourceSampleCount: source.mono16k.count,
+                                                         rawNotes: transcription.rawNotes,
+                                                         document: document)
+        }
 
         return session
     }
@@ -35,7 +46,8 @@ extension AppModel {
     }
 
     /// Restores the session at `paths.session` (§8.2): the audio is re-read from its path when
-    /// the file still exists, then the playhead, the zoom, the selection and the mix are put back.
+    /// the file still exists, then the playhead, the zoom, the selection, the mix and the
+    /// transcription are put back.
     ///
     /// Only into an empty model, and only once the view has installed `presentError`: re-reading
     /// a file that has gone bad shows the same dialog a drop of it would.
@@ -59,8 +71,26 @@ extension AppModel {
             setSoloed(program: program, channel.soloed)
         }
 
+        editor.grid.offsetSeconds = max(0, session.gridOffsetSeconds)
+        editor.grid.division = session.gridDivision
+        editor.snapEnabled = session.snapEnabled
+
         if !session.sourceAudioPath.isEmpty {
             restoreAudio(url: URL(fileURLWithPath: session.sourceAudioPath))
+        }
+
+        // The notes only with the very audio they were made from.
+        if state == .audioLoaded, let saved = session.transcription, let source,
+            source.mono16k.count == saved.sourceSampleCount
+        {
+            installDocument(rawNotes: saved.rawNotes, document: saved.document)
+            transition(to: .populated)
+
+            if let target = session.targetProgram {
+                setTargetProgram(target)
+            }
+
+            setWorkspace(session.workspace)
         }
 
         if state.canPlay, session.playheadSeconds > 0 {

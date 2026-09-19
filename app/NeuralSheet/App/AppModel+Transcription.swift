@@ -55,8 +55,17 @@ extension AppModel {
 
     // MARK: - Launch
 
-    /// `TranscriptionManager::launchTranscribeJob`, step for step (§3.4).
+    /// The Transcribe button. A transcription that has been edited is asked about first (§3.5).
     func launchTranscription() {
+        guard state == .audioLoaded else { return }
+
+        confirmDiscardingEdits(action: "Transcribing again") { [weak self] in
+            self?.launchTranscriptionNow()
+        }
+    }
+
+    /// `TranscriptionManager::launchTranscribeJob`, step for step (§3.4).
+    private func launchTranscriptionNow() {
         // 1. Only from `audioLoaded`, and only one run at a time. The Transcribe button hides on
         //    the next state change, so a second click can land while the first run is starting.
         guard state == .audioLoaded, !jobActive, !transcriber.isRunning else { return }
@@ -88,7 +97,7 @@ extension AppModel {
 
         // 8. At least one second of audio to transcribe; otherwise everything goes, as the C++ has it.
         guard let source, source.mono16k.count >= AppModel.transcriptionSampleRate else {
-            clear()
+            clearNow()
             return
         }
 
@@ -160,15 +169,18 @@ extension AppModel {
         applyPostProcessing()
     }
 
-    /// `_updatePostProcessing`: the raw notes become what is drawn, played and exported.
-    ///
+    /// `_updatePostProcessing`: the raw notes become what is drawn, played and exported. While a
+    /// run streams there is no document; the merge is the whole post-processing.
+    private func applyPostProcessing() {
+        transcription.notes = mergeOverlappingNotesWithSamePitch(transcription.rawNotes)
+        publishNotes()
+    }
+
     /// Order matters. The synths are created before the notes reach the scheduler, so no note can
     /// arrive at the bank for an instrument that has no player yet; the mixer is applied after
     /// they exist, so its faders land somewhere; and the gains are refreshed after the swap,
     /// because the mix is forced to source-only for as long as the scheduler has no notes (§5.3).
-    private func applyPostProcessing() {
-        transcription.notes = mergeOverlappingNotesWithSamePitch(transcription.rawNotes)
-
+    func publishNotes() {
         for program in Set(notes.map(\.program)).sorted() {
             engine.synthBank.ensureInstrument(program: program)
         }
@@ -195,25 +207,25 @@ extension AppModel {
 
         switch result {
         case let .success(final):
-            // Replaces the accumulation rather than extending it: the run's own result is
-            // authoritative, and the streamed one is missing any note the model never closed.
-            transcription.rawNotes = final.map(NoteEvent.init(engineNote:))
             transcription.finalizedThrough = duration
             transcription.progress = 1
             transcription.cancelLatched = false
             staging.reset()
-            applyPostProcessing()
+            // Replaces the accumulation rather than extending it: the run's own result is
+            // authoritative (the streamed one is missing any note the model never closed), and
+            // it becomes the editable document.
+            installDocument(rawNotes: final.map(NoteEvent.init(engineNote:)))
             transition(to: .populated)
 
         case .failure(.cancelled):
             // Back to where the Transcribe button was, with the audio still loaded: cancelling a
             // run the user misconfigured should not cost them the file as well.
-            clearTranscription()
+            clearTranscriptionNow()
 
         case let .failure(error):
             let reason = AppModel.failureReason(error, modelPath: modelPath)
 
-            clearTranscription()
+            clearTranscriptionNow()
 
             showError(
                 "Transcription failed.",

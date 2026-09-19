@@ -37,6 +37,7 @@ struct NeuralSheetApp: App {
         .commands {
             appMenu(model: model)
             fileMenu(model: model)
+            editMenu(model: model)
             viewMenu(model: model)
             audioMenu(model: model)
         }
@@ -73,10 +74,95 @@ struct NeuralSheetApp: App {
         }
     }
 
-    /// Reset Zoom, which the gear menu used to hold: horizontal back to 1, vertical back to
-    /// automatic. ⌘0, as every other app has it.
+    // MARK: - Edit menu
+
+    /// Undo/Redo and the note commands, live in the Edit tab only. A text field that has the
+    /// keyboard keeps its own undo, select-all and delete: the actions go down the responder
+    /// chain in that case, as the system items would have.
+    @CommandsBuilder
+    private func editMenu(model: AppModel) -> some Commands {
+        CommandGroup(replacing: .undoRedo) {
+            Button(model.undoMenuTitle) {
+                if Self.textFieldHasFocus {
+                    NSApp.sendAction(Selector(("undo:")), to: nil, from: nil)
+                } else {
+                    model.undo()
+                }
+            }
+            .keyboardShortcut("z", modifiers: .command)
+            .disabled(!Self.textFieldHasFocus && !(model.workspace == .edit && model.canUndo))
+
+            Button(model.redoMenuTitle) {
+                if Self.textFieldHasFocus {
+                    NSApp.sendAction(Selector(("redo:")), to: nil, from: nil)
+                } else {
+                    model.redo()
+                }
+            }
+            .keyboardShortcut("z", modifiers: [.command, .shift])
+            .disabled(!Self.textFieldHasFocus && !(model.workspace == .edit && model.canRedo))
+        }
+
+        CommandGroup(replacing: .pasteboard) {
+            Button("Cut") { NSApp.sendAction(#selector(NSText.cut(_:)), to: nil, from: nil) }
+                .keyboardShortcut("x", modifiers: .command)
+            Button("Copy") { NSApp.sendAction(#selector(NSText.copy(_:)), to: nil, from: nil) }
+                .keyboardShortcut("c", modifiers: .command)
+            Button("Paste") { NSApp.sendAction(#selector(NSText.paste(_:)), to: nil, from: nil) }
+                .keyboardShortcut("v", modifiers: .command)
+
+            Divider()
+
+            Button("Delete") { model.deleteSelection() }
+                .disabled(model.workspace != .edit || model.editor.selection.isEmpty)
+
+            Button("Select All") {
+                if Self.textFieldHasFocus {
+                    NSApp.sendAction(#selector(NSText.selectAll(_:)), to: nil, from: nil)
+                } else {
+                    model.selectAll()
+                }
+            }
+            .keyboardShortcut("a", modifiers: .command)
+
+            Button("Deselect All") { model.deselectAll() }
+                .keyboardShortcut("a", modifiers: [.command, .shift])
+                .disabled(model.workspace != .edit)
+
+            Divider()
+
+            Button("Quantize") { model.quantizeSelectionOrAll() }
+                .keyboardShortcut("u", modifiers: .command)
+                .disabled(model.workspace != .edit)
+
+            Button("Revert to Transcription…") { model.revertToTranscription() }
+                .disabled(model.workspace != .edit || !model.hasEdits)
+        }
+    }
+
+    /// Whether a text field is being typed in; the menu's shortcuts then belong to it.
+    private static var textFieldHasFocus: Bool {
+        let responder = NSApp.keyWindow?.firstResponder
+
+        return responder is NSText || responder is NSTextField
+    }
+
+    // MARK: - View menu
+
+    /// The two tabs (⌘1, ⌘2; Edit only once there is a finished transcription) and Reset Zoom,
+    /// which the gear menu used to hold: horizontal back to 1, vertical back to automatic. ⌘0, as
+    /// every other app has it.
     private func viewMenu(model: AppModel) -> some Commands {
         CommandMenu("View") {
+            Button("Transcribe") { model.setWorkspace(.transcribe) }
+                .keyboardShortcut("1", modifiers: .command)
+
+            Button("Edit") { model.setWorkspace(.edit) }
+                .keyboardShortcut("2", modifiers: .command)
+                .disabled(!model.canEdit)
+
+            Divider()
+
             Button("Reset Zoom") {
                 model.resetZoom()
             }

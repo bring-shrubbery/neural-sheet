@@ -15,9 +15,9 @@ struct ExportDialog: View {
     @State private var tempoText = ""
     @State private var overflowMode: MidiOverflowMode = .reuseChannels
 
-    static let minTempo = 20.0
-    static let maxTempo = 999.0
-    static let defaultTempo = 120.0
+    static let minTempo = TempoGrid.minBpm
+    static let maxTempo = TempoGrid.maxBpm
+    static let defaultTempo = TempoGrid.defaultBpm
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -86,13 +86,9 @@ struct ExportDialog: View {
     }
 
     /// The rule the toolbar's field had (`NumericTextEditor<double>`): empty is the default,
-    /// anything else is clamped into 20…999.
+    /// anything else is clamped into 20…999 -- `TempoGrid`'s rule, which the grid's BPM shares.
     static func tempo(from text: String) -> Double {
-        guard let value = Double(text.trimmingCharacters(in: .whitespaces)), value.isFinite else {
-            return defaultTempo
-        }
-
-        return min(max(value, minTempo), maxTempo)
+        TempoGrid.clampedBpm(Double(text.trimmingCharacters(in: .whitespaces)) ?? .nan)
     }
 
     /// Whole numbers without a decimal point, anything else as typed.

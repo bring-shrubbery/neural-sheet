@@ -40,6 +40,13 @@ nonisolated struct UpdateNotice: Equatable, Sendable {
     /// message, which is what happens before a window exists.
     @ObservationIgnored var presentError: ((String, String) -> Void)?
 
+    /// Installed by the view layer: `(title, body, confirm button title, completion)`. Nil
+    /// confirms at once, which is what happens before a window exists.
+    @ObservationIgnored var presentConfirm: ((String, String, String, @escaping (Bool) -> Void) -> Void)?
+
+    /// Cancels the roll drag in progress, if the roll has one; installed by the edit controller.
+    @ObservationIgnored var dragCanceller: (() -> Void)?
+
     /// Every dialog goes through here: a message with nobody to show it is a wiring bug, which
     /// a debug build says so about rather than swallowing.
     func showError(_ title: String, _ body: String) {
@@ -54,6 +61,9 @@ nonisolated struct UpdateNotice: Equatable, Sendable {
     // MARK: - State
 
     private(set) var state: AppState = .empty
+
+    /// The tab on show (design §3.2). Only `setWorkspace` and `transition` write it.
+    private(set) var workspace: Workspace = .transcribe
 
     /// The take, or nil while empty or recording.
     private(set) var source: SourceAudio?
@@ -123,17 +133,39 @@ nonisolated struct UpdateNotice: Equatable, Sendable {
 
     @ObservationIgnored var drainTimer: Timer?
 
+    /// The editable transcription: nil until a run completes or a session restores one. Once it
+    /// exists, `transcription.notes` is always `document.events` (`AppModel+Editing.swift`).
+    var document: NoteDocument?
+
+    /// The editor's tool, selection, target instrument, snap and grid.
+    var editor = EditorState()
+
     /// The one place the state changes. The pipeline's and the commands'; views never call it.
     func transition(to newState: AppState) {
         guard newState != state else { return }
 
         state = newState
 
+        // The Edit tab is only for a finished transcription.
+        if newState != .populated, workspace != .transcribe {
+            workspace = .transcribe
+        }
+
         // The selection is fixed once a transcription exists, and the "+" goes away with it. A
         // picker left open over that would be offering a choice that no longer applies.
         if newState.hasTranscription, isInstrumentMenuOpen {
             isInstrumentMenuOpen = false
         }
+    }
+
+    /// The tab switch (⌘1, ⌘2, the segmented control): Edit only with a finished transcription.
+    /// Beside ``workspace`` because its setter is this file's.
+    func setWorkspace(_ workspace: Workspace) {
+        guard workspace != self.workspace else { return }
+        guard workspace == .transcribe || canEdit else { return }
+
+        dragCanceller?()
+        self.workspace = workspace
     }
 
     /// §3.4 step 6, and nowhere else: the next run's instruments start neutral. A session reload
@@ -229,7 +261,11 @@ nonisolated struct UpdateNotice: Equatable, Sendable {
 
     // MARK: - Export and settings
 
-    var exportTempo: Double = 120
+    /// The project tempo: the grid's BPM and the tempo the MIDI file is written at.
+    var exportTempo: Double {
+        get { editor.grid.bpm }
+        set { editor.grid.bpm = TempoGrid.clampedBpm(newValue) }
+    }
 
     var settings: GlobalSettings
 
@@ -466,7 +502,8 @@ nonisolated struct UpdateNotice: Equatable, Sendable {
     // MARK: - Loading
 
     /// Loads a dropped or chosen file, replacing whatever was there (§2.2). Not while recording
-    /// or transcribing.
+    /// or transcribing. Edited notes are asked about first, as any clear does (design §3.5), and
+    /// the load waits on the answer.
     func loadAudio(url: URL) {
         guard state == .empty || state == .audioLoaded || state == .populated else { return }
 
@@ -478,8 +515,12 @@ nonisolated struct UpdateNotice: Equatable, Sendable {
             return
         }
 
-        clear()
-        load(url: url, restoringSession: false)
+        confirmDiscardingEdits(action: "Loading another file") { [weak self] in
+            guard let self else { return }
+
+            clearNow()
+            load(url: url, restoringSession: false)
+        }
     }
 
     /// A session's take, re-read from its path (§8.2): the file a session was working on, whether
@@ -525,10 +566,18 @@ nonisolated struct UpdateNotice: Equatable, Sendable {
     // MARK: - Clearing
 
     /// Audio and transcription both (§2.6). Refused while a run is in flight: the drain owns the
-    /// notes until the engine's completion lands, and cancelling is the way out of that.
+    /// notes until the engine's completion lands, and cancelling is the way out of that. Edited
+    /// notes are asked about first (design §3.5).
     func clear() {
         guard !jobActive else { return }
 
+        confirmDiscardingEdits(action: "Clearing") { [weak self] in
+            self?.clearNow()
+        }
+    }
+
+    /// `clear()` past the question: the pipeline's, for a take too short to run.
+    func clearNow() {
         if state == .recording {
             // The take is discarded whatever came of it; the files go below.
             _ = recorder.stop()
@@ -547,17 +596,28 @@ nonisolated struct UpdateNotice: Equatable, Sendable {
     func clearTranscription() {
         guard !jobActive else { return }
 
+        confirmDiscardingEdits(action: "Clearing") { [weak self] in
+            self?.clearTranscriptionNow()
+        }
+    }
+
+    /// `clearTranscription()` past the question: the pipeline's, for a run that ended without a
+    /// result and so has no edits to protect.
+    func clearTranscriptionNow() {
         resetTranscription()
         transition(to: source != nil ? .audioLoaded : .empty)
     }
 
-    /// What both clears share: the notes, the synths, the transport. The mixer's stored settings
-    /// survive — they are dropped at launch and nowhere else (§4.2).
+    /// What both clears share: the notes, the document, the synths, the transport. The mixer's
+    /// stored settings survive — they are dropped at launch and nowhere else (§4.2).
     private func resetTranscription() {
         engine.stop()
 
         transcription = TranscriptionState()
         staging.reset()
+        document = nil
+        editor.selection = []
+        dragCanceller?()
 
         // Otherwise the synth keeps playing the notes of the transcription just thrown away.
         engine.synthBank.scheduler.swap(notes: [])
@@ -832,7 +892,7 @@ nonisolated struct UpdateNotice: Equatable, Sendable {
         guard canExport else { return nil }
 
         return MidiFileWriter.data(
-            notes: notes, bpm: exportTempo, startOffsetSeconds: 0, mode: settings.midiOverflowMode)
+            notes: notes, bpm: exportTempo, startOffsetSeconds: editor.grid.offsetSeconds, mode: settings.midiOverflowMode)
     }
 
     /// `<source>_NNTranscription.mid`, or `NNTranscription.mid` for a recorded take.
