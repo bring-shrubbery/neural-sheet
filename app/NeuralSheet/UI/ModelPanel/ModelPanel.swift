@@ -576,34 +576,23 @@ private struct ModelPanelCrossButton: View {
 
 // MARK: - Overlay
 
-/// The panel where the root view shows it.
+/// The panel centred on whatever it overlays -- the timeline, as the original centred it on the
+/// piano roll.
 ///
-/// Nothing is drawn while the panel is closed, so the root can keep this in its `ZStack`
+/// Nothing is drawn while the panel is closed, so the root can keep this in place
 /// unconditionally. No scrim, as in the original: the panel closes from its own cross or the top
 /// bar's Model button, and the rest of the window -- loading audio, in particular -- stays usable
 /// underneath whether or not the panel is mandatory (§3.2).
-///
-/// - Parameter anchor: The panel's top-leading corner in authored pixels, from the root's
-///   top-leading corner. The default hangs it under the top bar; the original centred it on the
-///   piano roll, which is `roll.midX - ModelPanelMetrics.width / 2` by
-///   `roll.midY - ModelPanelMetrics.idealHeight / 2` in the same units.
 struct ModelPanelOverlay: View {
     let model: AppModel
-    var anchor = CGPoint(x: 0, y: 54)
-
-    @Environment(\.uiScale) private var k
 
     var body: some View {
-        let s = Scaled(k: k)
-
-        ZStack(alignment: .topLeading) {
+        ZStack {
             if model.isModelPanelOpen {
                 ModelPanel(model: model)
-                    .padding(.leading, s(anchor.x))
-                    .padding(.top, s(anchor.y))
             }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
 

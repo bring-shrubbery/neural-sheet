@@ -1,14 +1,14 @@
 import SwiftUI
 
-/// The whole UI is authored at 1280 x 800 and scaled by one factor, exactly as the JUCE editor
-/// scaled itself by an affine transform rather than reflowing. Every extent a view draws is an
-/// authored number multiplied by this.
+/// The factor every authored extent is multiplied by. The UI was once drawn as a 1280 x 800
+/// canvas scaled to the window, as the JUCE editor was; it now reflows at 1x, and nothing sets
+/// this any more. The views still spell their extents `s(54)`, which is harmless at 1.
 nonisolated struct UIScaleKey: EnvironmentKey {
     static let defaultValue: CGFloat = 1
 }
 
 extension EnvironmentValues {
-    /// The factor every authored extent is multiplied by. 1 is the authored 1280 x 800 editor.
+    /// The factor every authored extent is multiplied by; 1, the authored size, everywhere now.
     nonisolated var uiScale: CGFloat {
         get { self[UIScaleKey.self] }
         set { self[UIScaleKey.self] = newValue }

@@ -10,11 +10,6 @@ import SwiftUI
 struct StatusBar: View {
     let model: AppModel
 
-    /// What the slider shows while the zoom is automatic (`verticalZoom < 0`): the norm that fits
-    /// the transcription, which the timeline computes from its own height (Task 19). Until it is
-    /// passed in, automatic reads as fully zoomed out.
-    var automaticNorm: Double = 0
-
     @Environment(\.uiScale) private var k
 
     /// `StatusBar.cpp` and `nn::metrics`, authored at 1x.
@@ -129,7 +124,7 @@ struct StatusBar: View {
     /// automatic (§7.2).
     private var zoom: Binding<Double> {
         Binding(
-            get: { model.verticalZoom < 0 ? automaticNorm : model.verticalZoom },
+            get: { model.verticalZoom < 0 ? model.fittedVerticalZoom : model.verticalZoom },
             set: { model.verticalZoom = $0 })
     }
 }

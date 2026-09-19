@@ -156,6 +156,10 @@ extension TimelineContainerView {
             let content = PianoRollRange.displayRange(notes: status.lowest, highest: status.highest, minSemitones: 0)
 
             norm = ZoomMath.normForFit(visibleHeight: Double(geometry.keyboardHeight), semitones: content.count)
+
+            if model.fittedVerticalZoom != norm {
+                model.fittedVerticalZoom = norm
+            }
         }
 
         if geometry.setRowHeight(CGFloat(ZoomMath.rowHeight(norm: norm))) {

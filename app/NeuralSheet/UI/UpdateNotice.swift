@@ -4,11 +4,11 @@ import SwiftUI
 /// The update-check notification (`UpdateCheck.cpp`, inventory §9): one line of text on the popup
 /// surface, a "See update" button when there is one, and a cross.
 ///
-/// Sized to its content and pinned to the right of the room it is given -- the 449 x 30 strip
-/// 10 px above the status bar (§1.2) -- so a long message ellipsises rather than running under
-/// the buttons. Only the panel takes clicks; the empty part of the strip lets them through to the
-/// piano roll. The model drops the notice at `expiresAt`; while the pointer rests on the panel a
-/// 5 Hz tick pushes that out to at least three seconds from now, and the cross drops it at once.
+/// Sized to its content, at most 449 wide, and placed by its parent in the timeline's bottom
+/// trailing corner: `padX` in from the right and 10 px above the status bar (§1.2). A long
+/// message ellipsises rather than running under the buttons. The model drops the notice at
+/// `expiresAt`; while the pointer rests on the panel a 5 Hz tick pushes that out to at least three
+/// seconds from now, and the cross drops it at once.
 struct UpdateNoticeView: View {
     let model: AppModel
     let notice: UpdateNotice
@@ -16,11 +16,9 @@ struct UpdateNoticeView: View {
     @Environment(\.uiScale) private var k
     @State private var isHovered = false
 
-    /// `NeuralNoteMainView::resized`: the strip's authored frame.
-    static let frame = CGRect(x: 1280 - 460,
-                              y: 800 - StatusBar.Metrics.height - 10 - MenuMetrics.rowHeight,
-                              width: 460 - MenuMetrics.padX,
-                              height: MenuMetrics.rowHeight)
+    /// `NeuralNoteMainView::resized`: the strip's authored width, and its gap to the status bar.
+    static let maxWidth: CGFloat = 460 - MenuMetrics.padX
+    static let bottomGap: CGFloat = 10
 
     /// Between the message, the button and the cross.
     private static let contentGap: CGFloat = 9
@@ -61,9 +59,9 @@ struct UpdateNoticeView: View {
                 model.extendUpdateNoticeForHover()
             }
         }
-        .frame(width: s(Self.frame.width), height: s(Self.frame.height), alignment: .trailing)
-        .padding(.leading, s(Self.frame.minX))
-        .padding(.top, s(Self.frame.minY))
+        .frame(maxWidth: s(Self.maxWidth), alignment: .trailing)
+        .padding(.trailing, s(MenuMetrics.padX))
+        .padding(.bottom, s(Self.bottomGap))
         .accessibilityElement(children: .contain)
         .accessibilityLabel(notice.text)
     }
@@ -116,7 +114,7 @@ struct UpdateNoticeView: View {
     let model = AppModel()
     let notice = UpdateNotice(text: UpdateCheck.newVersionText, showsSeeUpdate: true, expiresAt: .distantFuture)
 
-    return ZStack(alignment: .topLeading) {
+    return ZStack(alignment: .bottomTrailing) {
         Theme.bgRoot
         UpdateNoticeView(model: model, notice: notice)
     }
@@ -129,7 +127,7 @@ struct UpdateNoticeView: View {
     let model = AppModel()
     let notice = UpdateNotice(text: UpdateCheck.latestVersionText, showsSeeUpdate: false, expiresAt: .distantFuture)
 
-    return ZStack(alignment: .topLeading) {
+    return ZStack(alignment: .bottomTrailing) {
         Theme.bgRoot
         UpdateNoticeView(model: model, notice: notice)
     }

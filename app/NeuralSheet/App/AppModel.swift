@@ -196,6 +196,11 @@ nonisolated struct UpdateNotice: Equatable, Sendable {
     /// The vertical zoom, or −1 for automatic (fit the transcription's octaves).
     var verticalZoom: Double = -1
 
+    /// What an automatic vertical zoom (`verticalZoom < 0`) resolves to: the norm that fits the
+    /// transcription's octaves in the piano roll's height. The timeline writes it whenever it
+    /// re-fits, since only it knows its height; the status bar's slider reads it.
+    var fittedVerticalZoom: Double = 0
+
     // MARK: - Export and settings
 
     var exportTempo: Double = 120
@@ -873,16 +878,12 @@ nonisolated struct UpdateNotice: Equatable, Sendable {
         updateNotice = nil
     }
 
-    // MARK: - Zoom and scale
+    // MARK: - Zoom
 
     /// Settings → Reset Zoom: horizontal back to 1, vertical back to automatic (§11.3).
     func resetZoom() {
         zoomLevel = 1
         verticalZoom = -1
-    }
-
-    func setEditorScale(_ scale: Double) {
-        settings.editorScale = scale
     }
 
     // MARK: - Display link

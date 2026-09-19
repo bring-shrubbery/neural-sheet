@@ -7,9 +7,10 @@ import SwiftUI
 /// 1. Reset Zoom
 /// 2. Show Tooltips (ticked while on; persisted)
 /// 3. MIDI export: too many instruments ▸ Reuse the last channels / Drop the extra instruments
-/// 4. Window size ▸ 50 % … 200 %
-/// 5. ——
-/// 6. Check for updates
+/// 4. ——
+/// 5. Check for updates
+///
+/// No Window size submenu any more: the window is an ordinary resizable one.
 ///
 /// A `PopupMenu` in its own window, as the original: aligned under the gear's left edge, which
 /// puts it past the window's right edge, with each submenu in a second window beside the row the
@@ -21,29 +22,28 @@ import SwiftUI
     private let menu = PopupMenuPresenter()
     private var submenu: Submenu?
     private weak var window: NSWindow?
-    private var scale: CGFloat = 1
+    private let scale: CGFloat = 1
     private var model: AppModel?
-    private var onWindowScale: (Double) -> Void = { _ in }
 
-    /// `TopBar`'s settings button, in authored pixels: 32 wide at the right padding of 14, in the
-    /// 30 px control row that sits at y 11.
-    static let gearFrame = CGRect(x: 1280 - 14 - 32, y: 11, width: 32, height: 30)
+    /// `TopBar`'s settings button: 32 wide at the right padding of 14, in the 30 px control row
+    /// that sits at y 11. The x is from the window's right edge.
+    static let gearSize = CGSize(width: 32, height: 30)
+    static let gearInsetRight: CGFloat = 14
+    static let gearTop: CGFloat = 11
 
     enum Submenu {
         case midiOverflow
-        case windowSize
 
         /// The row the submenu hangs off, counting from the top of the list.
         var rowIndex: Int {
             switch self {
             case .midiOverflow: 2
-            case .windowSize: 3
             }
         }
     }
 
     private static let mainTitles = [
-        "Reset Zoom", "Show Tooltips", "MIDI export: too many instruments", "Window size", "Check for updates",
+        "Reset Zoom", "Show Tooltips", "MIDI export: too many instruments", "Check for updates",
     ]
 
     private static let overflowChoices: [(mode: MidiOverflowMode, title: String)] = [
@@ -51,25 +51,18 @@ import SwiftUI
         (.dropExtraInstruments, "Drop the extra instruments"),
     ]
 
-    private static let scaleTitles = MainWindowController.presetScales.map { "\(Int(($0 * 100).rounded()))%" }
-
     var isOpen: Bool { menu.panel != nil }
 
     /// Opens the menu under the gear.
     ///
-    /// - Parameters:
-    ///   - window: The window the gear is in; the menu is placed from its content frame.
-    ///   - scale: The UI scale the window is drawn at.
-    ///   - onWindowScale: Settings → Window size: the controller applies the preset, clamped.
-    func open(in window: NSWindow, scale: CGFloat, model: AppModel, onWindowScale: @escaping (Double) -> Void) {
+    /// - Parameter window: The window the gear is in; the menu is placed from its content frame.
+    func open(in window: NSWindow, model: AppModel) {
         self.window = window
-        self.scale = scale
         self.model = model
-        self.onWindowScale = onWindowScale
         submenu = nil
 
         let width = PopupMenuPresenter.width(forTitles: Self.mainTitles, scale: scale)
-        let target = window.convertToScreen(Self.windowRect(forAuthored: Self.gearFrame, in: window, scale: scale))
+        let target = window.convertToScreen(Self.gearWindowRect(in: window))
 
         menu.onDismiss = { [weak self] in self?.submenu = nil }
         menu.show(targetScreenRect: target, in: window, width: width, scale: scale, placement: .alignedToTarget,
@@ -102,13 +95,9 @@ import SwiftUI
             self?.openSubmenu(.midiOverflow)
         }
 
-        SubmenuRowView(title: Self.mainTitles[3], isOpen: submenu == .windowSize) { [weak self] in
-            self?.openSubmenu(.windowSize)
-        }
-
         MenuSeparator()
 
-        MenuRow(title: Self.mainTitles[4]) { [weak self] in
+        MenuRow(title: Self.mainTitles[3]) { [weak self] in
             self?.close()
             model.checkForUpdates(explicit: true)
         }
@@ -134,7 +123,7 @@ import SwiftUI
         submenu = which
         menu.refresh { mainRows(model: model) }
 
-        let titles = which == .midiOverflow ? Self.overflowChoices.map(\.title) : Self.scaleTitles
+        let titles = Self.overflowChoices.map(\.title)
         let width = PopupMenuPresenter.width(forTitles: titles, scale: scale)
         let row = Self.rowScreenRect(index: which.rowIndex, in: panel, scale: scale)
         let child = PopupMenuPresenter()
@@ -158,31 +147,19 @@ import SwiftUI
                     model.settings.midiOverflowMode = choice.mode
                 }
             }
-
-        case .windowSize:
-            let applied = Double(scale)
-
-            ForEach(Array(MainWindowController.presetScales.enumerated()), id: \.offset) { [weak self] index, preset in
-                // What was applied, not what was asked for: a preset the display cannot hold
-                // arrives clamped and ends up unticked.
-                MenuRow(title: Self.scaleTitles[index], isTicked: abs(applied - preset) < 0.005) {
-                    self?.close()
-                    self?.onWindowScale(preset)
-                }
-            }
         }
     }
 
     // MARK: - Geometry
 
-    /// An authored rectangle in the window's content, in AppKit's bottom-up window coordinates.
-    private static func windowRect(forAuthored rect: CGRect, in window: NSWindow, scale: CGFloat) -> CGRect {
-        let contentHeight = window.contentView?.bounds.height ?? MainWindowController.canvas.height * scale
+    /// The gear's rectangle in the window's content, in AppKit's bottom-up window coordinates.
+    private static func gearWindowRect(in window: NSWindow) -> CGRect {
+        let content = window.contentView?.bounds.size ?? MainWindowController.defaultContentSize
 
-        return CGRect(x: rect.minX * scale,
-                      y: contentHeight - (rect.minY + rect.height) * scale,
-                      width: rect.width * scale,
-                      height: rect.height * scale)
+        return CGRect(x: content.width - gearInsetRight - gearSize.width,
+                      y: content.height - gearTop - gearSize.height,
+                      width: gearSize.width,
+                      height: gearSize.height)
     }
 
     /// A row's screen rectangle inside a menu panel: the rows start under the list padding.

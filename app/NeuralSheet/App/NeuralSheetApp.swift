@@ -30,12 +30,10 @@ struct NeuralSheetApp: App {
         Window("NeuralSheet", id: "main") {
             MainView(model: model, persistence: persistence)
         }
-        // The size is the settings' (`editorScale`), applied by `MainWindowController` as the
-        // window opens; SwiftUI's own restoration would put back whatever the last close left.
-        .defaultSize(width: MainWindowController.canvas.width * model.settings.editorScale,
-                     height: MainWindowController.canvas.height * model.settings.editorScale)
-        .restorationBehavior(.disabled)
-        .windowResizability(.contentSize)
+        .defaultSize(width: MainWindowController.defaultContentSize.width,
+                     height: MainWindowController.defaultContentSize.height)
+        // The content's minimum frame is the window's minimum; there is no maximum.
+        .windowResizability(.contentMinSize)
         .commands {
             audioMenu(model: model)
         }
