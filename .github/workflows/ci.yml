@@ -43,7 +43,7 @@ jobs:
           sudo xcode-select -s "$XCODE"
           xcodebuild -version
       - name: Cache the engine build
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: app/build/engine
           key: engine-${{ runner.os }}-${{ hashFiles('.gitmodules') }}-${{ hashFiles('app/Scripts/build-engine.sh') }}
