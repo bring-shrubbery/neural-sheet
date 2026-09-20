@@ -25,7 +25,7 @@ swaps the bundle and relaunches. The release workflow produces the feed.
   or extra entitlements are needed. Xcode signs the embedded `Sparkle.framework`
   with the app's identity; the release workflow's `codesign --verify --deep
   --strict` and notarization cover it.
-- Info.plist keys, through a checked-in `app/NeuralSheet/Info.plist` named by
+- Info.plist keys, through a checked-in `app/Info.plist` (beside the Xcode project, outside the synchronized source folder so it is not copied as a resource) named by
   the `INFOPLIST_FILE` build setting and merged with the generated plist
   (`GENERATE_INFOPLIST_FILE` stays YES):
   - `SUFeedURL` = `https://neural-sheet.quassum.com/appcast.xml`

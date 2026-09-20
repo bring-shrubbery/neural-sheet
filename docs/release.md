@@ -23,7 +23,7 @@ generated from the commits.
 
 ## One-time setup: the secrets
 
-The workflow refuses to run without all seven of these repository secrets; an
+The workflow refuses to run without all eight of these repository secrets; an
 unsigned build must never reach a release.
 
 ### 1. The Developer ID certificate
@@ -60,9 +60,28 @@ gh secret set ASC_API_ISSUER_ID --body 00000000-0000-0000-0000-000000000000
 rm AuthKey_XXXXXXXXXX.p8
 ```
 
-`gh secret list` should now show all seven names.
+`gh secret list` should now show all eight names.
 
-An eighth secret is optional: `CF_DEPLOY_HOOK_URL`, the Cloudflare Workers Builds deploy
+### Sparkle (in-app updates)
+
+Every release also publishes `appcast.xml`, the feed installed copies read through
+`https://neural-sheet.quassum.com/appcast.xml` (a redirect to the latest release's
+asset). The zip is signed with an EdDSA key so the app accepts only our builds.
+
+The key pair was generated on 2026-09-20 with Sparkle's
+`generate_keys --account NeuralSheet`. The private key lives in the login keychain
+of the Mac that ran it (Keychain Access → search "sparkle-project.org", account
+`NeuralSheet`) and in the repository secret `SPARKLE_PRIVATE_KEY`. **Losing both
+means no installed copy can ever update again.** Back it up once:
+`generate_keys --account NeuralSheet -x sparkle-neuralsheet.key` and keep the file
+somewhere safe, off this machine. The matching public key is `SUPublicEDKey` in
+`app/Info.plist`.
+
+To rotate the key: ship one release signed with the old key whose Info.plist
+carries the new public key, then switch `SPARKLE_PRIVATE_KEY`; copies that skip
+that release are stranded, so avoid rotating.
+
+An optional ninth secret is `CF_DEPLOY_HOOK_URL`, the Cloudflare Workers Builds deploy
 hook for the website (see `web/README.md`). Without it the release still publishes, with a
 warning, and the website keeps offering the previous version until it is rebuilt.
 
@@ -89,6 +108,9 @@ not a failure — the next run covers its commits.
   changed.
 - **create-dmg could not apply the window layout** — a warning only; the
   image is valid, it just lacks the icon arrangement.
+- **Sign the update and write the appcast failed** — the zip is notarized but not
+  yet released. Usually `SPARKLE_PRIVATE_KEY` is missing or not the exported key
+  (44 base64 characters). Fix the secret and re-run; nothing was tagged.
 - **The tag exists** — a previous run tagged but failed to publish. The notarized
   DMG and zip are attached to that run as artifacts (the run page, *Artifacts*).
   Either publish them by hand as release `vX.Y.Z`, or delete the tag
