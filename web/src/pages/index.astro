@@ -1,6 +1,9 @@
 ---
 import Base from '../layouts/Base.astro';
 import Download from '../components/Download.astro';
+import { Image } from 'astro:assets';
+import icon from '../assets/icon.png';
+import screenshot from '../assets/screenshot.png';
 import { fetchLatestRelease } from '../lib/release';
 
 // Workers Builds share egress addresses; an optional token lifts the per-address limit.
@@ -39,7 +42,7 @@ const structuredData = {
       applicationSubCategory: 'Audio-to-MIDI transcription',
       operatingSystem: 'macOS 26 or later (Apple silicon)',
       image: 'https://neural-sheet.quassum.com/icon.png',
-      screenshot: 'https://neural-sheet.quassum.com/screenshot.png',
+      screenshot: new URL(screenshot.src, Astro.site).href,
       license: 'https://www.apache.org/licenses/LICENSE-2.0',
       isAccessibleForFree: true,
       offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
@@ -73,7 +76,7 @@ const structuredData = {
       </svg>
     </a>
     <section class="hero">
-      <img class="icon" src="/icon.png" width="96" height="96" alt="" />
+      <Image class="icon" src={icon} width={96} height={96} densities={[1, 2]} alt="" loading="eager" />
       <h1>NeuralSheet</h1>
       <p class="lead">
         <strong>Audio-to-MIDI transcription as a native macOS app.</strong> Record or drop a track, pick the
@@ -81,7 +84,15 @@ const structuredData = {
         DAW. Transcription runs entirely on your machine.
       </p>
       <Download release={release} />
-      <img class="screenshot" src="/screenshot.png" width="2740" height="1712" alt="NeuralSheet transcribing a track: the waveform, the piano roll filling in, and the instrument mixer in the sidebar" />
+      <Image
+        class="screenshot"
+        src={screenshot}
+        widths={[680, 1360]}
+        sizes="(max-width: 712px) 100vw, 680px"
+        alt="NeuralSheet transcribing a track: the waveform, the piano roll filling in, and the instrument mixer in the sidebar"
+        loading="eager"
+        fetchpriority="high"
+      />
     </section>
 
     <section id="what">
