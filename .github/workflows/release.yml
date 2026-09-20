@@ -39,7 +39,7 @@ jobs:
       tag: ${{ steps.decide.outputs.tag }}
       sha: ${{ steps.decide.outputs.sha }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           # The commit CI built, not main's tip, which may have moved on.
           ref: ${{ github.event.workflow_run.head_sha || github.sha }}
@@ -98,7 +98,7 @@ jobs:
           fi
           echo "all signing secrets present"
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ env.SHA }}
           submodules: recursive
