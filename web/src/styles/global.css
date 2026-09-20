@@ -160,6 +160,9 @@ td.num { font-family: var(--font-mono); font-size: 14px; }
 .shortcuts { color: var(--text-muted); font-size: 15px; line-height: 2; }
 .shortcuts kbd { font-size: 13px; }
 
+.not-found { min-height: 60vh; }
+.not-found h1 { margin-bottom: 14px; }
+
 /* GitHub link, top right, level with the hero icon */
 .github {
   position: absolute;
