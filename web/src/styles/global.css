@@ -1,0 +1,181 @@
+/* NeuralSheet website: one column, the app's graphite palette and typefaces. */
+
+@font-face { font-family: 'Inter'; font-weight: 400; font-style: normal; font-display: swap; src: url('/fonts/Inter-Regular.ttf') format('truetype'); }
+@font-face { font-family: 'Inter'; font-weight: 500; font-style: normal; font-display: swap; src: url('/fonts/Inter-Medium.ttf') format('truetype'); }
+@font-face { font-family: 'Inter'; font-weight: 600; font-style: normal; font-display: swap; src: url('/fonts/Inter-SemiBold.ttf') format('truetype'); }
+@font-face { font-family: 'Inter'; font-weight: 700; font-style: normal; font-display: swap; src: url('/fonts/Inter-Bold.ttf') format('truetype'); }
+@font-face { font-family: 'JetBrains Mono NL'; font-weight: 400; font-style: normal; font-display: swap; src: url('/fonts/JetBrainsMonoNL-Regular.ttf') format('truetype'); }
+
+:root {
+  color-scheme: dark light;
+  --bg: #131417;
+  --bg-panel: #17181c;
+  --bg-control: #1c1e23;
+  --line: #24262c;
+  --line-soft: #202227;
+  --text-strong: #f2f4f7;
+  --text: #e7e9ec;
+  --text-muted: #9ba1ab;
+  --text-dim: #6b7078;
+  --accent: #6e9bff;
+  --accent-text: #a8c2ff;
+  --accent-fill: rgba(110, 155, 255, 0.12);
+  --accent-fill-hover: rgba(110, 155, 255, 0.2);
+  --warn-fill: rgba(255, 184, 92, 0.1);
+  --warn-line: rgba(255, 184, 92, 0.35);
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono NL', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --measure: 680px;
+  --gutter: 16px;
+  --radius: 10px;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #f7f8fa;
+    --bg-panel: #ffffff;
+    --bg-control: #eef0f3;
+    --line: #dee1e6;
+    --line-soft: #e7e9ed;
+    --text-strong: #0f1114;
+    --text: #1b1d21;
+    --text-muted: #5d626b;
+    --text-dim: #7a808a;
+    --accent: #2f66e8;
+    --accent-text: #2557cc;
+    --accent-fill: rgba(47, 102, 232, 0.08);
+    --accent-fill-hover: rgba(47, 102, 232, 0.14);
+    --warn-fill: rgba(201, 120, 0, 0.08);
+    --warn-line: rgba(201, 120, 0, 0.35);
+  }
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.6;
+  font-feature-settings: 'cv11', 'ss01';
+  overflow-x: hidden;
+}
+
+main {
+  max-width: calc(var(--measure) + 2 * var(--gutter));
+  margin: 0 auto;
+  padding: 56px var(--gutter) 64px;
+}
+
+h1, h2, h3 { color: var(--text-strong); font-weight: 600; letter-spacing: -0.01em; margin: 0; }
+h1 { font-size: 40px; line-height: 1.1; letter-spacing: -0.02em; }
+h2 { font-size: 22px; line-height: 1.3; margin-bottom: 12px; }
+p { margin: 0 0 14px; }
+ul, ol { margin: 0 0 14px; padding-left: 22px; }
+li { margin-bottom: 8px; }
+li::marker { color: var(--text-dim); }
+strong { color: var(--text-strong); font-weight: 600; }
+a { color: var(--accent-text); text-decoration: none; }
+a:hover { text-decoration: underline; text-underline-offset: 3px; }
+hr { border: 0; border-top: 1px solid var(--line); margin: 0; }
+
+section { padding: 44px 0 30px; border-top: 1px solid var(--line); }
+section:first-of-type { border-top: 0; padding-top: 0; }
+
+code, kbd, pre {
+  font-family: var(--font-mono);
+  font-size: 0.875em;
+}
+code, kbd {
+  background: var(--bg-control);
+  border: 1px solid var(--line-soft);
+  border-radius: 5px;
+  padding: 1px 5px;
+  color: var(--text);
+}
+kbd { color: var(--text-strong); }
+pre {
+  background: var(--bg-panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  overflow-x: auto;
+  line-height: 1.55;
+  margin: 0 0 14px;
+}
+pre code { background: none; border: 0; padding: 0; font-size: inherit; }
+
+table { width: 100%; border-collapse: collapse; margin: 0 0 14px; font-size: 15px; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { color: var(--text-muted); font-weight: 500; font-size: 13px; letter-spacing: 0.02em; }
+td.num { font-family: var(--font-mono); font-size: 14px; white-space: nowrap; }
+
+.callout {
+  border: 1px solid var(--warn-line);
+  background: var(--warn-fill);
+  border-radius: var(--radius);
+  padding: 12px 16px;
+  margin: 0 0 14px;
+}
+.callout p:last-child { margin-bottom: 0; }
+
+.muted { color: var(--text-muted); }
+.dim { color: var(--text-dim); font-size: 14px; }
+
+/* Hero */
+.hero { padding-top: 0; }
+.hero .icon { width: 96px; height: 96px; display: block; margin-bottom: 20px; }
+.hero .lead { font-size: 19px; line-height: 1.5; color: var(--text-muted); margin: 14px 0 24px; max-width: 34em; }
+.hero .lead strong { color: var(--text); }
+.hero .screenshot {
+  display: block; width: 100%; height: auto;
+  border: 1px solid var(--line); border-radius: var(--radius);
+  margin-top: 32px;
+}
+
+/* Download control */
+.download { margin: 0 0 6px; }
+.download .button {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 11px 18px;
+  border: 1px solid var(--accent);
+  background: var(--accent-fill);
+  color: var(--accent-text);
+  border-radius: var(--radius);
+  font-weight: 600; font-size: 16px;
+  text-decoration: none;
+  transition: background-color 120ms ease;
+}
+.download .button:hover { background: var(--accent-fill-hover); text-decoration: none; }
+.download .button svg { width: 18px; height: 18px; flex: none; }
+.download .caption { margin: 10px 0 0; color: var(--text-dim); font-size: 14px; }
+.download .caption a { color: var(--text-muted); }
+
+/* Shortcuts line */
+.shortcuts { color: var(--text-muted); font-size: 15px; line-height: 2; }
+.shortcuts kbd { font-size: 13px; }
+
+footer {
+  max-width: calc(var(--measure) + 2 * var(--gutter));
+  margin: 0 auto;
+  padding: 0 var(--gutter) 48px;
+  color: var(--text-dim);
+  font-size: 14px;
+  border-top: 1px solid var(--line);
+}
+footer .inner { padding-top: 20px; display: flex; flex-wrap: wrap; gap: 8px 20px; }
+footer a { color: var(--text-muted); }
+
+@media (max-width: 480px) {
+  main { padding-top: 36px; }
+  h1 { font-size: 32px; }
+  h2 { font-size: 20px; }
+  .hero .lead { font-size: 17px; }
+  section { padding: 36px 0 24px; }
+  table { font-size: 14px; }
+  th, td { padding: 8px 6px; }
+}

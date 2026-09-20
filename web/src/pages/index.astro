@@ -1,4 +1,169 @@
 ---
-// Placeholder until Task 3 renders the real page.
+import Base from '../layouts/Base.astro';
+import Download from '../components/Download.astro';
+import { fetchLatestRelease } from '../lib/release';
+
+// Workers Builds share egress addresses; an optional token lifts the per-address limit.
+// import.meta.env carries the build environment here (verified: a process env var is seen).
+const release = await fetchLatestRelease(fetch, import.meta.env.GITHUB_TOKEN);
+const repo = 'https://github.com/bring-shrubbery/neural-sheet';
+const title = 'NeuralSheet — audio-to-MIDI transcription for macOS';
+const description =
+  'Record or drop a track, pick the instruments, and NeuralSheet turns it into MIDI you can play back, mix and drag into your DAW. Transcription runs entirely on your Mac.';
 ---
-<html lang="en"><head><meta charset="utf-8" /><title>NeuralSheet</title></head><body><h1>NeuralSheet</h1></body></html>
+<Base title={title} description={description}>
+  <main>
+    <section class="hero">
+      <img class="icon" src="/icon.png" width="96" height="96" alt="" />
+      <h1>NeuralSheet</h1>
+      <p class="lead">
+        <strong>Audio-to-MIDI transcription as a native macOS app.</strong> Record or drop a track, pick the
+        instruments, and NeuralSheet turns it into MIDI you can play back, mix, and drag straight into your
+        DAW. Transcription runs entirely on your machine.
+      </p>
+      <Download release={release} />
+      <img class="screenshot" src="/screenshot.png" width="2740" height="1712" alt="NeuralSheet transcribing a track: the waveform, the piano roll filling in, and the instrument mixer in the sidebar" />
+    </section>
+
+    <section id="what">
+      <h2>What it does</h2>
+      <ul>
+        <li><strong>Record or load audio.</strong> Record from any input device, or drop a <code>.wav</code>, <code>.aiff</code>, <code>.flac</code>, <code>.mp3</code> or <code>.ogg</code> file onto the window.</li>
+        <li><strong>Transcribe with MuScriptor.</strong> A 100M to 1.4B parameter transformer from Kyutai and Mirelo, running locally on the GPU through Metal. Restrict it to the instruments you know are in the mix, or let it detect them.</li>
+        <li><strong>Watch the notes arrive.</strong> The piano roll fills in as each five-second chunk is decoded. You can start playing back the part that is done while the rest is still running.</li>
+        <li><strong>Listen and mix.</strong> Play the transcription through the built-in synthesizer, blend it with the original audio, and set the level, mute and solo of every instrument.</li>
+        <li><strong>Edit the notes.</strong> Move, resize, draw and erase notes, reassign them to other instruments, set velocities, snap and quantize to a tempo grid, with undo. Edits are saved with the session.</li>
+        <li><strong>Get the MIDI out.</strong> Drag the result onto a track in your DAW, or export a multi-track <code>.mid</code> file with one track per instrument.</li>
+      </ul>
+    </section>
+
+    <section id="why">
+      <h2>Why a rewrite</h2>
+      <p>
+        NeuralSheet is a from-scratch Swift rewrite of <a href="https://github.com/DamRsn/NeuralNote">NeuralNote</a>
+        by <a href="https://github.com/DamRsn">Damien Ronssin</a>, built to fix the two things that held the original
+        back on the Mac: audio latency and interface smoothness. It keeps NeuralNote's design, behaviour and
+        transcription engine, and replaces the cross-platform C++/JUCE application layer with SwiftUI, AppKit and
+        AVAudioEngine.
+      </p>
+      <ul>
+        <li><strong>Audio</strong> goes through one <code>AVAudioEngine</code> graph: a source node owns the clock and schedules synth notes one buffer ahead, sample-aligned with the original audio, with a 128-frame I/O buffer where the device allows it.</li>
+        <li><strong>Drawing</strong> is done by AppKit views that repaint only the strip that changed. A ten-minute file scrolls at 120 Hz.</li>
+        <li><strong>Everything else</strong> is SwiftUI, with the original palette, typography, metrics and interaction rules ported one for one.</li>
+      </ul>
+      <p class="muted">
+        The transcription engine, <a href="https://github.com/DamRsn/muscriptor.cpp">muscriptor.cpp</a>, is unchanged and
+        linked as a static library.
+      </p>
+    </section>
+
+    <section id="usage">
+      <h2>Usage</h2>
+      <ol>
+        <li><strong>Get some audio.</strong> Press record (or <kbd>r</kbd>) and play, or drop a file on the waveform area. Choose your input and output devices in the <strong>Audio</strong> menu.</li>
+        <li><strong>Choose instruments.</strong> Use <strong>+</strong> in the sidebar to tick the instruments in the recording, or leave it on <em>Automatic</em>. Transcriptions are better when the model is told what to listen for.</li>
+        <li><strong>Transcribe.</strong> The first run downloads a model. Progress shows in the status bar; you can cancel at any time.</li>
+        <li><strong>Listen.</strong> Space plays and pauses. The <strong>ORIG / MIDI</strong> slider blends the source audio with the synthesized notes; each instrument has its own fader, mute and solo.</li>
+        <li><strong>Edit.</strong> <kbd>⌘2</kbd> opens the Edit tab. <kbd>V</kbd> selects, <kbd>D</kbd> draws, <kbd>E</kbd> erases; drag notes, or their ends; <kbd>⌥</kbd>-drag duplicates; arrows nudge. Set the tempo and where bar 1 falls in the toolbar.</li>
+        <li><strong>Export.</strong> Drag the <strong>MIDI</strong> button onto a track in your DAW, or use <strong>Export</strong> to save a <code>.mid</code> file. The export tempo sets how seconds map to beats.</li>
+      </ol>
+      <p class="shortcuts">
+        <kbd>Space</kbd> play/pause · <kbd>⇧Space</kbd> go to start · <kbd>r</kbd> record · <kbd>m</kbd> mute ·
+        <kbd>c</kbd> centre the playhead · <kbd>⇧⌫</kbd> clear · <kbd>⌘</kbd>+scroll or pinch to zoom ·
+        <kbd>⌘1</kbd>/<kbd>⌘2</kbd> tabs · <kbd>⌘Z</kbd> undo · <kbd>⌘U</kbd> quantize · <kbd>⌘A</kbd> select all ·
+        <kbd>⌘</kbd>-drag ignores snap
+      </p>
+    </section>
+
+    <section id="models">
+      <h2>Models</h2>
+      <p>
+        MuScriptor comes in three sizes. NeuralSheet downloads them from
+        <a href="https://huggingface.co/DamRsn/muscriptor-gguf">DamRsn/muscriptor-gguf</a> on Hugging Face into
+        <code>~/Library/NeuralSheet/models</code> (it also picks up models already in
+        <code>~/Library/NeuralNote/models</code>). Downloads resume if interrupted and are verified by SHA-256.
+      </p>
+      <table>
+        <thead>
+          <tr><th>Size</th><th>Download</th><th>Speed on an M1 Pro</th><th>Notes</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>small</td><td class="num">209 MB</td><td class="num">~3.5× real time</td><td>Fastest</td></tr>
+          <tr><td>medium</td><td class="num">618 MB</td><td class="num">~1.5× real time</td><td>Recommended</td></tr>
+          <tr><td>large</td><td class="num">2.7 GB</td><td class="num">~0.5× real time</td><td>Best quality</td></tr>
+        </tbody>
+      </table>
+      <div class="callout">
+        <p>
+          <strong>The model weights are not open source.</strong> Kyutai and Mirelo released them under
+          <a href="https://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0</a>: they may only be used
+          <strong>non-commercially</strong>. NeuralSheet's own code is Apache-2.0, which does not extend to the weights.
+        </p>
+      </div>
+      <p class="muted">
+        Playback uses the General MIDI synthesizer built into macOS, so no soundfont is bundled. It sounds different from
+        NeuralNote's MuseScore soundfont.
+      </p>
+    </section>
+
+    <section id="build">
+      <h2>Build from source</h2>
+      <p>macOS 26 on Apple silicon, Xcode 27, and <a href="https://cmake.org/">CMake</a> (<code>brew install cmake</code>) for the transcription engine. The first build fetches ggml.</p>
+      <pre><code>git clone --recurse-submodules https://github.com/bring-shrubbery/neural-sheet.git
+cd neural-sheet/app
+xcodebuild -scheme NeuralSheet -configuration Release build</code></pre>
+      <p>
+        Or open <code>app/NeuralSheet.xcodeproj</code> in Xcode and run the <strong>NeuralSheet</strong> scheme. The
+        <a href={`${repo}#build-from-source`}>README</a> has the details, including the pure-Swift core package and its tests.
+      </p>
+    </section>
+
+    <section id="contributing">
+      <h2>Contributing</h2>
+      <p>NeuralSheet is developed by a small team working with AI coding agents that we run and supervise ourselves. Because of that:</p>
+      <ul>
+        <li><strong>Feature requests, ideas and questions</strong> go to <a href={`${repo}/discussions`}>Discussions</a>. The most requested and best argued ideas are what we build next.</li>
+        <li><strong>Bug reports</strong> go to <a href={`${repo}/issues`}>Issues</a>, using the template, for bugs you have reproduced yourself.</li>
+        <li><strong>Pull requests are not accepted</strong> and are closed automatically.</li>
+      </ul>
+      <p class="muted"><a href={`${repo}/blob/main/CONTRIBUTING.md`}>CONTRIBUTING.md</a> explains the reasoning and the details.</p>
+    </section>
+
+    <section id="credits">
+      <h2>Credits</h2>
+      <p>
+        NeuralSheet started on 2026-09-17 as a rewrite of <strong>NeuralNote v2</strong>. Everything a user sees, and the
+        audio and MIDI logic underneath, follows NeuralNote's design; the Swift code was written new against a detailed
+        inventory of its behaviour, and the note scheduler, resampler, waveform peaks, MIDI writer and piano-roll
+        geometry are ports of the original C++.
+      </p>
+      <ul>
+        <li><strong>NeuralNote v2</strong> was developed by <a href="https://github.com/DamRsn">Damien Ronssin</a>, with AI assistance.</li>
+        <li><strong>NeuralNote v1</strong> was developed by Damien Ronssin and <a href="https://github.com/tiborvass">Tibor Vass</a>; its interface was designed by Perrine Morel.</li>
+        <li><strong>muscriptor.cpp</strong>, the transcription engine, is by Damien Ronssin. <strong>MuScriptor</strong>, the model, is by Kyutai and Mirelo (<a href="https://arxiv.org/abs/2607.08168">paper</a>, <a href="https://github.com/muscriptor/muscriptor">project</a>).</li>
+        <li><strong>NeuralSheet</strong> is by <a href="https://github.com/bring-shrubbery">Antoni Silvestrovic</a>, built with Claude Code.</li>
+      </ul>
+    </section>
+
+    <section id="license">
+      <h2>License</h2>
+      <p>
+        NeuralSheet's code is licensed under the <a href={`${repo}/blob/main/LICENSE`}>Apache License 2.0</a>, the same
+        licence as NeuralNote. <a href={`${repo}/blob/main/NOTICE`}>NOTICE</a> records the origin of the work, and
+        <a href={`${repo}/blob/main/THIRD_PARTY_NOTICES.md`}>THIRD_PARTY_NOTICES.md</a> lists every third-party
+        component: muscriptor.cpp and ggml (MIT), PFFFT (BSD-style), stb_vorbis (public domain), and the Inter and
+        JetBrains Mono typefaces (OFL 1.1).
+      </p>
+      <p class="muted">The MuScriptor model weights are <strong>CC BY-NC 4.0, non-commercial use only</strong>, and are downloaded separately at run time.</p>
+    </section>
+  </main>
+  <footer>
+    <div class="inner">
+      <span>NeuralSheet</span>
+      <a href={repo}>GitHub</a>
+      <a href={`${repo}/releases`}>Releases</a>
+      <a href={`${repo}/discussions`}>Discussions</a>
+      <a href="https://quassum.com">Quassum</a>
+    </div>
+  </footer>
+</Base>
