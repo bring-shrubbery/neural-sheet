@@ -1,9 +1,9 @@
 /* NeuralSheet website: one column, the app's graphite palette and typefaces. */
 
-@font-face { font-family: 'Inter'; font-weight: 400; font-style: normal; font-display: swap; src: url('/fonts/Inter-Regular.ttf') format('truetype'); }
-@font-face { font-family: 'Inter'; font-weight: 500; font-style: normal; font-display: swap; src: url('/fonts/Inter-Medium.ttf') format('truetype'); }
-@font-face { font-family: 'Inter'; font-weight: 600; font-style: normal; font-display: swap; src: url('/fonts/Inter-SemiBold.ttf') format('truetype'); }
-@font-face { font-family: 'JetBrains Mono NL'; font-weight: 400; font-style: normal; font-display: swap; src: url('/fonts/JetBrainsMonoNL-Regular.ttf') format('truetype'); }
+@font-face { font-family: 'Inter'; font-weight: 400; font-style: normal; font-display: swap; src: url('/fonts/Inter-Regular.woff2') format('woff2'); }
+@font-face { font-family: 'Inter'; font-weight: 500; font-style: normal; font-display: swap; src: url('/fonts/Inter-Medium.woff2') format('woff2'); }
+@font-face { font-family: 'Inter'; font-weight: 600; font-style: normal; font-display: swap; src: url('/fonts/Inter-SemiBold.woff2') format('woff2'); }
+@font-face { font-family: 'JetBrains Mono NL'; font-weight: 400; font-style: normal; font-display: swap; src: url('/fonts/JetBrainsMonoNL-Regular.woff2') format('woff2'); }
 
 :root {
   color-scheme: dark light;
