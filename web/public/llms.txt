@@ -1,0 +1,26 @@
+# NeuralSheet
+
+> Audio-to-MIDI transcription as a native macOS app. Record or drop a track, pick the instruments, and NeuralSheet turns it into MIDI you can play back, mix, edit and drag into your DAW. Transcription runs entirely on the Mac; nothing is uploaded.
+
+NeuralSheet is a free, open-source (Apache-2.0) app by Quassum for macOS 26 and later on Apple silicon. It is a from-scratch Swift rewrite of NeuralNote by Damien Ronssin and uses the MuScriptor transcription model (Kyutai and Mirelo) through muscriptor.cpp on Metal.
+
+## Key facts
+
+- Platform: macOS 26 or later, Apple silicon only. Signed and notarized disk image.
+- Price: free. Code under Apache-2.0; the model weights are CC BY-NC 4.0 (non-commercial) and are downloaded separately on first run.
+- Input: recording from any audio device, or .wav, .aiff, .flac, .mp3 and .ogg files.
+- Output: multi-track .mid files (one track per instrument, drums on channel 10) or drag-and-drop of MIDI into a DAW.
+- Models: small (209 MB), medium (618 MB, recommended), large (2.7 GB); about 3.5x, 1.5x and 0.5x real time on an M1 Pro.
+- Editing: move, resize, draw, erase, reassign instrument, velocity, snap and quantize to a tempo grid, undo.
+- Playback: the built-in General MIDI synthesizer, mixed against the original audio, with per-instrument level, mute and solo.
+- Updates: new versions are published automatically on GitHub Releases.
+
+## Links
+
+- [Website](https://neural-sheet.quassum.com/): download and overview
+- [Latest release](https://github.com/bring-shrubbery/neural-sheet/releases/latest): the .dmg and release notes
+- [Source code](https://github.com/bring-shrubbery/neural-sheet): GitHub repository, README, build instructions
+- [Discussions](https://github.com/bring-shrubbery/neural-sheet/discussions): feature requests and questions
+- [Issues](https://github.com/bring-shrubbery/neural-sheet/issues): bug reports
+- [NeuralNote](https://github.com/DamRsn/NeuralNote): the original project
+- [Quassum](https://quassum.com/): the studio behind NeuralSheet, Vilnius, Lithuania
