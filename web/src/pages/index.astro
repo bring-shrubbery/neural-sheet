@@ -10,8 +10,62 @@ const repo = 'https://github.com/bring-shrubbery/neural-sheet';
 const title = 'NeuralSheet — audio-to-MIDI transcription for macOS';
 const description =
   'Record or drop a track, pick the instruments, and NeuralSheet turns it into MIDI you can play back, mix and drag into your DAW. Transcription runs entirely on your Mac.';
+
+// Structured data: the app, its publisher, and the download. Search engines use it for the
+// software rich result; answer engines quote it. Version fields follow the release fetch.
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'Organization',
+      '@id': 'https://quassum.com/#organization',
+      name: 'Quassum',
+      url: 'https://quassum.com',
+    },
+    {
+      '@type': 'WebSite',
+      '@id': 'https://neural-sheet.quassum.com/#website',
+      url: 'https://neural-sheet.quassum.com/',
+      name: 'NeuralSheet',
+      publisher: { '@id': 'https://quassum.com/#organization' },
+    },
+    {
+      '@type': 'SoftwareApplication',
+      '@id': 'https://neural-sheet.quassum.com/#app',
+      name: 'NeuralSheet',
+      url: 'https://neural-sheet.quassum.com/',
+      description,
+      applicationCategory: 'MultimediaApplication',
+      applicationSubCategory: 'Audio-to-MIDI transcription',
+      operatingSystem: 'macOS 26 or later (Apple silicon)',
+      image: 'https://neural-sheet.quassum.com/icon.png',
+      screenshot: 'https://neural-sheet.quassum.com/screenshot.png',
+      license: 'https://www.apache.org/licenses/LICENSE-2.0',
+      isAccessibleForFree: true,
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+      author: { '@id': 'https://quassum.com/#organization' },
+      publisher: { '@id': 'https://quassum.com/#organization' },
+      sameAs: [repo],
+      featureList: [
+        'Record from any input device or load .wav, .aiff, .flac, .mp3 and .ogg files',
+        'On-device transcription with the MuScriptor model on Metal',
+        'Instrument selection and streaming results into a piano roll',
+        'Playback through the built-in synthesizer with per-instrument mixing',
+        'MIDI editing: move, resize, draw, erase, quantize, undo',
+        'Multi-track MIDI export and drag-and-drop into a DAW',
+      ],
+      ...(release
+        ? {
+            softwareVersion: release.version.replace(/^v/, ''),
+            downloadUrl: release.dmgURL,
+            releaseNotes: release.notesURL,
+          }
+        : { downloadUrl: 'https://github.com/bring-shrubbery/neural-sheet/releases/latest' }),
+    },
+  ],
+};
 ---
-<Base title={title} description={description}>
+<Base title={title} description={description} structuredData={structuredData}>
   <main>
     <a class="github" href={repo} aria-label="NeuralSheet on GitHub">
       <svg viewBox="0 0 16 16" aria-hidden="true" fill="currentColor">
