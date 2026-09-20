@@ -69,7 +69,7 @@ const description =
       </ol>
       <p class="shortcuts">
         <kbd>Space</kbd> play/pause · <kbd>⇧Space</kbd> go to start · <kbd>r</kbd> record · <kbd>m</kbd> mute ·
-        <kbd>c</kbd> centre the playhead · <kbd>⇧⌫</kbd> clear · <kbd>⌘</kbd>+scroll or pinch to zoom ·
+        <kbd>c</kbd> centre the playhead · <kbd>⇧⌫</kbd> clear · <kbd>⌘</kbd>+scroll or pinch to zoom the timeline ·
         <kbd>⌘1</kbd>/<kbd>⌘2</kbd> tabs · <kbd>⌘Z</kbd> undo · <kbd>⌘U</kbd> quantize · <kbd>⌘A</kbd> select all ·
         <kbd>⌘</kbd>-drag ignores snap
       </p>
@@ -83,16 +83,18 @@ const description =
         <code>~/Library/NeuralSheet/models</code> (it also picks up models already in
         <code>~/Library/NeuralNote/models</code>). Downloads resume if interrupted and are verified by SHA-256.
       </p>
-      <table>
-        <thead>
-          <tr><th>Size</th><th>Download</th><th>Speed on an M1 Pro</th><th>Notes</th></tr>
-        </thead>
-        <tbody>
-          <tr><td>small</td><td class="num">209 MB</td><td class="num">~3.5× real time</td><td>Fastest</td></tr>
-          <tr><td>medium</td><td class="num">618 MB</td><td class="num">~1.5× real time</td><td>Recommended</td></tr>
-          <tr><td>large</td><td class="num">2.7 GB</td><td class="num">~0.5× real time</td><td>Best quality</td></tr>
-        </tbody>
-      </table>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr><th scope="col">Size</th><th scope="col">Download</th><th scope="col">Speed on an M1 Pro (Metal)</th><th scope="col">Notes</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>small</td><td class="num">209 MB</td><td class="num">~3.5× real time</td><td>Fastest</td></tr>
+            <tr><td>medium</td><td class="num">618 MB</td><td class="num">~1.5× real time</td><td>Recommended</td></tr>
+            <tr><td>large</td><td class="num">2.7 GB</td><td class="num">~0.5× real time</td><td>Best quality</td></tr>
+          </tbody>
+        </table>
+      </div>
       <div class="callout">
         <p>
           <strong>The model weights are not open source.</strong> Kyutai and Mirelo released them under
@@ -132,9 +134,10 @@ xcodebuild -scheme NeuralSheet -configuration Release build</code></pre>
     <section id="credits">
       <h2>Credits</h2>
       <p>
-        NeuralSheet started on 2026-09-17 as a rewrite of <strong>NeuralNote v2</strong>. Everything a user sees, and the
+        NeuralSheet started on 2026-09-17 as a rewrite of <strong>NeuralNote v2</strong> at commit
+        <a href="https://github.com/DamRsn/NeuralNote/commit/20ca45a"><code>20ca45a</code></a>. Everything a user sees, and the
         audio and MIDI logic underneath, follows NeuralNote's design; the Swift code was written new against a detailed
-        inventory of its behaviour, and the note scheduler, resampler, waveform peaks, MIDI writer and piano-roll
+        <a href="https://github.com/bring-shrubbery/neural-sheet/blob/main/docs/design/2026-09-17-neuralnote-feature-inventory.md">inventory of its behaviour</a>, and the note scheduler, resampler, waveform peaks, MIDI writer and piano-roll
         geometry are ports of the original C++.
       </p>
       <ul>

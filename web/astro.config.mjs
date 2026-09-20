@@ -6,5 +6,5 @@ export default defineConfig({
   site: 'https://neural-sheet.quassum.com',
   output: 'static',
   trailingSlash: 'never',
-  build: { format: 'file' },
+  compressHTML: false,
 });
