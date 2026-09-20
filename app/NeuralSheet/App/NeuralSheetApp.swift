@@ -54,8 +54,9 @@ struct NeuralSheetApp: App {
     private func appMenu(model: AppModel) -> some Commands {
         CommandGroup(after: .appInfo) {
             Button("Check for Updates…") {
-                model.checkForUpdates(explicit: true)
+                model.checkForUpdates()
             }
+            .disabled(!model.updates.canCheckForUpdates)
         }
     }
 

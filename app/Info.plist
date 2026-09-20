@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- Sparkle. The rest of the Info.plist is generated from build settings and merged with this. -->
+	<key>SUFeedURL</key>
+	<string>https://neural-sheet.quassum.com/appcast.xml</string>
+	<key>SUPublicEDKey</key>
+	<string>xqg7Uv6Q+zw/+Is3ic5dSCOOc8Sa0WzuFVtCwpX3zWU=</string>
+	<key>SUEnableAutomaticChecks</key>
+	<true/>
+</dict>
+</plist>

@@ -15,8 +15,9 @@ struct GeneralSettingsView: View {
             Section {
                 LabeledContent("Updates") {
                     Button("Check for Updates…") {
-                        model.checkForUpdates(explicit: true)
+                        model.checkForUpdates()
                     }
+                    .disabled(!model.updates.canCheckForUpdates)
                 }
             }
         }

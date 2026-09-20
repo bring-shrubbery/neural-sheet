@@ -4,18 +4,9 @@ import Foundation
 import NeuralSheetCore
 import UniformTypeIdentifiers
 
-/// The update-check notice, once one is showing (inventory §9). Task 20's `UpdateCheck` sets it;
-/// ``AppModel/displayLinkTick(dt:)`` drops it at `expiresAt`, and the hovering view pushes
-/// `expiresAt` out while the pointer is over it.
-nonisolated struct UpdateNotice: Equatable, Sendable {
-    var text: String
-    var showsSeeUpdate: Bool
-    var expiresAt: Date
-}
-
 /// The one main-actor object every view reads and every command goes through: the §11.1 state
 /// machine, what audio is loaded, the transcription as it streams in, the mix, the transport, the
-/// model panel and the update notice.
+/// model panel and the updater.
 ///
 /// Everything here is the main actor's. The engine, the recorder and the downloader call back on
 /// their own threads and are hopped onto the main actor before they touch anything of this
@@ -330,9 +321,10 @@ nonisolated struct UpdateNotice: Equatable, Sendable {
 
     var isInstrumentMenuOpen: Bool = false
 
-    // MARK: - Update check
+    // MARK: - Updates
 
-    var updateNotice: UpdateNotice?
+    /// The Sparkle updater; the menu item follows its ``Updates/canCheckForUpdates``.
+    let updates = Updates()
 
     // MARK: - Audio failures
 
@@ -980,19 +972,12 @@ nonisolated struct UpdateNotice: Equatable, Sendable {
         }
     }
 
-    // MARK: - Update check
+    // MARK: - Updates
 
-    /// Asks the releases endpoint whether a newer version exists and sets ``updateNotice`` (§9).
-    /// `UpdateCheck` does the request off the main actor and lands the answer back here.
-    ///
-    /// - Parameter explicit: True from Check for Updates…, which is the only time
-    ///   "You are on the latest version" is worth a notice.
-    func checkForUpdates(explicit: Bool) {
-        UpdateCheck.run(for: self, explicit: explicit)
-    }
-
-    func dismissUpdateNotice() {
-        updateNotice = nil
+    /// Check for Updates…, from the app menu and Settings. Sparkle shows the result itself,
+    /// including "You're up to date"; there is nothing to say in the status bar any more.
+    func checkForUpdates() {
+        updates.check()
     }
 
     // MARK: - Zoom
@@ -1005,8 +990,8 @@ nonisolated struct UpdateNotice: Equatable, Sendable {
 
     // MARK: - Display link
 
-    /// One frame: the transport mirrors, the live recording length, the meters and the notice's
-    /// expiry. `dt` is the frame interval in seconds.
+    /// One frame: the transport mirrors, the live recording length and the meters. `dt` is the
+    /// frame interval in seconds.
     func displayLinkTick(dt: Double) {
         syncTransport()
 
@@ -1019,10 +1004,6 @@ nonisolated struct UpdateNotice: Equatable, Sendable {
         }
 
         advanceMeters(dt: dt)
-
-        if let notice = updateNotice, Date() >= notice.expiresAt {
-            updateNotice = nil
-        }
     }
 
     // MARK: - Meters

@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		000000000000000220000000 /* NeuralSheetCore in Frameworks */ = {isa = PBXBuildFile; productRef = 000000000000000210000000 /* NeuralSheetCore */; };
+		2A6CC12A306068C800159FEC /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 2A6CC129306068C800159FEC /* Sparkle */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -27,6 +28,7 @@
 			isa = PBXFrameworksBuildPhase;
 			files = (
 				000000000000000220000000 /* NeuralSheetCore in Frameworks */,
+				2A6CC12A306068C800159FEC /* Sparkle in Frameworks */,
 			);
 		};
 /* End PBXFrameworksBuildPhase section */
@@ -68,6 +70,7 @@
 			name = NeuralSheet;
 			packageProductDependencies = (
 				000000000000000210000000 /* NeuralSheetCore */,
+				2A6CC129306068C800159FEC /* Sparkle */,
 			);
 			productName = MyApp;
 			productReference = 000000000000000000000120 /* NeuralSheet.app */;
@@ -99,6 +102,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				000000000000000200000000 /* XCLocalSwiftPackageReference "Packages/NeuralSheetCore" */,
+				2A6CC128306068C800159FEC /* XCRemoteSwiftPackageReference "Sparkle" */,
 			);
 			preferredProjectObjectVersion = 90;
 			productRefGroup = 000000000000000000000020 /* Products */;
@@ -110,28 +114,6 @@
 		};
 /* End PBXProject section */
 
-/* Begin PBXShellScriptBuildPhase section */
-		000000000000000150000000 /* Build engine */ = {
-			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			name = "Build engine";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"$SRCROOT/Scripts/build-engine.sh\"\n";
-		};
-/* End PBXShellScriptBuildPhase section */
-
 /* Begin PBXResourcesBuildPhase section */
 		000000000000000140000000 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
@@ -139,6 +121,19 @@
 			);
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		000000000000000150000000 /* Build engine */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			name = "Build engine";
+			shellPath = /bin/sh;
+			shellScript = (
+				"\"$SRCROOT/Scripts/build-engine.sh\"",
+				"",
+			);
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		000000000000000120000000 /* Sources */ = {
@@ -292,13 +287,29 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Info.plist;
 				HEADER_SEARCH_PATHS = "$(SRCROOT)/ThirdParty/muscriptor.cpp/cpp/include";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "NeuralSheet records from the microphone to transcribe what you play.";
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../Frameworks";
 				LIBRARY_SEARCH_PATHS = "$(SRCROOT)/build/engine/lib";
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
 				MARKETING_VERSION = 1.0.0;
-				OTHER_LDFLAGS = "-lmuscriptor_ggml -lggml -lggml-base -lggml-cpu -lggml-metal -lpffft -framework Metal -framework Accelerate -framework Foundation -framework MetalKit";
+				OTHER_LDFLAGS = (
+					"-lmuscriptor_ggml",
+					"-lggml",
+					"-lggml-base",
+					"-lggml-cpu",
+					"-lggml-metal",
+					"-lpffft",
+					"-framework",
+					Metal,
+					"-framework",
+					Accelerate,
+					"-framework",
+					Foundation,
+					"-framework",
+					MetalKit,
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.quassum.neuralsheet;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
@@ -326,13 +337,29 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Info.plist;
 				HEADER_SEARCH_PATHS = "$(SRCROOT)/ThirdParty/muscriptor.cpp/cpp/include";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "NeuralSheet records from the microphone to transcribe what you play.";
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../Frameworks";
 				LIBRARY_SEARCH_PATHS = "$(SRCROOT)/build/engine/lib";
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
 				MARKETING_VERSION = 1.0.0;
-				OTHER_LDFLAGS = "-lmuscriptor_ggml -lggml -lggml-base -lggml-cpu -lggml-metal -lpffft -framework Metal -framework Accelerate -framework Foundation -framework MetalKit";
+				OTHER_LDFLAGS = (
+					"-lmuscriptor_ggml",
+					"-lggml",
+					"-lggml-base",
+					"-lggml-cpu",
+					"-lggml-metal",
+					"-lpffft",
+					"-framework",
+					Metal,
+					"-framework",
+					Accelerate,
+					"-framework",
+					Foundation,
+					"-framework",
+					MetalKit,
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.quassum.neuralsheet;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
@@ -375,10 +402,26 @@
 		};
 /* End XCLocalSwiftPackageReference section */
 
+/* Begin XCRemoteSwiftPackageReference section */
+		2A6CC128306068C800159FEC /* XCRemoteSwiftPackageReference "Sparkle" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sparkle-project/Sparkle";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.10.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
 /* Begin XCSwiftPackageProductDependency section */
 		000000000000000210000000 /* NeuralSheetCore */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = NeuralSheetCore;
+		};
+		2A6CC129306068C800159FEC /* Sparkle */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 2A6CC128306068C800159FEC /* XCRemoteSwiftPackageReference "Sparkle" */;
+			productName = Sparkle;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
