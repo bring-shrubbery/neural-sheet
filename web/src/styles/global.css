@@ -65,6 +65,7 @@ body {
 }
 
 main {
+  position: relative;
   max-width: calc(var(--measure) + 2 * var(--gutter));
   margin: 0 auto;
   padding: 56px var(--gutter) 64px;
@@ -157,6 +158,22 @@ td.num { font-family: var(--font-mono); font-size: 14px; }
 /* Shortcuts line */
 .shortcuts { color: var(--text-muted); font-size: 15px; line-height: 2; }
 .shortcuts kbd { font-size: 13px; }
+
+/* GitHub link, top right, level with the hero icon */
+.github {
+  position: absolute;
+  top: 56px;
+  right: calc(var(--gutter) - 6px);
+  display: inline-flex;
+  padding: 6px;
+  border-radius: 8px;
+  color: var(--text-muted);
+}
+.github svg { width: 24px; height: 24px; display: block; }
+.github:hover, .github:focus-visible { color: var(--text-strong); text-decoration: none; }
+@media (max-width: 480px) {
+  .github { top: 36px; }
+}
 
 footer {
   max-width: calc(var(--measure) + 2 * var(--gutter));
