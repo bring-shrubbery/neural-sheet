@@ -86,10 +86,11 @@ jobs:
           ASC_API_KEY_P8: ${{ secrets.ASC_API_KEY_P8 }}
           ASC_API_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
           ASC_API_ISSUER_ID: ${{ secrets.ASC_API_ISSUER_ID }}
+          SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
         run: |
           missing=()
           for name in MACOS_CERTIFICATE_P12 MACOS_CERTIFICATE_PASSWORD MACOS_SIGNING_IDENTITY \
-                      APPLE_TEAM_ID ASC_API_KEY_P8 ASC_API_KEY_ID ASC_API_ISSUER_ID; do
+                      APPLE_TEAM_ID ASC_API_KEY_P8 ASC_API_KEY_ID ASC_API_ISSUER_ID SPARKLE_PRIVATE_KEY; do
             [ -n "${!name}" ] || missing+=("$name")
           done
           if [ "${#missing[@]}" -gt 0 ]; then
@@ -218,6 +219,44 @@ jobs:
           spctl --assess --type open --context context:primary-signature --verbose=2 "$DMG"
           ditto -c -k --keepParent "$APP" "build/NeuralSheet-$TAG-macos-arm64.zip"
 
+      - name: Sign the update and write the appcast
+        working-directory: app
+        env:
+          SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
+          SPARKLE_VERSION: 2.10.0
+          SPARKLE_SHA256: c2bf58aa8387266ac179357b1415d6f2635f044da8be41042af32425dae6da0c
+        run: |
+          set -o pipefail
+          ZIP="build/NeuralSheet-$TAG-macos-arm64.zip"
+          KEY="$RUNNER_TEMP/sparkle-key"
+          trap 'rm -f "$KEY"' EXIT
+          printf '%s' "$SPARKLE_PRIVATE_KEY" > "$KEY"
+
+          # Sparkle's command-line tools, pinned by version and checksum.
+          TOOLS="$RUNNER_TEMP/sparkle"
+          mkdir -p "$TOOLS"
+          curl -fsSL -o "$TOOLS/Sparkle.tar.xz" \
+            "https://github.com/sparkle-project/Sparkle/releases/download/$SPARKLE_VERSION/Sparkle-$SPARKLE_VERSION.tar.xz"
+          echo "$SPARKLE_SHA256  $TOOLS/Sparkle.tar.xz" | shasum -a 256 -c -
+          tar -xJf "$TOOLS/Sparkle.tar.xz" -C "$TOOLS" bin/sign_update
+
+          signature=$("$TOOLS/bin/sign_update" --ed-key-file "$KEY" "$ZIP")
+          echo "sign_update: $signature"
+          ed=$(sed -n 's/.*sparkle:edSignature="\([^"]*\)".*/\1/p' <<< "$signature")
+          length=$(sed -n 's/.*length="\([0-9]*\)".*/\1/p' <<< "$signature")
+          if [ -z "$ed" ] || [ -z "$length" ]; then
+            echo "::error::sign_update did not produce a signature and length"; exit 1
+          fi
+
+          Scripts/release-appcast.sh \
+            --version "$VERSION" --build "$GITHUB_RUN_NUMBER" --tag "$TAG" \
+            --url "https://github.com/$GITHUB_REPOSITORY/releases/download/$TAG/NeuralSheet-$TAG-macos-arm64.zip" \
+            --length "$length" --signature "$ed" \
+            --notes "https://github.com/$GITHUB_REPOSITORY/releases/tag/$TAG" \
+            --date "$(date -u '+%a, %d %b %Y %H:%M:%S +0000')" > build/appcast.xml
+          xmllint --noout build/appcast.xml
+          cat build/appcast.xml
+
       - name: Keep the assets as run artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -225,6 +264,7 @@ jobs:
           path: |
             app/build/NeuralSheet-${{ env.TAG }}-macos-arm64.dmg
             app/build/NeuralSheet-${{ env.TAG }}-macos-arm64.zip
+            app/build/appcast.xml
           if-no-files-found: error
 
       - name: Remove the signing keychain
@@ -249,6 +289,7 @@ jobs:
           files: |
             app/build/NeuralSheet-${{ env.TAG }}-macos-arm64.dmg
             app/build/NeuralSheet-${{ env.TAG }}-macos-arm64.zip
+            app/build/appcast.xml
 
       - name: Rebuild the website
         env:
