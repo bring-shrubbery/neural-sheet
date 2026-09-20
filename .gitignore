@@ -16,3 +16,9 @@ app/Packages/*/.build/
 
 # macOS
 .DS_Store
+
+# Website
+web/node_modules/
+web/dist/
+web/.astro/
+web/.wrangler/
