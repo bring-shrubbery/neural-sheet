@@ -16,6 +16,43 @@ const description =
 
 // Structured data: the app, its publisher, and the download. Search engines use it for the
 // software rich result; answer engines quote it. Version fields follow the release fetch.
+// The FAQ, rendered as a section and as FAQPage structured data. Plain text only:
+// answer engines quote it, so every sentence must hold without the page around it.
+const faq: { q: string; a: string }[] = [
+  {
+    q: 'Is NeuralSheet free?',
+    a: 'Yes. The app is free and open source under Apache-2.0. The MuScriptor model weights it downloads are licensed CC BY-NC 4.0, which allows non-commercial use only.',
+  },
+  {
+    q: 'Does it work offline?',
+    a: "Yes. Transcription runs on your Mac's GPU through Metal; audio never leaves your machine. The only network use is downloading a model the first time you transcribe, and checking for updates.",
+  },
+  {
+    q: 'Which Macs does it run on?',
+    a: 'macOS 26 or later on Apple silicon (M1 and newer). There is no Intel build.',
+  },
+  {
+    q: 'What audio formats can I use?',
+    a: 'Record from any input device, or load .wav, .aiff, .flac, .mp3 and .ogg files by dropping them on the window.',
+  },
+  {
+    q: 'How accurate is the transcription?',
+    a: 'NeuralSheet uses MuScriptor, a transformer model from Kyutai and Mirelo, in three sizes; the large model gives the best results at about half real time on an M1 Pro. Telling it which instruments are in the mix improves results, and the Edit tab lets you fix what it gets wrong.',
+  },
+  {
+    q: 'How do I get the MIDI into my DAW?',
+    a: 'Drag the MIDI button onto a track in your DAW, or export a .mid file with one track per instrument (drums on channel 10). The export tempo sets how seconds map to beats.',
+  },
+  {
+    q: 'How is it different from NeuralNote?',
+    a: 'NeuralSheet is a from-scratch Swift rewrite of NeuralNote for macOS only, keeping its design and transcription engine and replacing the JUCE application layer with SwiftUI, AppKit and AVAudioEngine for lower audio latency and smoother drawing. It is a standalone app; there is no AU or VST3 plugin.',
+  },
+  {
+    q: 'Can I request a feature or report a bug?',
+    a: "Ideas and questions go to GitHub Discussions; reproduced bugs go to Issues using the template. Pull requests aren't accepted.",
+  },
+];
+
 const structuredData = {
   '@context': 'https://schema.org',
   '@graph': [
@@ -64,6 +101,15 @@ const structuredData = {
             releaseNotes: release.notesURL,
           }
         : { downloadUrl: 'https://github.com/bring-shrubbery/neural-sheet/releases/latest' }),
+    },
+    {
+      '@type': 'FAQPage',
+      '@id': 'https://neural-sheet.quassum.com/#faq',
+      mainEntity: faq.map(({ q, a }) => ({
+        '@type': 'Question',
+        name: q,
+        acceptedAnswer: { '@type': 'Answer', text: a },
+      })),
     },
   ],
 };
@@ -175,6 +221,18 @@ const structuredData = {
         Playback uses the General MIDI synthesizer built into macOS, so no soundfont is bundled. It sounds different from
         NeuralNote's MuseScore soundfont.
       </p>
+    </section>
+
+    <section id="faq">
+      <h2>Questions</h2>
+      <dl class="faq">
+        {faq.map(({ q, a }) => (
+          <div>
+            <dt>{q}</dt>
+            <dd>{a}</dd>
+          </div>
+        ))}
+      </dl>
     </section>
 
     <section id="build">
