@@ -10,9 +10,9 @@ import { fetchLatestRelease } from '../lib/release';
 // import.meta.env carries the build environment here (verified: a process env var is seen).
 const release = await fetchLatestRelease(fetch, import.meta.env.GITHUB_TOKEN);
 const repo = 'https://github.com/bring-shrubbery/neural-sheet';
-const title = 'NeuralSheet — audio-to-MIDI transcription for macOS';
+const title = 'NeuralSheet: Free Audio to MIDI Transcription for Mac';
 const description =
-  'Record or drop a track, pick the instruments, and NeuralSheet turns it into MIDI you can play back, mix and drag into your DAW. Transcription runs entirely on your Mac.';
+  'Free, open-source audio-to-MIDI transcription for Mac. Drop in a track, pick the instruments, edit the notes and drag the MIDI into your DAW. Runs offline.';
 
 // Structured data: the app, its publisher, and the download. Search engines use it for the
 // software rich result; answer engines quote it. Version fields follow the release fetch.
@@ -77,11 +77,10 @@ const structuredData = {
     </a>
     <section class="hero">
       <Image class="icon" src={icon} width={96} height={96} densities={[1, 2]} alt="" loading="eager" />
-      <h1>NeuralSheet</h1>
+      <h1>NeuralSheet <span class="subtitle">Audio to MIDI transcription for Mac</span></h1>
       <p class="lead">
-        <strong>Audio-to-MIDI transcription as a native macOS app.</strong> Record or drop a track, pick the
-        instruments, and NeuralSheet turns it into MIDI you can play back, mix, and drag straight into your
-        DAW. Transcription runs entirely on your machine.
+        Record or drop a track, pick the instruments, and NeuralSheet turns it into MIDI you can play back,
+        mix, and drag straight into your DAW. Transcription runs entirely on your machine.
       </p>
       <Download release={release} />
       <Image

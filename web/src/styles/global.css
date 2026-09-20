@@ -129,6 +129,7 @@ td.num { font-family: var(--font-mono); font-size: 14px; }
 /* Hero */
 .hero { padding-top: 0; }
 .hero .icon { width: 96px; height: 96px; display: block; margin-bottom: 20px; }
+.hero h1 .subtitle { display: block; font-size: 22px; font-weight: 500; letter-spacing: 0; color: var(--text-muted); margin-top: 8px; }
 .hero .lead { font-size: 19px; line-height: 1.5; color: var(--text-muted); margin: 14px 0 24px; max-width: 34em; }
 .hero .lead strong { color: var(--text); }
 .hero .screenshot {
@@ -190,6 +191,7 @@ footer a { color: var(--text-muted); }
   main { padding-top: 36px; }
   h1 { font-size: 32px; }
   h2 { font-size: 20px; }
+  .hero h1 .subtitle { font-size: 19px; }
   .hero .lead { font-size: 17px; }
   section { padding: 36px 0 24px; }
   table { font-size: 14px; }
