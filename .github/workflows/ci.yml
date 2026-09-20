@@ -21,6 +21,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Select the newest installed Xcode
         run: |
+          # shellcheck disable=SC2012
           XCODE=$(ls -d /Applications/Xcode_*.app | sort -V | tail -1)
           echo "using $XCODE"
           sudo xcode-select -s "$XCODE"
@@ -38,6 +39,7 @@ jobs:
           submodules: recursive
       - name: Select the newest installed Xcode
         run: |
+          # shellcheck disable=SC2012
           XCODE=$(ls -d /Applications/Xcode_*.app | sort -V | tail -1)
           echo "using $XCODE"
           sudo xcode-select -s "$XCODE"

@@ -26,8 +26,12 @@ unauthenticated rate limit; Workers Builds share egress addresses, so set it the
 One-time setup in the Cloudflare dashboard:
 
 1. **Workers & Pages → Create → Import a repository** → `bring-shrubbery/neural-sheet`.
+   Name the Worker `neural-sheet-web` — it must match `name` in `wrangler.jsonc`, or
+   Cloudflare's autofix opens a pull request that the PR gate closes.
 2. Build configuration: root directory `web`, build command `npm run build`, deploy command
    `npx wrangler deploy`, production branch `main`. Leave non-production branch builds off.
+   Under *Build watch paths*, include `web/*` so pushes that do not touch the site skip the
+   build.
 3. Optionally add a build environment variable `GITHUB_TOKEN` (see above).
 4. **Settings → Domains & Routes → Add → Custom domain** → `neural-sheet.quassum.com`
    (the `quassum.com` zone must be on this account).
@@ -35,7 +39,8 @@ One-time setup in the Cloudflare dashboard:
    `gh secret set CF_DEPLOY_HOOK_URL` and paste the hook URL. The release workflow POSTs it
    after every app release so the download button shows the new version.
 
-Every push to `main` that touches `web/` rebuilds the site. `wrangler.jsonc` is assets-only:
+With that watch path, every push to `main` that touches `web/` rebuilds the site; without it,
+every push does. `wrangler.jsonc` is assets-only:
 there is no Worker code, only `dist/` and the `_redirects` file in `public/`.
 
 ## Check a deployment

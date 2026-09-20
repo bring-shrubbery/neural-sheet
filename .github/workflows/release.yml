@@ -4,7 +4,7 @@ name: Release
 # a signed, notarized NeuralSheet-vX.Y.Z-macos-arm64.dmg (and zip) on a GitHub
 # release, tagged vX.Y.Z. The version is the higher of MARKETING_VERSION in the
 # Xcode project and the last release tag's patch + 1; raise MARKETING_VERSION in
-# Xcode to ship a minor or major. Changes to docs/, *.md, LICENSE, NOTICE and
+# Xcode to ship a minor or major. Changes to docs/, web/, *.md, LICENSE, NOTICE and
 # .github/ (except the workflows) do not release. docs/release.md explains the
 # secrets and the flow.
 
@@ -258,10 +258,11 @@ jobs:
             echo "::warning::CF_DEPLOY_HOOK_URL is not set; the website keeps offering the previous release until it is rebuilt (docs/release.md)"
             exit 0
           fi
-          curl -fsS -X POST "$CF_DEPLOY_HOOK_URL" -o /dev/null
+          curl -fsS --retry 3 --retry-all-errors -X POST "$CF_DEPLOY_HOOK_URL" -o /dev/null
           echo "website rebuild requested"
 
       - name: Summary
+        if: always()
         run: |
           {
             echo "## NeuralSheet $TAG"

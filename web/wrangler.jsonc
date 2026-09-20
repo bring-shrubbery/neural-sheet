@@ -2,5 +2,7 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "neural-sheet-web",
   "compatibility_date": "2026-09-20",
+  // The site is served at the custom domain only; a deploy would otherwise re-enable workers.dev.
+  "workers_dev": false,
   "assets": { "directory": "./dist" }
 }

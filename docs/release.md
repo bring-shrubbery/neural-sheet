@@ -15,7 +15,7 @@ The workflow computes the version: the higher of `MARKETING_VERSION` in
   General → Version) to, say, `1.1.0` and push. That push releases `v1.1.0`; the
   next one `v1.1.1`. CI never edits the project file.
 - The build number (`CURRENT_PROJECT_VERSION`) is the workflow run number.
-- Pushes that change only `docs/`, `*.md`, `LICENSE`, `NOTICE` or `.github/`
+- Pushes that change only `docs/`, `web/`, `*.md`, `LICENSE`, `NOTICE` or `.github/`
   (except the workflows) release nothing. The run says so in its log.
 
 Add the release's notes to `CHANGELOG.md` yourself; the GitHub release body is
@@ -95,3 +95,7 @@ not a failure — the next run covers its commits.
   (`git push origin :refs/tags/vX.Y.Z`) and the release if one was created,
   then re-run. Re-running without deleting the tag prints "no code changes
   since vX.Y.Z" and releases nothing.
+- **Rebuild the website failed** — the release is already published; only the site's
+  download button is stale. Re-run the build from the Worker's *Builds* page in the
+  Cloudflare dashboard (re-running the Release workflow prints "no code changes" and
+  does nothing).
