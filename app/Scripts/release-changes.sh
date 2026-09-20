@@ -7,9 +7,9 @@
 #   release-changes.sh v1.0.2   paths changed between v1.0.2 and HEAD
 #   release-changes.sh ""       every tracked path (no release exists yet)
 #
-# Documentation is docs/, any *.md, LICENSE, NOTICE and .github/ except the
-# workflows. RELEASE_PATHS (one path per line) replaces the git query; the test
-# uses it.
+# Documentation is docs/, the website under web/, any *.md, LICENSE, NOTICE
+# and .github/ except the workflows. RELEASE_PATHS (one path per line) replaces
+# the git query; the test uses it.
 set -euo pipefail
 
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
@@ -27,7 +27,7 @@ changed_paths() {
 
 is_documentation() {
     case "$1" in
-        docs/*|*.md|LICENSE|NOTICE) return 0 ;;
+        docs/*|web/*|*.md|LICENSE|NOTICE) return 0 ;;
         .github/workflows/*) return 1 ;;
         .github/*) return 0 ;;
     esac

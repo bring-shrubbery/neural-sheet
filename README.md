@@ -9,7 +9,7 @@ NeuralSheet is a from-scratch Swift rewrite of [NeuralNote](https://github.com/D
 ![NeuralSheet transcribing a track](docs/screenshot.png)
 
 > [!NOTE]
-> **Status: v1 checkpoint (September 2026).** NeuralSheet has feature parity with the NeuralNote v2 standalone app. There are no prebuilt binaries yet; [build it from source](#build-from-source). macOS 26 on Apple silicon only.
+> **Status: v1.0 (September 2026).** NeuralSheet has feature parity with the NeuralNote v2 standalone app. Download the latest release from [neural-sheet.quassum.com](https://neural-sheet.quassum.com) or the [Releases page](https://github.com/bring-shrubbery/neural-sheet/releases/latest); it is signed and notarized. macOS 26 on Apple silicon only.
 
 ## What it does
 
@@ -83,9 +83,8 @@ cd app/Packages/NeuralSheetCore && swift test
 ```
 app/          The macOS app: Xcode project, Swift package, engine submodule, build scripts
 docs/design/  How the app was built: the behavioural inventory of NeuralNote, the design, the plan, the parity pass
+web/          The website (Astro), deployed to neural-sheet.quassum.com by Cloudflare Workers Builds
 ```
-
-Other folders (a website, for example) will sit beside `app/` as the project grows.
 
 ## Contributing
 
@@ -99,7 +98,6 @@ NeuralSheet is developed by a small team working with AI coding agents that we r
 
 ## Roadmap
 
-- Notarized releases
 - UX improvements beyond parity: this is where v2 starts
 - MIDI out to other apps with per-instrument channels
 - Universal builds

@@ -250,6 +250,17 @@ jobs:
             app/build/NeuralSheet-${{ env.TAG }}-macos-arm64.dmg
             app/build/NeuralSheet-${{ env.TAG }}-macos-arm64.zip
 
+      - name: Rebuild the website
+        env:
+          CF_DEPLOY_HOOK_URL: ${{ secrets.CF_DEPLOY_HOOK_URL }}
+        run: |
+          if [ -z "$CF_DEPLOY_HOOK_URL" ]; then
+            echo "::warning::CF_DEPLOY_HOOK_URL is not set; the website keeps offering the previous release until it is rebuilt (docs/release.md)"
+            exit 0
+          fi
+          curl -fsS -X POST "$CF_DEPLOY_HOOK_URL" -o /dev/null
+          echo "website rebuild requested"
+
       - name: Summary
         run: |
           {

@@ -26,6 +26,8 @@ check "submodule bump"   "app/ThirdParty/muscriptor.cpp .gitmodules" "app/ThirdP
 check "script"           "app/Scripts/build-engine.sh docs/icon.png" "app/Scripts/build-engine.sh"
 check "md under app"     "app/Packages/NeuralSheetCore/README.md app/Packages/NeuralSheetCore/Package.swift" "app/Packages/NeuralSheetCore/Package.swift"
 check "nothing"          "" ""
+check "website"          "web/src/pages/index.astro web/package.json" ""
+check "website and app"  "web/src/pages/index.astro app/Scripts/build-engine.sh" "app/Scripts/build-engine.sh"
 
 # With no previous tag every tracked path counts; the real repo has code, so output is non-empty.
 if [ -n "$("$SCRIPT" "")" ]; then

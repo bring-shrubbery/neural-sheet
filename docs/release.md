@@ -62,6 +62,10 @@ rm AuthKey_XXXXXXXXXX.p8
 
 `gh secret list` should now show all seven names.
 
+An eighth secret is optional: `CF_DEPLOY_HOOK_URL`, the Cloudflare Workers Builds deploy
+hook for the website (see `web/README.md`). Without it the release still publishes, with a
+warning, and the website keeps offering the previous version until it is rebuilt.
+
 ### 3. The first release
 
 Push a code change to `main`, or run the Release workflow from the Actions tab

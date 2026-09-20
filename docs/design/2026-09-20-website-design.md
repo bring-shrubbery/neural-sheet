@@ -7,7 +7,7 @@ and owns the URLs the app will depend on (`/appcast.xml` for Sparkle).
 
 ## Site
 
-- `web/` is an Astro 5 project, `output: 'static'`, TypeScript strict, npm
+- `web/` is an Astro 7 project, `output: 'static'`, TypeScript strict, npm
   with a committed lockfile, Node 22 (`.nvmrc`). No UI framework, no Tailwind:
   one global stylesheet.
 - One page, one column, max width 680 px, 16 px side gutters, no horizontal
@@ -23,7 +23,7 @@ and owns the URLs the app will depend on (`/appcast.xml` for Sparkle).
   7. Contributing (Discussions for ideas, Issues for reproduced bugs, no
      pull requests) linking CONTRIBUTING.md.
   8. Credits and License, as in the README, with the same links.
-- Identity follows the app: Inter (the four weights the app bundles, copied
+- Identity follows the app: Inter (Regular, Medium and SemiBold, copied
   from `app/NeuralSheet/Resources/Fonts` with their licence, self-hosted with
   `font-display: swap`), JetBrains Mono NL for code, the graphite palette
   (`#131417` background, `#E7E9EC` text, `#6E9BFF` accent) as the default
