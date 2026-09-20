@@ -94,7 +94,7 @@ fifteen minutes, most of it the engine build the first time and Apple's
 notarization queue. The release appears at
 https://github.com/bring-shrubbery/neural-sheet/releases.
 
-Until the seven secrets exist, every code push produces one red Release run
+Until the eight secrets exist, every code push produces one red Release run
 that stops at the secrets check; that is expected. Quick successive pushes
 queue; GitHub keeps one pending run per queue, so a run marked *cancelled* is
 not a failure — the next run covers its commits.
