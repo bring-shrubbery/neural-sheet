@@ -12,8 +12,13 @@ import Sparkle
     private let controller: SPUStandardUpdaterController
     @ObservationIgnored private var observation: NSKeyValueObservation?
 
+    /// Previews construct `AppModel`; a real updater there would put up Sparkle's alert.
+    private static var isPreview: Bool {
+        ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
+    }
+
     init() {
-        controller = SPUStandardUpdaterController(startingUpdater: true, updaterDelegate: nil, userDriverDelegate: nil)
+        controller = SPUStandardUpdaterController(startingUpdater: !Self.isPreview, updaterDelegate: nil, userDriverDelegate: nil)
         canCheckForUpdates = controller.updater.canCheckForUpdates
         // Sparkle drives its updater on the main thread, so the change lands on the main actor.
         observation = controller.updater.observe(\.canCheckForUpdates, options: [.new]) { [weak self] _, change in

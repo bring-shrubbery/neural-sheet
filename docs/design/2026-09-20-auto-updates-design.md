@@ -22,9 +22,12 @@ swaps the bundle and relaunches. The release workflow produces the feed.
   first-run "may I check automatically?" prompt is skipped by
   `SUEnableAutomaticChecks = YES`.
 - The app is not sandboxed and keeps the hardened runtime, so no XPC services
-  or extra entitlements are needed. Xcode signs the embedded `Sparkle.framework`
-  with the app's identity; the release workflow's `codesign --verify --deep
-  --strict` and notarization cover it.
+  or extra entitlements are needed. Xcode's embed re-signs only
+  `Sparkle.framework` itself; its nested helpers (`Autoupdate`, `Updater.app`,
+  the two XPC services) stay ad-hoc signed and would fail notarization, so the
+  Archive step re-signs them inside out with the Developer ID identity
+  (Sparkle's documented procedure) and asserts each carries it before
+  `codesign --verify --deep --strict` and notarization.
 - Info.plist keys, through a checked-in `app/Info.plist` (beside the Xcode
   project, outside the synchronized source folder so it is not copied as a
   resource) named by the `INFOPLIST_FILE` build setting and merged with the

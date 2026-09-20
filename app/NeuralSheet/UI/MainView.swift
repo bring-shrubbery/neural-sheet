@@ -6,11 +6,10 @@ import SwiftUI
 /// full-height sidebar beside the toolbar, the timeline and the status bar, laid out to whatever
 /// size the window is -- the sidebar keeps its width, the timeline takes the rest -- with the
 /// overlays on top in the order the original stacked them: the no-model notice (centred on the
-/// piano roll), the update notice above the status bar, the instrument picker off the sidebar.
-/// The settings are a window of their own (⌘,).
+/// piano roll), the instrument picker off the sidebar. The settings are a window of their own (⌘,).
 ///
 /// Also where the app's window-bound pieces are installed: the dialogs, the shortcuts, the display
-/// link, the session restore and the launch-time update check.
+/// link and the session restore.
 struct MainView: View {
     let model: AppModel
     let persistence: Persistence

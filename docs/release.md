@@ -3,7 +3,8 @@
 Releases are automatic. Every push to `main` that passes CI and changes
 something other than documentation is built, signed, notarized and published as
 `NeuralSheet-vX.Y.Z-macos-arm64.dmg` (and a zip of the app) on a GitHub
-release tagged `vX.Y.Z`. The in-app update check reads that release's tag.
+release tagged `vX.Y.Z`. Installed copies update themselves from the
+`appcast.xml` each release publishes (Sparkle).
 
 ## Versions
 
@@ -62,7 +63,7 @@ rm AuthKey_XXXXXXXXXX.p8
 
 `gh secret list` should now show all eight names.
 
-### Sparkle (in-app updates)
+### 3. Sparkle (in-app updates)
 
 Every release also publishes `appcast.xml`, the feed installed copies read through
 `https://neural-sheet.quassum.com/appcast.xml` (a redirect to the latest release's
@@ -74,8 +75,14 @@ of the Mac that ran it (Keychain Access → search "sparkle-project.org", accoun
 `NeuralSheet`) and in the repository secret `SPARKLE_PRIVATE_KEY`. **Losing both
 means no installed copy can ever update again.** Back it up once:
 `generate_keys --account NeuralSheet -x sparkle-neuralsheet.key` and keep the file
-somewhere safe, off this machine. The matching public key is `SUPublicEDKey` in
-`app/Info.plist`.
+somewhere safe, off this machine. To set it in the repository:
+`gh secret set SPARKLE_PRIVATE_KEY < sparkle-neuralsheet.key`, then delete the file.
+The matching public key is `SUPublicEDKey` in `app/Info.plist`.
+
+If the key is lost: generate a new pair, put the new public key in `app/Info.plist`,
+set the new secret, and tell users to download the next release by hand — copies
+with the old key will report an improperly signed update on every check and never
+update on their own.
 
 To rotate the key: ship one release signed with the old key whose Info.plist
 carries the new public key, then switch `SPARKLE_PRIVATE_KEY`; copies that skip
@@ -85,7 +92,7 @@ An optional ninth secret is `CF_DEPLOY_HOOK_URL`, the Cloudflare Workers Builds 
 hook for the website (see `web/README.md`). Without it the release still publishes, with a
 warning, and the website keeps offering the previous version until it is rebuilt.
 
-### 3. The first release
+### 4. The first release
 
 Push a code change to `main`, or run the Release workflow from the Actions tab
 with **Run workflow** (only `main` is honoured). The `Decide the version` job
@@ -105,7 +112,9 @@ not a failure — the next run covers its commits.
 - **notarization ended with status Invalid** — the step prints Apple's log;
   the usual causes are a binary without the hardened runtime or a missing
   timestamp. Both are set by the project and the workflow, so look at what
-  changed.
+  changed. A third cause is a Sparkle helper that lost its Developer ID
+  signature; the Archive step re-signs them and stops with `is not Developer ID
+  signed` if that fails.
 - **create-dmg could not apply the window layout** — a warning only; the
   image is valid, it just lacks the icon arrangement.
 - **Sign the update and write the appcast failed** — the zip is notarized but not
@@ -113,7 +122,9 @@ not a failure — the next run covers its commits.
   (44 base64 characters). Fix the secret and re-run; nothing was tagged.
 - **The tag exists** — a previous run tagged but failed to publish. The notarized
   DMG and zip are attached to that run as artifacts (the run page, *Artifacts*).
-  Either publish them by hand as release `vX.Y.Z`, or delete the tag
+  Publish all three — the DMG, the zip **and `appcast.xml`** — or installed copies
+  will find no feed until the next release. Either publish them by hand as
+  release `vX.Y.Z`, or delete the tag
   (`git push origin :refs/tags/vX.Y.Z`) and the release if one was created,
   then re-run. Re-running without deleting the tag prints "no code changes
   since vX.Y.Z" and releases nothing.

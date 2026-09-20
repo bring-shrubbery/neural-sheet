@@ -135,6 +135,7 @@ jobs:
           fi
 
       - name: Archive
+        id: archive
         working-directory: app
         env:
           IDENTITY: ${{ secrets.MACOS_SIGNING_IDENTITY }}
@@ -147,12 +148,30 @@ jobs:
             MARKETING_VERSION="$VERSION" CURRENT_PROJECT_VERSION="$GITHUB_RUN_NUMBER" \
             archive 2>&1 | tee build.log | tail -30
           APP=build/NeuralSheet.xcarchive/Products/Applications/NeuralSheet.app
+          # Sparkle ships its helpers ad-hoc signed and Xcode's embed re-signs only the
+          # framework itself; notarization rejects every Mach-O without a Developer ID.
+          # Re-sign inside out (never --deep: each seal must cover its re-signed children),
+          # then the app, whose seal covers the framework.
+          FW="$APP/Contents/Frameworks/Sparkle.framework/Versions/B"
+          codesign -f -s "$IDENTITY" -o runtime --timestamp "$FW/XPCServices/Installer.xpc"
+          codesign -f -s "$IDENTITY" -o runtime --timestamp --preserve-metadata=entitlements "$FW/XPCServices/Downloader.xpc"
+          codesign -f -s "$IDENTITY" -o runtime --timestamp "$FW/Autoupdate"
+          codesign -f -s "$IDENTITY" -o runtime --timestamp "$FW/Updater.app"
+          codesign -f -s "$IDENTITY" -o runtime --timestamp "$APP/Contents/Frameworks/Sparkle.framework"
+          codesign -f -s "$IDENTITY" -o runtime --timestamp --entitlements NeuralSheet/NeuralSheet.entitlements "$APP"
+          for helper in "$FW/Autoupdate" "$FW/Updater.app" "$FW/XPCServices/Installer.xpc" "$FW/XPCServices/Downloader.xpc"; do
+            if ! codesign -dvv "$helper" 2>&1 | grep -q "^Authority=Developer ID Application"; then
+              echo "::error::$helper is not Developer ID signed"; exit 1
+            fi
+          done
           codesign --verify --deep --strict --verbose=2 "$APP"
           built=$(defaults read "$PWD/$APP/Contents/Info.plist" CFBundleShortVersionString)
           if [ "$built" != "$VERSION" ]; then
             echo "::error::built CFBundleShortVersionString is $built, expected $VERSION"; exit 1
           fi
-          echo "built $built ($(defaults read "$PWD/$APP/Contents/Info.plist" CFBundleVersion))"
+          build_number=$(defaults read "$PWD/$APP/Contents/Info.plist" CFBundleVersion)
+          echo "built $built ($build_number)"
+          echo "build_number=$build_number" >> "$GITHUB_OUTPUT"
 
       - name: Build the disk image
         working-directory: app
@@ -235,7 +254,7 @@ jobs:
           # Sparkle's command-line tools, pinned by version and checksum.
           TOOLS="$RUNNER_TEMP/sparkle"
           mkdir -p "$TOOLS"
-          curl -fsSL -o "$TOOLS/Sparkle.tar.xz" \
+          curl -fsSL --retry 3 --retry-all-errors -o "$TOOLS/Sparkle.tar.xz" \
             "https://github.com/sparkle-project/Sparkle/releases/download/$SPARKLE_VERSION/Sparkle-$SPARKLE_VERSION.tar.xz"
           echo "$SPARKLE_SHA256  $TOOLS/Sparkle.tar.xz" | shasum -a 256 -c -
           tar -xJf "$TOOLS/Sparkle.tar.xz" -C "$TOOLS" bin/sign_update
@@ -249,11 +268,11 @@ jobs:
           fi
 
           Scripts/release-appcast.sh \
-            --version "$VERSION" --build "$GITHUB_RUN_NUMBER" --tag "$TAG" \
+            --version "$VERSION" --build "${{ steps.archive.outputs.build_number }}" --tag "$TAG" \
             --url "https://github.com/$GITHUB_REPOSITORY/releases/download/$TAG/NeuralSheet-$TAG-macos-arm64.zip" \
             --length "$length" --signature "$ed" \
             --notes "https://github.com/$GITHUB_REPOSITORY/releases/tag/$TAG" \
-            --date "$(date -u '+%a, %d %b %Y %H:%M:%S +0000')" > build/appcast.xml
+            --date "$(LC_ALL=C date -u '+%a, %d %b %Y %H:%M:%S +0000')" > build/appcast.xml
           xmllint --noout build/appcast.xml
           cat build/appcast.xml
 
