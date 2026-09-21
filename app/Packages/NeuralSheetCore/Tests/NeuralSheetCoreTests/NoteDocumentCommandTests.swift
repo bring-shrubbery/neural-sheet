@@ -196,3 +196,31 @@ private func near(_ a: Double, _ b: Double) -> Bool { abs(a - b) < 1e-9 }
     document.undo()
     #expect(document.notes == original)
 }
+
+@Test func pasteLandsTheEarliestNoteAtTheGivenTimeAndKeepsTheRest() {
+    var document = NoteDocument(events: [note(0, 1, pitch: 60)])
+    let existing = document.notes[0].id
+    // Out of order and on two instruments, as a copied selection can be.
+    let copied = [note(5, 6, pitch: 62, program: 3), note(3, 3.5, pitch: 60, amplitude: 0.5), note(3, 4, pitch: 64)]
+
+    let batch = document.paste(copied, at: 10)
+    #expect(batch.title == "Paste Notes")
+    #expect(batch.inserted.map(\.note).sorted() == [note(10, 10.5, pitch: 60, amplitude: 0.5), note(10, 11, pitch: 64), note(12, 13, pitch: 62, program: 3)])
+    #expect(!batch.inserted.map(\.id).contains(existing))
+    #expect(Set(batch.inserted.map(\.id)).count == 3)
+
+    document.commit(batch)
+    #expect(document.notes.count == 4)
+
+    #expect(document.paste([note(1, 2, pitch: 60)], at: 0).title == "Paste Note")
+    #expect(document.paste([], at: 0).isEmpty)
+}
+
+@Test func pasteResolvesOverlapsWithWhatIsThere() {
+    var document = NoteDocument(events: [note(0, 2, pitch: 60)])
+    let batch = document.paste([note(7, 8, pitch: 60)], at: 1)
+
+    // The pasted note starts at 1 on the same instrument and pitch: the existing one is trimmed.
+    #expect(batch.inserted.map(\.note) == [note(1, 2, pitch: 60)])
+    #expect(batch.changed.map(\.after.note) == [note(0, 1, pitch: 60)])
+}

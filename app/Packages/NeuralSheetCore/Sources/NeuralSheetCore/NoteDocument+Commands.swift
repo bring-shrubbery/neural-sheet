@@ -29,6 +29,20 @@ extension NoteDocument {
         return finished(EditBatch(title: NoteDocument.title("Duplicate", count: copies.count), inserted: copies))
     }
 
+    /// Copied notes put back with the earliest of them starting at `seconds` and the rest keeping
+    /// their distance from it; pitch, instrument and velocity travel as they are.
+    public mutating func paste(_ notes: [NoteEvent], at seconds: Double) -> EditBatch {
+        guard let earliest = notes.map(\.startTime).min() else { return EditBatch(title: "Paste Notes") }
+
+        var pasted: [EditableNote] = []
+
+        for note in notes.sorted() {
+            pasted.append(EditableNote(id: allocateID(), note: NoteDocument.shifted(note, by: seconds - earliest, semitones: 0)))
+        }
+
+        return finished(EditBatch(title: NoteDocument.title("Paste", count: pasted.count), inserted: pasted))
+    }
+
     public func delete(_ ids: Set<NoteID>) -> EditBatch {
         let doomed = selected(ids)
 
