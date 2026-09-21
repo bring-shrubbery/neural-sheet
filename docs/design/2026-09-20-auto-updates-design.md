@@ -66,12 +66,22 @@ release on updates in place.
   run's time in RFC 822, `<sparkle:version>` = the build number
   (`CURRENT_PROJECT_VERSION`, the run number, monotonic — this is what Sparkle
   compares), `<sparkle:shortVersionString>` = `X.Y.Z`,
-  `<sparkle:minimumSystemVersion>` = `26.0`, `<sparkle:releaseNotesLink>` = the
-  GitHub release page, `<enclosure>` with the versioned zip URL, its byte
-  `length`, `type="application/octet-stream"` and `sparkle:edSignature`.
+  `<sparkle:minimumSystemVersion>` = `26.0`, `<description>` = the release notes
+  as HTML in a CDATA section, `<sparkle:fullReleaseNotesLink>` = the GitHub
+  release page, `<enclosure>` with the versioned zip URL, its byte `length`,
+  `type="application/octet-stream"` and `sparkle:edSignature`.
+- The notes are embedded rather than linked (the first releases linked the
+  GitHub page through `<sparkle:releaseNotesLink>`, which the prompt loaded as a
+  whole web page, slowly, and whose generated body listed no commits): Sparkle
+  shows a `<description>` at once, offline. `app/Scripts/release-notes.sh` writes
+  them from the commit subjects since the previous release tag, oldest first,
+  without their `area:` prefix and without `docs:`, `web:` and `ci:` commits, as
+  HTML for the feed and as Markdown for the release body (which ends with a
+  compare link to the previous tag).
 - `app/Scripts/release-appcast.sh` writes the file from arguments (version,
-  build, tag, zip URL, length, signature, notes URL, date) and nothing else, so
-  it is testable; its test checks the fields and `xmllint --noout` validity.
+  build, tag, zip URL, length, signature, notes file, notes URL, date) and nothing
+  else, so it is testable; its test checks the fields and `xmllint --noout`
+  validity. Both scripts have a `-test.sh` beside them.
 
 ## Signing and secrets
 

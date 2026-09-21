@@ -19,8 +19,11 @@ The workflow computes the version: the higher of `MARKETING_VERSION` in
 - Pushes that change only `docs/`, `web/`, `*.md`, `LICENSE`, `NOTICE` or `.github/`
   (except the workflows) release nothing. The run says so in its log.
 
-Add the release's notes to `CHANGELOG.md` yourself; the GitHub release body is
-generated from the commits.
+Add the release's notes to `CHANGELOG.md` yourself. The GitHub release body and
+the notes the update prompt shows are the commit subjects since the previous tag
+(`app/Scripts/release-notes.sh`): the `area:` prefix is dropped and `docs:`,
+`web:` and `ci:` commits are left out, so write every subject as the line a user
+will read.
 
 ## One-time setup: the secrets
 

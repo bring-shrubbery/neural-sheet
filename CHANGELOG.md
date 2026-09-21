@@ -13,6 +13,8 @@ Work towards v2 starts here: user-experience improvements beyond NeuralNote pari
 - Automatic releases: every code change on `main` that passes CI is published as a signed, notarized `.dmg` (and zip) on a GitHub release, tagged with the next patch version (`docs/release.md`).
 - A website at [neural-sheet.quassum.com](https://neural-sheet.quassum.com) (`web/`, Astro on Cloudflare) with the latest download and the `/appcast.xml` feed redirect.
 - Updates install from inside the app (Sparkle): a check on launch and daily, a prompt with the release notes, install and relaunch. The status-bar notice and its link to the releases page are gone.
+- The update prompt shows the release's changes at once (the commits since the previous release, embedded in the feed) rather than loading the GitHub release page.
+- Cut, copy and paste notes in the Edit tab; a right-click anywhere on the roll opens the note card for the selection; the instrument last assigned to a selection is where new notes go; `[` and `]` step the mix; a note is auditioned even with the mix fully on the original.
 - The editor auditions notes: a note sounds, with its instrument, velocity and its strip's fader, mute and solo, when it is clicked, dragged across pitches, moved, inserted, nudged, or given another instrument, pitch or velocity.
 - A right-click on a note opens a floating card with the selection's instrument, start, length, pitch and velocity, so nothing has to be set from the sidebar.
 - In the Edit tab, a click on empty roll space places the playhead there.
