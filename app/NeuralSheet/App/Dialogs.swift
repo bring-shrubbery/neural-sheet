@@ -5,10 +5,11 @@ import AppKit
 /// edits are thrown away (design §3.5).
 ///
 /// The model composes every one of the §11.7 strings itself and hands them here through
-/// `AppModel.presentError`, which `MainView` installs at ``install(on:window:)`` -- so a dialog is
-/// never raised before there is a window to raise it on. Presented as a sheet on the main window
-/// when there is one, or as an app-modal alert otherwise; either way the call returns at once and
-/// the failing operation has already cleaned up (spec §6).
+/// `AppModel.presentError`, at ``install(on:window:)`` -- installed by `MainView` on its window,
+/// and by the welcome view without one on a cold launch, so a failed open from there still says
+/// so. Presented as a sheet on the main window when there is one, or as an app-modal alert
+/// otherwise; either way the call returns at once and the failing operation has already cleaned
+/// up (spec §6).
 @MainActor enum Dialogs {
     /// Points `model.presentError` at the window.
     static func install(on model: AppModel, window: @escaping () -> NSWindow?) {
