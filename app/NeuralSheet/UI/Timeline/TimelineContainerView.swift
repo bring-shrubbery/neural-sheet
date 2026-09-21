@@ -244,8 +244,9 @@ final class TimelineContainerView: NSView {
         displayLink?.isPaused = false
     }
 
-    /// Click-to-seek from the waveform, the ruler and the roll (§5.1).
-    private func seek(toSeconds seconds: Double) {
+    /// Click-to-seek from the waveform, the ruler and the roll (§5.1), and from the Edit tab's
+    /// roll on empty space.
+    func seek(toSeconds seconds: Double) {
         model.seek(toSeconds: seconds)
         resumeDisplayLink()
     }

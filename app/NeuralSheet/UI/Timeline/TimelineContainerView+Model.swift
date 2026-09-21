@@ -148,6 +148,7 @@ extension TimelineContainerView {
         if mode == .edit {
             if new.selection != old.selection {
                 roll.setSelection(new.selection)
+                editController?.selectionDidChange(new.selection)
             }
 
             if new.tool != old.tool {

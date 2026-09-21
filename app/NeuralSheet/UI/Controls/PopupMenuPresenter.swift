@@ -2,7 +2,8 @@ import AppKit
 import SwiftUI
 
 /// A `MenuPanel` shown the way `PopupMenu::showMenuAsync` placed it: in its own window, dismissed
-/// by a click anywhere else (which is swallowed), by Escape or by the app deactivating.
+/// by a click anywhere else (which is swallowed), by Escape or by the app deactivating. Also the
+/// window for any other floating panel -- the roll's note card -- through ``showPanel``.
 ///
 /// Its own window rather than an overlay in the view tree because a JUCE menu can hang past the
 /// edge of the window it is opened from -- the settings menu under the gear does -- and because a
@@ -10,7 +11,8 @@ import SwiftUI
 ///
 /// Two placements, both `MenuWindow::calculateWindowPos`: a menu opened on a target component is
 /// aligned to its rectangle (left edges flush, below it when there is room); a submenu is put
-/// beside the row that opened it, to the right when it fits and the left otherwise.
+/// beside the row that opened it, to the right when it fits and the left otherwise. A panel at
+/// a point hangs from the pointer, like a context menu.
 @MainActor final class PopupMenuPresenter {
     enum Placement {
         /// `alignToRectangle`: the main menu under a control.
@@ -73,26 +75,51 @@ import SwiftUI
                           placement: Placement,
                           becomesKey: Bool,
                           @ViewBuilder rows: () -> Rows) {
-        dismiss()
-
         let rows = rows()
-        let hosting = KeyHostingView(rootView: AnyView(MenuPanel(width: width) { rows }.uiScale(scale)))
-        hosting.sizingOptions = []
-        self.hosting = hosting
         shownWidth = width
         shownScale = scale
+
+        present(AnyView(MenuPanel(width: width) { rows }.uiScale(scale)), in: window, scale: scale,
+                becomesKey: becomesKey, swallowsOutsideClick: true) { size in
+            switch placement {
+            case .alignedToTarget: Self.alignedFrame(size: size, target: target, scale: scale)
+            case .besideTarget: Self.besideFrame(size: size, target: target, scale: scale)
+            }
+        }
+    }
+
+    /// Shows `content` as a floating panel hanging from `point` (screen coordinates): a context
+    /// card rather than a menu. It takes key, so a field in it can be typed in; the click that
+    /// closes it goes on to whatever it landed on, so choosing another note is one click.
+    func showPanel<Content: View>(at point: CGPoint,
+                                  in window: NSWindow,
+                                  scale: CGFloat,
+                                  @ViewBuilder content: () -> Content) {
+        let content = content()
+
+        present(AnyView(content.uiScale(scale)), in: window, scale: scale, becomesKey: true, swallowsOutsideClick: false) { size in
+            Self.pointFrame(size: size, point: point, scale: scale)
+        }
+    }
+
+    /// The window, its monitors and its observers, whatever is shown in it.
+    private func present(_ root: AnyView,
+                         in window: NSWindow,
+                         scale: CGFloat,
+                         becomesKey: Bool,
+                         swallowsOutsideClick: Bool,
+                         frame frameFor: (CGSize) -> CGRect) {
+        dismiss()
+
+        let hosting = KeyHostingView(rootView: root)
+        hosting.sizingOptions = []
+        self.hosting = hosting
 
         let size = hosting.fittingSize
         hosting.frame = CGRect(origin: .zero, size: size)
         hosting.autoresizingMask = [.width, .height]
 
-        let frame: CGRect
-        switch placement {
-        case .alignedToTarget: frame = Self.alignedFrame(size: size, target: target, scale: scale)
-        case .besideTarget: frame = Self.besideFrame(size: size, target: target, scale: scale)
-        }
-
-        let menu = MenuWindow(contentRect: frame,
+        let menu = MenuWindow(contentRect: frameFor(size),
                               styleMask: [.borderless, .nonactivatingPanel],
                               backing: .buffered,
                               defer: false)
@@ -126,10 +153,10 @@ import SwiftUI
                 }
 
                 // Swallowed, as the modal menu swallowed it: the click closes the menu and does
-                // nothing else.
+                // nothing else. A panel lets it through.
                 self.dismiss()
 
-                return nil
+                return swallowsOutsideClick ? nil : event
             },
         ].compactMap { $0 }
 
@@ -241,6 +268,13 @@ import SwiftUI
             : target.maxY + border - size.height
 
         return constrained(CGRect(origin: CGPoint(x: x, y: y), size: size), in: area, scale: scale)
+    }
+
+    /// A panel hanging from the pointer: its top-left corner at `point`, inside the screen.
+    private static func pointFrame(size: CGSize, point: CGPoint, scale: CGFloat) -> CGRect {
+        let area = area(around: CGRect(origin: point, size: .zero))
+
+        return constrained(CGRect(origin: CGPoint(x: point.x, y: point.y - size.height), size: size), in: area, scale: scale)
     }
 
     private static func constrained(_ frame: CGRect, in area: CGRect, scale: CGFloat) -> CGRect {

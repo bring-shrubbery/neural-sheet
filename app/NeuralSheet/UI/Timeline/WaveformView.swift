@@ -251,7 +251,13 @@ final class WaveformView: NSView {
 
     // MARK: - Mouse
 
+    /// The first click on the timeline while the note card is key is a click, not a focus change.
+    override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
+
     override func mouseDown(with event: NSEvent) {
+        // A field that had the keyboard commits and lets go, so Space is the transport's again.
+        window?.makeFirstResponder(nil)
+
         let x = convert(event.locationInWindow, from: nil).x
         onSeek?(geometry.seconds(forX: x))
     }

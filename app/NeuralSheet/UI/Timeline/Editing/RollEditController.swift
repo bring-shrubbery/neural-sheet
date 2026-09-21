@@ -52,6 +52,9 @@ import SwiftUI
     var lastWindowPoint: CGPoint = .zero
     var autoScrollTicks = 0
 
+    /// The floating note card a right-click opens (`+Card`).
+    let noteCard = PopupMenuPresenter()
+
     init(model: AppModel, roll: PianoRollView, geometry: TimelineGeometry, container: TimelineContainerView) {
         self.model = model
         self.roll = roll
@@ -65,6 +68,7 @@ import SwiftUI
     /// Leaving Edit mode, or the window: the roll goes back to seeking on a click.
     func uninstall() {
         cancelDrag()
+        noteCard.dismiss()
         roll.interaction = nil
         // `cancelDrag()` only invalidates when there was a live drag; leaving Edit mode idle is
         // the common case, and the roll's cursor rect for the old tool would otherwise survive
@@ -101,6 +105,7 @@ import SwiftUI
                     }
 
                     session.ids = model.editor.selection
+                    model.audition(hit.note)
                 }
             } else if model.editor.tool == .select {
                 if !shift { model.deselectAll() }
@@ -152,11 +157,26 @@ import SwiftUI
 
         switch session.kind {
         case .pending:
-            // A ⇧-click after all: toggle the note it landed on.
             if let id = session.shiftToggle {
+                // A ⇧-click after all: toggle the note it landed on, and sound it when it joins.
                 var selection = model.editor.selection
-                if selection.contains(id) { selection.remove(id) } else { selection.insert(id) }
+
+                if selection.contains(id) {
+                    selection.remove(id)
+                } else {
+                    selection.insert(id)
+
+                    if let note = session.anchorHit?.note {
+                        model.audition(note)
+                    }
+                }
+
                 model.setSelection(selection)
+            } else if session.anchorHit == nil, model.editor.tool == .select, event.type == .leftMouseUp {
+                // A click on empty space places the playhead there; the press has already
+                // deselected. The Draw tool's click inserts instead, and a right click is the
+                // card's.
+                container?.seek(toSeconds: geometry.seconds(forX: session.anchorPoint.x))
             }
 
         case .marquee:
@@ -165,6 +185,7 @@ import SwiftUI
         case .move:
             guard session.resolvedSeconds != 0 || session.resolvedSemitones != 0 else { break }
             model.commit(document.move(session.ids, deltaSeconds: session.resolvedSeconds, deltaSemitones: session.resolvedSemitones))
+            auditionLanding(session)
 
         case .duplicate:
             // A copy on top of its original is no copy: the overlap rule would only eat one.
@@ -173,6 +194,7 @@ import SwiftUI
             let batch = copy.duplicate(session.ids, deltaSeconds: session.resolvedSeconds, deltaSemitones: session.resolvedSemitones)
             model.replaceDocumentAndCommit(copy, batch)
             model.setSelection(Set(batch.inserted.map(\.id)))
+            auditionLanding(session)
 
         case let .resize(edge):
             guard session.resolvedSeconds != 0 else { break }
@@ -184,11 +206,27 @@ import SwiftUI
                 let batch = copy.insert(drawn)
                 model.replaceDocumentAndCommit(copy, batch)
                 model.setSelection(Set(batch.inserted.map(\.id)))
+                model.audition(drawn)
             }
 
         case .erase:
             model.commit(document.delete(session.erased))
         }
+
+        if event.type == .rightMouseUp, session.kind == .pending, session.anchorHit != nil {
+            showNoteCard(at: event.locationInWindow)
+        }
+    }
+
+    /// A move that changed the pitch was heard on the way; one that only moved in time is heard
+    /// as it lands.
+    private func auditionLanding(_ session: DragSession) {
+        guard session.resolvedSemitones == 0, let note = session.anchorHit?.note else { return }
+
+        var landed = note
+        landed.startTime += session.resolvedSeconds
+        landed.endTime += session.resolvedSeconds
+        model.audition(landed)
     }
 
     /// Escape, a tool change, an undo: the preview goes and nothing is committed. Answers whether
@@ -252,6 +290,7 @@ import SwiftUI
         let batch = document.insert(note)
         model.replaceDocumentAndCommit(document, batch)
         model.setSelection(Set(batch.inserted.map(\.id)))
+        model.audition(note)
     }
 
     /// The Draw tool's note between the anchor and the pointer, at the anchor's pitch; nil when

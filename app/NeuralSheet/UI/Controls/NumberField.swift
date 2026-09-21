@@ -2,8 +2,9 @@ import AppKit
 import SwiftUI
 
 /// A small numeric field in the timeline's mono face: commits on Return or focus loss, steps by
-/// `step` on ↑/↓ (×10 with ⇧), and clamps into `range`. Shared by the Edit toolbar and the
-/// selection inspector.
+/// `step` on ↑/↓ (×10 with ⇧), and clamps into `range`. Shared by the Edit toolbar, the
+/// selection inspector and the note card. Return also gives the keyboard back, so the next
+/// Space is the transport's rather than a character in the field.
 ///
 /// A nil `value` -- a selection whose notes disagree -- shows "—" and still takes a number; any
 /// number then commits, since there is no single value it could equal.
@@ -18,6 +19,8 @@ struct NumberField: View {
 
     @Environment(\.uiScale) private var k
     @State private var text = ""
+    /// What the last commit sent, so Return and the focus loss it causes commit once between them.
+    @State private var lastCommitted: Double?
     @FocusState private var isFocused: Bool
 
     static let height: CGFloat = 22
@@ -56,11 +59,17 @@ struct NumberField: View {
             .onAppear { text = Self.format(value, decimals: decimals) }
             // An outside change wins over whatever is half-typed: ⌖ while this field has focus
             // must show the playhead, not the old number.
-            .onChange(of: value) { _, new in text = Self.format(new, decimals: decimals) }
+            .onChange(of: value) { _, new in
+                lastCommitted = nil
+                text = Self.format(new, decimals: decimals)
+            }
             .onChange(of: isFocused) { _, focused in
                 if !focused { commit() }
             }
-            .onSubmit(commit)
+            .onSubmit {
+                commit()
+                isFocused = false
+            }
             // One handler per arrow, reading the modifier itself: a second `onKeyPress` on the
             // same key would take the press first and the shifted variant would never be seen.
             .onKeyPress(.upArrow, phases: .down) { press in
@@ -93,7 +102,8 @@ struct NumberField: View {
         let clamped = min(max(parsed, range.lowerBound), range.upperBound)
         text = Self.format(clamped, decimals: decimals)
 
-        if clamped != value {
+        if clamped != value, clamped != lastCommitted {
+            lastCommitted = clamped
             onCommit(clamped)
         }
     }
@@ -105,6 +115,7 @@ struct NumberField: View {
 
         let next = min(max(current + delta, range.lowerBound), range.upperBound)
         text = Self.format(next, decimals: decimals)
+        lastCommitted = next
         onCommit(next)
     }
 

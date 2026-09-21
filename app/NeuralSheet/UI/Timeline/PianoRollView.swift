@@ -394,7 +394,13 @@ final class PianoRollView: NSView {
         trackingArea = area
     }
 
+    /// The first click on the roll while the note card is key is a click, not a focus change.
+    override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
+
     override func mouseDown(with event: NSEvent) {
+        // A field that had the keyboard commits and lets go, so Space is the transport's again.
+        window?.makeFirstResponder(nil)
+
         let point = convert(event.locationInWindow, from: nil)
 
         if let interaction {
@@ -418,6 +424,8 @@ final class PianoRollView: NSView {
     /// is not forwarded.
     override func rightMouseDown(with event: NSEvent) {
         guard let interaction else { return super.rightMouseDown(with: event) }
+
+        window?.makeFirstResponder(nil)
 
         let point = convert(event.locationInWindow, from: nil)
         rightPressPoint = point

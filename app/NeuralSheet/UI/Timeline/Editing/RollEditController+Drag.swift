@@ -44,6 +44,14 @@ extension RollEditController {
                                                        deltaSemitones: pitch - session.anchorPitch,
                                                        anchorStart: session.anchorHit?.note.startTime ?? 0,
                                                        grid: snap, axisLock: lock)
+
+            // Every lane the pressed note crosses is heard, so a drag can be steered by ear.
+            if resolved.semitones != session.resolvedSemitones, let note = session.anchorHit?.note {
+                var carried = note
+                carried.pitch = min(max(note.pitch + resolved.semitones, 0), 127)
+                model.audition(carried)
+            }
+
             session.resolvedSeconds = resolved.seconds
             session.resolvedSemitones = resolved.semitones
             roll.setPreview(DragPreview(kind: .transform(deltaSeconds: resolved.seconds, deltaSemitones: resolved.semitones,
