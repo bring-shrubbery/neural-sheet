@@ -3,7 +3,8 @@ import NeuralSheetCore
 import SwiftUI
 
 /// The Edit tab's row above the timeline (design §6.1): tools, snap and division, tempo and
-/// downbeat, Quantize, Undo/Redo, and the Drag MIDI out button the Transcribe row has.
+/// downbeat, Quantize, Re-transcribe, Undo/Redo, and the Drag MIDI out button the Transcribe row
+/// has.
 ///
 /// Same frame as `Toolbar` -- height, side padding, button height, corner -- so the two tabs'
 /// rows sit on the same divider and the drag button does not move between them.
@@ -54,6 +55,8 @@ struct EditToolbar: View {
                 }
 
                 labelButton("Quantize", tooltip: "Quantize selection (⌘U)", action: model.quantizeSelectionOrAll)
+
+                RetranscribeButton(model: model)
 
                 Spacer(minLength: 0)
 

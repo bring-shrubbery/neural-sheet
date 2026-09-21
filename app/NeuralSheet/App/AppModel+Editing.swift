@@ -90,8 +90,8 @@ extension AppModel {
         commit(batch)
     }
 
-    var canUndo: Bool { document?.canUndo ?? false }
-    var canRedo: Bool { document?.canRedo ?? false }
+    var canUndo: Bool { canEdit && (document?.canUndo ?? false) }
+    var canRedo: Bool { canEdit && (document?.canRedo ?? false) }
     var undoMenuTitle: String { document?.undoTitle.map { "Undo \($0)" } ?? "Undo" }
     var redoMenuTitle: String { document?.redoTitle.map { "Redo \($0)" } ?? "Redo" }
 

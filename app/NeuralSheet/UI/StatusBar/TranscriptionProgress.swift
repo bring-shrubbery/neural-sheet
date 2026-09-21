@@ -1,14 +1,20 @@
 import SwiftUI
 
-/// The status bar's progress group while a run is in flight (`TranscriptionProgress`): a pulsing
-/// "TRANSCRIBING", a 150 x 3 bar, the percentage and the cancel cross.
+/// A pulsing caption, a 150 x 3 bar, the percentage and a cancel cross: the status bar's
+/// transcription progress (`TranscriptionProgress`) and the Edit toolbar's region progress
+/// (`RegionProgress`) are this with different words and a different cancel.
 ///
 /// The caption pulses because it says the same thing throughout -- what it is for is to say that
 /// something is still happening between two percentage ticks, which can be seconds apart. Once the
 /// cross has been pressed the group dims rather than relabelling: the run is still going until the
 /// engine reaches a chunk boundary, and saying otherwise would be a lie for as long as that takes.
-struct TranscriptionProgress: View {
-    let model: AppModel
+struct ProgressGroup: View {
+    let caption: String
+    /// 0…1.
+    let progress: Float
+    let cancelling: Bool
+    let cancelTooltip: String
+    let onCancel: () -> Void
 
     @Environment(\.uiScale) private var k
 
@@ -25,8 +31,6 @@ struct TranscriptionProgress: View {
         static let captionTracking: Double = 0.06
     }
 
-    static let caption = "TRANSCRIBING"
-
     /// One breath in and out.
     static let pulsePeriod: TimeInterval = 1.6
     static let pulseMin: Double = 0.55
@@ -42,15 +46,14 @@ struct TranscriptionProgress: View {
 
     var body: some View {
         let s = Scaled(k: k)
-        let cancelling = model.cancelLatched
-        let percent = Int((100 * model.transcriptionProgress).rounded())
+        let percent = Int((100 * progress).rounded())
         let dim = cancelling ? Theme.disabledAlpha : 1
 
         HStack(spacing: s(Metrics.gap)) {
             SwiftUI.TimelineView(.animation(paused: cancelling)) { context in
                 // The alpha is the only thing that changes per frame, and it changes at most a
                 // hundredth at a time, so the text is not re-laid-out for a pulse that stood still.
-                caption
+                captionLabel
                     .opacity(cancelling
                         ? Theme.disabledAlpha
                         : Self.pulse(at: context.date.timeIntervalSinceReferenceDate))
@@ -71,8 +74,8 @@ struct TranscriptionProgress: View {
         .fixedSize()
     }
 
-    private var caption: some View {
-        TrackedLabel(string: Self.caption,
+    private var captionLabel: some View {
+        TrackedLabel(string: caption,
                     em: Metrics.captionTracking,
                     pointSize: Fonts.Size.statusBar,
                     font: Fonts.statusBar(k),
@@ -106,13 +109,28 @@ struct TranscriptionProgress: View {
         return FlatButton(idle: .clear,
                           on: Theme.bgControlActive,
                           corner: s(Metrics.cancelCorner),
-                          action: model.cancelTranscription) { _ in
+                          action: onCancel) { _ in
             Icons.CrossStroked()
                 .stroke(style: Icons.strokeStyle(scale: k))
                 .frame(width: s(Metrics.cancelGlyphSize), height: s(Metrics.cancelGlyphSize))
                 .frame(width: s(Metrics.cancelHitSize), height: s(Metrics.cancelHitSize))
         }
-        .tooltip("Cancel transcription")
-        .accessibilityLabel("Cancel transcription")
+        .tooltip(cancelTooltip)
+        .accessibilityLabel(cancelTooltip)
+    }
+}
+
+/// The status bar's progress group while a run is in flight (`TranscriptionProgress`).
+struct TranscriptionProgress: View {
+    let model: AppModel
+
+    static let caption = "TRANSCRIBING"
+
+    var body: some View {
+        ProgressGroup(caption: Self.caption,
+                      progress: model.transcriptionProgress,
+                      cancelling: model.cancelLatched,
+                      cancelTooltip: "Cancel transcription",
+                      onCancel: model.cancelTranscription)
     }
 }

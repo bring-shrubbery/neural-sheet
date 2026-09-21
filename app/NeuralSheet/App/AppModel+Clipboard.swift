@@ -50,7 +50,7 @@ extension AppModel {
 
     /// The pasted notes land at the playhead, become the selection, and the first is heard.
     func paste() {
-        guard workspace == .edit, var document, let notes = pasteboardNotes else { return }
+        guard workspace == .edit, canEdit, var document, let notes = pasteboardNotes else { return }
 
         _ = dragCanceller?()
 
