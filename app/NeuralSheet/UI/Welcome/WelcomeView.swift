@@ -88,7 +88,8 @@ struct WelcomeView: View {
     // MARK: - Actions
 
     /// The welcome window is only up while no project is open, so a URL that became the
-    /// project is an open that succeeded; a failure showed its dialog and left it untitled.
+    /// project is an open that succeeded; a failure shows its dialog (`appear` makes sure one is
+    /// installed) and leaves it untitled.
     private func open(_ url: URL) {
         model.openProject(url: url)
 
@@ -104,6 +105,13 @@ struct WelcomeView: View {
 
     /// The model's window closures, and a file the Finder asked for before any window was up.
     private func appear() {
+        // Before a project window has ever existed nothing can show a dialog; the nil-window
+        // path of `Dialogs.present` is a deferred app-modal alert, which is right for a
+        // failed open from here. The main view reinstalls its own, on its window, when it appears.
+        if model.presentError == nil {
+            Dialogs.install(on: model) { nil }
+        }
+
         recents.refresh()
 
         model.showProjectWindow = { [openWindow, dismissWindow] in

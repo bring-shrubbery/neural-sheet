@@ -2,8 +2,9 @@ import AppKit
 import SwiftUI
 import UniformTypeIdentifiers
 
-/// The right pane of the welcome window: the recent projects, most recent first, with a
-/// double-click or Return to open, and a right-click for Show in Finder and Remove from Recents.
+/// The right pane of the welcome window: the recent projects, most recent first, with the
+/// list's primary action (double-click, or Return on the selection) to open, and a right-click
+/// for Show in Finder and Remove from Recents.
 struct RecentProjectsList: View {
     let recents: RecentProjects
     let open: (URL) -> Void
@@ -21,14 +22,20 @@ struct RecentProjectsList: View {
                 row(url)
                     .tag(url)
                     .listRowBackground(Color.clear)
-                    .contextMenu {
-                        Button("Show in Finder") { recents.showInFinder(url) }
-                        Button("Remove from Recents") { recents.remove(url) }
-                    }
-                    .onTapGesture(count: 2) { open(url) }
             }
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
+            .contextMenu(forSelectionType: URL.self) { urls in
+                if let url = urls.first {
+                    Button("Show in Finder") { recents.showInFinder(url) }
+                    Button("Remove from Recents") {
+                        if selection == url { selection = nil }
+                        recents.remove(url)
+                    }
+                }
+            } primaryAction: { urls in
+                if let url = urls.first { open(url) }
+            }
             .onKeyPress(.return) {
                 guard let selection else { return .ignored }
 

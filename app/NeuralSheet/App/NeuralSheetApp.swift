@@ -47,6 +47,9 @@ struct NeuralSheetApp: App {
                      height: MainWindowController.defaultContentSize.height)
         // The content's minimum frame is the window's minimum; there is no maximum.
         .windowResizability(.contentMinSize)
+        // The welcome window is what a launch shows; the project window opens from it, never
+        // from restoration.
+        .restorationBehavior(.disabled)
         .commands {
             appMenu(model: model)
             fileMenu(model: model)
