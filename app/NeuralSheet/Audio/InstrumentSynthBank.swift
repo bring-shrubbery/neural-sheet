@@ -139,6 +139,11 @@ nonisolated final class InstrumentSynthBank: @unchecked Sendable {
     /// has rather than at unity. Main thread.
     private var appliedMixer = InstrumentMixerState()
 
+    /// The note the editor is sounding on its own, so the next audition can end it rather than
+    /// let its note-off land on a new note at the same pitch. Main thread.
+    private var audition: (program: Int, pitch: UInt8, generation: Int)?
+    private var auditionGeneration = 0
+
     /// The synth side of the equal-power crossfade, `sin(mix · π/2)`. Written from the main thread;
     /// it is the sub-mix's output volume, so it applies to every instrument at once.
     var synthGain: Float = 0 {
@@ -316,7 +321,63 @@ nonisolated final class InstrumentSynthBank: @unchecked Sendable {
             sendAllNotesOff(to: instrument.node)
         }
 
+        audition = nil
         retire(dropped)
+    }
+
+    // MARK: - Audition
+
+    /// Sounds one note now, outside the transport, for the editor: a click on a note, a note
+    /// dragged onto another pitch, a velocity or instrument change. Note-on at once, note-off
+    /// `seconds` later; a drum hit is one-shot and gets none. Main thread.
+    ///
+    /// Goes through the instrument's own synth, so its fader, mute, solo and the crossfade apply
+    /// exactly as they do to the scheduled notes. `startNote` is `MusicDeviceMIDIEvent`, which
+    /// the AU takes from any thread: nothing here touches the render path or its table.
+    func audition(program: Int, pitch: Int, velocity: Int, seconds: Double) {
+        guard (0...NoteEvent.drumProgram).contains(program), (0...127).contains(pitch) else { return }
+
+        ensureInstrument(program: program)
+
+        lock.lock()
+        let node = instruments[program]?.node
+        lock.unlock()
+
+        guard let node else { return }
+
+        stopAudition()
+
+        let isDrum = program == NoteEvent.drumProgram
+        let channel = isDrum ? InstrumentSynthBank.drumChannel : InstrumentSynthBank.melodicChannel
+        let key = UInt8(pitch)
+
+        node.startNote(key, withVelocity: UInt8(Swift.min(Swift.max(velocity, 1), 127)), onChannel: channel)
+
+        guard !isDrum else { return }
+
+        auditionGeneration &+= 1
+        let generation = auditionGeneration
+        audition = (program, key, generation)
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + Swift.max(seconds, 0)) { [weak self] in
+            guard let self, let audition = self.audition, audition.generation == generation else { return }
+
+            self.stopAudition()
+        }
+    }
+
+    /// The note-off for whatever ``audition(program:pitch:velocity:seconds:)`` left sounding.
+    /// Main thread.
+    func stopAudition() {
+        guard let audition else { return }
+
+        self.audition = nil
+
+        lock.lock()
+        let node = instruments[audition.program]?.node
+        lock.unlock()
+
+        node?.stopNote(audition.pitch, onChannel: InstrumentSynthBank.melodicChannel)
     }
 
     /// Bank select then program change, on the channel this instrument's notes arrive on.
@@ -438,6 +499,9 @@ nonisolated final class InstrumentSynthBank: @unchecked Sendable {
         lock.lock()
         let current = Array(instruments.values)
         lock.unlock()
+
+        // CC 123 silences it with everything else; a timer that fires later finds nothing to stop.
+        audition = nil
 
         for instrument in current {
             sendAllNotesOff(to: instrument.node)
