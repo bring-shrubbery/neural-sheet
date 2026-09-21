@@ -97,7 +97,6 @@ private func makeFile(at url: URL, size: Int64) throws {
         #expect(paths.models == paths.root.appendingPathComponent("models", isDirectory: true))
         #expect(paths.recordings == paths.root.appendingPathComponent("recordings", isDirectory: true))
         #expect(paths.globalSettings == paths.root.appendingPathComponent("global.settings"))
-        #expect(paths.session == paths.root.appendingPathComponent("session.json"))
         #expect(paths.midiScratch.lastPathComponent == "neuralsheet")
     }
 }

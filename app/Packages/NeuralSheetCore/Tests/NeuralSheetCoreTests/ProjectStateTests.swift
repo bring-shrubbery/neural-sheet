@@ -155,3 +155,36 @@ private func makeProjectTempDirectory() throws -> URL {
 
     #expect(ProjectState.parseSelectedGroups(all) == InstrumentGroup.allCases.map(\.rawValue))
 }
+
+// MARK: - ProjectTranscription
+
+@Test func projectTranscriptionRoundTripsThroughItsOwnFile() throws {
+    let directory = try makeProjectTempDirectory()
+    defer { try? FileManager.default.removeItem(at: directory) }
+    let url = directory.appendingPathComponent("transcription.json")
+
+    let raw = [NoteEvent(startTime: 0, endTime: 1, pitch: 60, program: 0)]
+    var document = NoteDocument(events: raw)
+    document.commit(document.delete([document.notes[0].id]))
+    let transcription = ProjectTranscription(sourceSampleCount: 16_000, rawNotes: raw, document: document)
+
+    #expect(ProjectTranscription.load(from: url) == nil)
+    try transcription.save(to: url)
+
+    let loaded = try #require(ProjectTranscription.load(from: url))
+    #expect(loaded.sourceSampleCount == 16_000)
+    #expect(loaded.rawNotes == raw)
+    #expect(loaded.document.notes == document.notes)
+    #expect(loaded.document.isEdited)
+    // The history is not in the file, so the document is equal field by field, not as a whole.
+    #expect(!loaded.document.canUndo)
+}
+
+@Test func projectTranscriptionGarbageLoadsAsNil() throws {
+    let directory = try makeProjectTempDirectory()
+    defer { try? FileManager.default.removeItem(at: directory) }
+    let url = directory.appendingPathComponent("transcription.json")
+    try Data("5".utf8).write(to: url)
+
+    #expect(ProjectTranscription.load(from: url) == nil)
+}

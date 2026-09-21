@@ -1,37 +1,5 @@
 import Foundation
 
-/// The transcription as the session keeps it: the model's own output, the edited document, and
-/// the sample count of the audio it belongs to — a reloaded file of another length gets no notes.
-///
-/// Its own file (`AppPaths.transcription`), written compact: it is megabytes for a long take and
-/// changes only when an edit lands, where the session changes with every playhead move.
-public struct SessionTranscription: Codable, Equatable, Sendable {
-    public var sourceSampleCount: Int
-    public var rawNotes: [NoteEvent]
-    public var document: NoteDocument
-
-    public init(sourceSampleCount: Int, rawNotes: [NoteEvent], document: NoteDocument) {
-        self.sourceSampleCount = sourceSampleCount
-        self.rawNotes = rawNotes
-        self.document = document
-    }
-
-    // MARK: - Files
-
-    /// The transcription at `url`, or nil if there is no file, it cannot be read, or it is not JSON
-    /// this version understands.
-    public static func load(from url: URL) -> SessionTranscription? {
-        guard let data = try? Data(contentsOf: url) else { return nil }
-
-        return try? JSONDecoder().decode(SessionTranscription.self, from: data)
-    }
-
-    /// Writes the transcription as JSON, replacing whatever was there.
-    public func save(to url: URL) throws {
-        try JSONEncoder().encode(self).write(to: url, options: .atomic)
-    }
-}
-
 /// What went wrong opening or saving a project; the app turns each case into the dialog's body.
 public enum ProjectError: Error, Equatable, Sendable {
     /// Not a `.neuralsheet` directory holding a `project.json`.

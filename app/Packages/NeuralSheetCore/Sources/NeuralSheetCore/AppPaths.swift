@@ -14,11 +14,8 @@ public struct AppPaths: Sendable {
     public var root: URL
     public var models: URL
     public var recordings: URL
+    /// `global.settings`, beside the projects rather than inside any one of them.
     public var globalSettings: URL
-    public var session: URL
-    /// The finished transcription, beside the session: its own file, so the session's small and
-    /// frequent writes never carry the notes.
-    public var transcription: URL
 
     /// `~/Library/NeuralNote/models`: checkpoints an earlier NeuralNote installed, read-only.
     public var secondaryModels: URL
@@ -34,8 +31,6 @@ public struct AppPaths: Sendable {
         models = root.appendingPathComponent("models", isDirectory: true)
         recordings = root.appendingPathComponent("recordings", isDirectory: true)
         globalSettings = root.appendingPathComponent("global.settings")
-        session = root.appendingPathComponent("session.json")
-        transcription = root.appendingPathComponent("transcription.json")
         self.secondaryModels = secondaryModels
         midiScratch = temp.appendingPathComponent("neuralsheet", isDirectory: true)
         musicFolder = music
@@ -61,6 +56,30 @@ public struct AppPaths: Sendable {
     public func ensureDirectories() throws {
         for directory in [root, models, recordings, midiScratch] {
             try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        }
+    }
+
+    /// The two files the autosaved session used to be (`session.json`, `transcription.json`,
+    /// beside the settings): a project file holds that now, so they go at launch. Quiet when there
+    /// are none.
+    public func deleteLegacySessionFiles() {
+        for name in ["session.json", "transcription.json"] {
+            try? FileManager.default.removeItem(at: root.appendingPathComponent(name))
+        }
+    }
+
+    /// Empties the recordings folder. A take lives there only while its project is open -- a save
+    /// copies it into the package and a close deletes it -- so anything there at launch is a
+    /// crash's leftover. The folder itself stays.
+    public func sweepRecordings() {
+        let manager = FileManager.default
+
+        guard let entries = try? manager.contentsOfDirectory(at: recordings, includingPropertiesForKeys: nil) else {
+            return
+        }
+
+        for entry in entries {
+            try? manager.removeItem(at: entry)
         }
     }
 }
