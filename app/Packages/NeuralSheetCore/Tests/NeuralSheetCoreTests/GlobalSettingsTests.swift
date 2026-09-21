@@ -114,3 +114,17 @@ private func makeTempDirectory() throws -> URL {
 
     #expect(GlobalSettings.load(from: url).modelSize == .large)
 }
+
+@Test func globalSettingsHiddenRecentProjectsRoundTripAndDefaultEmpty() throws {
+    let directory = try makeTempDirectory()
+    defer { try? FileManager.default.removeItem(at: directory) }
+    let url = directory.appendingPathComponent("global.settings")
+
+    #expect(GlobalSettings().hiddenRecentProjects.isEmpty)
+
+    var settings = GlobalSettings()
+    settings.hiddenRecentProjects = ["/Users/me/Music/Song.neuralsheet"]
+    try settings.save(to: url)
+
+    #expect(GlobalSettings.load(from: url).hiddenRecentProjects == ["/Users/me/Music/Song.neuralsheet"])
+}

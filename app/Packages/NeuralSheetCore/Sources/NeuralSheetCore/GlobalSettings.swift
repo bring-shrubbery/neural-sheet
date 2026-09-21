@@ -9,23 +9,30 @@ import Foundation
 /// stay in a temp directory. Saving always writes every key, so the file is a full record of what the
 /// app is using rather than a diff against defaults; loading tolerates a missing or damaged file and a
 /// file written by an older version that lacks a key, because losing a preference must never stop the
-/// app from opening.
+/// app from opening. Also holds the recent projects the user removed from the welcome window's list.
 public struct GlobalSettings: Codable, Equatable, Sendable {
     public var modelSize: ModelSize = .medium
     public var editorScale: Double = 1.0
     public var tooltipsVisible = true
     public var midiOverflowMode: MidiOverflowMode = .reuseChannels
 
+    /// Recent projects the user removed from the welcome window's list, by path: the system's
+    /// recent-documents list has no per-item removal, so the app filters it through this. A
+    /// project opened or saved again leaves the list.
+    public var hiddenRecentProjects: [String] = []
+
     public init(
         modelSize: ModelSize = .medium,
         editorScale: Double = 1.0,
         tooltipsVisible: Bool = true,
-        midiOverflowMode: MidiOverflowMode = .reuseChannels
+        midiOverflowMode: MidiOverflowMode = .reuseChannels,
+        hiddenRecentProjects: [String] = []
     ) {
         self.modelSize = modelSize
         self.editorScale = editorScale
         self.tooltipsVisible = tooltipsVisible
         self.midiOverflowMode = midiOverflowMode
+        self.hiddenRecentProjects = hiddenRecentProjects
     }
 
     // MARK: - Files
@@ -54,7 +61,7 @@ public struct GlobalSettings: Codable, Equatable, Sendable {
     // MARK: - Codable
 
     private enum CodingKeys: String, CodingKey {
-        case modelSize, editorScale, tooltipsVisible, midiOverflowMode
+        case modelSize, editorScale, tooltipsVisible, midiOverflowMode, hiddenRecentProjects
     }
 
     /// Every key falls back to its default, so a file written by a version that did not have one
@@ -70,5 +77,8 @@ public struct GlobalSettings: Codable, Equatable, Sendable {
         midiOverflowMode =
             try container.decodeIfPresent(MidiOverflowMode.self, forKey: .midiOverflowMode)
             ?? defaults.midiOverflowMode
+        hiddenRecentProjects =
+            try container.decodeIfPresent([String].self, forKey: .hiddenRecentProjects)
+            ?? defaults.hiddenRecentProjects
     }
 }

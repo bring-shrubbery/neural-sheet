@@ -18,12 +18,16 @@ struct NeuralSheetApp: App {
     /// every choice.
     @State private var audioMenu = AudioMenuState()
 
+    /// What the File menu's Open Recent shows.
+    @State private var recents: RecentProjects
+
     init() {
         FontRegistry.registerBundledFonts()
 
         let model = AppModel()
         _model = State(initialValue: model)
         _persistence = State(initialValue: Persistence(model: model))
+        _recents = State(initialValue: RecentProjects(model: model))
     }
 
     var body: some Scene {
@@ -60,18 +64,54 @@ struct NeuralSheetApp: App {
         }
     }
 
-    /// Export MIDI…, which the toolbar used to hold as a button beside the tempo field: the two
-    /// export settings are asked for in a dialog on the way to the save panel. Only once there is
-    /// a finished transcription.
+    /// The document commands (projects design §5.7). Close is SwiftUI's own ⌘W, which asks the
+    /// window's delegate. Export MIDI… only once there is a finished transcription.
+    @CommandsBuilder
     private func fileMenu(model: AppModel) -> some Commands {
-        CommandGroup(after: .saveItem) {
+        CommandGroup(replacing: .newItem) {
+            Button("New Project") { model.newProject() }
+                .keyboardShortcut("n", modifiers: .command)
+                .disabled(!model.canChangeProject)
+
+            Button("Open…") { model.openProjectFromPanel() }
+                .keyboardShortcut("o", modifiers: .command)
+                .disabled(!model.canChangeProject)
+
+            Menu("Open Recent") {
+                ForEach(recents.urls, id: \.self) { url in
+                    Button(url.deletingPathExtension().lastPathComponent) {
+                        model.openProject(url: url)
+                    }
+                    .help(url.deletingLastPathComponent().path)
+                }
+
+                if !recents.urls.isEmpty {
+                    Divider()
+                }
+
+                Button("Clear Menu") { recents.clear() }
+                    .disabled(recents.urls.isEmpty)
+            }
+            .disabled(!model.canChangeProject)
+        }
+
+        CommandGroup(replacing: .saveItem) {
+            Button("Save") { model.saveProject() }
+                .keyboardShortcut("s", modifiers: .command)
+                .disabled(!model.canSaveProject)
+
+            Button("Save As…") { model.saveProjectAs() }
+                .keyboardShortcut("s", modifiers: [.command, .shift])
+                .disabled(!model.canSaveProject)
+
+            Button("Revert to Saved…") { model.revertProject() }
+                .disabled(!model.canRevertProject)
+
             Divider()
 
-            Button("Export MIDI…") {
-                model.requestExport()
-            }
-            .keyboardShortcut("e", modifiers: [.command, .shift])
-            .disabled(!model.canExport)
+            Button("Export MIDI…") { model.requestExport() }
+                .keyboardShortcut("e", modifiers: [.command, .shift])
+                .disabled(!model.canExport)
         }
     }
 

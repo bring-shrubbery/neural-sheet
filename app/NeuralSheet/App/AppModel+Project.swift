@@ -243,9 +243,11 @@ extension AppModel {
 
     // MARK: - Recents
 
-    /// The system's recent-documents list (the Dock menu reads it too). Filled in Task 7.
+    /// The system's recent-documents list (the Dock menu reads it too); a project the user had
+    /// removed from the welcome window's list comes back when it is opened or saved again.
     func noteRecentProject(_ url: URL) {
         NSDocumentController.shared.noteNewRecentDocumentURL(url)
+        settings.hiddenRecentProjects.removeAll { $0 == url.path }
     }
 
     // MARK: - Errors
