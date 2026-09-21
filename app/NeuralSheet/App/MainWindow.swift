@@ -39,8 +39,9 @@ import SwiftUI
         installCloseVeto(on: window)
     }
 
-    /// SwiftUI owns the delegate; the proxy answers the close alone. Re-asserted on every attach,
-    /// since SwiftUI may replace the delegate when the scene updates.
+    /// SwiftUI owns the delegate; the proxy answers the close alone and forwards everything else.
+    /// Installed once per window object -- ``attach`` returns early for the window it already
+    /// holds, and a window that already has a proxy is left with it.
     private func installCloseVeto(on window: NSWindow) {
         guard !(window.delegate is WindowDelegateProxy) else { return }
 

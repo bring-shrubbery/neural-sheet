@@ -73,11 +73,13 @@ import UniformTypeIdentifiers
 
     /// The take, or nil while empty or recording.
     private(set) var source: SourceAudio? {
-        didSet { sourceGeneration &+= 1 }
+        didSet { if oldValue !== source { sourceGeneration &+= 1 } }
     }
 
-    /// Bumped on every assignment to ``source``, so the dirty rule can tell a replaced or removed
-    /// take from the saved one without holding it.
+    /// Bumped whenever ``source`` becomes a different take (or none), so the dirty rule can tell a
+    /// replaced or removed take from the saved one without holding it. A write that changes
+    /// nothing -- `clearNow()` on a project that is already empty, as a too-short or failed take
+    /// leaves it -- does not count, or Record then Stop would make a fresh project edited.
     private(set) var sourceGeneration = 0
 
     /// Seconds of audio: 0 when there is none, growing live while recording (refreshed by the
@@ -145,7 +147,7 @@ import UniformTypeIdentifiers
 
     @ObservationIgnored var drainTimer: Timer?
 
-    /// The editable transcription: nil until a run completes or a session restores one. Once it
+    /// The editable transcription: nil until a run completes or a project is opened. Once it
     /// exists, `transcription.notes` is always `document.events` (`AppModel+Editing.swift`).
     var document: NoteDocument?
 
@@ -153,7 +155,7 @@ import UniformTypeIdentifiers
     var editor = EditorState()
 
     /// The instrument a strip click singled out: the roll fades every other instrument while it
-    /// is set. Both tabs; not part of the session.
+    /// is set. Both tabs; not part of the project file.
     private(set) var highlightedProgram: Int?
 
     /// A strip click: singles the instrument out in the roll, or clears the highlight when it is
@@ -202,7 +204,7 @@ import UniformTypeIdentifiers
         self.workspace = workspace
     }
 
-    /// §3.4 step 6, and nowhere else: the next run's instruments start neutral. A session reload
+    /// §3.4 step 6, and nowhere else: the next run's instruments start neutral. Opening a project
     /// keeps its mix (§4.2).
     func resetMixerSettingsForLaunch() {
         mixer.resetStoredSettings()

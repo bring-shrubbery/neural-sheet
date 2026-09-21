@@ -4,16 +4,19 @@ import NeuralSheetCore
 import Observation
 
 /// Keeps `AppModel.isProjectEdited` and the window's document state in step with the model
-/// (projects design §5.2): re-reads the content snapshot 100 ms after the last change to any of
-/// its fields -- a few thousand note structs at most, never per frame -- and pushes the title,
-/// the represented file and the dot to the window. One per main view.
+/// (projects design §5.2): re-reads the content snapshot 100 ms after the *first* change of a
+/// burst -- a leading-edge throttle, so a fader being dragged compares ten times a second rather
+/// than once per pixel -- and pushes the title, the represented file and the dot to the window.
+/// The comparison reads the model live, so the last change of a burst is always included and
+/// nothing is lost by not waiting for the burst to end. A few thousand note structs at most, never
+/// per frame. One per main view.
 @MainActor final class ProjectTracker {
     private let model: AppModel
     private let windowController: MainWindowController
     private var timer: Timer?
     private var started = false
 
-    /// Between the last change and the comparison.
+    /// Between the first change of a burst and the comparison.
     static let debounce: TimeInterval = 0.1
 
     init(model: AppModel, windowController: MainWindowController) {

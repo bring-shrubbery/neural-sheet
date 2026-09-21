@@ -180,27 +180,17 @@ extension AppModel {
         return writeProject(to: url)
     }
 
-    /// The write itself. The audio comes from the package's own copy when it has not changed
-    /// since the last save (an APFS clone, so an edit costs the JSON only), else from where the
-    /// take was loaded or recorded.
+    /// The write itself. The audio comes from ``audioSourceForWrite()``; a project without audio
+    /// writes none.
     private func writeProject(to url: URL) -> Bool {
         var audioFileName = ""
         var audioSource: URL?
 
-        if let source {
-            audioFileName = source.droppedFileName == nil
-                ? ProjectPackage.recordingFileName
-                : (source.sourcePath?.lastPathComponent ?? ProjectPackage.recordingFileName)
+        if source != nil {
+            guard let audio = audioSourceForWrite() else { return false }
 
-            if sourceGeneration == lastSavedSourceGeneration, let projectURL, !lastSavedAudioFileName.isEmpty {
-                audioFileName = lastSavedAudioFileName
-                audioSource = ProjectPackage.audioURL(in: projectURL, fileName: audioFileName)
-            } else if let path = source.sourcePath {
-                audioSource = path
-            } else {
-                showError("Could not save the project.", "The audio has no file to copy.")
-                return false
-            }
+            audioFileName = audio.fileName
+            audioSource = audio.url
         }
 
         let package = ProjectPackage(state: projectState(audioFileName: audioFileName),
@@ -218,6 +208,45 @@ extension AppModel {
         noteRecentProject(url)
 
         return true
+    }
+
+    /// Where the next save copies the audio from, and what it is called inside the package.
+    ///
+    /// The package's own copy when the take has not changed since the last save (an APFS clone, so
+    /// an edit costs the JSON only), else where the take was loaded or recorded. The package's
+    /// copy is checked to still be there: a package moved, renamed or deleted in the Finder while
+    /// it is open is not followed, and without the check every save after that would fail for good.
+    /// The take's original path is the fallback, and a save with neither says so rather than
+    /// writing a package with no audio in it.
+    private func audioSourceForWrite() -> (fileName: String, url: URL)? {
+        guard let source else { return nil }
+
+        let manager = FileManager.default
+
+        if sourceGeneration == lastSavedSourceGeneration, let projectURL, !lastSavedAudioFileName.isEmpty {
+            let saved = ProjectPackage.audioURL(in: projectURL, fileName: lastSavedAudioFileName)
+
+            if manager.fileExists(atPath: saved.path) {
+                return (lastSavedAudioFileName, saved)
+            }
+        }
+
+        let fileName = source.droppedFileName == nil
+            ? ProjectPackage.recordingFileName
+            : (source.sourcePath?.lastPathComponent ?? ProjectPackage.recordingFileName)
+
+        guard let path = source.sourcePath else {
+            showError("Could not save the project.", "The audio has no file to copy.")
+            return nil
+        }
+
+        guard manager.fileExists(atPath: path.path) else {
+            showError("Could not save the project.",
+                      "The project's audio file is no longer where it was saved.")
+            return nil
+        }
+
+        return (fileName, path)
     }
 
     // MARK: - Revert and close
@@ -245,9 +274,9 @@ extension AppModel {
     }
 
     /// The window's close button and ⌘W: refused with a beep while recording or transcribing;
-    /// otherwise the review runs, and the window is closed for real a turn later with the project
-    /// already cleared and the welcome window up. Always false: `NSWindow.close()` does not ask
-    /// again, so the window goes exactly once.
+    /// otherwise the review runs, and the window is closed for real once the project is cleared
+    /// and the welcome window is up. Always false: `NSWindow.close()` does not ask again, so the
+    /// window goes exactly once.
     func handleWindowClose(_ window: NSWindow) -> Bool {
         guard canChangeProject else {
             NSSound.beep()
@@ -256,13 +285,31 @@ extension AppModel {
 
         closeProject { [weak self] in
             self?.showWelcomeWindow?()
-
-            DispatchQueue.main.async {
-                window.close()
-            }
+            AppModel.closeWhenAnotherWindowIsUp(window, attempts: 10)
         }
 
         return false
+    }
+
+    /// Closes `window` once some other window is on screen, trying again on the next few main-queue
+    /// turns if none is yet.
+    ///
+    /// The welcome window is asked for first, but SwiftUI opens it when it gets round to it, and
+    /// the app quits with its last window: closing the project window while it is still the only
+    /// one would quit instead of showing the welcome window. AppKit promises nothing about the
+    /// order, so this waits rather than assuming one turn is enough -- and gives up after
+    /// `attempts` turns, so a welcome window that never comes leaves the close done rather than a
+    /// window that cannot be shut.
+    private static func closeWhenAnotherWindowIsUp(_ window: NSWindow, attempts: Int) {
+        DispatchQueue.main.async {
+            let another = NSApp.windows.contains { $0 !== window && $0.isVisible }
+
+            if another || attempts <= 1 {
+                window.close()
+            } else {
+                closeWhenAnotherWindowIsUp(window, attempts: attempts - 1)
+            }
+        }
     }
 
     // MARK: - Recents
@@ -288,6 +335,8 @@ extension AppModel {
         }
 
         switch error {
+        case .notFound:
+            return "The project file could not be found."
         case .notAPackage:
             return "The file is not a NeuralSheet project."
         case let .unreadable(reason):

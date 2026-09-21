@@ -10,7 +10,7 @@ struct NeuralSheetApp: App {
     /// second one.
     @State private var model: AppModel
 
-    /// Keeps the settings and the session on disk in step with the model, for the app's lifetime.
+    /// Keeps the settings on disk in step with the model, for the app's lifetime.
     @State private var persistence: Persistence
 
     /// What the Audio menu shows as chosen. The engine's own properties are not observable, and
@@ -76,8 +76,8 @@ struct NeuralSheetApp: App {
         }
     }
 
-    /// The document commands (projects design §5.7). Close is SwiftUI's own ⌘W, which asks the
-    /// window's delegate. Export MIDI… only once there is a finished transcription.
+    /// The document commands (projects design §5.7). Export MIDI… only once there is a finished
+    /// transcription.
     @CommandsBuilder
     private func fileMenu(model: AppModel) -> some Commands {
         CommandGroup(replacing: .newItem) {
@@ -108,6 +108,14 @@ struct NeuralSheetApp: App {
         }
 
         CommandGroup(replacing: .saveItem) {
+            // SwiftUI's own Close lives in the group this replaces; `performClose` still asks the
+            // window's delegate, so the project window's veto applies and the welcome window's
+            // close quits.
+            Button("Close") { NSApp.keyWindow?.performClose(nil) }
+                .keyboardShortcut("w", modifiers: .command)
+
+            Divider()
+
             Button("Save") { model.saveProject() }
                 .keyboardShortcut("s", modifiers: .command)
                 .disabled(!model.canSaveProject)
