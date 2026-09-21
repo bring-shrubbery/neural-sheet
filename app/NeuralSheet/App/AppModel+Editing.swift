@@ -173,6 +173,33 @@ extension AppModel {
         let seconds = Double(steps) * (editor.snapEnabled ? editor.grid.step : 0.010)
 
         commit(document.move(editor.selection, deltaSeconds: seconds, deltaSemitones: semitones))
+        auditionSelection()
+    }
+
+    // MARK: - Audition
+
+    /// How long an auditioned note sounds: its own length, within these.
+    static let auditionMinSeconds = 0.1
+    static let auditionMaxSeconds = 1.0
+
+    /// Sounds `note` once through its instrument's synth, with its velocity and under its strip's
+    /// fader, mute and solo: on the click that selects it, as a drag carries it onto another
+    /// pitch, when it lands, and when the inspector changes its instrument, pitch or velocity.
+    /// Not while the transport runs, where the scheduler's note-offs and the audition's would cut
+    /// each other short.
+    func audition(_ note: NoteEvent) {
+        guard workspace == .edit, state.canPlay, !isPlaying else { return }
+
+        let length = min(max(note.endTime - note.startTime, AppModel.auditionMinSeconds), AppModel.auditionMaxSeconds)
+
+        engine.synthBank.audition(program: note.program, pitch: note.pitch, velocity: note.velocity, seconds: length)
+    }
+
+    /// The first selected note in document order, after a change that applied to all of them.
+    func auditionSelection() {
+        guard let document, let first = document.notes.first(where: { editor.selection.contains($0.id) }) else { return }
+
+        audition(first.note)
     }
 
     /// Escape: a drag in progress is cancelled; otherwise the selection goes.

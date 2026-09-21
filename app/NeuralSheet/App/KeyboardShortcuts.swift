@@ -8,7 +8,7 @@ import NeuralSheetCore
 /// | key | action |
 /// |---|---|
 /// | Space | play / pause |
-/// | Shift + Space | go to start |
+/// | Return / Enter, Shift + Space | go to start (Return is ours; the inventory had Shift + Space alone) |
 /// | Shift + Backspace | clear audio and transcription (`audioLoaded` or `populated` only) |
 /// | r | record toggle |
 /// | m | mute input toggle |
@@ -37,8 +37,10 @@ import NeuralSheetCore
     private var monitor: Any?
 
     private enum KeyCode {
+        static let returnKey: UInt16 = 36
         static let space: UInt16 = 49
         static let backspace: UInt16 = 51
+        static let keypadEnter: UInt16 = 76
         static let escape: UInt16 = 53
         static let forwardDelete: UInt16 = 117
         static let left: UInt16 = 123
@@ -104,6 +106,13 @@ import NeuralSheetCore
             } else {
                 model.togglePlay()
             }
+
+            return true
+
+        case KeyCode.returnKey, KeyCode.keypadEnter:
+            guard !shift else { return false }
+
+            model.goToStart()
 
             return true
 

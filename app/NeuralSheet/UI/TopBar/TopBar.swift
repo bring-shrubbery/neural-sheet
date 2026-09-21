@@ -103,7 +103,7 @@ struct TopBar: View {
                     .fill(.foreground)
                     .frame(width: s(15), height: s(15))
             }
-            .tooltip("Go to start | Shift + Space")
+            .tooltip("Go to start | Enter")
 
             // One button showing whichever icon is the action available now: pause while it plays.
             transportButton(isOn: model.isPlaying,
