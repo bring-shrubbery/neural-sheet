@@ -1,3 +1,4 @@
+import AppKit
 import NeuralSheetCore
 import SwiftUI
 
@@ -73,6 +74,9 @@ struct Sidebar: View {
 
         @Environment(\.uiScale) private var k
         @Environment(\.legacyScrollbarInset) private var scrollbarInset
+        /// The strip card's panel, and whose strip it is up for.
+        @State private var card = PopupMenuPresenter()
+        @State private var cardProgram: Int?
 
         var body: some View {
             let editing = model.workspace == .edit
@@ -86,9 +90,33 @@ struct Sidebar: View {
                                     width: SidebarMetrics.stripWidth - scrollbarInset / k,
                                     isTarget: editing && model.editor.targetProgram == entry.program,
                                     isHighlighted: model.highlightedProgram == entry.program,
-                                    onSelect: { model.toggleHighlight(program: entry.program) })
+                                    onSelect: { model.toggleHighlight(program: entry.program) },
+                                    onSecondaryClick: editing ? { window, point in showCard(for: entry, in: window, at: point) } : nil)
                         .equatable()
                 }
+            }
+            // The card is for a strip that is there and a tab that edits: gone with either.
+            .onChange(of: model.mixer.entries.map(\.program)) { _, programs in
+                if let cardProgram, !programs.contains(cardProgram) { card.dismiss() }
+            }
+            .onChange(of: model.canEdit) { _, canEdit in
+                if !canEdit { card.dismiss() }
+            }
+            .onChange(of: model.workspace) { _, _ in
+                card.dismiss()
+            }
+        }
+
+        private func showCard(for entry: InstrumentEntry, in window: NSWindow, at windowPoint: CGPoint) {
+            guard model.canEdit else { return }
+
+            let card = card
+            let model = model
+
+            cardProgram = entry.program
+            card.onDismiss = { cardProgram = nil }
+            card.showPanel(at: window.convertPoint(toScreen: windowPoint), in: window, scale: k) {
+                InstrumentCard(model: model, entry: entry, host: card)
             }
         }
     }

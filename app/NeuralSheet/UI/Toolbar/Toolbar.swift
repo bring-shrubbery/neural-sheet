@@ -85,7 +85,7 @@ struct Toolbar: View {
                 .frame(width: s(Metrics.iconSize), height: s(Metrics.iconSize))
                 .frame(width: s(Metrics.buttonHeight), height: s(Metrics.buttonHeight))
         }
-        .overlay(RightClickCatcher(isEnabled: canClear) { anchor in
+        .overlay(ClearButtonRightClickCatcher(isEnabled: canClear) { anchor in
             showClearMenu(from: anchor)
         })
         .tooltip("Clear audio and transcription | Shift + Backspace\nRight-click to clear the transcription only")
@@ -213,8 +213,11 @@ struct TrackedLabel: View {
 // MARK: - Right click
 
 /// Catches the secondary click on the control it overlays and nothing else: every other event
-/// falls through to the control underneath, so its own gestures and hover keep working.
-private struct RightClickCatcher: NSViewRepresentable {
+/// falls through to the control underneath, so its own gestures and hover keep working. Named
+/// apart from the sidebar's ``RightClickCatcher`` (`Controls/RightClickCatcher.swift`): that one
+/// reports the window and a point for a floating panel, this one reports the view it caught the
+/// click on and can be turned off.
+private struct ClearButtonRightClickCatcher: NSViewRepresentable {
     let isEnabled: Bool
     let onRightClick: (NSView) -> Void
 

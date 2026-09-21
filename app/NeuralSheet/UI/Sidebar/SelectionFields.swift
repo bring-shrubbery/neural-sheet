@@ -124,47 +124,14 @@ struct SelectionFields: View {
         .background(AnchorCatcher { instrumentAnchor = $0 })
     }
 
-    /// The instruments already in the mix first, with their colours, so moving notes onto a
-    /// strip that exists is one look away; then everything else.
     private func showInstrumentMenu() {
-        guard let anchor = instrumentAnchor, let window = anchor.window else { return }
+        guard let anchor = instrumentAnchor else { return }
 
-        let menu = instrumentMenu
         let model = model
-        let current = Set(selected.map(\.program))
-        let inMix = model.mixer.entries.map(\.info)
-        let inMixPrograms = Set(inMix.map(\.program))
-        let others = Instruments.all.filter { !inMixPrograms.contains($0.program) }
-        let titles = Instruments.all.map(\.name)
-        let width = PopupMenuPresenter.width(forTitles: titles, scale: k)
 
-        func row(_ info: InstrumentInfo, chip: Color?) -> MenuRow {
-            MenuRow(title: info.name, isTicked: current == [info.program], chip: chip) {
-                menu.dismiss()
-                model.setSelectionProgram(info.program)
-            }
-        }
-
-        let target = window.convertToScreen(anchor.convert(anchor.bounds, to: nil))
-
-        // Inside a popup the menu is its child: it must not take key, or the popup closes.
-        host?.child = menu
-        menu.show(targetScreenRect: target, in: window, width: width, scale: k, placement: .alignedToTarget,
-                  becomesKey: host == nil) {
-            if !inMix.isEmpty {
-                MenuSectionLabel(title: "IN THE MIX")
-
-                ForEach(inMix, id: \.program) { info in
-                    row(info, chip: Color(info.colour))
-                }
-
-                MenuSeparator()
-                MenuSectionLabel(title: "ALL INSTRUMENTS")
-            }
-
-            ForEach(others, id: \.program) { info in
-                row(info, chip: nil)
-            }
+        InstrumentPicker.show(instrumentMenu, from: anchor, host: host, model: model,
+                              current: Set(selected.map(\.program)), scale: k) { program in
+            model.setSelectionProgram(program)
         }
     }
 
@@ -216,8 +183,8 @@ struct SelectionFields: View {
 }
 
 /// A note-name field: accepts `C#4`, `Db4` or a MIDI number. Return commits and gives the
-/// keyboard back, so Space is the transport's again.
-private struct PitchField: View {
+/// keyboard back, so Space is the transport's again. Shared with the strip card's Split field.
+struct PitchField: View {
     let text: String
     let width: CGFloat
     let scale: CGFloat
@@ -285,13 +252,5 @@ private struct PitchField: View {
         let midi = (octave + 1) * 12 + pitchClass
 
         return (0...127).contains(midi) ? midi : nil
-    }
-}
-
-private extension Color {
-    /// The model's colour type as SwiftUI's, for the picker's chips. File scope, as the strip
-    /// keeps its own copy: two visible overloads would collide.
-    init(_ rgba: NeuralSheetCore.RGBA) {
-        self.init(.sRGB, red: rgba.r, green: rgba.g, blue: rgba.b, opacity: rgba.a)
     }
 }

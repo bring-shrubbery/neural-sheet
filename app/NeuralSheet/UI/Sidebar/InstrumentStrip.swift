@@ -27,6 +27,9 @@ struct InstrumentStrip: View {
     /// A click on the chip or the name: toggles the highlight, and in the Edit tab makes this the
     /// target too. Nil for a strip that cannot be clicked.
     var onSelect: (() -> Void)?
+    /// A secondary click anywhere on the strip: opens the strip card in the Edit tab (region
+    /// design §6.1). Nil, and no catcher is installed, in the Transcribe tab.
+    var onSecondaryClick: ((NSWindow, CGPoint) -> Void)?
 
     @Environment(\.uiScale) private var k
 
@@ -172,6 +175,11 @@ struct InstrumentStrip: View {
         .padding(.top, s(Self.paddingTop))
         .frame(width: s(width), height: s(SidebarMetrics.stripHeight), alignment: .topLeading)
         .background(settings.soloed ? Theme.soloRowTint : Color.clear)
+        .overlay {
+            if let onSecondaryClick {
+                RightClickCatcher(onRightClick: onSecondaryClick)
+            }
+        }
         .overlay(alignment: .leading) {
             if isTarget {
                 Rectangle()
@@ -273,7 +281,8 @@ extension InstrumentStrip: @MainActor Equatable {
     /// The model is one object for the life of the window, so identity is the comparison; the rest
     /// is the strip's inputs, and a strip whose inputs stand still is left alone. The select
     /// closure is compared by presence only: it is the same call for the life of the window, and
-    /// what it does on a click is the model's decision, not the strip's.
+    /// what it does on a click is the model's decision, not the strip's -- the two closures are
+    /// compared by presence only.
     static func == (lhs: InstrumentStrip, rhs: InstrumentStrip) -> Bool {
         lhs.model === rhs.model
             && lhs.entry == rhs.entry
@@ -283,6 +292,7 @@ extension InstrumentStrip: @MainActor Equatable {
             && lhs.isTarget == rhs.isTarget
             && lhs.isHighlighted == rhs.isHighlighted
             && (lhs.onSelect == nil) == (rhs.onSelect == nil)
+            && (lhs.onSecondaryClick == nil) == (rhs.onSecondaryClick == nil)
     }
 }
 
