@@ -126,8 +126,8 @@ public struct ProjectContent: Equatable, Sendable {
 }
 ```
 
-The audio's identity is not in it (a `SourceAudio` is the app's type); the app compares the
-source object itself (§5.2).
+The audio's identity is not in it (a `SourceAudio` is the app's type, and holding one weakly
+turned out to be the wrong idea, §4.1); the app compares a generation counter instead (§5.2).
 
 ### 3.5 `ProjectPackage`
 
@@ -173,35 +173,50 @@ private(set) var projectURL: URL?
 var projectTitle: String
 /// Content differs from what was last saved (or, untitled, from empty).
 var isProjectEdited: Bool
-/// Save, Save As, New, Open, Revert and Close: not while recording or transcribing.
+/// New, Open, Open Recent, Revert and Close: not while recording or transcribing.
 var canChangeProject: Bool { state != .recording && state != .processing }
-var canSaveProject: Bool { canChangeProject }
+/// Save and Save As: not while recording. A save mid-transcription writes the audio and the
+/// settings without the notes, which is what the quit review needs (§4.3).
+var canSaveProject: Bool { state != .recording }
 var canRevertProject: Bool { canChangeProject && projectURL != nil && isProjectEdited }
 ```
 
-Internally: `lastSavedContent: ProjectContent`, `weak var lastSavedSource: SourceAudio?`, and
-`lastSavedAudioFileName`. For an untitled project the saved content is the empty content and the
-saved source nil, so a fresh project is clean and the first drop dirties it.
+The audio's identity is not a weak reference to the source: the engine retires a source's boxes
+on a grace period, so a `weak var lastSavedSource: SourceAudio?` went nil nondeterministically and
+a clean project read as "audio removed". Instead `AppModel` has `sourceGeneration`, bumped on
+every assignment to `source`, and `lastSavedSourceGeneration`; the dirty rule is
+`sourceGeneration != lastSavedSourceGeneration || projectContent() != lastSavedContent`.
+Internally: `lastSavedContent: ProjectContent`, `lastSavedSourceGeneration: Int`, and
+`lastSavedAudioFileName`. `AppModel.init` ends with `markProjectSaved(audioFileName: "")`, so a
+fresh project is clean and the first drop dirties it.
 
 ### 4.2 Commands (the views' and menus' contract)
 
 | Command | Behaviour |
 |---|---|
 | `newProject()` | `reviewProject` then `replaceWithEmpty()`: `clearNow()`, selection to Automatic, tempo and grid to defaults, mixer settings dropped, `projectURL = nil`, saved snapshot = empty |
-| `openProject(url:)` | `ProjectPackage.read`, then `AudioFileLoader.load` on the audio, *before* anything is torn down; a failure shows "Could not open the project." with the reason and leaves the current project alone. Then `reviewProject`, `replaceWithEmpty()`, install the source, the document (guarded by the sample count), the settings and the view state, `projectURL = url`, snapshot taken, recents noted |
+| `openProject(url:)` | `ProjectPackage.read`, then `AudioFileLoader.load` on the audio, *before* anything is torn down; a failure shows "Could not open the project." with the reason and leaves the current project alone. Then `reviewProject`, `replaceWithEmpty()`, install the source, the settings and the view state, `projectURL = url`, recents noted. The notes are installed, and the project marked saved, only when they can be trusted (below); `read` also reports `transcriptionUnreadable`, a `transcription.json` that exists but did not decode |
 | `openProjectFromPanel()` | `NSOpenPanel` limited to the package type, then `openProject(url:)` |
 | `saveProject()` | Untitled: `saveProjectAs()`. Else write to `projectURL` |
 | `saveProjectAs()` | `NSSavePanel` in the Music folder, `nameFieldStringValue` the current title (`Untitled` becomes the audio's display name when there is one), the package type only; then write and adopt the URL |
 | `revertProject()` | The standard question ("Do you want to revert to the most recently saved version of “X”?" / "Your current changes will be lost." Revert / Cancel); on Revert, `openProject(url:)` without the review |
 | `closeProject(then:)` | `reviewProject`, then `replaceWithEmpty()` and the completion (the window's close proceeds and the welcome window opens) |
-| `reviewProject(then:)` | Nothing to do when clean. Else the sheet "Do you want to save the changes made to the document “X”?" / "Your changes will be lost if you don't save them." with Save (default), Cancel, Don't Save. Save runs `saveProject()` (which may run the save panel) and continues only if it succeeded; Cancel stops; Don't Save continues |
+| `reviewProject(then:)` | Nothing to do when clean. Else the sheet "Do you want to save the changes made to the document “X”?" / "Your changes will be lost if you don't save them." with Save (default), Cancel, Don't Save. Save runs `saveProject()` (which may run the save panel) and continues only if it succeeded; Cancel stops; Don't Save continues. With unsaved changes and no `presentSaveReview` installed, that is a wiring bug: an `assertionFailure` in debug, then it proceeds rather than losing the work silently |
+
+Notes that cannot be installed (`transcriptionUnreadable`, or the audio's sample count does not
+match the transcription's) are dropped: `installProject` leaves the baseline from
+`replaceWithEmpty()` standing rather than calling `markProjectSaved`, so the project reads edited,
+the dot shows, and Close (or the next Save) asks rather than silently overwriting the file with
+the notes gone. It also shows "Could not load the project's transcription." / "The notes in the
+file do not match its audio, or could not be read, and were left out. Saving the project will
+remove them from the file." (§7).
 
 The write: `ProjectContent` and `ProjectState` are taken from the model; `audioSource` is the
-package's own `audio/<name>` when `source === lastSavedSource` and the project has a URL, else
-`source.sourcePath`. A recording's file name in the package is `recording.wav`; a dropped file
-keeps its name. A failed write shows "Could not save the project." with the reason and the
-project stays edited. After a successful write the snapshot is retaken, the URL adopted, and the
-URL noted in the recents.
+package's own `audio/<name>` when `sourceGeneration` has not changed since the last save and the
+project has a URL, else `source.sourcePath`. A recording's file name in the package is
+`recording.wav`; a dropped file keeps its name. A failed write shows "Could not save the
+project." with the reason and the project stays edited. After a successful write the snapshot is
+retaken, the URL adopted, and the URL noted in the recents.
 
 The Library copy of a take is not deleted by a save: it goes when the project is cleared, as
 today (`deleteRecordedFiles`), and every path out of a project runs through `clearNow()`. A take
@@ -209,11 +224,13 @@ left behind by a crash is swept at the next launch (§4.5).
 
 ### 4.3 While recording or transcribing
 
-Save, Save As, New, Open, Open Recent, Revert and Close are disabled in the menus and the
-welcome window's actions are unreachable (the welcome window is not up while a project is). The
-close button refuses (`windowShouldClose` false, with a beep). Quit is allowed: the review saves
-what is saveable (with a run in flight, the audio and settings without the transcription; while
-recording there is nothing new to save, since a take only starts from empty) and the process ends.
+New, Open, Open Recent, Revert and Close are disabled in the menus and the welcome window's
+actions are unreachable (the welcome window is not up while a project is). Save and Save As stay
+enabled while transcribing, so the quit review below has a way to save; they disable only while
+recording, since a take in progress has no file to copy yet. The close button refuses
+(`windowShouldClose` false, with a beep). Quit is allowed: the review saves what is saveable (with
+a run in flight, the audio and settings without the transcription; while recording there is
+nothing new to save, since a take only starts from empty) and the process ends.
 
 ### 4.4 The existing questions
 
@@ -232,30 +249,36 @@ settings half stays, and a `ProjectTracker` takes the session's place (§5.2).
 
 ### 5.1 Title, proxy icon, dirty dot
 
-`MainWindowController` gets `apply(title:url:edited:)`, called from an observation of
-`projectTitle`, `projectURL` and `isProjectEdited`: `window.title`, `window.representedURL` (the
-proxy icon and its Finder menu for free) and `window.isDocumentEdited` (the dot). The SwiftUI
-scene's title stays "NeuralSheet" as the fallback before the model has attached.
+The title is SwiftUI's own: `MainView` carries `.navigationTitle(model.projectTitle)`, so
+`window.title` follows it directly. `MainWindowController` gets `setDocument(url:edited:)`,
+called from an observation the tracker below drives: it sets `window.representedURL` (the proxy
+icon and its Finder menu) and `window.isDocumentEdited` (the dot). The `Window` scene's own title
+stays "NeuralSheet" as the fallback before `navigationTitle` has taken over.
 
 ### 5.2 `ProjectTracker`
 
-Replaces the session half of `Persistence`: a `withObservationTracking` on the model's
-`projectContent()` and `source`, re-armed after each change with a 100 ms coalescing timer, that
-sets `isProjectEdited` and pushes it to the window. The comparison is a few thousand note structs
-at most and runs only after a change, never per frame. `Persistence` keeps the settings
+Replaces the session half of `Persistence`. Two observation loops, each re-armed after it fires:
+one reads `model.projectContent()` and `model.sourceGeneration` (not the source itself, §4.1) and,
+100 ms after the last change to either, recomputes `computeProjectEdited()` into
+`model.isProjectEdited` (a few thousand note structs at most, and only after a change, never per
+frame); the other reads `model.projectURL` and `model.isProjectEdited` and pushes them to the
+window through `setDocument(url:edited:)` at once, undebounced. `Persistence` keeps the settings
 observation and the terminate hook (settings write, MIDI scratch removal); the session save on
 terminate goes.
 
 ### 5.3 Vetoing the close
 
 SwiftUI sets the window's delegate itself, so `MainWindowController.attach` installs a
-`WindowDelegateProxy`: an `NSObject` that keeps the original delegate, forwards every selector to
-it (`responds(to:)` and `forwardingTarget(for:)`), and implements `windowShouldClose` alone:
+`WindowDelegateProxy`: an `NSObject` that keeps the original delegate weakly, forwards every
+selector to it (`responds(to:)` and `forwardingTarget(for:)`), and implements `windowShouldClose`
+alone by calling a `shouldClose` closure the controller was handed (`MainView.appear()` sets it
+to `model.handleWindowClose`):
 
 - `canChangeProject` false: beep, return false.
-- Otherwise `model.closeProject { window.close() }` and return false. The completion runs once
-  the project is cleared and the welcome window is up; `NSWindow.close()` closes without asking
-  the delegate again, so the window goes exactly once.
+- Otherwise `model.closeProject` runs the review; once it proceeds, `showWelcomeWindow?()` shows
+  the welcome window and `window.close()` runs a moment later on the main queue (so the close
+  finishes outside this call), and `windowShouldClose` itself always returns false:
+  `NSWindow.close()` does not ask the delegate again, so the window goes exactly once.
 
 `detach` restores the original delegate. The proxy is re-asserted on every `attach`, since SwiftUI
 may replace the delegate when the scene updates.
@@ -270,19 +293,31 @@ one, quits; closing the project window opens the welcome window first, so it is 
 
 ### 5.5 Opening from the Finder
 
-`AppDelegate.application(_:open:)` takes the first `.neuralsheet` URL and calls
-`model.openProject(url:)`, then shows the project window and dismisses the welcome window if it
-is up. A launch by double-click runs this before the welcome window is shown; a
-`pendingOpenURL` on the model covers the case where the delegate is called before the scenes
-exist, and the welcome view consumes it on appear. Audio files are not accepted this way; they
-are dropped on the project window as today.
+`AppDelegate.application(_:open:)` takes the first `.neuralsheet` URL. When a window is already
+up and ready (`model.showProjectWindow` and `model.presentError` are both installed, meaning a
+project or welcome window has appeared), it opens at once and shows the project window.
+Otherwise the URL is parked on `model.pendingOpenURL` and `model.showProjectWindow?()` is called
+if it exists yet, to bring a window up; nothing here opens the project itself in that case.
+`pendingOpenURL` is consumed by `MainView.appear()`, once the dialogs are installed, which clears
+it and calls `model.openProject(url:)`; the welcome view's `appear()` only notices a parked URL to
+open the project window and dismiss itself (§6), it does not open the project. Audio files are
+not accepted this way; they are dropped on the project window as today.
 
 ### 5.6 Windows
 
 Both scenes are `Window`s. The welcome scene comes first in the `App` body so it is the one
-SwiftUI opens at launch; the main scene opens through `openWindow(id: "main")`. The welcome view
-captures `openWindow` and `dismissWindow` into closures the model calls
-(`model.showProjectWindow`, `model.showWelcomeWindow`), the way `presentError` is installed today.
+SwiftUI opens at launch; the main scene opens through `openWindow(id: "main")` and carries
+`.restorationBehavior(.disabled)`, so a relaunch never restores the project window beside the
+welcome one (the welcome window is what a launch shows, and the project window opens from it,
+never from restoration). The welcome view captures `openWindow` and `dismissWindow` into closures
+the model calls (`model.showProjectWindow`, `model.showWelcomeWindow`), the way `presentError` is
+installed today.
+
+On a cold launch nothing has installed `model.presentError` yet, so the welcome view's `appear()`
+installs a windowless one (`Dialogs.install(on: model) { nil }`), which shows an app-modal alert
+rather than a sheet, the right form before any project window exists. A failed open chosen from
+the welcome window still shows its dialog this way. `MainView.appear()` installs its own, sheeted
+version once the project window exists, in place of the welcome one.
 
 ### 5.7 File menu
 
@@ -322,12 +357,16 @@ near the top, "NeuralSheet" in `Fonts` title weight, "Version 1.0.0 (123)" from 
 
 Right pane (`Theme.bgSidebar`): the recents, most recent first, each row the package's display
 name in `Theme.textPrimary` over its folder path (home abbreviated with `~`) in
-`Theme.textFaint`, with the generic package icon. Single click selects, double-click or Return
-opens, right-click offers **Show in Finder** and **Remove from Recents** (the recents list has no
-per-item removal, so the app keeps a small `removedRecents` set in the settings and filters the
-list through it; Clear Menu empties both). A file that no longer exists is shown dimmed and opens
-"Could not open the project." with the reason. Empty state: "No Recent Projects" centred in
-`Theme.textFaint`.
+`Theme.textFaint`, with the generic package icon. A SwiftUI `List` with
+`contextMenu(forSelectionType:menu:primaryAction:)` gives this for free: single click selects,
+double-click or Return (the list's own primary action) opens, right-click offers the menu
+(**Show in Finder** and **Remove from Recents**); there is no separate key handler. The recents
+list has no per-item removal, so **Remove from Recents** works through
+`GlobalSettings.hiddenRecentProjects`, a small array of paths kept in the settings that the list
+is filtered through; Clear Menu empties both it and the system's own recent-documents list, and a
+project opened or saved again is taken back out of it. A file that no longer exists is shown
+dimmed and opens "Could not open the project." with the reason. Empty state: "No Recent Projects"
+centred in `Theme.textFaint`.
 
 Shown at launch (unless a file is being opened), and by the project window's close. Closing it
 quits (§5.4). The keyboard shortcuts installer stays bound to the project window, so nothing of
@@ -343,6 +382,7 @@ like every other app's:
 | Review | "Do you want to save the changes made to the document “X”?" / "Your changes will be lost if you don't save them." Save · Cancel · Don't Save |
 | Revert | "Do you want to revert to the most recently saved version of “X”?" / "Your current changes will be lost." Revert · Cancel |
 | Open failure | "Could not open the project." / the reason ("The file is not a NeuralSheet project.", "The project's audio file is missing.", "The project was saved by a newer version of NeuralSheet.", or the system's description) |
+| Notes dropped | "Could not load the project's transcription." / "The notes in the file do not match its audio, or could not be read, and were left out. Saving the project will remove them from the file." |
 | Save failure | "Could not save the project." / the system's description |
 | Save panel | title "Save Project", the package type |
 | Open panel | title "Open Project" |
@@ -353,18 +393,25 @@ NeuralSheetCore
 
 - `ProjectState.swift` (from `SessionState.swift`), `ProjectTranscription.swift`,
   `ProjectContent.swift`, `ProjectPackage.swift`; `AppPaths` minus the two session URLs.
-- Tests: `ProjectStateTests` (from `SessionStateTests`), `ProjectPackageTests`.
+- Tests: `ProjectStateTests` (from `SessionStateTests`), `ProjectContentTests`,
+  `ProjectPackageTests`, `AppPathsTests`, and a `hiddenRecentProjects` round-trip test in
+  `GlobalSettingsTests`.
 
 App
 
-- `App/AppModel+Project.swift`: §4. `App/ProjectTracker.swift`: §5.2. `App/Persistence.swift`
-  keeps only the settings (moved out of `AppModel+Session.swift`, which goes).
-- `App/MainWindow.swift`: title/URL/edited, the delegate proxy (`App/WindowDelegateProxy.swift`).
+- `App/AppModel+Project.swift`: §4, apart from opening. `App/AppModel+ProjectOpen.swift`: opening
+  a project (split out to keep both files under the 400-line rule). `App/ProjectTracker.swift`:
+  §5.2. `App/Persistence.swift` keeps only the settings (moved out of `AppModel+Session.swift`,
+  which goes).
+- `App/MainWindow.swift`: the represented URL and the dot (the title is SwiftUI's own,
+  `navigationTitle`, §5.1), the delegate proxy (`App/WindowDelegateProxy.swift`).
 - `App/NeuralSheetApp.swift`: the welcome scene, the File menu, the Open Recent menu.
   `AppDelegate` moves to `App/AppDelegate.swift`: quit review, open files.
-- `App/Dialogs.swift`: the three-button review and the revert question.
+- `App/Dialogs.swift`: the three-button review and the revert question, and the windowless
+  install the welcome window uses before any project window exists (§5.6).
+- `App/ProjectType.swift`: `UTType.neuralSheetProject`.
 - `UI/Welcome/WelcomeView.swift`, `UI/Welcome/RecentProjectsList.swift`, `App/RecentProjects.swift`
-  (the document controller wrapper and the removed set).
+  (the document controller wrapper and the hidden set).
 - `app/Info.plist`: the exported type and the document type.
 
 ## 9. Departures from the inventory
@@ -374,7 +421,7 @@ App
 - A welcome window at launch, which NeuralNote never had; the app no longer opens straight onto
   an empty main window.
 - The window's title is the project's name rather than "NeuralSheet", with the proxy icon and
-  the dirty dot; the toolbar still shows the audio file's name as §1.4 has it.
+  the dirty dot; the toolbar still shows the audio file's name as inventory §1.6 has it.
 
 ## 10. Testing
 

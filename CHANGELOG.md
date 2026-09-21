@@ -19,6 +19,8 @@ Work towards v2 starts here: user-experience improvements beyond NeuralNote pari
 - A right-click on a note opens a floating card with the selection's instrument, start, length, pitch and velocity, so nothing has to be set from the sidebar.
 - In the Edit tab, a click on empty roll space places the playhead there.
 - Return / Enter goes to start.
+- Projects: a `.neuralsheet` package that holds the audio, the transcription, the edits, the mix and the editor settings, with New, Open, Open Recent, Save, Save As, Revert to Saved and Close, the save prompt on close and quit, the dirty dot and the proxy icon in the window title, and double-click from the Finder.
+- A welcome window at launch and after the project window closes: create a project, open one, or pick a recent one.
 
 ### Changed
 
@@ -26,6 +28,11 @@ Work towards v2 starts here: user-experience improvements beyond NeuralNote pari
 - The output level and MUTE live in the sidebar's master panel, under the master meter, rather than in the top bar.
 - Trackpad panning of the timeline is smooth: the bands are drawn as windows that slide with the scroll rather than as layers the width of the whole take, a wheel over the roll pans time and pitch together, and pitch pans by the pixel rather than a key at a time.
 - Clicking the timeline, or pressing Return in a field, gives the keyboard back to the transport, so Space plays again after editing a number.
+- The window is titled after the project rather than "NeuralSheet".
+
+### Removed
+
+- The autosaved session under `~/Library/NeuralSheet`: the app opens on the welcome window rather than on the last take, and a project file is where work is kept. The two session files and any leftover recording are deleted at launch.
 
 ## [1.0.0-checkpoint] — 2026-09-19
 
