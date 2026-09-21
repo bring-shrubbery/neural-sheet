@@ -34,6 +34,20 @@ import UniformTypeIdentifiers
     /// confirms at once, which is what happens before a window exists.
     @ObservationIgnored var presentConfirm: ((String, String, String, @escaping (Bool) -> Void) -> Void)?
 
+    /// What the save-changes sheet came back with.
+    enum SaveReviewChoice {
+        case save, discard, cancel
+    }
+
+    /// Installed by the view layer: `(project title, completion)` for the standard "Do you want
+    /// to save the changes…" sheet. Nil proceeds without saving, which is what happens before a
+    /// window exists.
+    @ObservationIgnored var presentSaveReview: ((String, @escaping (SaveReviewChoice) -> Void) -> Void)?
+
+    /// Installed by the view layer: `(project title, completion)` for "Do you want to revert…".
+    /// Nil declines.
+    @ObservationIgnored var presentRevert: ((String, @escaping (Bool) -> Void) -> Void)?
+
     /// Cancels the roll drag in progress and says whether there was one; installed by the edit
     /// controller, a no-op without a drag.
     @ObservationIgnored var dragCanceller: (() -> Bool)?

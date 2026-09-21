@@ -72,4 +72,74 @@ import AppKit
             }
         }
     }
+
+    /// Points `model.presentSaveReview` and `model.presentRevert` at the window.
+    static func installProjectDialogs(on model: AppModel, window: @escaping () -> NSWindow?) {
+        model.presentSaveReview = { title, completion in
+            saveReview(title: title, on: window(), completion: completion)
+        }
+        model.presentRevert = { title, completion in
+            revert(title: title, on: window(), completion: completion)
+        }
+    }
+
+    /// AppKit's own save-changes question, with its button order: Save (Return), Cancel (Escape),
+    /// Don't Save (⌘D).
+    static func saveReview(title: String, on window: NSWindow?,
+                           completion: @escaping (AppModel.SaveReviewChoice) -> Void) {
+        let alert = NSAlert()
+        alert.messageText = "Do you want to save the changes made to the document “\(title)”?"
+        alert.informativeText = "Your changes will be lost if you don't save them."
+        alert.alertStyle = .warning
+        alert.addButton(withTitle: "Save")
+        alert.addButton(withTitle: "Cancel")
+
+        let discard = alert.addButton(withTitle: "Don't Save")
+        discard.hasDestructiveAction = true
+        discard.keyEquivalent = "d"
+        discard.keyEquivalentModifierMask = [.command]
+
+        let choice: (NSApplication.ModalResponse) -> AppModel.SaveReviewChoice = { response in
+            switch response {
+            case .alertFirstButtonReturn: .save
+            case .alertThirdButtonReturn: .discard
+            default: .cancel
+            }
+        }
+
+        if let window, window.isVisible {
+            alert.beginSheetModal(for: window) { response in
+                completion(choice(response))
+            }
+        } else {
+            DispatchQueue.main.async {
+                completion(choice(alert.runModal()))
+            }
+        }
+    }
+
+    /// AppKit's own revert question: Revert, Cancel (Return, so a stray key is safe).
+    static func revert(title: String, on window: NSWindow?, completion: @escaping (Bool) -> Void) {
+        let alert = NSAlert()
+        alert.messageText = "Do you want to revert to the most recently saved version of “\(title)”?"
+        alert.informativeText = "Your current changes will be lost."
+        alert.alertStyle = .warning
+
+        let revert = alert.addButton(withTitle: "Revert")
+        revert.hasDestructiveAction = true
+        revert.keyEquivalent = ""
+
+        let cancel = alert.addButton(withTitle: "Cancel")
+        cancel.keyEquivalent = "\r"
+
+        if let window, window.isVisible {
+            alert.beginSheetModal(for: window) { response in
+                completion(response == .alertFirstButtonReturn)
+            }
+        } else {
+            DispatchQueue.main.async {
+                completion(alert.runModal() == .alertFirstButtonReturn)
+            }
+        }
+    }
 }

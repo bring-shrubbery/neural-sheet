@@ -94,6 +94,7 @@ struct MainView: View {
     private func appear() {
         Dialogs.install(on: model) { [windowController] in windowController.window }
         Dialogs.installConfirm(on: model) { [windowController] in windowController.window }
+        Dialogs.installProjectDialogs(on: model) { [windowController] in windowController.window }
         // A turn later, once the window is on screen: shown now it would be an app-modal alert
         // rather than a sheet, and an app-modal alert stalls the engine's own retries.
         DispatchQueue.main.async {

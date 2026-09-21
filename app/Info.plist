@@ -9,5 +9,43 @@
 	<string>xqg7Uv6Q+zw/+Is3ic5dSCOOc8Sa0WzuFVtCwpX3zWU=</string>
 	<key>SUEnableAutomaticChecks</key>
 	<true/>
+	<!-- The project package. Xcode merges this with the generated Info.plist. -->
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string>NeuralSheet Project</string>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>LSHandlerRank</key>
+			<string>Owner</string>
+			<key>LSTypeIsPackage</key>
+			<true/>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>com.quassum.neuralsheet.project</string>
+			</array>
+		</dict>
+	</array>
+	<key>UTExportedTypeDeclarations</key>
+	<array>
+		<dict>
+			<key>UTTypeIdentifier</key>
+			<string>com.quassum.neuralsheet.project</string>
+			<key>UTTypeDescription</key>
+			<string>NeuralSheet Project</string>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>com.apple.package</string>
+			</array>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>neuralsheet</string>
+				</array>
+			</dict>
+		</dict>
+	</array>
 </dict>
 </plist>
