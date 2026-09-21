@@ -186,3 +186,11 @@ private func makePackage(audioFileName: String, withTranscription: Bool) -> Proj
     #expect(read.package.state.exportTempo == 100)
     #expect(read.transcriptionUnreadable == true)
 }
+
+@Test func packageReadReportsNothingAtTheURL() throws {
+    let directory = try makePackageTempDirectory()
+    defer { try? FileManager.default.removeItem(at: directory) }
+
+    let gone = directory.appendingPathComponent("Deleted.neuralsheet", isDirectory: true)
+    #expect(throws: ProjectError.notFound) { try ProjectPackage.read(from: gone) }
+}

@@ -34,7 +34,9 @@ public struct ProjectPackage: Sendable {
     /// The package at `url`, where its audio is (nil for a project without audio, checked to
     /// exist otherwise), and whether its transcription file was there but could not be read.
     ///
-    /// `notAPackage` for anything that is not a `.neuralsheet` directory with a `project.json`;
+    /// `notFound` when nothing is at the URL at all (a recent whose project was deleted or moved),
+    /// which reads better than telling the user their own project is not a NeuralSheet project;
+    /// `notAPackage` for anything else that is not a `.neuralsheet` directory with a `project.json`;
     /// `unreadable` and `newerVersion` from the state; `missingAudio` when the state names a file
     /// that is not there. A transcription that cannot be read is dropped rather than thrown, but
     /// `transcriptionUnreadable` says so -- false when `transcription.json` is simply absent (no
@@ -47,8 +49,11 @@ public struct ProjectPackage: Sendable {
         var isDirectory: ObjCBool = false
         let manager = FileManager.default
 
-        guard url.pathExtension.lowercased() == pathExtension,
-            manager.fileExists(atPath: url.path, isDirectory: &isDirectory), isDirectory.boolValue,
+        guard manager.fileExists(atPath: url.path, isDirectory: &isDirectory) else {
+            throw ProjectError.notFound
+        }
+
+        guard url.pathExtension.lowercased() == pathExtension, isDirectory.boolValue,
             manager.fileExists(atPath: url.appendingPathComponent(stateFileName).path)
         else {
             throw ProjectError.notAPackage

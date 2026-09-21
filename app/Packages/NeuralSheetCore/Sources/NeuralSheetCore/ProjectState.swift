@@ -2,6 +2,8 @@ import Foundation
 
 /// What went wrong opening or saving a project; the app turns each case into the dialog's body.
 public enum ProjectError: Error, Equatable, Sendable {
+    /// Nothing exists at the URL: a recent whose project has been deleted or moved away.
+    case notFound
     /// Not a `.neuralsheet` directory holding a `project.json`.
     case notAPackage
     /// `project.json` exists but does not decode; the description says why.

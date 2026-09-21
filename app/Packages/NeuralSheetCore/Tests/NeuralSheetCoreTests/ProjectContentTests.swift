@@ -46,3 +46,28 @@ private func makeContent() -> ProjectContent {
     notes.transcription = nil
     #expect(notes != makeContent())
 }
+
+/// The dirty rule's whole point: an edit and an undo leave the project as it was saved. The undo
+/// and redo stacks are deliberately outside ``ProjectTranscription``'s equality, so the dot clears
+/// again rather than sticking until the project is closed.
+@Test func projectContentIgnoresUndoHistory() throws {
+    let saved = makeContent()
+    let savedDocument = try #require(saved.transcription).document
+
+    var edited = savedDocument
+    edited.commit(edited.delete([savedDocument.notes[0].id]))
+
+    var withEdit = saved
+    withEdit.transcription?.document = edited
+    #expect(withEdit != saved)
+
+    var undone = edited
+    undone.undo()
+    #expect(undone.notes == savedDocument.notes)
+    // `isEdited` is sticky -- a commit sets it, an undo never clears it -- so it is not compared.
+    #expect(undone.isEdited && !savedDocument.isEdited)
+
+    var withUndo = saved
+    withUndo.transcription?.document = undone
+    #expect(withUndo == saved)
+}

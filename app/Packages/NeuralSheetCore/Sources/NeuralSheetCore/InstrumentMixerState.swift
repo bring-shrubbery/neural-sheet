@@ -48,10 +48,10 @@ public struct InstrumentChannelSettings: Equatable, Codable, Sendable {
 /// The single place a program number becomes a colour: the sidebar chip, the fader fill and every
 /// note in the piano roll read the same `entries`, so they cannot disagree.
 ///
-/// `entries` is derived from the notes on every `update` and is deliberately not encoded — a reloaded
-/// session rebuilds it from its own notes, while the mix (`settings`) is what has to survive. That is
-/// also why `resetStoredSettings` clears only the mix: it is called when a transcription is launched
-/// and nowhere else, so a session reload keeps what the user set.
+/// `entries` is derived from the notes on every `update` and is deliberately not encoded — a project
+/// rebuilds it from its own notes when it opens, while the mix (`settings`) is what has to survive.
+/// That is also why `resetStoredSettings` clears only the mix: it is called when a transcription is
+/// launched and nowhere else, so opening a project keeps what the user set.
 public struct InstrumentMixerState: Equatable, Codable, Sendable {
     /// The fader range of the strip: −36 … +6 dB in 0.1 dB steps.
     public static let minGainDb = -36.0
@@ -137,8 +137,8 @@ public struct InstrumentMixerState: Equatable, Codable, Sendable {
 
     public func isSoloed(program: Int) -> Bool { settings[program]?.soloed ?? false }
 
-    /// Clamped to the fader's own range, so a value from a stale session or a typed-in number cannot
-    /// put the mix outside what the strip can show.
+    /// Clamped to the fader's own range, so a value from an old project file or a typed-in number
+    /// cannot put the mix outside what the strip can show.
     public mutating func setGain(program: Int, db: Double) {
         settings[program, default: InstrumentChannelSettings()].gainDb =
             min(max(db, InstrumentMixerState.minGainDb), InstrumentMixerState.maxGainDb)
