@@ -20,7 +20,7 @@ app/                       The macOS app (Xcode project, scheme NeuralSheet)
                            the AppKit timeline (waveform, ruler, piano roll, keyboard)
     UI/Timeline/Editing/   The roll's edit controller
   Packages/NeuralSheetCore Pure Swift logic with tests (notes, instruments, MIDI writer, peaks,
-                           resampler, meters, zoom math, settings, session, downloader)
+                           resampler, meters, zoom math, settings, project file, downloader)
   ThirdParty/muscriptor.cpp The transcription engine, git submodule (do not edit)
   Scripts/build-engine.sh  CMake build of the engine; runs as an Xcode build phase
 docs/design/               The behavioural inventory of NeuralNote (the parity checklist), the design,

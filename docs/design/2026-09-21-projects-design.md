@@ -133,7 +133,8 @@ turned out to be the wrong idea, §4.1); the app compares a generation counter i
 
 ```swift
 public enum ProjectError: Error, Equatable {
-    case notAPackage, unreadable(String), newerVersion(Int), missingAudio, couldNotWrite(String)
+    case notFound, notAPackage, unreadable(String), newerVersion(Int), missingAudio
+    case couldNotWrite(String)
 }
 
 public struct ProjectPackage: Sendable {
@@ -157,7 +158,9 @@ may be inside the destination package itself (the unchanged-audio case): the cop
 the swap, so that works.
 
 `read` accepts a URL whose extension is `neuralsheet` and which is a directory holding
-`project.json`; anything else is `notAPackage`. A `project.json` that does not decode is
+`project.json`. A URL with nothing at it at all is `notFound` ("The project file could not be
+found.") -- a recent whose project has been deleted or moved away, which must not be told it is not
+a NeuralSheet project; anything else is `notAPackage`. A `project.json` that does not decode is
 `unreadable`. A missing `transcription.json` is nil, an unreadable one is nil too (the audio and
 settings survive, as the session did). An `audioFileName` whose file is not there is
 `missingAudio`; an empty `audioFileName` is a project without audio, `audioURL` nil.
@@ -198,7 +201,7 @@ fresh project is clean and the first drop dirties it.
 | `openProject(url:)` | `ProjectPackage.read`, then `AudioFileLoader.load` on the audio, *before* anything is torn down; a failure shows "Could not open the project." with the reason and leaves the current project alone. Then `reviewProject`, `replaceWithEmpty()`, install the source, the settings and the view state, `projectURL = url`, recents noted. The notes are installed, and the project marked saved, only when they can be trusted (below); `read` also reports `transcriptionUnreadable`, a `transcription.json` that exists but did not decode |
 | `openProjectFromPanel()` | `NSOpenPanel` limited to the package type, then `openProject(url:)` |
 | `saveProject()` | Untitled: `saveProjectAs()`. Else write to `projectURL` |
-| `saveProjectAs()` | `NSSavePanel` in the Music folder, `nameFieldStringValue` the current title (`Untitled` becomes the audio's display name when there is one), the package type only; then write and adopt the URL |
+| `saveProjectAs()` | `NSSavePanel` beside the current file, or in the Music folder for an untitled project; `nameFieldStringValue` the current title (`Untitled` becomes the audio's display name when there is one), the package type only; then write and adopt the URL |
 | `revertProject()` | The standard question ("Do you want to revert to the most recently saved version of “X”?" / "Your current changes will be lost." Revert / Cancel); on Revert, `openProject(url:)` without the review |
 | `closeProject(then:)` | `reviewProject`, then `replaceWithEmpty()` and the completion (the window's close proceeds and the welcome window opens) |
 | `reviewProject(then:)` | Nothing to do when clean. Else the sheet "Do you want to save the changes made to the document “X”?" / "Your changes will be lost if you don't save them." with Save (default), Cancel, Don't Save. Save runs `saveProject()` (which may run the save panel) and continues only if it succeeded; Cancel stops; Don't Save continues. With unsaved changes and no `presentSaveReview` installed, that is a wiring bug: an `assertionFailure` in debug, then it proceeds rather than losing the work silently |
@@ -217,6 +220,11 @@ project has a URL, else `source.sourcePath`. A recording's file name in the pack
 `recording.wav`; a dropped file keeps its name. A failed write shows "Could not save the
 project." with the reason and the project stays edited. After a successful write the snapshot is
 retaken, the URL adopted, and the URL noted in the recents.
+
+A package moved or renamed in the Finder while it is open is not followed: the audio that was to be
+cloned out of it is gone, so the save falls back to the take's own original path, and only when
+that is gone too does it fail with "The project's audio file is no longer where it was saved."
+Following the package (an `NSFilePresenter` that updates `projectURL` on a rename) is a follow-up.
 
 The Library copy of a take is not deleted by a save: it goes when the project is cleared, as
 today (`deleteRecordedFiles`), and every path out of a project runs through `clearNow()`. A take
@@ -381,9 +389,9 @@ like every other app's:
 |---|---|
 | Review | "Do you want to save the changes made to the document “X”?" / "Your changes will be lost if you don't save them." Save · Cancel · Don't Save |
 | Revert | "Do you want to revert to the most recently saved version of “X”?" / "Your current changes will be lost." Revert · Cancel |
-| Open failure | "Could not open the project." / the reason ("The file is not a NeuralSheet project.", "The project's audio file is missing.", "The project was saved by a newer version of NeuralSheet.", or the system's description) |
+| Open failure | "Could not open the project." / the reason ("The project file could not be found.", "The file is not a NeuralSheet project.", "The project's audio file is missing.", "The project's audio file could not be decoded.", "The project was saved by a newer version of NeuralSheet.", or the system's description) |
 | Notes dropped | "Could not load the project's transcription." / "The notes in the file do not match its audio, or could not be read, and were left out. Saving the project will remove them from the file." |
-| Save failure | "Could not save the project." / the system's description |
+| Save failure | "Could not save the project." / the reason ("The project's audio file is no longer where it was saved.", "The audio has no file to copy.", or the system's description) |
 | Save panel | title "Save Project", the package type |
 | Open panel | title "Open Project" |
 
