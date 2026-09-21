@@ -184,10 +184,11 @@ extension AppModel {
     static let auditionMaxSeconds = 1.0
 
     /// Sounds `note` once through its instrument's synth, with its velocity and under its strip's
-    /// fader, mute and solo: on the click that selects it, as a drag carries it onto another
-    /// pitch, when it lands, and when the inspector changes its instrument, pitch or velocity.
-    /// Not while the transport runs, where the scheduler's note-offs and the audition's would cut
-    /// each other short.
+    /// fader, mute and solo, but not under the ORIG / MIDI crossfade, so it is heard however the
+    /// mix is set: on the click that selects it, as a drag carries it onto another pitch, when it
+    /// lands, and when the inspector changes its instrument, pitch or velocity. Not while the
+    /// transport runs, where the scheduler's note-offs and the audition's would cut each other
+    /// short.
     func audition(_ note: NoteEvent) {
         guard workspace == .edit, state.canPlay, !isPlaying else { return }
 

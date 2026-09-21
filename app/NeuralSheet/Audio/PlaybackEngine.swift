@@ -270,6 +270,9 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
     var isRunning: Bool { engine.isRunning }
 
     func play() {
+        // An audition still sounding holds the synth side at unity; the take must play under the
+        // crossfade that is set.
+        synthBank.stopAudition()
         // A wrap the poll has not picked up yet belongs to the run that just ended: without this,
         // pressing play right after the take finished would immediately re-anchor and announce it.
         supersedePendingWrap()

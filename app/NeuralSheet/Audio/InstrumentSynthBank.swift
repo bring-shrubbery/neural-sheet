@@ -140,14 +140,27 @@ nonisolated final class InstrumentSynthBank: @unchecked Sendable {
     private var appliedMixer = InstrumentMixerState()
 
     /// The note the editor is sounding on its own, so the next audition can end it rather than
-    /// let its note-off land on a new note at the same pitch. Main thread.
-    private var audition: (program: Int, pitch: UInt8, generation: Int)?
+    /// let its note-off land on a new note at the same pitch. A drum hit is one-shot and gets no
+    /// note-off, but is kept here for as long as it is heard, for the lift below. Main thread.
+    private var audition: (program: Int, pitch: UInt8, isDrum: Bool, generation: Int)?
     private var auditionGeneration = 0
 
     /// The synth side of the equal-power crossfade, `sin(mix · π/2)`. Written from the main thread;
     /// it is the sub-mix's output volume, so it applies to every instrument at once.
     var synthGain: Float = 0 {
-        didSet { subMixer.outputVolume = synthGain }
+        didSet { applySubMixVolume() }
+    }
+
+    /// While an audition sounds the sub-mix is at unity whatever the crossfade says, so a note the
+    /// editor clicks, draws or moves is heard even with the mix fully on the original. The
+    /// transport is stopped whenever there is an audition (``PlaybackEngine/play()`` ends one
+    /// first), so nothing of the take is under it to be balanced against. Main thread.
+    private var auditionLifted = false {
+        didSet { applySubMixVolume() }
+    }
+
+    private func applySubMixVolume() {
+        subMixer.outputVolume = auditionLifted ? 1 : synthGain
     }
 
     /// How many frames the render block has asked this bank to schedule for, ever.
@@ -321,7 +334,7 @@ nonisolated final class InstrumentSynthBank: @unchecked Sendable {
             sendAllNotesOff(to: instrument.node)
         }
 
-        audition = nil
+        clearAudition()
         retire(dropped)
     }
 
@@ -331,9 +344,10 @@ nonisolated final class InstrumentSynthBank: @unchecked Sendable {
     /// dragged onto another pitch, a velocity or instrument change. Note-on at once, note-off
     /// `seconds` later; a drum hit is one-shot and gets none. Main thread.
     ///
-    /// Goes through the instrument's own synth, so its fader, mute, solo and the crossfade apply
-    /// exactly as they do to the scheduled notes. `startNote` is `MusicDeviceMIDIEvent`, which
-    /// the AU takes from any thread: nothing here touches the render path or its table.
+    /// Goes through the instrument's own synth, so its fader, mute and solo apply exactly as they
+    /// do to the scheduled notes; the crossfade does not (``auditionLifted``), so it is heard
+    /// whatever the mix. `startNote` is `MusicDeviceMIDIEvent`, which the AU takes from any
+    /// thread: nothing here touches the render path or its table.
     func audition(program: Int, pitch: Int, velocity: Int, seconds: Double) {
         guard (0...NoteEvent.drumProgram).contains(program), (0...127).contains(pitch) else { return }
 
@@ -351,13 +365,13 @@ nonisolated final class InstrumentSynthBank: @unchecked Sendable {
         let channel = isDrum ? InstrumentSynthBank.drumChannel : InstrumentSynthBank.melodicChannel
         let key = UInt8(pitch)
 
+        // The lift before the note-on, so its first frames are not under a crossfade at zero.
+        auditionLifted = true
         node.startNote(key, withVelocity: UInt8(Swift.min(Swift.max(velocity, 1), 127)), onChannel: channel)
-
-        guard !isDrum else { return }
 
         auditionGeneration &+= 1
         let generation = auditionGeneration
-        audition = (program, key, generation)
+        audition = (program, key, isDrum, generation)
 
         DispatchQueue.main.asyncAfter(deadline: .now() + Swift.max(seconds, 0)) { [weak self] in
             guard let self, let audition = self.audition, audition.generation == generation else { return }
@@ -366,18 +380,26 @@ nonisolated final class InstrumentSynthBank: @unchecked Sendable {
         }
     }
 
-    /// The note-off for whatever ``audition(program:pitch:velocity:seconds:)`` left sounding.
-    /// Main thread.
+    /// The note-off for whatever ``audition(program:pitch:velocity:seconds:)`` left sounding, and
+    /// the crossfade back in force. Main thread.
     func stopAudition() {
         guard let audition else { return }
 
-        self.audition = nil
+        clearAudition()
+
+        guard !audition.isDrum else { return }
 
         lock.lock()
         let node = instruments[audition.program]?.node
         lock.unlock()
 
         node?.stopNote(audition.pitch, onChannel: InstrumentSynthBank.melodicChannel)
+    }
+
+    /// Forgets the audition and drops the lift, for the paths that have already silenced it.
+    private func clearAudition() {
+        audition = nil
+        auditionLifted = false
     }
 
     /// Bank select then program change, on the channel this instrument's notes arrive on.
@@ -501,7 +523,7 @@ nonisolated final class InstrumentSynthBank: @unchecked Sendable {
         lock.unlock()
 
         // CC 123 silences it with everything else; a timer that fires later finds nothing to stop.
-        audition = nil
+        clearAudition()
 
         for instrument in current {
             sendAllNotesOff(to: instrument.node)
