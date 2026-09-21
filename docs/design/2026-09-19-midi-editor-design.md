@@ -407,8 +407,10 @@ only the waveform and the roll seek).
 ## 7. The edit controller (`Timeline/Editing/RollEditController.swift`)
 
 Owned by `TimelineContainerView` in Edit mode. `PianoRollView` holds it weakly as `interaction`
-and forwards `mouseDown/Dragged/Up`, `mouseMoved`, `rightMouseDown` (no menu in v1: it selects
-like a click) and cursor updates to it; without one the roll's click seeks as today.
+and forwards `mouseDown/Dragged/Up`, `mouseMoved`, `rightMouseDown` (no menu: on a note it selects
+like a click, and its release anywhere on the roll opens the note card for the selection, leaving
+the selection alone when it lands on empty roll) and cursor updates to it; without one the
+roll's click seeks as today.
 
 ### 7.1 Hit testing
 

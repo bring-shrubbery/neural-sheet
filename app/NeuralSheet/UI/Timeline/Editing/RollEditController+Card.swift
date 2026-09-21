@@ -2,10 +2,11 @@ import AppKit
 import NeuralSheetCore
 import SwiftUI
 
-/// The note card: a right-click on a note opens the selection's five fields in a floating panel
-/// at the pointer, so a note can be set without a trip to the sidebar. It follows the selection
-/// while it is up and goes with the next click elsewhere, with Escape, or when nothing is
-/// selected any more.
+/// The note card: a right-click on the roll opens the selection's five fields in a floating panel
+/// at the pointer, so a note can be set without a trip to the sidebar. On a note the click
+/// selects it first; on empty roll the selection stays as it is, so notes picked out anywhere can
+/// be set from wherever the pointer is. It follows the selection while it is up and goes with
+/// the next click elsewhere, with Escape, or when nothing is selected any more.
 extension RollEditController {
     func showNoteCard(at windowPoint: CGPoint) {
         guard let window = roll.window else { return }

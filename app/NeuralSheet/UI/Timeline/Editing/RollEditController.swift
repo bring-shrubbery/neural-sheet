@@ -85,6 +85,7 @@ import SwiftUI
     func mouseDown(at point: CGPoint, event: NSEvent) {
         lastWindowPoint = event.locationInWindow
         let shift = event.modifierFlags.contains(.shift)
+        let rightClick = event.type == .rightMouseDown
         let hit = roll.hit(at: point)
         var session = DragSession(anchorPoint: point, anchorPitch: geometry.pitch(forY: point.y) ?? hit?.note.pitch ?? 60)
         session.anchorHit = hit
@@ -107,6 +108,9 @@ import SwiftUI
                     session.ids = model.editor.selection
                     model.audition(hit.note)
                 }
+            } else if rightClick {
+                // A right press on empty roll leaves the selection as it is: its release opens
+                // the card for whatever is selected, and it neither seeks, inserts nor draws.
             } else if model.editor.tool == .select {
                 if !shift { model.deselectAll() }
                 if event.clickCount == 2 { insertNote(at: point, modifiers: event.modifierFlags); return }
@@ -123,7 +127,8 @@ import SwiftUI
             }
 
         case .erase:
-            if let hit {
+            // A right click is the card's here too, so it never erases.
+            if let hit, !rightClick {
                 session.kind = .erase
                 session.erased = [hit.id]
                 roll.setPreview(DragPreview(kind: .erase, ids: session.erased))
@@ -213,7 +218,9 @@ import SwiftUI
             model.commit(document.delete(session.erased))
         }
 
-        if event.type == .rightMouseUp, session.kind == .pending, session.anchorHit != nil {
+        // A right click anywhere on the roll opens the card for the selection: the one it just
+        // made on a note, or the one already there when it landed on empty roll.
+        if event.type == .rightMouseUp, session.kind == .pending, !model.editor.selection.isEmpty {
             showNoteCard(at: event.locationInWindow)
         }
     }

@@ -418,10 +418,11 @@ final class PianoRollView: NSView {
         interaction?.mouseUp(at: convert(event.locationInWindow, from: nil), event: event)
     }
 
-    /// A right click selects like a click (design §7): the up resolves the press at the point it
-    /// went down, however far the mouse moved in between, so a right press-move-release never
-    /// turns into a move, a resize, a marquee or an erase that showed no preview. A right drag
-    /// is not forwarded.
+    /// A right click on a note selects like a click, and anywhere on the roll it opens the card
+    /// for the selection (design §7): the up resolves the press at the point it went down,
+    /// however far the mouse moved in between, so a right press-move-release never turns into a
+    /// move, a resize, a marquee or an erase that showed no preview. A right drag is not
+    /// forwarded.
     override func rightMouseDown(with event: NSEvent) {
         guard let interaction else { return super.rightMouseDown(with: event) }
 
