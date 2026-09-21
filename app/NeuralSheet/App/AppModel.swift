@@ -57,7 +57,13 @@ import UniformTypeIdentifiers
     private(set) var workspace: Workspace = .transcribe
 
     /// The take, or nil while empty or recording.
-    private(set) var source: SourceAudio?
+    private(set) var source: SourceAudio? {
+        didSet { sourceGeneration &+= 1 }
+    }
+
+    /// Bumped on every assignment to ``source``, so the dirty rule can tell a replaced or removed
+    /// take from the saved one without holding it.
+    private(set) var sourceGeneration = 0
 
     /// Seconds of audio: 0 when there is none, growing live while recording (refreshed by the
     /// display-link tick), `source.duration` otherwise.
@@ -306,9 +312,8 @@ import UniformTypeIdentifiers
     /// What the last save (or the empty project) held; the dirty rule compares against it.
     @ObservationIgnored var lastSavedContent: ProjectContent?
 
-    /// The take as of the last save: another object means the audio changed. Weak, so the buffer
-    /// of a take that has been replaced is not kept alive for the comparison.
-    @ObservationIgnored weak var lastSavedSource: SourceAudio?
+    /// ``sourceGeneration`` as of the last save: a different value means the audio changed.
+    @ObservationIgnored var lastSavedSourceGeneration = 0
 
     /// The audio's name inside the saved package, for the unchanged-audio copy on the next save.
     @ObservationIgnored var lastSavedAudioFileName = ""
@@ -434,6 +439,9 @@ import UniformTypeIdentifiers
         try? engine.start()
 
         startModelPoll()
+
+        // A fresh project is clean: nothing to compare against yet but the empty state itself.
+        markProjectSaved(audioFileName: "")
     }
 
     // MARK: - Derived

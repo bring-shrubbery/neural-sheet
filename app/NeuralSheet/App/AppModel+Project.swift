@@ -66,13 +66,13 @@ extension AppModel {
 
     /// The truth now, for the commands; ``isProjectEdited`` follows it a moment later.
     func computeProjectEdited() -> Bool {
-        source !== lastSavedSource || projectContent() != lastSavedContent
+        sourceGeneration != lastSavedSourceGeneration || projectContent() != lastSavedContent
     }
 
     /// After a save or an open: what is there now is what the file has.
     func markProjectSaved(audioFileName: String) {
         lastSavedContent = projectContent()
-        lastSavedSource = source
+        lastSavedSourceGeneration = sourceGeneration
         lastSavedAudioFileName = audioFileName
 
         if isProjectEdited {

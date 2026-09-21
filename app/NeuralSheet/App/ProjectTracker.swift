@@ -11,6 +11,7 @@ import Observation
     private let model: AppModel
     private let windowController: MainWindowController
     private var timer: Timer?
+    private var started = false
 
     /// Between the last change and the comparison.
     static let debounce: TimeInterval = 0.1
@@ -20,8 +21,12 @@ import Observation
         self.windowController = windowController
     }
 
-    /// Call once, when the view appears.
+    /// Call once, when the view appears. A second call (a re-`onAppear`) is a no-op, so the
+    /// observation chains never double up.
     func start() {
+        guard !started else { return }
+        started = true
+
         observeContent()
         observeDocumentState()
         refresh()
@@ -36,7 +41,7 @@ import Observation
     private func observeContent() {
         withObservationTracking {
             _ = model.projectContent()
-            _ = model.source
+            _ = model.sourceGeneration
         } onChange: { [weak self] in
             DispatchQueue.main.async {
                 guard let self else { return }
