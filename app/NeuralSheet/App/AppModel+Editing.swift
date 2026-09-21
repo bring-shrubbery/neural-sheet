@@ -15,6 +15,12 @@ struct EditorState: Equatable {
     var targetProgram: Int = 0
     var snapEnabled = true
     var grid = TempoGrid()
+    /// The stretch marked on the ruler for Re-transcribe (region design §4.2), half-open seconds.
+    /// Transient: not in the project file.
+    var range: Range<Double>?
+    /// The instruments the last Re-transcribe popup settled on this session; nil until it has
+    /// been opened, when the popup presets the instruments in the mix. Empty is Automatic.
+    var retranscribeGroups: [InstrumentGroup]?
 
     /// A drawn or inserted note is one division long.
     var drawLength: Double { grid.step }
@@ -204,11 +210,43 @@ extension AppModel {
         audition(first.note)
     }
 
-    /// Escape: a drag in progress is cancelled; otherwise the selection goes.
+    /// Escape: a drag in progress is cancelled; else the selection goes; else the range (region
+    /// design §6.3). Two Escapes from a selection inside a range clear both.
     func escapePressed() {
         if dragCanceller?() == true { return }
 
-        deselectAll()
+        if !editor.selection.isEmpty {
+            deselectAll()
+            return
+        }
+
+        clearRange()
+    }
+
+    // MARK: - Range
+
+    /// The ruler's drag: clamped to the take; a range under the minimum is no range, so a drag
+    /// that ends as a sliver clears rather than marks.
+    func setRange(_ range: Range<Double>) {
+        let lower = max(0, range.lowerBound)
+        let upper = min(duration, range.upperBound)
+
+        guard upper - lower >= RegionSlice.minimumRangeSeconds else {
+            clearRange()
+            return
+        }
+
+        let clamped = lower ..< upper
+
+        if editor.range != clamped {
+            editor.range = clamped
+        }
+    }
+
+    func clearRange() {
+        if editor.range != nil {
+            editor.range = nil
+        }
     }
 
     // MARK: - Tools and grid

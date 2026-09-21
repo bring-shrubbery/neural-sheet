@@ -187,6 +187,11 @@ import UniformTypeIdentifiers
             workspace = .transcribe
         }
 
+        // The range marks a stretch of a finished transcription; there is none to mark otherwise.
+        if newState != .populated, editor.range != nil {
+            editor.range = nil
+        }
+
         // The selection is fixed once a transcription exists, and the "+" goes away with it. A
         // picker left open over that would be offering a choice that no longer applies.
         if newState.hasTranscription, isInstrumentMenuOpen {
@@ -689,6 +694,7 @@ import UniformTypeIdentifiers
         staging.reset()
         document = nil
         editor.selection = []
+        editor.range = nil
         highlightedProgram = nil
         _ = dragCanceller?()
 
