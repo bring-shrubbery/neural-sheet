@@ -230,6 +230,17 @@ import UniformTypeIdentifiers
         didSet { engine.mix = effectiveMix }
     }
 
+    /// What one press of `[` or `]` moves the crossfade by.
+    static let mixStep = 0.1
+
+    /// The keys: a tenth toward the source (`steps < 0`) or the synth, landing on tenths so a
+    /// few presses from wherever the slider was left reach either end exactly.
+    func nudgeMix(steps: Int) {
+        let tenths = ((mix + Double(steps) * AppModel.mixStep) / AppModel.mixStep).rounded()
+
+        mix = min(max(tenths * AppModel.mixStep, 0), 1)
+    }
+
     /// A crossfade held in place of ``mix`` for as long as the top bar's ORIG or MIDI label is
     /// pressed, to hear one side alone; nil otherwise. Never written to ``mix``, so letting go
     /// puts back exactly what was set.

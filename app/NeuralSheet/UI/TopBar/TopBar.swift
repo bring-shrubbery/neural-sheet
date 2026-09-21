@@ -206,7 +206,7 @@ struct TopBar: View {
                        fill: Theme.accent.opacity(0.8),
                        track: Theme.faderTrackTop,
                        thumb: Theme.faderThumb)
-                .tooltip("Balance between the source audio and the synthesised transcription")
+                .tooltip("Balance between the source audio and the synthesised transcription | [ ]")
 
             MixHoldLabel(text: "MIDI",
                          colour: Theme.accentText,

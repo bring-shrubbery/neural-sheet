@@ -13,6 +13,7 @@ import NeuralSheetCore
 /// | r | record toggle |
 /// | m | mute input toggle |
 /// | c | centre playhead toggle |
+/// | [ / ] | the mix a tenth toward the original / the MIDI (ours; the original had no key for it) |
 /// | Esc | close the instrument picker |
 ///
 /// And in the Edit tab only (design §5.4), ahead of the rows above:
@@ -93,6 +94,12 @@ import NeuralSheetCore
         // Before the repeat guard: a held arrow keeps nudging.
         if model.workspace == .edit, let handled = handleEditorKey(event, shift: shift) {
             return handled
+        }
+
+        // Before the repeat guard as well: held, the mix keeps sliding.
+        if !shift, let characters = event.charactersIgnoringModifiers, characters == "[" || characters == "]" {
+            model.nudgeMix(steps: characters == "[" ? -1 : 1)
+            return true
         }
 
         // A held key repeats; the original's transport toggled on every repeat too, but a Space
