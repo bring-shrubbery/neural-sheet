@@ -103,6 +103,8 @@ jobs:
         with:
           ref: ${{ env.SHA }}
           submodules: recursive
+          # The release notes are the commits since the previous tag.
+          fetch-depth: 0
       - name: Select the newest installed Xcode
         run: |
           # shellcheck disable=SC2012  # /Applications/Xcode_*.app names are well-known; ls -d | sort -V is intentional.
@@ -267,11 +269,23 @@ jobs:
             echo "::error::sign_update did not produce a signature and length"; exit 1
           fi
 
+          # The notes: the commits since the last release, as HTML inside the feed (what the
+          # update prompt shows) and as Markdown for the release page.
+          previous=$(Scripts/release-version.sh --previous)
+          Scripts/release-notes.sh "$previous" --html > build/release-notes.html
+          Scripts/release-notes.sh "$previous" --markdown > build/release-notes.md
+          {
+            echo
+            echo "**Full changelog**: https://github.com/$GITHUB_REPOSITORY/compare/${previous:-$(git rev-list --max-parents=0 HEAD | tail -1)}...$TAG"
+          } >> build/release-notes.md
+          cat build/release-notes.md
+
           Scripts/release-appcast.sh \
             --version "$VERSION" --build "${{ steps.archive.outputs.build_number }}" --tag "$TAG" \
             --url "https://github.com/$GITHUB_REPOSITORY/releases/download/$TAG/NeuralSheet-$TAG-macos-arm64.zip" \
             --length "$length" --signature "$ed" \
-            --notes "https://github.com/$GITHUB_REPOSITORY/releases/tag/$TAG" \
+            --notes-file build/release-notes.html \
+            --notes-link "https://github.com/$GITHUB_REPOSITORY/releases/tag/$TAG" \
             --date "$(LC_ALL=C date -u '+%a, %d %b %Y %H:%M:%S +0000')" > build/appcast.xml
           xmllint --noout build/appcast.xml
           cat build/appcast.xml
@@ -303,7 +317,7 @@ jobs:
           tag_name: ${{ env.TAG }}
           target_commitish: ${{ env.SHA }}
           name: NeuralSheet ${{ env.TAG }}
-          generate_release_notes: true
+          body_path: app/build/release-notes.md
           fail_on_unmatched_files: true
           files: |
             app/build/NeuralSheet-${{ env.TAG }}-macos-arm64.dmg
