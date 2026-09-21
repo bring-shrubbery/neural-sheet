@@ -160,8 +160,10 @@ extension NoteDocument {
         return note
     }
 
-    /// A change per note the transform actually changes.
-    private func changing(_ sources: [EditableNote], title: String, _ transform: (NoteEvent) -> NoteEvent) -> EditBatch {
+    /// A change per note the transform actually changes. Internal rather than private: the
+    /// whole-instrument commands (`+InstrumentCommands`) and the region replacement (`+Region`)
+    /// build their batches on the same helpers.
+    func changing(_ sources: [EditableNote], title: String, _ transform: (NoteEvent) -> NoteEvent) -> EditBatch {
         var batch = EditBatch(title: title)
 
         for source in sources {
@@ -178,7 +180,7 @@ extension NoteDocument {
     // MARK: - Invariants
 
     /// Clamps every note the batch introduces, then resolves the overlaps it creates.
-    private func finished(_ batch: EditBatch) -> EditBatch {
+    func finished(_ batch: EditBatch) -> EditBatch {
         var batch = batch
         batch.inserted = batch.inserted.map { EditableNote(id: $0.id, note: NoteDocument.clamped($0.note)) }
         batch.changed = batch.changed.map { NoteChange(before: $0.before, after: EditableNote(id: $0.after.id, note: NoteDocument.clamped($0.after.note))) }
