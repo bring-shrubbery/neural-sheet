@@ -53,6 +53,7 @@ Requirements: macOS 26, Xcode 27, CMake on PATH (`/opt/homebrew/bin/cmake` is al
 ## Conventions
 
 - Commit messages: lowercase `area: what` (`audio:`, `ui:`, `app:`, `core:`, `engine:`, `docs:`, `chore:`), a body explaining why when it is not obvious. Reference issues with `refs #123`, never closing keywords.
+- **Commit as you go.** Every change is committed the moment it builds and its tests pass, as one atomic commit per area and concern, before the next piece of work starts. A task that touches five areas ends as five commits, not one, and never as an uncommitted working tree handed back for review. Do not wait to be asked.
 - User-facing strings say "NeuralSheet" and use the wording NeuralNote used for the same message.
 - Do not commit `app/build/`, `xcuserdata/`, or anything under `.superpowers/`.
 - Do not download models in tests. The downloader tests use an in-process `URLProtocol` stub.
