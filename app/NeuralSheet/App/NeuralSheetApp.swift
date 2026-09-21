@@ -108,13 +108,36 @@ struct NeuralSheetApp: App {
             .keyboardShortcut("z", modifiers: [.command, .shift])
         }
 
+        // Cut, Copy and Paste route like Undo: a field's own while one is being typed in, the
+        // selection's in the Edit tab. What the pasteboard holds is not observable either, so
+        // Paste stays enabled and does nothing when there are no notes on it.
         CommandGroup(replacing: .pasteboard) {
-            Button("Cut") { NSApp.sendAction(#selector(NSText.cut(_:)), to: nil, from: nil) }
-                .keyboardShortcut("x", modifiers: .command)
-            Button("Copy") { NSApp.sendAction(#selector(NSText.copy(_:)), to: nil, from: nil) }
-                .keyboardShortcut("c", modifiers: .command)
-            Button("Paste") { NSApp.sendAction(#selector(NSText.paste(_:)), to: nil, from: nil) }
-                .keyboardShortcut("v", modifiers: .command)
+            Button("Cut") {
+                if Self.textFieldHasFocus {
+                    NSApp.sendAction(#selector(NSText.cut(_:)), to: nil, from: nil)
+                } else if model.workspace == .edit {
+                    model.cutSelection()
+                }
+            }
+            .keyboardShortcut("x", modifiers: .command)
+
+            Button("Copy") {
+                if Self.textFieldHasFocus {
+                    NSApp.sendAction(#selector(NSText.copy(_:)), to: nil, from: nil)
+                } else if model.workspace == .edit {
+                    model.copySelection()
+                }
+            }
+            .keyboardShortcut("c", modifiers: .command)
+
+            Button("Paste") {
+                if Self.textFieldHasFocus {
+                    NSApp.sendAction(#selector(NSText.paste(_:)), to: nil, from: nil)
+                } else if model.workspace == .edit {
+                    model.paste()
+                }
+            }
+            .keyboardShortcut("v", modifiers: .command)
 
             Divider()
 
