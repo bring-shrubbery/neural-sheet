@@ -311,13 +311,17 @@ change (falls back to the first entry).
 ### 5.4 Menus and shortcuts
 
 Edit menu (new `CommandGroup`): Undo `⌘Z` / Redo `⇧⌘Z` (titles "Undo Move Notes" etc. from the
-batch; "Undo" / "Redo" disabled when empty), Delete `⌫`, Select All `⌘A`, Deselect All `⇧⌘A`,
-Quantize `⌘U`, Revert to Transcription…. All disabled unless `workspace == .edit`. View menu gains Transcribe `⌘1` and Edit `⌘2`.
+batch; "Undo" / "Redo" disabled when empty), Cut `⌘X` / Copy `⌘C` / Paste `⌘V` (the selection
+on the general pasteboard as JSON under a type of our own; Paste lands at the playhead, keeping
+the notes' spacing, and selects what it put down), Delete `⌫`, Select All `⌘A`, Deselect All
+`⇧⌘A`, Quantize `⌘U`, Revert to Transcription…. All disabled unless `workspace == .edit`. View
+menu gains Transcribe `⌘1` and Edit `⌘2`.
 
 `KeyboardShortcuts` (the local monitor) adds, Edit tab only, main window, no text field focused:
 `v` / `d` / `e` tools, `⌫` and forward-delete, arrow nudges (`←/→` one grid step, or 10 ms with
 snap off; `↑/↓` one semitone; `⇧↑/↓` an octave), `Esc` (cancel drag, else deselect). `r` (record)
-is refused in the Edit tab since recording is not possible from `.populated` anyway.
+is refused in the Edit tab since recording is not possible from `.populated` anyway. In both tabs,
+`[` / `]` step the ORIG / MIDI mix a tenth either way.
 
 ### 5.5 Velocity to the synth
 
