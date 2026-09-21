@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check the issue against the contribution policy
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const MARKER = '<!-- neuralsheet:issue-gate -->';

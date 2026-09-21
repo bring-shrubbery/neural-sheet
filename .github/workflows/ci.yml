@@ -18,7 +18,7 @@ jobs:
     name: Core package tests
     runs-on: macos-26
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Select the newest installed Xcode
         run: |
           # shellcheck disable=SC2012
@@ -34,7 +34,7 @@ jobs:
     name: Build the app
     runs-on: macos-26
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           submodules: recursive
       - name: Select the newest installed Xcode
@@ -45,7 +45,7 @@ jobs:
           sudo xcode-select -s "$XCODE"
           xcodebuild -version
       - name: Cache the engine build
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: app/build/engine
           key: engine-${{ runner.os }}-${{ hashFiles('.gitmodules') }}-${{ hashFiles('app/Scripts/build-engine.sh') }}
@@ -72,8 +72,8 @@ jobs:
       run:
         working-directory: web
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version-file: web/.nvmrc
           cache: npm
