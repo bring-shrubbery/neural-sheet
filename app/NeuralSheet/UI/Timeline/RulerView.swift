@@ -82,7 +82,8 @@ final class RulerView: NSView {
         // `labelInset + labelWidth` to the right of its tick.
         let firstIndex = max(0, Int(((dirtyRect.minX - labelInset - labelWidth) / k / CGFloat(pixelsPerSecond)
             / CGFloat(division)).rounded(.down)))
-        let width = bounds.width
+        // The band's window ends at its bounds' maxX, not at its width.
+        let end = bounds.maxX
 
         var index = firstIndex
 
@@ -130,7 +131,7 @@ final class RulerView: NSView {
         for line in grid.lines(from: max(0, from), to: to, division: .quarter) {
             let x = CGFloat((line.seconds * pixelsPerSecond).rounded()) * k
 
-            guard x < bounds.width else { break }
+            guard x < bounds.maxX else { break }
 
             let position = grid.barBeat(at: line.seconds + 1e-6)
 

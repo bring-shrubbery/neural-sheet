@@ -206,10 +206,11 @@ final class PianoRollView: NSView {
             return
         }
 
-        let width = bounds.width
+        // To the end of the band's window; the container lays the shade out again when it slides.
+        let end = bounds.maxX
         let x = geometry.x(forSeconds: seconds)
 
-        guard x < width else {
+        guard x < end else {
             frontierShade.isHidden = true
             frontierLine.isHidden = true
             return
@@ -217,7 +218,7 @@ final class PianoRollView: NSView {
 
         frontierShade.isHidden = false
         frontierLine.isHidden = false
-        frontierShade.set(frame: CGRect(x: x, y: 0, width: width - x, height: bounds.height))
+        frontierShade.set(frame: CGRect(x: x, y: 0, width: end - x, height: bounds.height))
 
         let lineX = (x / geometry.scale).rounded() * geometry.scale
         frontierLine.set(frame: CGRect(x: lineX, y: 0, width: geometry.scale, height: bounds.height))

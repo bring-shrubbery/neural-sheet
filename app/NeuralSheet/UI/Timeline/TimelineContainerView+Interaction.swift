@@ -75,9 +75,10 @@ extension TimelineContainerView {
     }
 
     /// `mouseWheelMove`: ⌘-wheel zooms time about the left edge, ⌥-wheel over the roll zooms
-    /// pitch about the pointer, a plain vertical wheel over the roll scrolls pitch, and
-    /// everything else scrolls time — unless the view is following the playhead, where a scroll
-    /// would be undone on the next frame.
+    /// pitch about the pointer, a wheel over the roll pans both axes at once (its vertical part
+    /// through pitch, its horizontal part through time, as a trackpad gesture is rarely one or
+    /// the other alone), and over the waveform or the ruler either part scrolls time — unless
+    /// the view is following the playhead, where a scroll would be undone on the next frame.
     override func scrollWheel(with event: NSEvent) {
         handleWheel(WheelGesture(event), at: convert(event.locationInWindow, from: nil))
     }
@@ -97,20 +98,21 @@ extension TimelineContainerView {
             return
         }
 
-        if overRoll, wheel.juceDeltaY != 0 {
-            scrollPitch(byWheel: wheel.juceDeltaY)
-            return
+        if overRoll, wheel.pixelDeltaY != 0 {
+            scrollPitch(byPixels: wheel.pixelDeltaY)
         }
 
         if model.followPlayhead, model.state.canPlay, model.isPlaying {
             return
         }
 
-        // Only the time axis scrolls here, so a vertical wheel over the waveform or the ruler moves
-        // through time too, as the JUCE viewport had it.
-        let dx = wheel.pixelDeltaX != 0 ? wheel.pixelDeltaX : wheel.pixelDeltaY
+        // Only the time axis scrolls over the waveform and the ruler, so a vertical wheel there
+        // moves through time too, as the JUCE viewport had it.
+        let dx = overRoll ? wheel.pixelDeltaX : (wheel.pixelDeltaX != 0 ? wheel.pixelDeltaX : wheel.pixelDeltaY)
 
-        scroll(toX: scrollView.contentView.bounds.minX - dx)
+        if dx != 0 {
+            scroll(toX: scrollView.contentView.bounds.minX - dx)
+        }
     }
 
     /// `mouseMagnify`: the pinch multiplies the time zoom, anchored on the left edge; with ⌥ held
@@ -145,17 +147,18 @@ extension TimelineContainerView {
     func scrollPitch(with wheel: WheelGesture, at point: CGPoint) {
         if wheel.isOptionDown {
             zoomPitch(byWheel: wheel.juceDeltaY, at: point)
-        } else if wheel.juceDeltaY != 0 {
-            scrollPitch(byWheel: wheel.juceDeltaY)
+        } else if wheel.pixelDeltaY != 0 {
+            scrollPitch(byPixels: wheel.pixelDeltaY)
         }
     }
 
-    private func scrollPitch(byWheel delta: Double) {
-        let before = Int(geometry.firstKey)
+    /// Pans the pitch axis by real points; repaints only when the column actually moved a pixel.
+    private func scrollPitch(byPixels pixels: CGFloat) {
+        let before = geometry.keyAxisOffset
 
-        geometry.scrollKeys(byWheel: delta)
+        geometry.scrollKeys(byPixels: Double(pixels / scale))
 
-        if Int(geometry.firstKey) != before {
+        if geometry.keyAxisOffset != before {
             keyboard.needsDisplay = true
             roll.needsDisplay = true
         }
@@ -274,9 +277,10 @@ extension TimelineContainerView {
     }
 }
 
-/// One wheel gesture, as the two units the timeline needs it in: the raw pixel deltas for
-/// scrolling time 1:1, and JUCE's `MouseWheelDetails` scaling — precise deltas × 0.5 / 256, line
-/// deltas × 10 / 256 (`redirectMouseWheel`) — for the zoom step and the pitch scroll.
+/// One wheel gesture, as the two units the timeline needs it in: pixel deltas for panning time
+/// and pitch 1:1 (a mouse wheel's line deltas are turned into pixels at `pixelsPerLine`), and
+/// JUCE's `MouseWheelDetails` scaling — precise deltas × 0.5 / 256, line deltas × 10 / 256
+/// (`redirectMouseWheel`) — for the zoom steps.
 struct WheelGesture {
     var pixelDeltaX: CGFloat
     var pixelDeltaY: CGFloat
@@ -284,15 +288,20 @@ struct WheelGesture {
     var isCommandDown: Bool
     var isOptionDown: Bool
 
+    /// What one line of a notched wheel pans, in real points.
+    static let pixelsPerLine: CGFloat = 16
+
     init(_ event: NSEvent) {
-        pixelDeltaX = event.scrollingDeltaX
-        pixelDeltaY = event.scrollingDeltaY
         isCommandDown = event.modifierFlags.contains(.command)
         isOptionDown = event.modifierFlags.contains(.option)
 
         if event.hasPreciseScrollingDeltas {
+            pixelDeltaX = event.scrollingDeltaX
+            pixelDeltaY = event.scrollingDeltaY
             juceDeltaY = Double(event.scrollingDeltaY) * 0.5 / 256
         } else {
+            pixelDeltaX = event.scrollingDeltaX * WheelGesture.pixelsPerLine
+            pixelDeltaY = event.scrollingDeltaY * WheelGesture.pixelsPerLine
             juceDeltaY = Double(event.deltaY) * 10 / 256
         }
     }

@@ -9,6 +9,12 @@ import SwiftUI
 /// Owns the ``TimelineGeometry`` every view reads, watches the model with observation tracking and
 /// repaints only what a change touched, and runs a display link that slides the playhead layers
 /// and follows the transport without redrawing anything underneath.
+///
+/// The three bands are not as wide as the content. Each is a window a few viewports wide that
+/// slides along with the scroll (``layoutDocument()``), with its bounds origin set to where it
+/// sits in the document, so every band keeps drawing, hit-testing and placing its subviews in
+/// document coordinates. A band the width of a ten-minute take would be a layer AppKit has to
+/// tile, and tiles fill in behind a pan; a window is one layer that pans as a whole.
 final class TimelineContainerView: NSView {
     let model: AppModel
     let geometry = TimelineGeometry()
@@ -100,6 +106,14 @@ final class TimelineContainerView: NSView {
     /// The decode frontier on show, so a resize can lay its shade out again.
     var frontierSeconds: Double?
 
+    /// How many viewports wide the bands are, and how close to a band's end the viewport may
+    /// come before the bands slide to centre on it again.
+    static let bandWindowViewports: CGFloat = 3
+    static let bandSlideMargin: CGFloat = 0.25
+
+    /// The bands' span in the document, as last laid out.
+    var bandWindow = CGRect.zero
+
     /// True while an observation tracker is waiting for the next write; one at a time.
     var isObservationArmed = false
 
@@ -114,6 +128,7 @@ final class TimelineContainerView: NSView {
     var idleTicks = 0
 
     var clipObserver: NSObjectProtocol?
+    var scrollObserver: NSObjectProtocol?
 
     // MARK: - Init
 
@@ -162,6 +177,16 @@ final class TimelineContainerView: NSView {
             }
         }
 
+        // Every scroll, so the bands can slide along before the newly exposed part is on screen.
+        scrollView.contentView.postsBoundsChangedNotifications = true
+        scrollObserver = NotificationCenter.default.addObserver(
+            forName: NSView.boundsDidChangeNotification, object: scrollView.contentView, queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated {
+                self?.clipViewDidScroll()
+            }
+        }
+
         installOverlays()
     }
 
@@ -172,6 +197,10 @@ final class TimelineContainerView: NSView {
     deinit {
         if let clipObserver {
             NotificationCenter.default.removeObserver(clipObserver)
+        }
+
+        if let scrollObserver {
+            NotificationCenter.default.removeObserver(scrollObserver)
         }
     }
 
@@ -278,9 +307,17 @@ final class TimelineContainerView: NSView {
         }
     }
 
+    /// A scroll that has carried the viewport near the end of the bands' window: they slide now,
+    /// in the same pass, so nothing blank is ever on screen.
+    private func clipViewDidScroll() {
+        if desiredBandWindow(contentWidth: geometry.contentWidth) != bandWindow {
+            layoutDocument()
+        }
+    }
+
     /// The document is as wide as the content and exactly as tall as the clip view, the three
-    /// bands stacked inside it. Answers whether the viewport's width moved, which is what the zoom
-    /// floor depends on.
+    /// bands stacked inside it over the window the viewport is in. Answers whether the viewport's
+    /// width moved, which is what the zoom floor depends on.
     @discardableResult
     func layoutDocument() -> Bool {
         let k = scale
@@ -304,22 +341,66 @@ final class TimelineContainerView: NSView {
             document.frame = documentFrame
         }
 
-        setFrame(CGRect(x: 0, y: 0, width: width, height: waveformHeight), of: waveform)
-        setFrame(CGRect(x: 0, y: waveformHeight, width: width, height: rulerHeight), of: ruler)
-        setFrame(CGRect(x: 0, y: rollY, width: width, height: max(0, height - rollY)), of: roll)
+        let window = desiredBandWindow(contentWidth: width)
+        let windowMoved = window != bandWindow
+        bandWindow = window
 
-        if documentChanged {
+        setFrame(CGRect(x: window.minX, y: 0, width: window.width, height: waveformHeight), of: waveform)
+        setFrame(CGRect(x: window.minX, y: waveformHeight, width: window.width, height: rulerHeight), of: ruler)
+        setFrame(CGRect(x: window.minX, y: rollY, width: window.width, height: max(0, height - rollY)), of: roll)
+
+        if documentChanged || windowMoved {
             roll.setFrontier(seconds: frontierSeconds)
         }
 
         return viewportChanged
     }
 
-    private func setFrame(_ frame: CGRect, of view: NSView) {
-        guard view.frame != frame else { return }
+    /// Where the bands should span: `bandWindowViewports` wide, centred on the viewport and
+    /// inside the content -- or the whole content when that is narrower. The window that is
+    /// there is kept while the viewport stays `bandSlideMargin` clear of both its ends, so a
+    /// slide (a full repaint of the three bands) happens once per stretch of panning rather than
+    /// per wheel event; at an end of the content there is nothing to slide towards.
+    private func desiredBandWindow(contentWidth: CGFloat) -> CGRect {
+        let clip = scrollView.contentView.bounds
+        let viewport = max(clip.width, 1)
+        let width = min(contentWidth, (viewport * TimelineContainerView.bandWindowViewports).rounded())
+        let margin = viewport * TimelineContainerView.bandSlideMargin
+        let current = bandWindow
 
+        if current.width == width, current.maxX <= contentWidth,
+           clip.minX >= current.minX + margin || current.minX <= 0,
+           clip.maxX <= current.maxX - margin || current.maxX >= contentWidth
+        {
+            return current
+        }
+
+        let x = min(max((clip.midX - width / 2).rounded(), 0), max(0, contentWidth - width))
+
+        return CGRect(x: x, y: 0, width: width, height: 0)
+    }
+
+    /// A band's frame is where its window sits in the document, and its bounds origin is the
+    /// same x, so the band's own coordinates are document coordinates. Either moving is a whole
+    /// new stretch of content: the band repaints.
+    private func setFrame(_ frame: CGRect, of view: NSView) {
+        let frameChanged = view.frame != frame
         let heightChanged = view.frame.height != frame.height
-        view.frame = frame
+
+        if frameChanged {
+            view.frame = frame
+        }
+
+        // Read after the frame is set: the origin has to match whatever the frame left it at.
+        let originChanged = view.bounds.origin.x != frame.minX
+
+        if originChanged {
+            view.setBoundsOrigin(CGPoint(x: frame.minX, y: 0))
+        }
+
+        if frameChanged || originChanged {
+            view.needsDisplay = true
+        }
 
         if heightChanged {
             configureViews()

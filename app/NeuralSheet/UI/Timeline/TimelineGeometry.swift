@@ -99,8 +99,9 @@ final class TimelineGeometry {
     /// The key column's height in authored pixels, which the pitch axis is laid out against.
     var keyboardHeight: CGFloat = 0
 
-    /// `KeyboardComponentBase::firstKey`: the lowest key on screen, fractional so a wheel gesture
-    /// accumulates, snapped to a whole key when laid out.
+    /// `KeyboardComponentBase::firstKey`: the lowest key on screen, fractional. JUCE snapped it
+    /// to a whole key when laying out; here the fraction is laid out too (``keyAxisOffset``), so
+    /// a wheel over the roll pans pitch by the pixel rather than a key at a time.
     var firstKey: Double = Double(PitchRange.empty.low)
 
     /// One white key's height in authored pixels (`nn::zoom::keyHeightForRowHeight`).
@@ -114,11 +115,22 @@ final class TimelineGeometry {
     /// `getBlackNoteWidth()`: across the key, 0.58 of a white key.
     var blackNoteWidth: CGFloat { keyWidth * 0.58 }
 
+    /// `xOffset` in JUCE, with the fraction: the whole key's start plus that fraction of the way
+    /// to the next key's, rounded to a whole authored pixel so the keys stay crisp.
+    var keyAxisOffset: CGFloat {
+        let whole = Int(firstKey.rounded(.down))
+        let fraction = CGFloat(firstKey - Double(whole))
+        let start = KeyboardLayout.keyPosition(whole, keyWidth: keyWidth).start
+        let next = KeyboardLayout.keyPosition(whole + 1, keyWidth: keyWidth).start
+
+        return (start + fraction * (next - start)).rounded()
+    }
+
     /// `getKeyPos(note)`: where a key starts and ends along the axis, measured upward from the
-    /// bottom of the column. The key `firstKey` snaps to sits at 0 (`xOffset` in JUCE).
+    /// bottom of the column. `firstKey` sits at 0.
     func keyPosition(_ note: Int) -> (start: CGFloat, end: CGFloat) {
         let position = KeyboardLayout.keyPosition(note, keyWidth: keyWidth)
-        let base = KeyboardLayout.keyPosition(Int(firstKey), keyWidth: keyWidth).start
+        let base = keyAxisOffset
 
         return (position.start - base, position.end - base)
     }
@@ -214,7 +226,7 @@ final class TimelineGeometry {
         if let note = KeyboardLayout.note(atPosition: probe, range: pitchRange, keyWidth: keyWidth) {
             let lastStartKey = note + 1
 
-            if Int(firstKey) > lastStartKey {
+            if firstKey > Double(lastStartKey) {
                 firstKey = Double(min(max(lastStartKey, low), high))
             }
         } else if probe < start {
@@ -258,9 +270,12 @@ final class TimelineGeometry {
         return true
     }
 
-    /// `KeyboardComponentBase::mouseWheelMove`, facing right: the delta in JUCE wheel units.
-    func scrollKeys(byWheel delta: Double) {
-        firstKey += delta * Double(keyWidth)
+    /// A wheel over the roll or the keys, in authored pixels along the axis: one pixel of gesture
+    /// is one pixel of column, a semitone being a lane (`rowHeight`) tall on average.
+    func scrollKeys(byPixels pixels: Double) {
+        guard rowHeight > 0 else { return }
+
+        firstKey += pixels / Double(rowHeight)
         settleFirstKey()
     }
 }
