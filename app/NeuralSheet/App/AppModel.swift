@@ -293,6 +293,31 @@ import UniformTypeIdentifiers
 
     var settings: GlobalSettings
 
+    // MARK: - Project
+
+    /// Where the project is saved, or nil for an untitled one. Only `AppModel+Project.swift`
+    /// writes it.
+    var projectURL: URL?
+
+    /// Content differs from what was last saved: the dot in the close button. Kept by
+    /// `ProjectTracker`; the commands that need the truth now call ``computeProjectEdited()``.
+    var isProjectEdited = false
+
+    /// What the last save (or the empty project) held; the dirty rule compares against it.
+    @ObservationIgnored var lastSavedContent: ProjectContent?
+
+    /// The take as of the last save: another object means the audio changed. Weak, so the buffer
+    /// of a take that has been replaced is not kept alive for the comparison.
+    @ObservationIgnored weak var lastSavedSource: SourceAudio?
+
+    /// The audio's name inside the saved package, for the unchanged-audio copy on the next save.
+    @ObservationIgnored var lastSavedAudioFileName = ""
+
+    /// Installed by the welcome view and the main view: shows the project window (and dismisses
+    /// the welcome window), and the reverse. Nil before a window exists.
+    @ObservationIgnored var showProjectWindow: (() -> Void)?
+    @ObservationIgnored var showWelcomeWindow: (() -> Void)?
+
     // MARK: - Models
 
     /// The size a run would use: the preference when installed, else Medium, else the first

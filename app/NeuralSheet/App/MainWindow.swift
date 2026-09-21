@@ -19,6 +19,10 @@ import SwiftUI
 
     @ObservationIgnored private(set) weak var window: NSWindow?
 
+    /// The represented file and the edited flag, kept here so a window attached later gets them.
+    private var documentURL: URL?
+    private var documentEdited = false
+
     // MARK: - Attaching
 
     /// Once, when the view lands in its window.
@@ -26,10 +30,33 @@ import SwiftUI
         guard self.window !== window else { return }
 
         self.window = window
+        applyDocument()
     }
 
     func detach() {
         window = nil
+    }
+
+    // MARK: - Document
+
+    /// The proxy icon (and its Finder menu) and the dot in the close button, from AppKit's own
+    /// properties. The title is SwiftUI's (`navigationTitle` on the main view).
+    func setDocument(url: URL?, edited: Bool) {
+        documentURL = url
+        documentEdited = edited
+        applyDocument()
+    }
+
+    private func applyDocument() {
+        guard let window else { return }
+
+        if window.representedURL != documentURL {
+            window.representedURL = documentURL
+        }
+
+        if window.isDocumentEdited != documentEdited {
+            window.isDocumentEdited = documentEdited
+        }
     }
 }
 

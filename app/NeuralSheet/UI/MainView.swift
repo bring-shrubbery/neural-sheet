@@ -14,13 +14,18 @@ struct MainView: View {
     let model: AppModel
     let persistence: Persistence
 
-    @State private var windowController = MainWindowController()
+    @State private var windowController: MainWindowController
     @State private var shortcuts: KeyboardShortcuts
+    @State private var tracker: ProjectTracker
 
     init(model: AppModel, persistence: Persistence) {
         self.model = model
         self.persistence = persistence
         _shortcuts = State(initialValue: KeyboardShortcuts(model: model))
+
+        let controller = MainWindowController()
+        _windowController = State(initialValue: controller)
+        _tracker = State(initialValue: ProjectTracker(model: model, windowController: controller))
     }
 
     // MARK: - Body
@@ -37,6 +42,7 @@ struct MainView: View {
         }
         .frame(minWidth: MainWindowController.minContentSize.width,
                minHeight: MainWindowController.minContentSize.height)
+        .navigationTitle(model.projectTitle)
         .background(MainWindowHost(controller: windowController, model: model))
         .sheet(isPresented: Binding(get: { model.isExportDialogPresented },
                                     set: { model.isExportDialogPresented = $0 })) {
@@ -94,6 +100,7 @@ struct MainView: View {
             model.presentAudioStartFailureIfAny()
         }
         persistence.start()
+        tracker.start()
         shortcuts.install { [windowController] in windowController.window }
     }
 
