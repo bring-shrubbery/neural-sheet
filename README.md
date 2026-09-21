@@ -39,7 +39,7 @@ The transcription engine itself, [muscriptor.cpp](https://github.com/DamRsn/musc
 5. **Edit.** `⌘2` opens the Edit tab. `V` selects, `D` draws, `E` erases; drag notes, or their ends; `⌥`-drag duplicates; arrows nudge. Set the tempo and where bar 1 falls in the toolbar.
 6. **Export.** Drag the **MIDI** button onto a track in your DAW, or use **Export** to save a `.mid` file. The export tempo sets how seconds map to beats.
 
-Shortcuts: `Space` play/pause · `Shift+Space` go to start · `r` record · `m` mute · `c` centre the playhead · `Shift+Backspace` clear · `⌘`+scroll or pinch to zoom the timeline · `⌘1`/`⌘2` tabs · `⌘Z` undo · `⌘U` quantize · `⌘A` select all · `⌘`-drag ignores snap.
+Shortcuts: `Space` play/pause · `Enter` (or `Shift+Space`) go to start · `r` record · `m` mute · `c` centre the playhead · `Shift+Backspace` clear · `⌘`+scroll or pinch to zoom the timeline · `⌘1`/`⌘2` tabs · `⌘Z` undo · `⌘U` quantize · `⌘A` select all · `⌘`-drag ignores snap.
 
 ## Models
 

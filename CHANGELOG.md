@@ -13,10 +13,17 @@ Work towards v2 starts here: user-experience improvements beyond NeuralNote pari
 - Automatic releases: every code change on `main` that passes CI is published as a signed, notarized `.dmg` (and zip) on a GitHub release, tagged with the next patch version (`docs/release.md`).
 - A website at [neural-sheet.quassum.com](https://neural-sheet.quassum.com) (`web/`, Astro on Cloudflare) with the latest download and the `/appcast.xml` feed redirect.
 - Updates install from inside the app (Sparkle): a check on launch and daily, a prompt with the release notes, install and relaunch. The status-bar notice and its link to the releases page are gone.
+- The editor auditions notes: a note sounds, with its instrument, velocity and its strip's fader, mute and solo, when it is clicked, dragged across pitches, moved, inserted, nudged, or given another instrument, pitch or velocity.
+- A right-click on a note opens a floating card with the selection's instrument, start, length, pitch and velocity, so nothing has to be set from the sidebar.
+- In the Edit tab, a click on empty roll space places the playhead there.
+- Return / Enter goes to start.
 
 ### Changed
 
 - The synth plays per-note velocity; the export tempo is the project tempo, set on the Edit toolbar (and still in the Export dialog).
+- The output level and MUTE live in the sidebar's master panel, under the master meter, rather than in the top bar.
+- Trackpad panning of the timeline is smooth: the bands are drawn as windows that slide with the scroll rather than as layers the width of the whole take, a wheel over the roll pans time and pitch together, and pitch pans by the pixel rather than a key at a time.
+- Clicking the timeline, or pressing Return in a field, gives the keyboard back to the transport, so Space plays again after editing a number.
 
 ## [1.0.0-checkpoint] — 2026-09-19
 
