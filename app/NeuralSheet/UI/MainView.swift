@@ -8,8 +8,8 @@ import SwiftUI
 /// overlays on top in the order the original stacked them: the no-model notice (centred on the
 /// piano roll), the instrument picker off the sidebar. The settings are a window of their own (⌘,).
 ///
-/// Also where the app's window-bound pieces are installed: the dialogs, the shortcuts, the display
-/// link and the session restore.
+/// Also where the app's window-bound pieces are installed: the dialogs, the shortcuts and the
+/// display link.
 struct MainView: View {
     let model: AppModel
     let persistence: Persistence
@@ -84,8 +84,7 @@ struct MainView: View {
 
     // MARK: - Lifecycle
 
-    /// The dialogs first, so a session whose file has gone bad can say so; then the session,
-    /// the autosave and the shortcuts.
+    /// The dialogs first, then the settings autosave and the shortcuts.
     private func appear() {
         Dialogs.install(on: model) { [windowController] in windowController.window }
         Dialogs.installConfirm(on: model) { [windowController] in windowController.window }
@@ -94,7 +93,6 @@ struct MainView: View {
         DispatchQueue.main.async {
             model.presentAudioStartFailureIfAny()
         }
-        persistence.restoreOnce()
         persistence.start()
         shortcuts.install { [windowController] in windowController.window }
     }

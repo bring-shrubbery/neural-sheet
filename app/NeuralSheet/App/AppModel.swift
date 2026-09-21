@@ -13,8 +13,7 @@ import UniformTypeIdentifiers
 /// object's; the transcription's per-chunk notes go through ``TranscriptionStaging`` and a 30 Hz
 /// drain (`AppModel+Transcription.swift`), the way the C++ `TranscriptionManager` did it.
 ///
-/// Persistence is Task 20's: the settings are read once here so the model resolves correctly on
-/// its own, but nothing writes them back yet.
+/// The settings are written by `Persistence`; the project by `AppModel+Project.swift`.
 @MainActor @Observable final class AppModel {
     // MARK: - Dependencies
 
@@ -371,6 +370,12 @@ import UniformTypeIdentifiers
 
         try? paths.ensureDirectories()
         modelStore.deleteStalePartFiles()
+
+        // The autosaved session is gone with projects; its files and any take a crash left behind
+        // go at launch.
+        paths.deleteLegacySessionFiles()
+        paths.sweepRecordings()
+
         installedModels = modelStore.installed()
         lastRenderedFrames = engine.synthBank.renderedFrames
 
@@ -504,7 +509,7 @@ import UniformTypeIdentifiers
             return
         }
 
-        install(take)
+        installSource(take)
     }
 
     private func presentRecordingFailure(_ error: Recorder.RecordError) {
@@ -545,30 +550,15 @@ import UniformTypeIdentifiers
             guard let self else { return }
 
             clearNow()
-            load(url: url, restoringSession: false)
+            load(url: url)
         }
     }
 
-    /// A session's take, re-read from its path (§8.2): the file a session was working on, whether
-    /// the user's own or a recording in `paths.recordings`. A recording restored this way shows no
-    /// file name -- it was never a dropped file -- and is deleted on clear as any take is.
-    ///
-    /// Only from `empty`, and a path that no longer exists is skipped in silence: a session whose
-    /// file has gone is an empty session, not an error.
-    func restoreAudio(url: URL) {
-        guard state == .empty, FileManager.default.fileExists(atPath: url.path) else { return }
-
-        load(url: url, restoringSession: true)
-    }
-
-    private func load(url: URL, restoringSession: Bool) {
+    private func load(url: URL) {
         let audio: SourceAudio
 
         do {
-            // A restored recording was never a dropped file, so it carries no name.
-            audio = try AudioFileLoader.load(url: url,
-                                             deviceRate: engine.sampleRate,
-                                             namedAfterFile: !(restoringSession && isDeletableRecording(url)))
+            audio = try AudioFileLoader.load(url: url, deviceRate: engine.sampleRate)
         } catch {
             showError(
                 "Could not load the audio file.",
@@ -576,11 +566,12 @@ import UniformTypeIdentifiers
             return
         }
 
-        install(audio)
+        installSource(audio)
     }
 
-    /// Hands a take to the engine and moves to `audioLoaded`.
-    private func install(_ audio: SourceAudio) {
+    /// Hands a take to the engine and moves to `audioLoaded`. The pipeline's and the project's
+    /// (`AppModel+Project.swift`), never a view's.
+    func installSource(_ audio: SourceAudio) {
         source = audio
         duration = audio.duration
         engine.setSource(audio)
