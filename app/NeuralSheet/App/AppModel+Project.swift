@@ -110,9 +110,19 @@ extension AppModel {
 
     /// Runs `proceed` at once when the project is clean, otherwise after the standard sheet:
     /// Save writes first (the save panel included, for an untitled project) and proceeds only
-    /// when the write succeeded; Don't Save proceeds; Cancel runs `cancelled`.
+    /// when the write succeeded; Don't Save proceeds; Cancel runs `cancelled`. A missing
+    /// `presentSaveReview` with nothing to lose proceeds silently, as before there is a window;
+    /// a missing `presentSaveReview` with unsaved changes is a wiring bug (`showError`'s own
+    /// convention), so a debug build says so and then proceeds rather than losing the work
+    /// silently.
     func reviewProject(then proceed: @escaping () -> Void, cancelled: (() -> Void)? = nil) {
-        guard computeProjectEdited(), let presentSaveReview else {
+        guard computeProjectEdited() else {
+            proceed()
+            return
+        }
+
+        guard let presentSaveReview else {
+            assertionFailure("presentSaveReview is not installed; unsaved changes would be dropped")
             proceed()
             return
         }
@@ -234,9 +244,12 @@ extension AppModel {
         let package: ProjectPackage
         var audio: SourceAudio?
 
+        let transcriptionUnreadable: Bool
+
         do {
             let read = try ProjectPackage.read(from: url)
             package = read.package
+            transcriptionUnreadable = read.transcriptionUnreadable
 
             if let audioURL = read.audioURL {
                 audio = try AudioFileLoader.load(url: audioURL,
@@ -249,7 +262,7 @@ extension AppModel {
         }
 
         let install: () -> Void = { [weak self] in
-            self?.installProject(package, audio: audio, url: url)
+            self?.installProject(package, audio: audio, url: url, transcriptionUnreadable: transcriptionUnreadable)
         }
 
         if reviewing {
@@ -261,8 +274,28 @@ extension AppModel {
 
     /// Past the checks: the empty project first, then the settings, the audio, the notes (only
     /// against the very audio they were made from), the view state.
-    private func installProject(_ package: ProjectPackage, audio: SourceAudio?, url: URL) {
+    ///
+    /// - Parameter transcriptionUnreadable: True when `transcription.json` was there but did not
+    ///   decode (``ProjectPackage/read(from:)``). Together with a sample-count mismatch this
+    ///   decides ``notesDropped``: when true, the project is left edited rather than marked saved,
+    ///   so the dot shows and the next Save (or Close's review) is the user's own choice rather
+    ///   than a silent deletion of the notes from disk.
+    private func installProject(_ package: ProjectPackage, audio: SourceAudio?, url: URL, transcriptionUnreadable: Bool) {
         replaceWithEmpty()
+
+        let notesDropped: Bool
+
+        if transcriptionUnreadable {
+            notesDropped = true
+        } else if let transcription = package.transcription {
+            if let audio {
+                notesDropped = audio.mono16k.count != transcription.sourceSampleCount
+            } else {
+                notesDropped = true
+            }
+        } else {
+            notesDropped = false
+        }
 
         let saved = package.state
         selectedGroups = AppModel.normalised(saved.selectedGroups.compactMap(InstrumentGroup.init(rawValue:)))
@@ -302,8 +335,18 @@ extension AppModel {
         }
 
         projectURL = url
-        markProjectSaved(audioFileName: saved.audioFileName)
         noteRecentProject(url)
+
+        if notesDropped {
+            // The baseline from `replaceWithEmpty()` stands, so `isProjectEdited` reads true: the
+            // dot shows, and Close (or the next Save) reviews rather than silently overwriting the
+            // file with the notes gone.
+            showError(
+                "Could not load the project's transcription.",
+                "The notes in the file do not match its audio, or could not be read, and were left out. Saving the project will remove them from the file.")
+        } else {
+            markProjectSaved(audioFileName: saved.audioFileName)
+        }
     }
 
     // MARK: - Revert and close

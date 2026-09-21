@@ -42,6 +42,7 @@ private func makePackage(audioFileName: String, withTranscription: Bool) -> Proj
     let read = try ProjectPackage.read(from: url)
     #expect(read.package.state == package.state)
     #expect(read.package.transcription == package.transcription)
+    #expect(read.transcriptionUnreadable == false)
     let audioURL = try #require(read.audioURL)
     #expect(audioURL == ProjectPackage.audioURL(in: url, fileName: "take.wav"))
     #expect(try Data(contentsOf: audioURL) == Data("RIFF-not-really".utf8))
@@ -56,7 +57,9 @@ private func makePackage(audioFileName: String, withTranscription: Bool) -> Proj
     try makePackage(audioFileName: "take.wav", withTranscription: false).write(to: url, audioSource: audio)
 
     #expect(!FileManager.default.fileExists(atPath: url.appendingPathComponent("transcription.json").path))
-    #expect(try ProjectPackage.read(from: url).package.transcription == nil)
+    let read = try ProjectPackage.read(from: url)
+    #expect(read.package.transcription == nil)
+    #expect(read.transcriptionUnreadable == false)
 }
 
 @Test func packageWithoutAudioReadsBackWithNoAudioURL() throws {
@@ -181,4 +184,5 @@ private func makePackage(audioFileName: String, withTranscription: Bool) -> Proj
     let read = try ProjectPackage.read(from: url)
     #expect(read.package.transcription == nil)
     #expect(read.package.state.exportTempo == 100)
+    #expect(read.transcriptionUnreadable == true)
 }

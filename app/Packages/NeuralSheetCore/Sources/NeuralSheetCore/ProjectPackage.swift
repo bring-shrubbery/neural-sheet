@@ -31,13 +31,19 @@ public struct ProjectPackage: Sendable {
 
     // MARK: - Reading
 
-    /// The package at `url`, and where its audio is (nil for a project without audio, checked to
-    /// exist otherwise).
+    /// The package at `url`, where its audio is (nil for a project without audio, checked to
+    /// exist otherwise), and whether its transcription file was there but could not be read.
     ///
     /// `notAPackage` for anything that is not a `.neuralsheet` directory with a `project.json`;
     /// `unreadable` and `newerVersion` from the state; `missingAudio` when the state names a file
-    /// that is not there. A transcription that cannot be read is dropped alone.
-    public static func read(from url: URL) throws -> (package: ProjectPackage, audioURL: URL?) {
+    /// that is not there. A transcription that cannot be read is dropped rather than thrown, but
+    /// `transcriptionUnreadable` says so -- false when `transcription.json` is simply absent (no
+    /// transcription was ever saved), true when it is there and did not decode, so the caller can
+    /// tell "nothing to lose" from "something was lost" and warn before the next save overwrites
+    /// it.
+    public static func read(
+        from url: URL
+    ) throws -> (package: ProjectPackage, audioURL: URL?, transcriptionUnreadable: Bool) {
         var isDirectory: ObjCBool = false
         let manager = FileManager.default
 
@@ -49,7 +55,10 @@ public struct ProjectPackage: Sendable {
         }
 
         let state = try ProjectState.read(from: url.appendingPathComponent(stateFileName))
-        let transcription = ProjectTranscription.load(from: url.appendingPathComponent(transcriptionFileName))
+        let transcriptionURL = url.appendingPathComponent(transcriptionFileName)
+        let transcriptionFileExists = manager.fileExists(atPath: transcriptionURL.path)
+        let transcription = ProjectTranscription.load(from: transcriptionURL)
+        let transcriptionUnreadable = transcriptionFileExists && transcription == nil
 
         var resolvedAudioURL: URL?
 
@@ -61,7 +70,7 @@ public struct ProjectPackage: Sendable {
             resolvedAudioURL = audio
         }
 
-        return (ProjectPackage(state: state, transcription: transcription), resolvedAudioURL)
+        return (ProjectPackage(state: state, transcription: transcription), resolvedAudioURL, transcriptionUnreadable)
     }
 
     // MARK: - Writing

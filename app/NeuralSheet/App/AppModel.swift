@@ -40,8 +40,9 @@ import UniformTypeIdentifiers
     }
 
     /// Installed by the view layer: `(project title, completion)` for the standard "Do you want
-    /// to save the changes…" sheet. Nil proceeds without saving, which is what happens before a
-    /// window exists.
+    /// to save the changes…" sheet. Nil with nothing to lose proceeds without saving, which is
+    /// what happens before a window exists; nil with unsaved changes is a wiring bug, said so in
+    /// debug (`reviewProject`).
     @ObservationIgnored var presentSaveReview: ((String, @escaping (SaveReviewChoice) -> Void) -> Void)?
 
     /// Installed by the view layer: `(project title, completion)` for "Do you want to revert…".
