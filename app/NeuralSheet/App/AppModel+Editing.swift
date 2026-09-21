@@ -10,7 +10,8 @@ struct EditorState: Equatable {
 
     var tool: Tool = .select
     var selection: Set<NoteID> = []
-    /// The instrument new and reassigned notes go to. Re-validated against the mixer's entries.
+    /// The instrument new notes go to: the first strip's until one is chosen in the sidebar or
+    /// assigned to a selection, then that one. Re-validated against the mixer's entries.
     var targetProgram: Int = 0
     var snapEnabled = true
     var grid = TempoGrid()
@@ -240,6 +241,17 @@ extension AppModel {
         guard mixer.entries.contains(where: { $0.program == program }) else { return }
 
         editor.targetProgram = program
+    }
+
+    /// The selection goes to `program`, and so does the next note drawn or inserted: the
+    /// instrument last assigned is the one the user is working in. The commit first, so the
+    /// instrument is in the mix by the time it is made the target; the first note is heard.
+    func setSelectionProgram(_ program: Int) {
+        guard let document, !editor.selection.isEmpty else { return }
+
+        commit(document.setProgram(editor.selection, program: program))
+        setTargetProgram(program)
+        auditionSelection()
     }
 
     /// The selection, or everything when nothing is selected; starts only.

@@ -293,6 +293,7 @@ struct EditorState: Equatable {
     var tool: EditTool = .select              // .select, .draw, .erase
     var selection: Set<NoteID> = []
     var targetProgram: Int                    // the first strip's program until the user picks one
+                                              // or assigns a selection to another; then that one
     var snapEnabled = true
     var grid = TempoGrid(bpm: 120, offsetSeconds: 0, division: .sixteenth)
 }

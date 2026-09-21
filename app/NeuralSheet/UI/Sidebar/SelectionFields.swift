@@ -141,7 +141,7 @@ struct SelectionFields: View {
         func row(_ info: InstrumentInfo, chip: Color?) -> MenuRow {
             MenuRow(title: info.name, isTicked: current == [info.program], chip: chip) {
                 menu.dismiss()
-                commit(audible: true) { $0.setProgram(model.editor.selection, program: info.program) }
+                model.setSelectionProgram(info.program)
             }
         }
 
