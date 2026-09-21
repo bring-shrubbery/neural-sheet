@@ -154,6 +154,10 @@ import UniformTypeIdentifiers
     /// The editor's tool, selection, target instrument, snap and grid.
     var editor = EditorState()
 
+    /// The region re-run in flight, or nil (`AppModel+RegionTranscription.swift`, its only
+    /// writer). While it is set the editor is read-only and the clears refuse.
+    var regionJob: RegionJob?
+
     /// The instrument a strip click singled out: the roll fades every other instrument while it
     /// is set. Both tabs; not part of the project file.
     private(set) var highlightedProgram: Int?
@@ -595,7 +599,7 @@ import UniformTypeIdentifiers
     /// or transcribing. Edited notes are asked about first, as any clear does (design §3.5), and
     /// the load waits on the answer.
     func loadAudio(url: URL) {
-        guard state == .empty || state == .audioLoaded || state == .populated else { return }
+        guard state == .empty || state == .audioLoaded || state == .populated, regionJob == nil else { return }
 
         // Before anything is cleared: the C++ drop target refuses an unknown extension ahead of
         // `onFileDrop`, so a stray .txt on a finished transcription costs nothing.
@@ -645,7 +649,7 @@ import UniformTypeIdentifiers
     /// notes until the engine's completion lands, and cancelling is the way out of that. Edited
     /// notes are asked about first (design §3.5).
     func clear() {
-        guard !jobActive else { return }
+        guard !jobActive, regionJob == nil else { return }
 
         confirmDiscardingEdits(action: "Clearing") { [weak self] in
             self?.clearNow()
@@ -671,7 +675,7 @@ import UniformTypeIdentifiers
 
     /// The transcription only, keeping the audio (§2.6).
     func clearTranscription() {
-        guard !jobActive else { return }
+        guard !jobActive, regionJob == nil else { return }
 
         confirmDiscardingEdits(action: "Clearing") { [weak self] in
             self?.clearTranscriptionNow()
@@ -689,6 +693,14 @@ import UniformTypeIdentifiers
     /// stored settings survive — they are dropped at launch and nowhere else (§4.2).
     private func resetTranscription() {
         engine.stop()
+
+        // A region run in flight is abandoned: its completion finds no job and does nothing.
+        // `transcriber.isRunning` stays true until the engine reaches the next chunk boundary,
+        // and the main run's launch refuses until then, as it does after a cancel today.
+        if regionJob != nil {
+            regionJob = nil
+            transcriber.cancel()
+        }
 
         transcription = TranscriptionState()
         staging.reset()

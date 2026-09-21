@@ -237,7 +237,8 @@ extension AppModel {
 
     /// The `<reason>` of the failure dialog: the library's own description, except for a checkpoint
     /// from another release, which is the first place such a file shows up and says what to do.
-    private static func failureReason(_ error: EngineError, modelPath: URL?) -> String {
+    /// Shared with the region run's failure dialog.
+    static func failureReason(_ error: EngineError, modelPath: URL?) -> String {
         if error.isUnsupportedVersion, let modelPath {
             return "\(modelPath.lastPathComponent) is for another version of NeuralSheet. "
                 + "Delete it from the models folder, then download it again"

@@ -83,6 +83,8 @@ import SwiftUI
     // MARK: - Mouse
 
     func mouseDown(at point: CGPoint, event: NSEvent) {
+        guard model.canEdit else { return }
+
         lastWindowPoint = event.locationInWindow
         let shift = event.modifierFlags.contains(.shift)
         let rightClick = event.type == .rightMouseDown
@@ -253,6 +255,8 @@ import SwiftUI
     // MARK: - Cursor
 
     func cursor(at point: CGPoint) -> NSCursor {
+        guard model.canEdit else { return .arrow }
+
         switch model.editor.tool {
         case .draw:
             return .crosshair
@@ -290,6 +294,8 @@ import SwiftUI
     /// Double-click on empty in Select: one division at the target program; nothing off the lanes.
     /// ⌘ inverts snap for the click, as it does for every other gesture.
     func insertNote(at point: CGPoint, modifiers: NSEvent.ModifierFlags) {
+        guard model.canEdit else { return }
+
         let snapEnabled = model.editor.snapEnabled != modifiers.contains(.command)
 
         guard var document = model.document, let note = drawnNote(anchor: point, current: point, snapEnabled: snapEnabled) else { return }

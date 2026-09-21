@@ -30,7 +30,8 @@ struct EditorState: Equatable {
 extension AppModel {
     // MARK: - Workspace
 
-    var canEdit: Bool { state == .populated && document != nil }
+    /// Read-only while a region run owns the range (region design §4.3).
+    var canEdit: Bool { state == .populated && document != nil && regionJob == nil }
 
     // MARK: - Document
 
@@ -73,7 +74,7 @@ extension AppModel {
     // MARK: - Commits and history
 
     func commit(_ batch: EditBatch) {
-        guard var document, !batch.isEmpty else { return }
+        guard regionJob == nil, var document, !batch.isEmpty else { return }
 
         document.commit(batch)
         self.document = document
@@ -98,7 +99,7 @@ extension AppModel {
     // the menu items stay enabled whatever the tab (their routing is decided when chosen).
 
     func undo() {
-        guard workspace == .edit, var document, document.canUndo else { return }
+        guard workspace == .edit, canEdit, var document, document.canUndo else { return }
 
         _ = dragCanceller?()
         document.undo()
@@ -107,7 +108,7 @@ extension AppModel {
     }
 
     func redo() {
-        guard workspace == .edit, var document, document.canRedo else { return }
+        guard workspace == .edit, canEdit, var document, document.canRedo else { return }
 
         _ = dragCanceller?()
         document.redo()
@@ -117,7 +118,7 @@ extension AppModel {
 
     /// Back to the model's own output, after asking (design §2).
     func revertToTranscription() {
-        guard document != nil, hasEdits else { return }
+        guard canEdit, document != nil, hasEdits else { return }
 
         confirmDiscardingEdits(action: "Reverting to the transcription") { [weak self] in
             guard let self else { return }

@@ -38,6 +38,7 @@ extension TimelineContainerView {
             _ = model.editor.tool
             _ = model.editor.range
             _ = model.editor.snapEnabled
+            _ = model.regionJob
         } onChange: { [weak self] in
             // Called before the new value lands, from whichever context wrote it: the read has to
             // wait for the next run-loop pass, which also folds a burst of writes into one sync.
@@ -77,7 +78,7 @@ extension TimelineContainerView {
                            tool: model.editor.tool,
                            range: model.editor.range,
                            snapEnabled: model.editor.snapEnabled,
-                           regionProgress: nil)
+                           regionProgress: model.regionJob?.progress)
         let old = snapshot
         let first = !hasSynced
         // The document's identified notes, or the run's placeholders (ids nothing hit-tests).
