@@ -16,7 +16,8 @@ nonisolated enum SidebarMetrics {
 }
 
 /// The instrument mixer down the left of the window (§1.4): a header, one strip per instrument
-/// the transcription contains, and the master panel pinned to the bottom.
+/// the transcription contains, and the master panel -- meter, output level and MUTE -- pinned
+/// to the bottom.
 ///
 /// The meters are the only thing here that moves per frame. Each strip is handed its own level
 /// and compared before it is re-laid out, so a frame in which one meter moves redraws one meter.
@@ -52,7 +53,7 @@ struct Sidebar: View {
                 SelectionInspector(model: model)
             }
 
-            MasterPanel(level: model.masterLevelDb)
+            MasterPanel(model: model)
         }
         .frame(width: s(SidebarMetrics.stripWidth))
         .frame(width: s(SidebarMetrics.width), alignment: .leading)

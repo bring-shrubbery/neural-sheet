@@ -2,14 +2,15 @@ import CoreText
 import NeuralSheetCore
 import SwiftUI
 
-/// The window's top strip (`TopBar.cpp`): transport, position readout, mix, output level and
-/// the input mute. Authored 54 px tall, every extent scaled by `\.uiScale`.
+/// The window's top strip (`TopBar.cpp`): transport, position readout and the mix. Authored 54 px
+/// tall, every extent scaled by `\.uiScale`.
 ///
-/// Left to right: five transport buttons, `TimeDisplay`, a flexible gap, the mix pill, the volume
-/// pill, MUTE. Every control is 30 tall and sits at y = 11 in the 53 px above the 1 px bottom
-/// border, which is where JUCE's integer `withSizeKeepingCentre` put them. The wordmark, the
-/// Model button and the gear NeuralNote had here are gone: the model and the settings live in
-/// the Settings window (⌘,), and the wordmark only took room from the transport.
+/// Left to right: five transport buttons, `TimeDisplay`, a flexible gap, the mix pill. Every
+/// control is 30 tall and sits at y = 11 in the 53 px above the 1 px bottom border, which is
+/// where JUCE's integer `withSizeKeepingCentre` put them. The wordmark, the Model button and the
+/// gear NeuralNote had here are gone: the model and the settings live in the Settings window
+/// (⌘,), and the wordmark only took room from the transport. The volume pill and MUTE that ended
+/// the row have moved to the sidebar's master panel (`MasterPanel`), beside the level they act on.
 struct TopBar: View {
     @Bindable private var model: AppModel
 
@@ -33,18 +34,9 @@ struct TopBar: View {
         static let controlHeight: CGFloat = 30
         static let controlCorner: CGFloat = 6
 
-        /// `NnFlatButton::setPadding(11, 11, 7)` on the Model and MUTE buttons.
-        static let labelPadX: CGFloat = 11
-        static let iconLabelGap: CGFloat = 7
-
         static let pillPadding: CGFloat = 12
         static let pillGap: CGFloat = 9
         static let mixTrackWidth: CGFloat = 86
-        static let volumeTrackWidth: CGFloat = 74
-        /// Wide enough for -36.0, and what the instrument strips give the same readout.
-        static let volumeValueWidth: CGFloat = 30
-        static let speakerIconSize: CGFloat = 13
-        static let muteIconSize: CGFloat = 14
     }
 
     // MARK: - Body
@@ -64,12 +56,6 @@ struct TopBar: View {
                 Spacer(minLength: 0)
 
                 mixPill
-
-                gap
-                volumePill
-
-                gap
-                muteButton
             }
             .frame(height: s(Metrics.controlHeight))
             .padding(.leading, s(Metrics.paddingLeft))
@@ -191,46 +177,6 @@ struct TopBar: View {
         }
     }
 
-    // MARK: - Labels
-
-    /// The rounded-up tracked width `NnFlatButton::getIdealWidth` gave a `sectionHeader` label, in
-    /// authored points.
-    private func sectionLabelWidth(_ text: String) -> CGFloat {
-        TrackedText.width(text,
-                          fontName: Fonts.sansName(600),
-                          pointSize: Fonts.Size.sectionHeader,
-                          trackingEm: Fonts.Tracking.sectionHeaderPill).rounded(.up)
-    }
-
-    /// The MUTE label: `sectionHeader` with the pills' tighter 0.09 em tracking, boxed at the
-    /// width `sectionLabelWidth` gives.
-    private func sectionLabel(_ text: String) -> some View {
-        Text(text)
-            .font(Fonts.sectionHeader(k))
-            .kerning(Fonts.tracking(Fonts.Tracking.sectionHeaderPill,
-                                    pointSize: Fonts.Size.sectionHeader,
-                                    scale: k))
-            .fixedSize()
-            .frame(width: Scaled(k: k)(sectionLabelWidth(text)), alignment: .leading)
-    }
-
-    /// A labelled button's content row with `NnFlatButton`'s (11, 11, 7) padding, 30 tall.
-    ///
-    /// `paintButton` centred the row on the integer centre of its content box, so a row of odd
-    /// width lands half a pixel left of the padding edge. `contentWidth` is the row's authored
-    /// width in whole points (icon + gap + rounded-up label), which is what decides that.
-    private func labelledContent<Content: View>(contentWidth: CGFloat,
-                                                @ViewBuilder content: () -> Content) -> some View {
-        let s = Scaled(k: k)
-        let halfPixelLeft = contentWidth.truncatingRemainder(dividingBy: 2) != 0
-
-        return content()
-            // A transform rather than `offset`, which SwiftUI snaps to whole points.
-            .transformEffect(CGAffineTransform(translationX: halfPixelLeft ? -s(0.5) : 0, y: 0))
-            .padding(.horizontal, s(Metrics.labelPadX))
-            .frame(height: s(Metrics.controlHeight))
-    }
-
     // MARK: - Mix pill
 
     /// "ORIG" ... 86 px slider ... "MIDI". Dimmed rather than disabled while there are no notes to
@@ -275,67 +221,9 @@ struct TopBar: View {
         .opacity(alpha)
     }
 
-    // MARK: - Volume pill
-
-    /// Speaker, 74 px fader, 30 px right-aligned dB readout. Dimmed until there is something to hear.
-    private var volumePill: some View {
-        let s = Scaled(k: k)
-        let alpha = model.state.canPlay ? 1.0 : Theme.disabledAlpha
-
-        return HStack(spacing: s(Metrics.pillGap)) {
-            Icons.Speaker()
-                .fill(Theme.textIcon)
-                .frame(width: s(Metrics.speakerIconSize), height: s(Metrics.speakerIconSize))
-
-            PillSlider(value: $model.masterGainDb,
-                       range: InstrumentMixerState.minGainDb ... InstrumentMixerState.maxGainDb,
-                       step: 0.1,
-                       width: s(Metrics.volumeTrackWidth),
-                       fill: Theme.volumeFill,
-                       track: Theme.faderTrackTop,
-                       thumb: Theme.faderThumb)
-                .tooltip("Output level")
-
-            Text(TimeFormat.decibels(model.masterGainDb))
-                .font(Fonts.meta(k))
-                .foregroundStyle(Theme.textMuted)
-                .fixedSize()
-                .frame(width: s(Metrics.volumeValueWidth), alignment: .trailing)
-        }
-        .padding(.horizontal, s(Metrics.pillPadding))
-        .frame(height: s(Metrics.controlHeight))
-        .background(pillSurface)
-        .opacity(alpha)
-    }
-
     private var pillSurface: some View {
         RoundedRectangle(cornerRadius: Scaled(k: k)(Metrics.controlCorner), style: .circular)
             .fill(Theme.bgControl)
-    }
-
-    // MARK: - Mute
-
-    private var muteButton: some View {
-        let s = Scaled(k: k)
-
-        return FlatButton(isOn: model.inputMuted,
-                          idle: Theme.bgControl,
-                          on: Theme.bgMuteActive,
-                          foregroundIdle: Theme.textIcon,
-                          foregroundOn: Theme.warn,
-                          corner: s(Metrics.controlCorner),
-                          action: { model.inputMuted.toggle() }) { _ in
-            labelledContent(contentWidth: Metrics.muteIconSize + Metrics.iconLabelGap + sectionLabelWidth("MUTE")) {
-                HStack(spacing: s(Metrics.iconLabelGap)) {
-                    Icons.SpeakerMuted()
-                        .fill(.foreground)
-                        .frame(width: s(Metrics.muteIconSize), height: s(Metrics.muteIconSize))
-
-                    sectionLabel("MUTE")
-                }
-            }
-        }
-        .tooltip("Mute / Unmute input | m")
     }
 
 }
@@ -438,14 +326,12 @@ enum TrackedText {
         .background(Theme.bgRoot)
 }
 
-#Preview("Top bar, muted, follow off") {
+#Preview("Top bar, follow off") {
     FontRegistry.registerBundledFonts()
 
     let model = AppModel()
-    model.inputMuted = true
     model.followPlayhead = false
     model.mix = 0.25
-    model.masterGainDb = -6
 
     return TopBar(model: model)
         .frame(width: 1280)
