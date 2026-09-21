@@ -95,6 +95,13 @@ struct MainView: View {
         Dialogs.install(on: model) { [windowController] in windowController.window }
         Dialogs.installConfirm(on: model) { [windowController] in windowController.window }
         Dialogs.installProjectDialogs(on: model) { [windowController] in windowController.window }
+
+        windowController.shouldClose = { window in model.handleWindowClose(window) }
+
+        if let url = model.pendingOpenURL {
+            model.pendingOpenURL = nil
+            model.openProject(url: url)
+        }
         // A turn later, once the window is on screen: shown now it would be an app-modal alert
         // rather than a sheet, and an app-modal alert stalls the engine's own retries.
         DispatchQueue.main.async {

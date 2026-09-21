@@ -28,6 +28,7 @@ struct NeuralSheetApp: App {
         _model = State(initialValue: model)
         _persistence = State(initialValue: Persistence(model: model))
         _recents = State(initialValue: RecentProjects(model: model))
+        AppDelegate.model = model
     }
 
     var body: some Scene {
@@ -305,12 +306,5 @@ struct NeuralSheetApp: App {
 
         if inputs != self.inputs { self.inputs = inputs }
         if outputs != self.outputs { self.outputs = outputs }
-    }
-}
-
-/// The standalone quits with its window, as the JUCE one did.
-final class AppDelegate: NSObject, NSApplicationDelegate {
-    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
-        true
     }
 }

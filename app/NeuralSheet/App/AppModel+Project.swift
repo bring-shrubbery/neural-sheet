@@ -241,6 +241,27 @@ extension AppModel {
         }
     }
 
+    /// The window's close button and ⌘W: refused with a beep while recording or transcribing;
+    /// otherwise the review runs, and the window is closed for real a turn later with the project
+    /// already cleared and the welcome window up. Always false: `NSWindow.close()` does not ask
+    /// again, so the window goes exactly once.
+    func handleWindowClose(_ window: NSWindow) -> Bool {
+        guard canChangeProject else {
+            NSSound.beep()
+            return false
+        }
+
+        closeProject { [weak self] in
+            self?.showWelcomeWindow?()
+
+            DispatchQueue.main.async {
+                window.close()
+            }
+        }
+
+        return false
+    }
+
     // MARK: - Recents
 
     /// The system's recent-documents list (the Dock menu reads it too); a project the user had

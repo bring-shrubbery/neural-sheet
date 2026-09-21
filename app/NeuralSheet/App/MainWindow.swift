@@ -23,6 +23,11 @@ import SwiftUI
     private var documentURL: URL?
     private var documentEdited = false
 
+    /// The close question, installed by the main view: true lets the window go.
+    @ObservationIgnored var shouldClose: ((NSWindow) -> Bool)?
+
+    @ObservationIgnored private var delegateProxy: WindowDelegateProxy?
+
     // MARK: - Attaching
 
     /// Once, when the view lands in its window.
@@ -31,9 +36,28 @@ import SwiftUI
 
         self.window = window
         applyDocument()
+        installCloseVeto(on: window)
+    }
+
+    /// SwiftUI owns the delegate; the proxy answers the close alone. Re-asserted on every attach,
+    /// since SwiftUI may replace the delegate when the scene updates.
+    private func installCloseVeto(on window: NSWindow) {
+        guard !(window.delegate is WindowDelegateProxy) else { return }
+
+        let proxy = WindowDelegateProxy(original: window.delegate) { [weak self] window in
+            self?.shouldClose?(window) ?? true
+        }
+
+        window.delegate = proxy
+        delegateProxy = proxy
     }
 
     func detach() {
+        if let window, let delegateProxy, window.delegate === delegateProxy {
+            window.delegate = delegateProxy.original
+        }
+
+        delegateProxy = nil
         window = nil
     }
 

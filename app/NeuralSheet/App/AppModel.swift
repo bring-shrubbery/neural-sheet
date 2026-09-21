@@ -338,6 +338,10 @@ import UniformTypeIdentifiers
     @ObservationIgnored var showProjectWindow: (() -> Void)?
     @ObservationIgnored var showWelcomeWindow: (() -> Void)?
 
+    /// A file the Finder asked to open before a window could show an error for it; the main
+    /// view opens it once the dialogs are installed.
+    @ObservationIgnored var pendingOpenURL: URL?
+
     // MARK: - Models
 
     /// The size a run would use: the preference when installed, else Medium, else the first
