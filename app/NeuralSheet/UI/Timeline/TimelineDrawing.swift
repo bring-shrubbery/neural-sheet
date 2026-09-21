@@ -54,6 +54,11 @@ enum TimelinePalette {
     static let marqueeBorder = cg(Theme.accent)
     static let marqueeFill = cg(Theme.accent, alpha: 0.12)
 
+    /// Region design §6.3: the marked range, its edges, and the fill that grows with a run.
+    static let rangeFill = cg(Theme.accent, alpha: 0.10)
+    static let rangeEdge = cg(Theme.accent, alpha: 0.6)
+    static let rangeProgress = cg(Theme.accent, alpha: 0.22)
+
     static func cg(_ colour: Color, alpha: Double? = nil) -> CGColor {
         let rgba = colour.rgba
 

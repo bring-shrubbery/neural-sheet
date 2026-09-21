@@ -38,6 +38,7 @@ final class WaveformView: NSView {
     let playhead = PlayheadView(drawsTriangle: true)
     let wash = FillView(colour: TimelinePalette.accentWashWave)
     let washEdge = FillView(colour: TimelinePalette.accentWashEdge)
+    let rangeBand = RangeBandView(frame: .zero)
     private let cornerLabel = WaveformLabelView()
 
     init(geometry: TimelineGeometry) {
@@ -50,6 +51,7 @@ final class WaveformView: NSView {
         // playhead over everything — the order `AudioRegion::paint` draws them in.
         addSubview(wash)
         addSubview(washEdge)
+        addSubview(rangeBand)
         addSubview(cornerLabel)
         addSubview(playhead)
     }
@@ -71,6 +73,7 @@ final class WaveformView: NSView {
         cornerLabel.scale = k
         cornerLabel.frame = CGRect(x: 10 * k, y: 10 * k, width: 200 * k, height: 12 * k)
         cornerLabel.needsDisplay = true
+        rangeBand.scale = k
     }
 
     /// Moves the playhead and everything that hangs off it. `x` is in real points, or nil to hide.
@@ -94,6 +97,14 @@ final class WaveformView: NSView {
             wash.set(frame: CGRect(x: 0, y: 0, width: x, height: bounds.height))
             washEdge.set(frame: CGRect(x: x - geometry.scale, y: 0, width: geometry.scale, height: bounds.height))
         }
+    }
+
+    // MARK: - Range
+
+    /// The marked range and, while a region run is in flight, its progress (region design §6.3).
+    func setRange(_ range: Range<Double>?, progress: Float?) {
+        rangeBand.progress = progress
+        RangeBandView.place(rangeBand, range: range, in: self, geometry: geometry)
     }
 
     // MARK: - Drawing

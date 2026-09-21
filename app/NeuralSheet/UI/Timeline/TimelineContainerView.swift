@@ -33,6 +33,8 @@ final class TimelineContainerView: NSView {
             waveform.isCompact = editing
             ruler.grid = editing ? model.editor.grid : nil
             roll.grid = editing ? model.editor.grid : nil
+            ruler.onRange = editing ? { [weak self] range in self?.model.setRange(range) } : nil
+            ruler.snapEnabled = editing && model.editor.snapEnabled
             needsLayout = true
             layoutDocument()
             configureViews()
@@ -41,6 +43,7 @@ final class TimelineContainerView: NSView {
             ruler.needsDisplay = true
             roll.needsDisplay = true
             roll.setFrontier(seconds: frontierSeconds)
+            placeRangeBands()
             updatePlayhead()
             syncEditController()
         }
@@ -94,6 +97,9 @@ final class TimelineContainerView: NSView {
         var grid = TempoGrid()
         var selection: Set<NoteID> = []
         var tool: EditorState.Tool = .select
+        var range: Range<Double>?
+        var snapEnabled = true
+        var regionProgress: Float?
     }
 
     var snapshot = Snapshot()
@@ -105,6 +111,10 @@ final class TimelineContainerView: NSView {
 
     /// The decode frontier on show, so a resize can lay its shade out again.
     var frontierSeconds: Double?
+
+    /// The range and the run progress on show, so a resize or a band slide can lay the band out again.
+    var rangeOnShow: Range<Double>?
+    var rangeProgressOnShow: Float?
 
     /// How many viewports wide the bands are, and how close to a band's end the viewport may
     /// come before the bands slide to centre on it again.
@@ -352,6 +362,7 @@ final class TimelineContainerView: NSView {
 
         if documentChanged || windowMoved {
             roll.setFrontier(seconds: frontierSeconds)
+            placeRangeBands()
         }
 
         return viewportChanged
@@ -416,6 +427,14 @@ final class TimelineContainerView: NSView {
         gutter.scale = scale
         keyboard.needsDisplay = true
         gutter.needsDisplay = true
+    }
+
+    /// The band over the roll and the waveform for the range on show, in the Edit tab only.
+    func placeRangeBands() {
+        let range = mode == .edit ? rangeOnShow : nil
+
+        roll.setRange(range, progress: rangeProgressOnShow)
+        waveform.setRange(range, progress: rangeProgressOnShow)
     }
 
     // MARK: - Overlays

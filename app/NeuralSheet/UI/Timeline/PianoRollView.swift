@@ -37,6 +37,7 @@ final class PianoRollView: NSView {
     let frontierShade = FillView(colour: TimelinePalette.frontierShade)
     let frontierLine = FillView(colour: TimelinePalette.divStrong)
     let marquee = MarqueeView(frame: .zero)
+    let rangeBand = RangeBandView(frame: .zero)
 
     private(set) var notes: [NoteEvent] = []
     /// `ids[i]` identifies `notes[i]`; placeholder ids while a run streams (nothing hit-tests them).
@@ -78,6 +79,7 @@ final class PianoRollView: NSView {
         addSubview(wash)
         addSubview(frontierShade)
         addSubview(frontierLine)
+        addSubview(rangeBand)
         addSubview(marquee)
         addSubview(playhead)
 
@@ -176,6 +178,7 @@ final class PianoRollView: NSView {
     func configure() {
         playhead.configure(scale: geometry.scale, height: bounds.height)
         marquee.scale = geometry.scale
+        rangeBand.scale = geometry.scale
     }
 
     /// The playhead and the wash left of it; nil hides both (`PianoRoll::updateEnablements`).

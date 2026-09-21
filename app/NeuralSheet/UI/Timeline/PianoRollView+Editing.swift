@@ -255,4 +255,12 @@ extension PianoRollView {
 
         ctx.strokePath()
     }
+
+    // MARK: - Range
+
+    /// The marked range and, while a region run is in flight, its progress (region design §6.3).
+    func setRange(_ range: Range<Double>?, progress: Float?) {
+        rangeBand.progress = progress
+        RangeBandView.place(rangeBand, range: range, in: self, geometry: geometry)
+    }
 }

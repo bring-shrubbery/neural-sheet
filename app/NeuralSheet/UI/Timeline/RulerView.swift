@@ -3,7 +3,8 @@ import NeuralSheetCore
 
 /// The 22 px time ruler (`TimeRuler`): absolute seconds only, a 1 px tick per division and an
 /// `m:ss` label 6 px to its right. In the Edit tab it reads bars and beats off the tempo grid
-/// instead (design §6.4). Nothing is drawn unless the transport can play.
+/// instead (design §6.4). Nothing is drawn unless the transport can play. In the Edit tab a drag
+/// marks a range; a click still seeks (region design §6.2).
 final class RulerView: NSView {
     let geometry: TimelineGeometry
 
@@ -20,6 +21,20 @@ final class RulerView: NSView {
 
     /// The click is a seek; the container owns the model.
     var onSeek: ((Double) -> Void)?
+
+    /// A drag marks a range for Re-transcribe (region design §6.2). Nil in the Transcribe tab,
+    /// where the press is a seek as before.
+    var onRange: ((Range<Double>) -> Void)?
+
+    /// Whether the range's ends snap to the grid; the container mirrors the editor's setting.
+    var snapEnabled = false
+
+    /// The press's x, and whether it has travelled far enough to be a drag.
+    private var pressX: CGFloat?
+    private var isDragging = false
+
+    /// Authored pixels a press may wander and still be a click.
+    static let dragThreshold: CGFloat = 3
 
     let playhead = PlayheadView(drawsTriangle: false)
 
@@ -171,7 +186,59 @@ final class RulerView: NSView {
         window?.makeFirstResponder(nil)
 
         let x = convert(event.locationInWindow, from: nil).x
-        onSeek?(geometry.seconds(forX: x))
+
+        guard onRange != nil else {
+            // The Transcribe tab: the press is the seek, as it always was.
+            onSeek?(geometry.seconds(forX: x))
+            return
+        }
+
+        pressX = x
+        isDragging = false
+    }
+
+    override func mouseDragged(with event: NSEvent) {
+        guard let pressX, onRange != nil else { return }
+
+        let x = convert(event.locationInWindow, from: nil).x
+
+        if !isDragging, abs(x - pressX) < RulerView.dragThreshold * geometry.scale { return }
+
+        isDragging = true
+        onRange?(range(from: pressX, to: x))
+    }
+
+    /// A press that never became a drag is the click it always was: a seek.
+    override func mouseUp(with event: NSEvent) {
+        defer {
+            pressX = nil
+            isDragging = false
+        }
+
+        guard let pressX else { return }
+
+        if isDragging {
+            onRange?(range(from: pressX, to: convert(event.locationInWindow, from: nil).x))
+        } else {
+            onSeek?(geometry.seconds(forX: pressX))
+        }
+    }
+
+    /// The seconds between two x's, in order, both ends snapped when the grid snaps, clamped to
+    /// the take. The model refuses a sliver, so a drag that snaps to one line clears the range.
+    private func range(from a: CGFloat, to b: CGFloat) -> Range<Double> {
+        var lower = geometry.seconds(forX: min(a, b))
+        var upper = geometry.seconds(forX: max(a, b))
+
+        if snapEnabled, let grid {
+            lower = grid.snap(lower)
+            upper = grid.snap(upper)
+        }
+
+        lower = min(max(lower, 0), geometry.duration)
+        upper = min(max(upper, lower), geometry.duration)
+
+        return lower ..< upper
     }
 }
 

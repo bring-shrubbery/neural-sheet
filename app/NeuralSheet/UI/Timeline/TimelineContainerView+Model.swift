@@ -36,6 +36,8 @@ extension TimelineContainerView {
             _ = model.editor.grid
             _ = model.editor.selection
             _ = model.editor.tool
+            _ = model.editor.range
+            _ = model.editor.snapEnabled
         } onChange: { [weak self] in
             // Called before the new value lands, from whichever context wrote it: the read has to
             // wait for the next run-loop pass, which also folds a burst of writes into one sync.
@@ -72,7 +74,10 @@ extension TimelineContainerView {
                            workspace: model.workspace,
                            grid: model.editor.grid,
                            selection: model.editor.selection,
-                           tool: model.editor.tool)
+                           tool: model.editor.tool,
+                           range: model.editor.range,
+                           snapEnabled: model.editor.snapEnabled,
+                           regionProgress: nil)
         let old = snapshot
         let first = !hasSynced
         // The document's identified notes, or the run's placeholders (ids nothing hit-tests).
@@ -155,6 +160,10 @@ extension TimelineContainerView {
                 roll.refreshCursor()
                 roll.window?.invalidateCursorRects(for: roll)
             }
+
+            if first || new.snapEnabled != old.snapEnabled {
+                ruler.snapEnabled = new.snapEnabled
+            }
         }
 
         // The range: every state change settles it on what is there, a chunk may only widen it,
@@ -169,6 +178,12 @@ extension TimelineContainerView {
         if stateChanged || first || new.finalizedThrough != old.finalizedThrough {
             frontierSeconds = new.state == .processing ? new.finalizedThrough : nil
             roll.setFrontier(seconds: frontierSeconds)
+        }
+
+        if first || new.range != old.range || new.regionProgress != old.regionProgress || new.workspace != old.workspace {
+            rangeOnShow = new.range
+            rangeProgressOnShow = new.regionProgress
+            placeRangeBands()
         }
 
         if first || new.goToStartGeneration != old.goToStartGeneration {
