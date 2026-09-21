@@ -13,10 +13,13 @@ extension AppModel {
         projectURL?.deletingPathExtension().lastPathComponent ?? "Untitled"
     }
 
-    /// Save, Save As, New, Open, Revert and Close: not while recording or transcribing.
+    /// New, Open, Revert and Close: not while recording or transcribing.
     var canChangeProject: Bool { state != .recording && state != .processing }
 
-    var canSaveProject: Bool { canChangeProject }
+    /// Save and Save As: not while recording (there is no take yet). A save during a
+    /// transcription writes the audio and the settings without the notes, which is what the quit
+    /// review needs.
+    var canSaveProject: Bool { state != .recording }
 
     var canRevertProject: Bool { canChangeProject && projectURL != nil && isProjectEdited }
 
