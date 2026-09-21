@@ -32,6 +32,14 @@ struct NeuralSheetApp: App {
     }
 
     var body: some Scene {
+        // First, so it is the window SwiftUI opens at launch; the project window opens from it.
+        Window("Welcome to NeuralSheet", id: "welcome") {
+            WelcomeView(model: model, recents: recents)
+        }
+        .windowResizability(.contentSize)
+        .windowStyle(.hiddenTitleBar)
+        .defaultPosition(.center)
+
         Window("NeuralSheet", id: "main") {
             MainView(model: model, persistence: persistence)
         }

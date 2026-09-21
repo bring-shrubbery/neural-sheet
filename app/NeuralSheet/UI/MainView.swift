@@ -18,6 +18,9 @@ struct MainView: View {
     @State private var shortcuts: KeyboardShortcuts
     @State private var tracker: ProjectTracker
 
+    @Environment(\.openWindow) private var openWindow
+    @Environment(\.dismissWindow) private var dismissWindow
+
     init(model: AppModel, persistence: Persistence) {
         self.model = model
         self.persistence = persistence
@@ -97,6 +100,14 @@ struct MainView: View {
         Dialogs.installProjectDialogs(on: model) { [windowController] in windowController.window }
 
         windowController.shouldClose = { window in model.handleWindowClose(window) }
+
+        model.showProjectWindow = { [openWindow, dismissWindow] in
+            openWindow(id: "main")
+            dismissWindow(id: "welcome")
+        }
+        model.showWelcomeWindow = { [openWindow] in
+            openWindow(id: "welcome")
+        }
 
         if let url = model.pendingOpenURL {
             model.pendingOpenURL = nil
