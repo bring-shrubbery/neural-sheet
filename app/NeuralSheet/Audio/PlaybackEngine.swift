@@ -229,8 +229,15 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
         }
     }
 
-    /// The equal-power crossfade between the source audio and the synth, 0…1.
+    /// The equal-power crossfade between the source audio and the synth, 0…1. Under
+    /// ``stereoSplit`` only its ends mean anything: exactly 0 or 1 is a hold on that side alone.
     var mix: Double = 0.5 {
+        didSet { updateGains() }
+    }
+
+    /// The source in the left ear and the synth in the right, each at full, nothing mixed. Panned
+    /// at the main mixer from this thread, so the render block is none the wiser.
+    var stereoSplit: Bool = false {
         didSet { updateGains() }
     }
 
@@ -889,17 +896,34 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
     }
 
     private func updateGains() {
-        // No notes means nothing on the synth side to fade to, so the mix is forced to all-source
-        // and the pill dims (§5.3).
-        let position = synthBank.scheduler.hasNotes ? min(max(mix, 0), 1) : 0
-        let angle = position * Double.pi / 2
+        let hasNotes = synthBank.scheduler.hasNotes
         let db = min(max(masterGainDb, Self.minGainDb), Self.maxGainDb)
         // -36 dB is the fader's silent end, not a very quiet one.
         let master = muted || db <= Self.minGainDb ? 0 : pow(10.0, db / 20.0)
 
-        state.sourceGainBits.store(Float(cos(angle) * master).bitPattern, ordering: .relaxed)
-        synthBank.synthGain = Float(sin(angle))
+        if stereoSplit {
+            // Each side at full in its own ear. A hold (`mix` at exactly 0 or 1) silences the
+            // other ear; with no notes there is no synth side to hold, so the source stays on.
+            let sourceOn = !hasNotes || mix < 1
+            let synthOn = hasNotes && mix > 0
+
+            state.sourceGainBits.store(Float(sourceOn ? master : 0).bitPattern, ordering: .relaxed)
+            synthBank.synthGain = synthOn ? 1 : 0
+        } else {
+            // No notes means nothing on the synth side to fade to, so the mix is forced to
+            // all-source and the pill dims (§5.3).
+            let position = hasNotes ? min(max(mix, 0), 1) : 0
+            let angle = position * Double.pi / 2
+
+            state.sourceGainBits.store(Float(cos(angle) * master).bitPattern, ordering: .relaxed)
+            synthBank.synthGain = Float(sin(angle))
+        }
+
         masterMixer.outputVolume = Float(master)
+        // The pans are the main mixer's input settings, re-applied here so a graph rebuilt for
+        // another device gets them back with its gains.
+        sourceNode?.pan = stereoSplit ? -1 : 0
+        masterMixer.pan = stereoSplit ? 1 : 0
     }
 
     // MARK: - Wrap notification
