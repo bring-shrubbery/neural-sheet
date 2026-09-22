@@ -3,7 +3,7 @@ import NeuralSheetCore
 
 /// The 22 px time ruler (`TimeRuler`): absolute seconds only, a 1 px tick per division and an
 /// `m:ss` label 6 px to its right. In the Edit tab it reads bars and beats off the tempo grid
-/// instead (design §6.4). Nothing is drawn unless the transport can play. In the Edit tab a drag
+/// instead (design §6.4). Nothing is drawn unless the transport can play. In both tabs a drag
 /// marks a range; a click still seeks (region design §6.2).
 final class RulerView: NSView {
     let geometry: TimelineGeometry
@@ -22,8 +22,8 @@ final class RulerView: NSView {
     /// The click is a seek; the container owns the model.
     var onSeek: ((Double) -> Void)?
 
-    /// A drag marks a range for Re-transcribe (region design §6.2). Nil in the Transcribe tab,
-    /// where the press is a seek as before.
+    /// A drag marks a range for Re-transcribe (region design §6.2), in both tabs. Without it the
+    /// press is a seek as it always was.
     var onRange: ((Range<Double>) -> Void)?
 
     /// Whether the range's ends snap to the grid; the container mirrors the editor's setting.
@@ -188,7 +188,7 @@ final class RulerView: NSView {
         let x = convert(event.locationInWindow, from: nil).x
 
         guard onRange != nil else {
-            // The Transcribe tab: the press is the seek, as it always was.
+            // With nobody to mark a range for, the press is the seek, as it always was.
             onSeek?(geometry.seconds(forX: x))
             return
         }

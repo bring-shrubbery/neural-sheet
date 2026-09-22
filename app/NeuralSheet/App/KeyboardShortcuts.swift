@@ -14,7 +14,7 @@ import NeuralSheetCore
 /// | m | mute input toggle |
 /// | c | centre playhead toggle |
 /// | [ / ] | the mix a tenth toward the original / the MIDI (ours; the original had no key for it) |
-/// | Esc | close the instrument picker |
+/// | Esc | close the instrument picker, else clear the marked range |
 ///
 /// And in the Edit tab only (design §5.4), ahead of the rows above:
 ///
@@ -25,7 +25,7 @@ import NeuralSheetCore
 /// | ↑ / ↓ | nudge the selection a semitone |
 /// | ⇧↑ / ⇧↓ | nudge the selection an octave |
 /// | v / d / e | the select, draw and erase tools |
-/// | Esc | cancel the drag in progress, else deselect |
+/// | Esc | cancel the drag in progress, else deselect, else clear the marked range |
 ///
 /// A press while a text field has the keyboard is the field's; so is anything
 /// with Command, Control or Option down, which are the menu bar's. Only the main window's own
@@ -120,6 +120,15 @@ import NeuralSheetCore
             guard !shift else { return false }
 
             model.goToStart()
+
+            return true
+
+        case KeyCode.escape:
+            // The picker listens for its own Escape; with it closed, the marked range goes. (The
+            // Edit tab's Escape was handled above, with its drag and selection ahead of the range.)
+            guard !shift, !model.isInstrumentMenuOpen else { return false }
+
+            model.clearRange()
 
             return true
 

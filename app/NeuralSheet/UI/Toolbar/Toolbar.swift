@@ -5,8 +5,9 @@ import SwiftUI
 /// The row above the timeline (`NnToolbar`): what is loaded on the left, what can be done with the
 /// transcription on the right.
 ///
-/// Right to left: the bin and Drag MIDI out, each a `toolbarButton` (28) tall with 12 between
-/// them. Drag is dimmed rather than absent before there is a transcription to export: it holds
+/// Right to left: the bin, Drag MIDI out and Re-transcribe (ours, the Edit toolbar's twin), each
+/// a `toolbarButton` (28) tall with 12 between them. Drag is dimmed rather than absent before
+/// there is a transcription to export: it holds
 /// its place either way, and an empty gap there reads as something failing to draw. The Export
 /// button and the EXPORT TEMPO pill NeuralNote had here are File → Export MIDI… (⇧⌘E) now, with
 /// the tempo asked for in its dialog.
@@ -31,8 +32,8 @@ struct Toolbar: View {
     var body: some View {
         let s = Scaled(k: k)
         // The bin is live as soon as there is anything to throw away, audio with no transcription
-        // included. Not while a run is in flight: stopping one is the status bar's cancel.
-        let canClear = model.state == .audioLoaded || model.state == .populated
+        // included. Not while a run of either kind is in flight: stopping one is its own cancel.
+        let canClear = (model.state == .audioLoaded || model.state == .populated) && model.regionJob == nil
 
         VStack(spacing: 0) {
             // The buttons sit at y 7 in the 43 px row above the border, as `withSizeKeepingCentre`
@@ -51,6 +52,8 @@ struct Toolbar: View {
                     Spacer(minLength: 0)
                 }
 
+                // The same Re-transcribe the Edit toolbar has: a range can be marked in either tab.
+                RetranscribeButton(model: model)
                 MidiDragButton(model: model)
                 clearButton(canClear: canClear)
             }

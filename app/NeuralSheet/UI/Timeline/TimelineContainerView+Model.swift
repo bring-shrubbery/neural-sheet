@@ -161,10 +161,11 @@ extension TimelineContainerView {
                 roll.refreshCursor()
                 roll.window?.invalidateCursorRects(for: roll)
             }
+        }
 
-            if first || new.snapEnabled != old.snapEnabled {
-                ruler.snapEnabled = new.snapEnabled
-            }
+        // Both tabs: the ruler's drag snaps a range wherever there is a grid to snap to.
+        if first || new.snapEnabled != old.snapEnabled {
+            ruler.snapEnabled = new.snapEnabled
         }
 
         // The range: every state change settles it on what is there, a chunk may only widen it,

@@ -33,8 +33,6 @@ final class TimelineContainerView: NSView {
             waveform.isCompact = editing
             ruler.grid = editing ? model.editor.grid : nil
             roll.grid = editing ? model.editor.grid : nil
-            ruler.onRange = editing ? { [weak self] range in self?.model.setRange(range) } : nil
-            ruler.snapEnabled = editing && model.editor.snapEnabled
             needsLayout = true
             layoutDocument()
             configureViews()
@@ -172,6 +170,9 @@ final class TimelineContainerView: NSView {
         waveform.onSeek = { [weak self] seconds in self?.seek(toSeconds: seconds) }
         roll.onSeek = { [weak self] seconds in self?.seek(toSeconds: seconds) }
         ruler.onSeek = { [weak self] seconds in self?.seek(toSeconds: seconds) }
+        // A drag on the ruler marks the range for Re-transcribe in both tabs (region design §6.2).
+        ruler.onRange = { [weak self] range in self?.model.setRange(range) }
+        ruler.snapEnabled = model.editor.snapEnabled
         keyboard.onWheel = { [weak self] event in
             guard let self else { return }
 
@@ -429,12 +430,10 @@ final class TimelineContainerView: NSView {
         gutter.needsDisplay = true
     }
 
-    /// The band over the roll and the waveform for the range on show, in the Edit tab only.
+    /// The band over the roll and the waveform for the range on show, in both tabs.
     func placeRangeBands() {
-        let range = mode == .edit ? rangeOnShow : nil
-
-        roll.setRange(range, progress: rangeProgressOnShow)
-        waveform.setRange(range, progress: rangeProgressOnShow)
+        roll.setRange(rangeOnShow, progress: rangeProgressOnShow)
+        waveform.setRange(rangeOnShow, progress: rangeProgressOnShow)
     }
 
     // MARK: - Overlays
