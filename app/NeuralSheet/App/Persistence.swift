@@ -12,11 +12,6 @@ extension AppModel {
         try? paths.ensureDirectories()
         try? settings.save(to: paths.globalSettings)
     }
-
-    /// What the drag button left in the temp directory goes with the app (§8.3).
-    func deleteMidiScratch() {
-        try? FileManager.default.removeItem(at: paths.midiScratch)
-    }
 }
 
 /// Keeps the settings file in step with the model. One per app, created beside the model.
@@ -48,7 +43,6 @@ extension AppModel {
     /// asynchronous, and the app is about to stop running the loop it is queued on.
     private func terminate() {
         model.saveGlobalSettings()
-        model.deleteMidiScratch()
     }
 
     /// Every setter of `NnGlobalSettings` rewrote the file; here the file follows the struct.

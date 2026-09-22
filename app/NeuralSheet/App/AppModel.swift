@@ -1009,30 +1009,6 @@ import UniformTypeIdentifiers
         MidiFileWriter.exportFileName(sourceFileNameWithoutExtension: droppedFileName)
     }
 
-    /// Writes the file into the drag scratch directory and hands back where, for the Drag button's
-    /// item provider. Nil, with the §11.7 message shown, when it could not be written.
-    func writeMidiForDrag() -> URL? {
-        guard let data = midiData() else { return nil }
-
-        do {
-            try FileManager.default.createDirectory(at: paths.midiScratch, withIntermediateDirectories: true)
-        } catch {
-            showError("Error", "Temporary directory for midi file failed.")
-            return nil
-        }
-
-        let url = paths.midiScratch.appendingPathComponent(midiExportFileName())
-
-        do {
-            try data.write(to: url, options: .atomic)
-        } catch {
-            showError("Error", "Could not create the midi file.")
-            return nil
-        }
-
-        return url
-    }
-
     /// File → Export MIDI…: the dialog, which then calls ``exportMidi()``.
     func requestExport() {
         guard canExport else { return }
