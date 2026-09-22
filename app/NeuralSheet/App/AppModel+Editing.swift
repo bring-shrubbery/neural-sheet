@@ -229,6 +229,10 @@ extension AppModel {
     /// The ruler's drag: clamped to the take; a range under the minimum is no range, so a drag
     /// that ends as a sliver clears rather than marks.
     func setRange(_ range: Range<Double>) {
+        // A run owns the range for its duration (region design §4.3): the band it fills must be
+        // the stretch being decoded.
+        guard regionJob == nil else { return }
+
         let lower = max(0, range.lowerBound)
         let upper = min(duration, range.upperBound)
 
@@ -245,6 +249,10 @@ extension AppModel {
     }
 
     func clearRange() {
+        // A run owns the range for its duration (region design §4.3): the band it fills must be
+        // the stretch being decoded.
+        guard regionJob == nil else { return }
+
         if editor.range != nil {
             editor.range = nil
         }

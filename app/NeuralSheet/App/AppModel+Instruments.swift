@@ -1,4 +1,3 @@
-// AppModel+Instruments.swift
 import Foundation
 import NeuralSheetCore
 
@@ -11,9 +10,14 @@ extension AppModel {
     func reassignInstrument(_ program: Int, to destination: Int) {
         guard let document = editableDocument(for: program) else { return }
 
+        // Captured before the commit: applyDocument's validateTargetProgram re-points a target on
+        // the vanished program at the mix's first strip before this method can see it, so the
+        // check has to run against the target as it stood before the reassignment landed.
+        let followsTarget = editor.targetProgram == program
+
         commit(document.reassign(program: program, to: destination))
 
-        if editor.targetProgram == program {
+        if followsTarget {
             setTargetProgram(destination)
         }
     }

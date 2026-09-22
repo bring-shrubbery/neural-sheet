@@ -7,6 +7,9 @@ import NeuralSheetCore
 /// the model's raw notes are never touched: Revert to Transcription still means the original run.
 extension AppModel {
     struct RegionJob: Equatable {
+        /// Ties a completion to the job that launched it, so an abandoned run landing late can
+        /// never apply to a newer job's range.
+        let id = UUID()
         var range: Range<Double>
         /// The run's constraint; empty is Automatic.
         var groups: [InstrumentGroup]
@@ -40,13 +43,17 @@ extension AppModel {
         _ = dragCanceller?()
         deselectAll()
         editor.retranscribeGroups = groups
-        regionJob = RegionJob(range: range, groups: groups, slice: slice, modelPath: modelPath)
+
+        let job = RegionJob(range: range, groups: groups, slice: slice, modelPath: modelPath)
+        let jobID = job.id
+        regionJob = job
 
         let samples = Array(source.mono16k[sampleRange])
 
         // `onUpdate` and `completion` arrive on the engine's thread. A chunk is 5 s of audio, so
         // hopping each progress value onto the main actor is a handful of tasks per run; there is
-        // no staging and no drain, because nothing is applied until the end.
+        // no staging and no drain, because nothing is applied until the end. The captured jobID
+        // guards both hops, so a run abandoned by a clear or a close can never land on a newer job.
         transcriber.run(
             modelPath: modelPath,
             groups: groups.map(\.rawValue),
@@ -57,7 +64,7 @@ extension AppModel {
                 let progress = update.progress
 
                 Task { @MainActor in
-                    guard var job = self.regionJob else { return }
+                    guard var job = self.regionJob, job.id == jobID else { return }
 
                     job.progress = max(job.progress, progress)
                     self.regionJob = job
@@ -69,7 +76,7 @@ extension AppModel {
                 guard let self else { return }
 
                 Task { @MainActor in
-                    self.handleRegionFinished(result)
+                    self.handleRegionFinished(result, jobID: jobID)
                 }
             })
     }
@@ -84,9 +91,10 @@ extension AppModel {
 
     // MARK: - Completion
 
-    /// On the main actor. A job cleared by a clear or a close ignores its completion.
-    private func handleRegionFinished(_ result: Result<[EngineNote], EngineError>) {
-        guard let job = regionJob else { return }
+    /// On the main actor. A job cleared by a clear or a close, or superseded by a newer one,
+    /// ignores its completion.
+    private func handleRegionFinished(_ result: Result<[EngineNote], EngineError>, jobID: UUID) {
+        guard let job = regionJob, job.id == jobID else { return }
 
         regionJob = nil
 
