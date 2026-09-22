@@ -51,25 +51,28 @@ struct RetranscribeButton: View {
         let titles = Instruments.all.map(\.name) + ["Automatic (any instrument)"]
         let title = "\(TimeFormat.transport(range.lowerBound)) – \(TimeFormat.transport(range.upperBound))"
 
+        // The run is the footer's button, pinned under the list: with 36 instruments to scroll
+        // through, a last row would be off the bottom of the panel more often than not.
         menu.show(from: anchor,
                   width: PopupMenuPresenter.width(forTitles: titles, scale: k),
                   scale: k,
                   title: title,
-                  footer: "Instruments the model may use") {
+                  footerView: AnyView(runButton(range: range))) {
             rows(range: range)
         }
     }
 
-    /// Automatic, the mix's instruments ticked by default, the rest, then the run. Every tick
-    /// re-renders the rows in place so the panel stays open, as the sidebar's picker does.
+    /// Automatic, the mix's instruments ticked by default, then the rest. Every tick re-renders
+    /// the rows in place so the panel stays open, as the sidebar's picker does.
     @ViewBuilder
     private func rows(range: Range<Double>) -> some View {
         let chosen = model.editor.retranscribeGroups ?? []
         let inMix = model.mixer.entries.compactMap { entry in entry.info.group == nil ? nil : entry.info }
         let inMixGroups = Set(inMix.compactMap(\.group))
         let others = Instruments.all.filter { info in info.group.map { !inMixGroups.contains($0) } ?? false }
-        let menu = menu
         let model = model
+
+        MenuSectionLabel(title: "INSTRUMENTS THE MODEL MAY USE")
 
         MenuRow(title: "Automatic (any instrument)", isTicked: chosen.isEmpty) {
             model.setRetranscribeGroups([])
@@ -101,12 +104,28 @@ struct RetranscribeButton: View {
                 }
             }
         }
+    }
 
-        MenuSeparator()
+    /// The footer's primary button: a solid accent fill with dark text, the toolbar's button
+    /// height, the panel's width. Runs with whatever the rows have ticked and closes the popup.
+    private func runButton(range: Range<Double>) -> some View {
+        let s = Scaled(k: k)
+        let menu = menu
+        let model = model
 
-        MenuRow(title: "Re-transcribe") {
-            menu.dismiss()
-            model.retranscribe(range: range, groups: model.editor.retranscribeGroups ?? [])
+        return FlatButton(idle: Theme.accent,
+                          on: Theme.accent,
+                          foregroundIdle: Theme.bgRoot,
+                          foregroundOn: Theme.bgRoot,
+                          corner: s(Metrics.corner),
+                          action: {
+                              menu.dismiss()
+                              model.retranscribe(range: range, groups: model.editor.retranscribeGroups ?? [])
+                          }) { _ in
+            Text("Re-transcribe")
+                .font(Fonts.buttonLabel(k))
+                .frame(maxWidth: .infinity)
+                .frame(height: s(Metrics.buttonHeight))
         }
     }
 

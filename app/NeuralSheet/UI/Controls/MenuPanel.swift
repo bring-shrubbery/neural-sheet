@@ -18,14 +18,19 @@ nonisolated enum MenuMetrics {
     static let checkboxTickStroke: CGFloat = 2
     /// A separator is a 1 px line in a row of this height.
     static let separatorHeight: CGFloat = 9
+    /// Above and below a footer that holds a control rather than a line of text.
+    static let footerPadY: CGFloat = 8
     static let minWidth: CGFloat = 180
 }
 
 /// The panel the instrument dropdown and every popup menu share: a popup surface, an optional
-/// header, a scrolling list of rows and an optional footer.
+/// header, a scrolling list of rows and an optional footer -- a line of text, or a control that
+/// stays put under the list however long the list scrolls (the Re-transcribe popup's button).
 struct MenuPanel<Content: View>: View {
     var title: String?
     var footer: String?
+    /// A control pinned under the list, on the footer's background; shown after `footer` if both.
+    var footerView: AnyView?
     /// Already scaled by the caller; defaults to the authored 244 at 1x.
     var width: CGFloat?
     @ViewBuilder var content: () -> Content
@@ -34,10 +39,12 @@ struct MenuPanel<Content: View>: View {
 
     init(title: String? = nil,
          footer: String? = nil,
+         footerView: AnyView? = nil,
          width: CGFloat? = nil,
          @ViewBuilder content: @escaping () -> Content) {
         self.title = title
         self.footer = footer
+        self.footerView = footerView
         self.width = width
         self.content = content
     }
@@ -74,6 +81,14 @@ struct MenuPanel<Content: View>: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal, s(MenuMetrics.padX))
                     .frame(height: s(MenuMetrics.footerHeight))
+                    .background(Theme.popupFooterBg)
+            }
+
+            if let footerView {
+                footerView
+                    .padding(.horizontal, s(MenuMetrics.padX))
+                    .padding(.vertical, s(MenuMetrics.footerPadY))
+                    .frame(maxWidth: .infinity)
                     .background(Theme.popupFooterBg)
             }
         }

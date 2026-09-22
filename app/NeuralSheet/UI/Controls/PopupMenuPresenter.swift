@@ -27,6 +27,7 @@ import SwiftUI
     private var shownScale: CGFloat = 1
     private var shownTitle: String?
     private var shownFooter: String?
+    private var shownFooterView: AnyView?
     private var monitors: [Any] = []
     private var observers: [NSObjectProtocol] = []
 
@@ -59,13 +60,14 @@ import SwiftUI
                           scale: CGFloat,
                           title: String? = nil,
                           footer: String? = nil,
+                          footerView: AnyView? = nil,
                           @ViewBuilder rows: () -> Rows) {
         guard let window = anchor.window else { return }
 
         let target = window.convertToScreen(anchor.convert(anchor.bounds, to: nil))
 
         show(targetScreenRect: target, in: window, width: width, scale: scale, placement: .alignedToTarget,
-             becomesKey: true, title: title, footer: footer, rows: rows)
+             becomesKey: true, title: title, footer: footer, footerView: footerView, rows: rows)
     }
 
     /// Shows the menu placed against `target` (screen coordinates), as a child of `window`.
@@ -80,14 +82,17 @@ import SwiftUI
                           becomesKey: Bool,
                           title: String? = nil,
                           footer: String? = nil,
+                          footerView: AnyView? = nil,
                           @ViewBuilder rows: () -> Rows) {
         let rows = rows()
         shownWidth = width
         shownScale = scale
         shownTitle = title
         shownFooter = footer
+        shownFooterView = footerView
 
-        present(AnyView(MenuPanel(title: title, footer: footer, width: width) { rows }.uiScale(scale)), in: window, scale: scale,
+        present(AnyView(MenuPanel(title: title, footer: footer, footerView: footerView, width: width) { rows }.uiScale(scale)),
+                in: window, scale: scale,
                 becomesKey: becomesKey, swallowsOutsideClick: true) { size in
             switch placement {
             case .alignedToTarget: Self.alignedFrame(size: size, target: target, scale: scale)
@@ -195,7 +200,8 @@ import SwiftUI
         guard let hosting else { return }
 
         let rows = rows()
-        hosting.rootView = AnyView(MenuPanel(title: shownTitle, footer: shownFooter, width: shownWidth) { rows }.uiScale(shownScale))
+        hosting.rootView = AnyView(MenuPanel(title: shownTitle, footer: shownFooter, footerView: shownFooterView, width: shownWidth) { rows }
+            .uiScale(shownScale))
     }
 
     func dismiss() {
