@@ -21,6 +21,8 @@ Work towards v2 starts here: user-experience improvements beyond NeuralNote pari
 - Return / Enter goes to start.
 - Projects: a `.neuralsheet` package that holds the audio, the transcription, the edits, the mix and the editor settings, with New, Open, Open Recent, Save, Save As, Revert to Saved and Close, the save prompt on close and quit, the dirty dot and the proxy icon in the window title, and double-click from the Finder.
 - A welcome window at launch and after the project window closes: create a project, open one, or pick a recent one.
+- Whole-instrument commands in the Edit tab: a right-click on a strip changes every note of the instrument to another (merging into one that exists), splits it at a pitch, or deletes it, each as one undo step.
+- Re-transcribe a stretch of the take: a drag on the ruler in the Edit tab marks a range, and Re-transcribe on the toolbar runs the model on it alone, with its own choice of instruments, replacing the notes in the range as one undo step and leaving everything else as it was.
 
 ### Changed
 

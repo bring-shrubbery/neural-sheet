@@ -290,7 +290,7 @@ after Quantize, tooltip "Re-transcribe the marked range". Disabled at 0.38 with 
 with no checkpoint installed, or while either kind of run is in flight.
 
 Clicking opens a `MenuPanel` on the toolbar's `PopupMenuPresenter`, titled with the range as
-`mm:ss.ddd – mm:ss.ddd` (`TimeFormat`), footer "Instruments the model may use":
+`mm:ss.dd – mm:ss.dd` (`TimeFormat.transport`, the transport's own readout), footer "Instruments the model may use":
 
 - **Automatic** — a tick row; ticked when nothing else is. Choosing it clears the others.
 - A separator, then every instrument currently in the mix as a tick row with its chip, ticked
