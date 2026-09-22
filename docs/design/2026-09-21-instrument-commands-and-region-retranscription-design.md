@@ -46,7 +46,7 @@ Non-goals
 |---|---|
 | What is "merge A into B"? | Every note of program A is given program B. Same-instrument same-pitch overlaps that result are trimmed by the document's existing rule (editor design §4.4). |
 | Where do the instrument commands live? | A right-click on a strip in the Edit tab opens a floating card at the pointer, like the roll's note card. The strip's face does not change. |
-| How is the region chosen? | A drag across the ruler in the Edit tab. A click without a drag still seeks. Snapped to the grid when snap is on. |
+| How is the region chosen? | A drag across the ruler, in either tab. A click without a drag still seeks. Snapped to the grid when snap is on (the Edit tab, where there is a grid). |
 | Which instruments does the region run decode with? | Chosen per run in a popup, preset to the instruments in the current mix, with an Automatic row. |
 | What happens to the notes already in the range? | Notes that **start** inside the range are deleted; the run's notes that start inside it are inserted. A note that starts before the range and runs into it is kept whole. |
 | How does the run land? | One `EditBatch` titled "Re-transcribe", through `AppModel.commit`. Cancel changes nothing. The model's raw notes (`transcription.rawNotes`) are not touched, so Revert to Transcription still means the original run. |
@@ -154,7 +154,8 @@ func cancelRegionTranscription()
 - `.success(notes)`: shift every note by `sliceStart`, convert with `NoteEvent.init(engineNote:)`,
   run `mergeOverlappingNotesWithSamePitch`, then `document.replace(range:with:)` and
   `replaceDocumentAndCommit`. Select the inserted ids so the result can be auditioned, nudged or
-  undone at once. Clear `regionJob`. The range stays marked.
+  undone at once. Clear `regionJob`, then the range: it has done its job. (After a cancel or a
+  failure it stays, for another go.)
 - `.failure(.cancelled)`: clear `regionJob`; nothing else changes.
 - `.failure(error)`: clear `regionJob`, then `showError("Transcription failed.", …)` with the
   same reason text `failureReason` builds for the main run (the unsupported-version wording
@@ -259,7 +260,7 @@ draft). The `MenuPanel` submenu is the presenter's `child`, as the inspector's i
 ### 6.2 The ruler range (`Timeline/RulerView.swift`, `TimelineContainerView+Editing.swift`)
 
 `RulerView` gains `onRange: ((Range<Double>) -> Void)?` beside `onSeek`, set by the container in
-the Edit tab only. `mouseDown` records the anchor x; `mouseDragged` past 3 px (scaled) starts a
+both tabs. `mouseDown` records the anchor x; `mouseDragged` past 3 px (scaled) starts a
 range from the anchor to the pointer, calling `onRange` on every move with both ends snapped when
 `editor.snapEnabled` (through `TempoGrid`, the same snap the roll's draw tool uses) and clamped
 to `0..<duration`; `mouseUp` without having passed the threshold is the seek it is today. A drag
@@ -270,7 +271,7 @@ cursor change.
 
 ### 6.3 Drawing the range (`PianoRollView+Editing.swift`, `WaveformView.swift`)
 
-The range is a band over the roll's lanes and the waveform's bars, drawn in the Edit tab only:
+The range is a band over the roll's lanes and the waveform's bars, drawn in both tabs:
 `TimelinePalette.rangeFill` (`Theme.accent` at 0.10) the full height, with 1 px `rangeEdge`
 (`Theme.accent` at 0.6) lines at both edges. Both hosts place a shared `RangeBandView` subview,
 composed of `FillView`s rather than a `draw(_:)` — like the wash and the marquee, so it needs no
@@ -282,24 +283,33 @@ While a region run is in flight, the band fills left to right with the job's pro
 `Theme.accent` at 0.22, so the roll shows how far the model has got.
 
 Escape order in `escapePressed`: a drag in progress is cancelled; else a selection is cleared;
-else the range is cleared. Two Escapes from a selection inside a range clear both.
+else the range is cleared. Two Escapes from a selection inside a range clear both. In the
+Transcribe tab, Escape clears the range once the instrument picker is closed.
 
 ### 6.4 The Re-transcribe button and popup (`Toolbar/EditToolbar.swift`, `Toolbar/RetranscribeButton.swift`)
 
-The Edit toolbar's row (editor design §6.1) gains **Re-transcribe** as a labelled `FlatButton`
-after Quantize, tooltip "Re-transcribe the marked range". Disabled at 0.38 with no range marked,
-with no checkpoint installed, or while either kind of run is in flight.
+Both toolbars gain **Re-transcribe** as a labelled `FlatButton`, tooltip "Re-transcribe the
+marked range": the Edit row (editor design §6.1) after Quantize, the Transcribe row before Drag
+MIDI out. Disabled at 0.38 with no range marked, with no checkpoint installed, or while either
+kind of run is in flight. While a region run is in flight the Transcribe row's bin greys out
+too, since clearing is refused.
 
 Clicking opens a `MenuPanel` on the toolbar's `PopupMenuPresenter`, titled with the range as
-`mm:ss.dd – mm:ss.dd` (`TimeFormat.transport`, the transport's own readout), footer "Instruments the model may use":
+`mm:ss.dd – mm:ss.dd` (`TimeFormat.transport`, the transport's own readout). The list, top to
+bottom:
 
+- A section label **INSTRUMENTS THE MODEL MAY USE**.
 - **Automatic** — a tick row; ticked when nothing else is. Choosing it clears the others.
 - A separator, then every instrument currently in the mix as a tick row with its chip, ticked
   by default; then a separator and the remaining named groups and Drums, unticked. Multi-select,
   the panel stays open on a tick like the sidebar's instrument menu (`InstrumentMenu.swift`).
   Ticking any instrument unticks Automatic; unticking the last ticks it.
-- A separator, then **Re-transcribe** as the last row, which calls
-  `retranscribe(range:groups:)` and dismisses the popup.
+
+Under the list, pinned so it is there however far the list scrolls, the panel's footer holds a
+**Re-transcribe** button: a solid `Theme.accent` fill with `Theme.bgRoot` text, the toolbar's
+button height, the panel's width. It calls `retranscribe(range:groups:)` and dismisses the popup.
+(`MenuPanel` gains an optional `footerView` for this, which the presenter keeps across its
+in-place refreshes.)
 
 The chosen set is remembered for the next popup within the session (`EditorState.retranscribeGroups`,
 transient). A project opens with the mix's instruments preset again.
@@ -318,7 +328,8 @@ the Undo item reads "Undo Re-transcribe".
 
 ### 6.6 Keyboard
 
-No new shortcut. Escape's order changes as §6.3. The `r` key in the Edit tab stays swallowed.
+No new shortcut. Escape's order changes as §6.3, and in the Transcribe tab Escape clears the
+range when the picker is closed. The `r` key in the Edit tab stays swallowed.
 
 ## 7. The edit controller
 
@@ -337,7 +348,7 @@ and to `CHANGELOG.md` under Unreleased / Added:
 
 - A right-click on an instrument strip in the Edit tab opens a card that changes, splits or
   deletes the whole instrument.
-- A drag on the ruler in the Edit tab marks a time range; Re-transcribe in the Edit toolbar runs
+- A drag on the ruler in either tab marks a time range; Re-transcribe on either toolbar runs
   the model on that range alone, with its own instrument choice, and lands as one undoable edit.
 
 Nothing existing changes: the Transcribe tab, the main run, the selection constraint before a
