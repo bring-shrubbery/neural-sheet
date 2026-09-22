@@ -52,10 +52,12 @@ extension AppModel {
             groups: groups.map(\.rawValue),
             samples16k: samples,
             onUpdate: { [weak self] update in
+                guard let self else { return true }
+
                 let progress = update.progress
 
                 Task { @MainActor in
-                    guard let self, var job = self.regionJob else { return }
+                    guard var job = self.regionJob else { return }
 
                     job.progress = max(job.progress, progress)
                     self.regionJob = job
@@ -64,8 +66,10 @@ extension AppModel {
                 return true
             },
             completion: { [weak self] result in
+                guard let self else { return }
+
                 Task { @MainActor in
-                    self?.handleRegionFinished(result)
+                    self.handleRegionFinished(result)
                 }
             })
     }
