@@ -112,8 +112,10 @@ extension AppModel {
 
             let batch = document.replace(range: job.range, with: mergeOverlappingNotesWithSamePitch(shifted))
             replaceDocumentAndCommit(document, batch)
-            // The result is the selection: audition it, nudge it, or undo it at once.
+            // The result is the selection: audition it, nudge it, or undo it at once. The range
+            // has done its job and goes; after a cancel or a failure it stays, for another go.
             setSelection(Set(batch.inserted.map(\.id)))
+            clearRange()
 
         case .failure(.cancelled):
             break
