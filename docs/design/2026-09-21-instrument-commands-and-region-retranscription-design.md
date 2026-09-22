@@ -272,10 +272,11 @@ cursor change.
 
 The range is a band over the roll's lanes and the waveform's bars, drawn in the Edit tab only:
 `TimelinePalette.rangeFill` (`Theme.accent` at 0.10) the full height, with 1 px `rangeEdge`
-(`Theme.accent` at 0.6) lines at both edges. In the roll it is a layer-backed subview like the
-marquee's `MarqueeView`, below the marquee and the playhead, so notes read through it. In the
-waveform it is drawn in `draw(_:)` after the bars. Both are positioned from `geometry` on every
-layout, as the frontier and the playhead are.
+(`Theme.accent` at 0.6) lines at both edges. Both hosts place a shared `RangeBandView` subview,
+composed of `FillView`s rather than a `draw(_:)` — like the wash and the marquee, so it needs no
+backing store however wide the range gets. In the roll it sits below the marquee and the playhead,
+so notes read through it. Both hosts position it from `geometry` on every layout, as the frontier
+and the playhead are.
 
 While a region run is in flight, the band fills left to right with the job's progress in
 `Theme.accent` at 0.22, so the roll shows how far the model has got.
@@ -283,7 +284,7 @@ While a region run is in flight, the band fills left to right with the job's pro
 Escape order in `escapePressed`: a drag in progress is cancelled; else a selection is cleared;
 else the range is cleared. Two Escapes from a selection inside a range clear both.
 
-### 6.4 The Re-transcribe button and popup (`Toolbar/EditToolbar.swift`, `Toolbar/RetranscribePopup.swift`)
+### 6.4 The Re-transcribe button and popup (`Toolbar/EditToolbar.swift`, `Toolbar/RetranscribeButton.swift`)
 
 The Edit toolbar's row (editor design §6.1) gains **Re-transcribe** as a labelled `FlatButton`
 after Quantize, tooltip "Re-transcribe the marked range". Disabled at 0.38 with no range marked,
