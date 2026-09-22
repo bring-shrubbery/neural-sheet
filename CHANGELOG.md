@@ -8,34 +8,33 @@ Work towards v2 starts here: user-experience improvements beyond NeuralNote pari
 
 ### Added
 
-- An app icon: three piano-roll notes on graphite, as a layered macOS 26 icon (`app/NeuralSheet/AppIcon.icon`).
-- An Edit tab with full MIDI editing on the piano roll (select, move, resize, draw, erase, duplicate, reassign instrument, velocity, snap and quantize to a tempo grid, undo/redo, revert to transcription); the transcription is saved in the session.
-- Automatic releases: every code change on `main` that passes CI is published as a signed, notarized `.dmg` (and zip) on a GitHub release, tagged with the next patch version (`docs/release.md`).
-- A website at [neural-sheet.quassum.com](https://neural-sheet.quassum.com) (`web/`, Astro on Cloudflare) with the latest download and the `/appcast.xml` feed redirect.
-- Updates install from inside the app (Sparkle): a check on launch and daily, a prompt with the release notes, install and relaunch. The status-bar notice and its link to the releases page are gone.
-- The update prompt shows the release's changes at once (the commits since the previous release, embedded in the feed) rather than loading the GitHub release page.
-- Cut, copy and paste notes in the Edit tab; a right-click anywhere on the roll opens the note card for the selection; the instrument last assigned to a selection is where new notes go; `[` and `]` step the mix; a note is auditioned even with the mix fully on the original.
-- The editor auditions notes: a note sounds, with its instrument, velocity and its strip's fader, mute and solo, when it is clicked, dragged across pitches, moved, inserted, nudged, or given another instrument, pitch or velocity.
-- A right-click on a note opens a floating card with the selection's instrument, start, length, pitch and velocity, so nothing has to be set from the sidebar.
-- In the Edit tab, a click on empty roll space places the playhead there.
-- Return / Enter goes to start.
-- Projects: a `.neuralsheet` package that holds the audio, the transcription, the edits, the mix and the editor settings, with New, Open, Open Recent, Save, Save As, Revert to Saved and Close, the save prompt on close and quit, the dirty dot and the proxy icon in the window title, and double-click from the Finder.
-- A welcome window at launch and after the project window closes: create a project, open one, or pick a recent one.
-- Whole-instrument commands in the Edit tab: a right-click on a strip changes every note of the instrument to another (merging into one that exists), splits it at a pitch, or deletes it, each as one undo step.
-- Re-transcribe a stretch of the take: a drag on the ruler in either tab marks a range, and Re-transcribe on the toolbar runs the model on it alone, with its own choice of instruments, replacing the notes in the range as one undo step and leaving everything else as it was.
+- An app icon.
+- An Edit tab: edit the transcription's notes on the piano roll, with undo and revert.
+- Cut, copy and paste notes.
+- A right-click on a note opens a card with its instrument, start, length, pitch and velocity.
+- Notes are auditioned as they are clicked, moved or changed.
+- A right-click on an instrument strip changes, splits or deletes the whole instrument.
+- Re-transcribe a stretch of the take: drag on the ruler, then Re-transcribe on the toolbar.
+- A stereo split in the master panel: the original in the left ear, the MIDI in the right.
+- Projects: a `.neuralsheet` file holds the audio, the transcription, the edits and the settings.
+- A welcome window to create or open a project.
+- Updates install from inside the app.
+- Automatic releases: every change on `main` that passes CI is published as a signed disk image.
+- A website at [neural-sheet.quassum.com](https://neural-sheet.quassum.com).
+- Return / Enter goes to start; `[` and `]` step the mix.
 
 ### Changed
 
-- The synth plays per-note velocity; the export tempo is the project tempo, set on the Edit toolbar (and still in the Export dialog).
-- The ORIG / MIDI mix, the output level and MUTE live in the sidebar's master panel, under the master meter, rather than in the top bar. Beside the mix, a headphones toggle splits the sound: the original in the left ear, the MIDI in the right, nothing mixed; holding ORIG or MIDI then silences the other ear.
-- Trackpad panning of the timeline is smooth: the bands are drawn as windows that slide with the scroll rather than as layers the width of the whole take, a wheel over the roll pans time and pitch together, and pitch pans by the pixel rather than a key at a time.
-- Clicking the timeline, or pressing Return in a field, gives the keyboard back to the transport, so Space plays again after editing a number.
-- The window is titled after the project rather than "NeuralSheet".
+- The synth plays each note's velocity, and the export tempo is the project tempo.
+- The ORIG / MIDI mix, the output level and MUTE are in the sidebar's master panel rather than the top bar.
+- Trackpad panning of the timeline is smooth.
+- Clicking the timeline, or pressing Return in a field, gives the keyboard back to the transport.
+- The window is titled after the project.
 
 ### Removed
 
-- Drag MIDI out. File → Export MIDI… (⇧⌘E) is how a transcription leaves the app.
-- The autosaved session under `~/Library/NeuralSheet`: the app opens on the welcome window rather than on the last take, and a project file is where work is kept. The two session files and any leftover recording are deleted at launch.
+- Drag MIDI out; File → Export MIDI… is how a transcription leaves the app.
+- The autosaved session; a project file is where work is kept.
 
 ## [1.0.0-checkpoint] — 2026-09-19
 
