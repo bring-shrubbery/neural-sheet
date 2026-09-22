@@ -27,13 +27,14 @@ Work towards v2 starts here: user-experience improvements beyond NeuralNote pari
 ### Changed
 
 - The synth plays per-note velocity; the export tempo is the project tempo, set on the Edit toolbar (and still in the Export dialog).
-- The output level and MUTE live in the sidebar's master panel, under the master meter, rather than in the top bar.
+- The ORIG / MIDI mix, the output level and MUTE live in the sidebar's master panel, under the master meter, rather than in the top bar. Beside the mix, a headphones toggle splits the sound: the original in the left ear, the MIDI in the right, nothing mixed; holding ORIG or MIDI then silences the other ear.
 - Trackpad panning of the timeline is smooth: the bands are drawn as windows that slide with the scroll rather than as layers the width of the whole take, a wheel over the roll pans time and pitch together, and pitch pans by the pixel rather than a key at a time.
 - Clicking the timeline, or pressing Return in a field, gives the keyboard back to the transport, so Space plays again after editing a number.
 - The window is titled after the project rather than "NeuralSheet".
 
 ### Removed
 
+- Drag MIDI out. File → Export MIDI… (⇧⌘E) is how a transcription leaves the app.
 - The autosaved session under `~/Library/NeuralSheet`: the app opens on the welcome window rather than on the last take, and a project file is where work is kept. The two session files and any leftover recording are deleted at launch.
 
 ## [1.0.0-checkpoint] — 2026-09-19
