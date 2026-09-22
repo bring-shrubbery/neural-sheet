@@ -14,7 +14,6 @@ private func makePaths(in directory: URL) -> AppPaths {
     AppPaths(
         root: directory.appendingPathComponent("root", isDirectory: true),
         secondaryModels: directory.appendingPathComponent("secondary", isDirectory: true),
-        temp: directory.appendingPathComponent("temp", isDirectory: true),
         music: directory.appendingPathComponent("music", isDirectory: true))
 }
 

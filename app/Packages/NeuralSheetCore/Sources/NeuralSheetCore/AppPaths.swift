@@ -20,19 +20,15 @@ public struct AppPaths: Sendable {
     /// `~/Library/NeuralNote/models`: checkpoints an earlier NeuralNote installed, read-only.
     public var secondaryModels: URL
 
-    /// Where MIDI files are written for a drag out of the window.
-    public var midiScratch: URL
-
     /// Where a MIDI export lands by default.
     public var musicFolder: URL
 
-    public init(root: URL, secondaryModels: URL, temp: URL, music: URL) {
+    public init(root: URL, secondaryModels: URL, music: URL) {
         self.root = root
         models = root.appendingPathComponent("models", isDirectory: true)
         recordings = root.appendingPathComponent("recordings", isDirectory: true)
         globalSettings = root.appendingPathComponent("global.settings")
         self.secondaryModels = secondaryModels
-        midiScratch = temp.appendingPathComponent("neuralsheet", isDirectory: true)
         musicFolder = music
     }
 
@@ -46,7 +42,6 @@ public struct AppPaths: Sendable {
         return AppPaths(
             root: library.appendingPathComponent("NeuralSheet", isDirectory: true),
             secondaryModels: library.appendingPathComponent("NeuralNote/models", isDirectory: true),
-            temp: URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true),
             music: fileManager.urls(for: .musicDirectory, in: .userDomainMask).first
                 ?? home.appendingPathComponent("Music", isDirectory: true))
     }()
@@ -54,7 +49,7 @@ public struct AppPaths: Sendable {
     /// Creates the directories the app writes to. The secondary models directory belongs to another
     /// app and the music folder to the user, so neither is created here.
     public func ensureDirectories() throws {
-        for directory in [root, models, recordings, midiScratch] {
+        for directory in [root, models, recordings] {
             try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         }
     }

@@ -14,7 +14,6 @@ private func withTempPaths(_ body: (AppPaths) throws -> Void) throws {
     let paths = AppPaths(
         root: base.appendingPathComponent("NeuralSheet", isDirectory: true),
         secondaryModels: base.appendingPathComponent("NeuralNote/models", isDirectory: true),
-        temp: base.appendingPathComponent("tmp", isDirectory: true),
         music: base.appendingPathComponent("Music", isDirectory: true))
 
     try paths.ensureDirectories()
@@ -97,14 +96,13 @@ private func makeFile(at url: URL, size: Int64) throws {
         #expect(paths.models == paths.root.appendingPathComponent("models", isDirectory: true))
         #expect(paths.recordings == paths.root.appendingPathComponent("recordings", isDirectory: true))
         #expect(paths.globalSettings == paths.root.appendingPathComponent("global.settings"))
-        #expect(paths.midiScratch.lastPathComponent == "neuralsheet")
     }
 }
 
 @Test func ensureDirectoriesCreatesTheWritableFolders() throws {
     try withTempPaths { paths in
         var isDirectory: ObjCBool = false
-        for url in [paths.root, paths.models, paths.recordings, paths.midiScratch] {
+        for url in [paths.root, paths.models, paths.recordings] {
             #expect(FileManager.default.fileExists(atPath: url.path, isDirectory: &isDirectory))
             #expect(isDirectory.boolValue)
         }
@@ -118,7 +116,6 @@ private func makeFile(at url: URL, size: Int64) throws {
     #expect(paths.root.lastPathComponent == "NeuralSheet")
     #expect(paths.root.deletingLastPathComponent().lastPathComponent == "Library")
     #expect(Array(paths.secondaryModels.pathComponents.suffix(2)) == ["NeuralNote", "models"])
-    #expect(paths.midiScratch.lastPathComponent == "neuralsheet")
     #expect(paths.musicFolder.lastPathComponent == "Music")
 }
 

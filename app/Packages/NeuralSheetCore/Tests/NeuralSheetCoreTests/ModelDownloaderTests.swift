@@ -57,7 +57,6 @@ private func withDownloader(
     let paths = AppPaths(
         root: base.appendingPathComponent("NeuralSheet", isDirectory: true),
         secondaryModels: base.appendingPathComponent("NeuralNote/models", isDirectory: true),
-        temp: base.appendingPathComponent("tmp", isDirectory: true),
         music: base.appendingPathComponent("Music", isDirectory: true))
     try paths.ensureDirectories()
 
