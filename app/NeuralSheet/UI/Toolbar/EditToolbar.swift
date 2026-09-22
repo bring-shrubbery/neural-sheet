@@ -3,11 +3,10 @@ import NeuralSheetCore
 import SwiftUI
 
 /// The Edit tab's row above the timeline (design §6.1): tools, snap and division, tempo and
-/// downbeat, Quantize, Re-transcribe, Undo/Redo, and the Drag MIDI out button the Transcribe row
-/// has.
+/// downbeat, Quantize, Re-transcribe, Undo/Redo.
 ///
 /// Same frame as `Toolbar` -- height, side padding, button height, corner -- so the two tabs'
-/// rows sit on the same divider and the drag button does not move between them.
+/// rows sit on the same divider.
 struct EditToolbar: View {
     let model: AppModel
 
@@ -68,8 +67,6 @@ struct EditToolbar: View {
                         Icons.RedoStroked()
                     }
                 }
-
-                MidiDragButton(model: model)
             }
             .frame(height: s(Metrics.buttonHeight))
             .padding(.top, s(7))
