@@ -141,6 +141,9 @@ import SwiftUI
         container?.resumeDisplayLink()
     }
 
+    // No `canEdit` guard below: `mouseDown` opens no session while it is false, and `mouseUp`
+    // returns at once without one (region design §7).
+
     func mouseDragged(at point: CGPoint, event: NSEvent) {
         lastWindowPoint = event.locationInWindow
         update(at: point, modifiers: event.modifierFlags)

@@ -2,22 +2,37 @@ import AppKit
 
 /// The marked range (region design §6.3): an accent band with 1 px edges over the roll's lanes
 /// and the waveform's bars, filling left to right with the region run's progress while one is in
-/// flight. Positioned by its host from the geometry; repainted only when the range, the progress
+/// flight. Positioned by its host from the geometry; laid out only when the range, the progress
 /// or the frame moves. Nothing hit-tests it.
+///
+/// Composed of ``FillView``s rather than a `draw(_:)`, like the wash and the marquee: a range this
+/// wide would otherwise need a backing store as wide as the whole timeline, which a long range at
+/// a high zoom can push past CALayer's usual tile limit — the "layer the width of the content"
+/// shape AGENTS.md's band-window rule exists to avoid.
 final class RangeBandView: NSView {
+    private let fill = FillView(colour: TimelinePalette.rangeFill)
+    private let progressFill = FillView(colour: TimelinePalette.rangeProgress)
+    private let leftEdge = FillView(colour: TimelinePalette.rangeEdge)
+    private let rightEdge = FillView(colour: TimelinePalette.rangeEdge)
+
     var scale: CGFloat = 1 {
-        didSet { if scale != oldValue { needsDisplay = true } }
+        didSet { if scale != oldValue { layoutFills() } }
     }
 
     /// 0…1 while a run is in flight, nil otherwise.
     var progress: Float? {
-        didSet { if progress != oldValue { needsDisplay = true } }
+        didSet { if progress != oldValue { layoutFills() } }
     }
 
     override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
         wantsLayer = true
         isHidden = true
+
+        addSubview(fill)
+        addSubview(progressFill)
+        addSubview(leftEdge)
+        addSubview(rightEdge)
     }
 
     required init?(coder: NSCoder) {
@@ -28,18 +43,21 @@ final class RangeBandView: NSView {
 
     override func hitTest(_ point: NSPoint) -> NSView? { nil }
 
-    override func draw(_ rect: NSRect) {
-        guard let ctx = NSGraphicsContext.current?.cgContext else { return }
-
-        ctx.fill(bounds, TimelinePalette.rangeFill)
+    /// Bottom to top: the fill, its progress over it, and the two edges on top — the order
+    /// `draw(_:)` used to paint them in.
+    private func layoutFills() {
+        fill.set(frame: CGRect(x: 0, y: 0, width: bounds.width, height: bounds.height))
 
         if let progress {
             let width = (bounds.width * CGFloat(min(max(progress, 0), 1))).rounded()
-            ctx.fill(CGRect(x: bounds.minX, y: 0, width: width, height: bounds.height), TimelinePalette.rangeProgress)
+            progressFill.isHidden = false
+            progressFill.set(frame: CGRect(x: 0, y: 0, width: width, height: bounds.height))
+        } else {
+            progressFill.isHidden = true
         }
 
-        ctx.fill(CGRect(x: bounds.minX, y: 0, width: scale, height: bounds.height), TimelinePalette.rangeEdge)
-        ctx.fill(CGRect(x: bounds.maxX - scale, y: 0, width: scale, height: bounds.height), TimelinePalette.rangeEdge)
+        leftEdge.set(frame: CGRect(x: 0, y: 0, width: scale, height: bounds.height))
+        rightEdge.set(frame: CGRect(x: bounds.width - scale, y: 0, width: scale, height: bounds.height))
     }
 
     /// Lays `band` over `range` in `host`, the host's full height. The hosts' bounds origins
@@ -59,7 +77,7 @@ final class RangeBandView: NSView {
 
         if band.frame != frame {
             band.frame = frame
-            band.needsDisplay = true
+            band.layoutFills()
         }
     }
 }
