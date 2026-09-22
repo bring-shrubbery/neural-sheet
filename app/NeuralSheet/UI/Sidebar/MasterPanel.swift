@@ -3,9 +3,10 @@ import NeuralSheetCore
 import SwiftUI
 
 /// The panel pinned to the bottom of the sidebar (§1.4): a "MASTER" label over the 26-segment
-/// master meter, under a `divSoft` top border, and below the meter the output level and MUTE,
-/// which the inventory had in the top bar and now sit beside the level they act on. 92 authored
-/// points tall.
+/// master meter, under a `divSoft` top border, and below the meter two rows the inventory had in
+/// the top bar and now sit beside the level they act on: the ORIG / MIDI mix with the stereo
+/// split toggle beside it (`MixPill`, ours), then the output level and MUTE. 132 authored points
+/// tall.
 struct MasterPanel: View {
     @Bindable private var model: AppModel
     /// The panel's width in authored points: the sidebar's column, less its border.
@@ -20,7 +21,7 @@ struct MasterPanel: View {
 
     // MARK: - Authored extents (`Sidebar.cpp`, `TopBar.cpp`, `nn::metrics`)
 
-    static let height: CGFloat = 92
+    static let height: CGFloat = 132
     private static let paddingSide: CGFloat = 14
     private static let paddingTop: CGFloat = 12
     private static let labelHeight: CGFloat = 12
@@ -29,6 +30,11 @@ struct MasterPanel: View {
     private static let meterSegments = 26
     private static let meterGap: CGFloat = 3
     private static let controlsTopGap: CGFloat = 10
+    /// Between the mix row and the volume row.
+    private static let rowGap: CGFloat = 10
+    /// The top bar's 86, which the column has room for beside the split toggle.
+    private static let mixTrackWidth: CGFloat = 86
+    private static let splitIconSize: CGFloat = 15
 
     /// The top bar's pill and button metrics, so the controls look as they did there.
     private static let controlHeight: CGFloat = 30
@@ -66,6 +72,16 @@ struct MasterPanel: View {
                 .padding(.top, s(Self.meterTopGap))
 
             HStack(spacing: 0) {
+                MixPill(model: model, trackWidth: Self.mixTrackWidth, height: Self.controlHeight, corner: Self.controlCorner)
+
+                Spacer(minLength: s(8))
+
+                splitButton
+            }
+            .frame(height: s(Self.controlHeight))
+            .padding(.top, s(Self.controlsTopGap))
+
+            HStack(spacing: 0) {
                 volumePill
 
                 Spacer(minLength: s(8))
@@ -73,7 +89,7 @@ struct MasterPanel: View {
                 muteButton
             }
             .frame(height: s(Self.controlHeight))
-            .padding(.top, s(Self.controlsTopGap))
+            .padding(.top, s(Self.rowGap))
 
             Spacer(minLength: 0)
         }
@@ -118,6 +134,31 @@ struct MasterPanel: View {
         .frame(height: s(Self.controlHeight))
         .background(RoundedRectangle(cornerRadius: s(Self.controlCorner), style: .circular).fill(Theme.bgControl))
         .opacity(alpha)
+    }
+
+    // MARK: - Stereo split
+
+    /// Headphones, on the accent while the source plays in the left ear and the synth in the
+    /// right. Dimmed with the mix pill until there is something to split.
+    private var splitButton: some View {
+        let s = Scaled(k: k)
+        let alpha = model.notes.isEmpty ? Theme.disabledAlpha : 1.0
+
+        return FlatButton(isOn: model.stereoSplit,
+                          idle: Theme.bgControl,
+                          on: Theme.accentFillActive,
+                          foregroundIdle: Theme.textIcon,
+                          foregroundOn: Theme.accentText,
+                          corner: s(Self.controlCorner),
+                          action: { model.stereoSplit.toggle() }) { _ in
+            Icons.HeadphonesStroked()
+                .stroke(style: Icons.strokeStyle(scale: k))
+                .frame(width: s(Self.splitIconSize), height: s(Self.splitIconSize))
+                .frame(width: s(Self.controlHeight), height: s(Self.controlHeight))
+        }
+        .opacity(alpha)
+        .tooltip("Split: the source audio in the left ear, the MIDI in the right, nothing mixed")
+        .accessibilityLabel("Stereo split")
     }
 
     // MARK: - Mute

@@ -2,15 +2,16 @@ import CoreText
 import NeuralSheetCore
 import SwiftUI
 
-/// The window's top strip (`TopBar.cpp`): transport, position readout and the mix. Authored 54 px
-/// tall, every extent scaled by `\.uiScale`.
+/// The window's top strip (`TopBar.cpp`): transport and position readout. Authored 54 px tall,
+/// every extent scaled by `\.uiScale`.
 ///
-/// Left to right: five transport buttons, `TimeDisplay`, a flexible gap, the mix pill. Every
+/// Left to right: five transport buttons, `TimeDisplay`, then the rest of the row empty. Every
 /// control is 30 tall and sits at y = 11 in the 53 px above the 1 px bottom border, which is
 /// where JUCE's integer `withSizeKeepingCentre` put them. The wordmark, the Model button and the
 /// gear NeuralNote had here are gone: the model and the settings live in the Settings window
-/// (⌘,), and the wordmark only took room from the transport. The volume pill and MUTE that ended
-/// the row have moved to the sidebar's master panel (`MasterPanel`), beside the level they act on.
+/// (⌘,), and the wordmark only took room from the transport. The mix pill, the volume pill and
+/// MUTE that ended the row have moved to the sidebar's master panel (`MasterPanel`), beside the
+/// level they act on.
 struct TopBar: View {
     @Bindable private var model: AppModel
 
@@ -33,10 +34,6 @@ struct TopBar: View {
         static let transportButtonH: CGFloat = 30
         static let controlHeight: CGFloat = 30
         static let controlCorner: CGFloat = 6
-
-        static let pillPadding: CGFloat = 12
-        static let pillGap: CGFloat = 9
-        static let mixTrackWidth: CGFloat = 86
     }
 
     // MARK: - Body
@@ -54,8 +51,6 @@ struct TopBar: View {
                 TimeDisplay(model: model)
 
                 Spacer(minLength: 0)
-
-                mixPill
             }
             .frame(height: s(Metrics.controlHeight))
             .padding(.leading, s(Metrics.paddingLeft))
@@ -175,121 +170,6 @@ struct TopBar: View {
             icon(state)
                 .frame(width: s(Metrics.transportButtonW), height: s(Metrics.transportButtonH))
         }
-    }
-
-    // MARK: - Mix pill
-
-    /// "ORIG" ... 86 px slider ... "MIDI". Dimmed rather than disabled while there are no notes to
-    /// balance against: what it sets survives a take being cleared.
-    ///
-    /// Either label held down solos its side for as long as the mouse is down; the slider follows
-    /// the hold and comes back to the set value on release.
-    private var mixPill: some View {
-        let s = Scaled(k: k)
-        let alpha = model.notes.isEmpty ? Theme.disabledAlpha : 1.0
-        // Reads what is playing, writes the setting: a drag while a label is held moves the set
-        // value underneath, which is what shows once the hold ends.
-        let mix = Binding(get: { model.effectiveMix }, set: { model.mix = $0 })
-
-        return HStack(spacing: s(Metrics.pillGap)) {
-            MixHoldLabel(text: "ORIG",
-                         colour: Theme.textMuted,
-                         isHeld: model.mixHold == 0,
-                         begin: { model.beginMixHold(.source) },
-                         end: model.endMixHold)
-                .tooltip("Hold to hear only the source audio")
-
-            PillSlider(value: mix,
-                       range: 0 ... 1,
-                       step: 0.001,
-                       width: s(Metrics.mixTrackWidth),
-                       fill: Theme.accent.opacity(0.8),
-                       track: Theme.faderTrackTop,
-                       thumb: Theme.faderThumb)
-                .tooltip("Balance between the source audio and the synthesised transcription | [ ]")
-
-            MixHoldLabel(text: "MIDI",
-                         colour: Theme.accentText,
-                         isHeld: model.mixHold == 1,
-                         begin: { model.beginMixHold(.synth) },
-                         end: model.endMixHold)
-                .tooltip("Hold to hear only the MIDI")
-        }
-        .padding(.horizontal, s(Metrics.pillPadding))
-        .frame(height: s(Metrics.controlHeight))
-        .background(pillSurface)
-        .opacity(alpha)
-    }
-
-    private var pillSurface: some View {
-        RoundedRectangle(cornerRadius: Scaled(k: k)(Metrics.controlCorner), style: .circular)
-            .fill(Theme.bgControl)
-    }
-
-}
-
-// MARK: - Pill labels
-
-/// A pill's caption, boxed at the tracked width `nn::trackedTextWidth` gave it.
-private struct PillLabelText: View {
-    let text: String
-    let colour: Color
-
-    @Environment(\.uiScale) private var k
-
-    var body: some View {
-        let s = Scaled(k: k)
-        let width = TrackedText.width(text,
-                                      fontName: Fonts.sansName(500),
-                                      pointSize: Fonts.Size.pillLabel,
-                                      trackingEm: Fonts.Tracking.pillLabel).rounded(.up)
-
-        return Text(text)
-            .font(Fonts.pillLabel(k))
-            .kerning(Fonts.tracking(Fonts.Tracking.pillLabel, pointSize: Fonts.Size.pillLabel, scale: k))
-            .foregroundStyle(colour)
-            .fixedSize()
-            .frame(width: s(width), alignment: .leading)
-    }
-}
-
-/// ORIG or MIDI as a momentary button: the hold starts on mouse-down and ends on release, wherever
-/// the pointer went (a zero-distance drag, as `FlatButton` presses). Bright while held, so the
-/// solo reads on the label as well as on the slider.
-private struct MixHoldLabel: View {
-    let text: String
-    let colour: Color
-    let isHeld: Bool
-    let begin: () -> Void
-    let end: () -> Void
-
-    @Environment(\.uiScale) private var k
-    @State private var isPressed = false
-
-    var body: some View {
-        let s = Scaled(k: k)
-
-        PillLabelText(text: text, colour: isHeld ? Theme.textBright : colour)
-            // A little more than the glyphs, so the target is not the letter strokes alone.
-            .padding(.vertical, s(8))
-            .padding(.horizontal, s(3))
-            .contentShape(Rectangle())
-            .padding(.horizontal, -s(3))
-            .gesture(
-                DragGesture(minimumDistance: 0)
-                    .onChanged { _ in
-                        if !isPressed {
-                            isPressed = true
-                            begin()
-                        }
-                    }
-                    .onEnded { _ in
-                        isPressed = false
-                        end()
-                    })
-            .pointerStyle(.link)
-            .accessibilityAddTraits(.isButton)
-            .accessibilityLabel("\(text): hold to hear only this side")
     }
 }
 

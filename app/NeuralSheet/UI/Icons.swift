@@ -147,6 +147,23 @@ enum Icons {
         }
     }
 
+    /// Headphones: an arc over two ear pads, for the stereo split (the source in one ear, the
+    /// synth in the other). Stroked, so it sits at the weight of the toolbar's icons.
+    nonisolated struct HeadphonesStroked: Shape {
+        func path(in rect: CGRect) -> Path {
+            var p = Path()
+
+            // The band: a half circle from pad to pad.
+            p.addCentredArc(cx: 8.0, cy: 8.6, rx: 5.6, ry: 5.6, from: .pi, to: 2 * .pi, startNewSubpath: true)
+
+            // The pads, hanging from the band's ends.
+            p.addRoundedRect(2.4, 8.6, 2.6, 4.4, 1.2)
+            p.addRoundedRect(11.0, 8.6, 2.6, 4.4, 1.2)
+
+            return IconGeometry.fitted(p, in: rect)
+        }
+    }
+
     /// Speaker with a cross. The cross is part of the same path, so one fill draws both.
     nonisolated struct SpeakerMuted: Shape {
         func path(in rect: CGRect) -> Path {
