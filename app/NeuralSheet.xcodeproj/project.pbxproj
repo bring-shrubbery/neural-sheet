@@ -288,7 +288,11 @@
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Info.plist;
-				HEADER_SEARCH_PATHS = "$(SRCROOT)/ThirdParty/muscriptor.cpp/cpp/include";
+				HEADER_SEARCH_PATHS = (
+					"$(SRCROOT)/ThirdParty/muscriptor.cpp/cpp/include",
+					"$(SRCROOT)/ThirdParty/demucs.cpp/src",
+					"$(SRCROOT)/ThirdParty/demucs.cpp/vendor/eigen",
+				);
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "NeuralSheet records from the microphone to transcribe what you play.";
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../Frameworks";
 				LIBRARY_SEARCH_PATHS = "$(SRCROOT)/build/engine/lib";
@@ -301,6 +305,7 @@
 					"-lggml-cpu",
 					"-lggml-metal",
 					"-lpffft",
+					"-ldemucs",
 					"-framework",
 					Metal,
 					"-framework",
@@ -338,7 +343,11 @@
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Info.plist;
-				HEADER_SEARCH_PATHS = "$(SRCROOT)/ThirdParty/muscriptor.cpp/cpp/include";
+				HEADER_SEARCH_PATHS = (
+					"$(SRCROOT)/ThirdParty/muscriptor.cpp/cpp/include",
+					"$(SRCROOT)/ThirdParty/demucs.cpp/src",
+					"$(SRCROOT)/ThirdParty/demucs.cpp/vendor/eigen",
+				);
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "NeuralSheet records from the microphone to transcribe what you play.";
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../Frameworks";
 				LIBRARY_SEARCH_PATHS = "$(SRCROOT)/build/engine/lib";
@@ -351,6 +360,7 @@
 					"-lggml-cpu",
 					"-lggml-metal",
 					"-lpffft",
+					"-ldemucs",
 					"-framework",
 					Metal,
 					"-framework",
