@@ -99,6 +99,7 @@ extension AppModel {
         editor.grid.offsetSeconds = max(0, saved.gridOffsetSeconds)
         editor.grid.division = saved.gridDivision
         editor.snapEnabled = saved.snapEnabled
+        editor.key = saved.key
         followPlayhead = saved.playheadCentered
         zoomLevel = saved.zoomLevel
         verticalZoom = saved.verticalZoom

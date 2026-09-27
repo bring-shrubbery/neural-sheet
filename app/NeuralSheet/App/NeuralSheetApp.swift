@@ -227,6 +227,10 @@ struct NeuralSheetApp: App {
                 .keyboardShortcut("u", modifiers: .command)
                 .disabled(model.workspace != .edit)
 
+            Button("Snap to Scale") { model.snapSelectionOrAllToScale() }
+                .keyboardShortcut("k", modifiers: [.command, .shift])
+                .disabled(model.workspace != .edit || model.editor.key == nil)
+
             Button("Revert to Transcription…") { model.revertToTranscription() }
                 .disabled(model.workspace != .edit || !model.hasEdits)
         }

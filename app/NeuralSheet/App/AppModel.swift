@@ -1078,7 +1078,7 @@ import UniformTypeIdentifiers
     func musicXMLData() -> Data? {
         guard canExport else { return nil }
 
-        return MusicXMLWriter.data(notes: notes, grid: editor.grid, title: droppedFileName)
+        return MusicXMLWriter.data(notes: notes, grid: editor.grid, fifths: editor.key?.fifths ?? 0, title: droppedFileName)
     }
 
     /// `<source>_NNTranscription.musicxml`, or `NNTranscription.musicxml` for a recorded take.

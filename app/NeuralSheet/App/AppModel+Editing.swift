@@ -15,6 +15,9 @@ struct EditorState: Equatable {
     var targetProgram: Int = 0
     var snapEnabled = true
     var grid = TempoGrid()
+    /// The project's key (key design §4): the roll's scale highlight, the score's signature
+    /// and Snap to Scale's target. Nil for none. Saved with the project.
+    var key: MusicalKey?
     /// The stretch marked on the ruler for Re-transcribe (region design §4.2), half-open seconds.
     /// Transient: not in the project file.
     var range: Range<Double>?
@@ -310,5 +313,41 @@ extension AppModel {
         let ids = editor.selection.isEmpty ? Set(document.notes.map(\.id)) : editor.selection
 
         commit(document.quantize(ids, grid: editor.grid, lengths: false))
+    }
+
+    // MARK: - Key
+
+    func setKey(_ key: MusicalKey?) {
+        if editor.key != key {
+            editor.key = key
+        }
+    }
+
+    /// The tonic menu: a pitch class keeps the mode there is (major to start), nil clears the key.
+    func setKeyTonic(_ tonic: Int?) {
+        guard let tonic else {
+            setKey(nil)
+            return
+        }
+
+        setKey(MusicalKey(tonic: tonic, mode: editor.key?.mode ?? .major))
+    }
+
+    /// The mode menu; nothing to set a mode on without a tonic.
+    func setKeyMode(_ mode: MusicalKey.Mode) {
+        guard let key = editor.key else { return }
+
+        setKey(MusicalKey(tonic: key.tonic, mode: mode))
+    }
+
+    /// Edit → Snap to Scale: the selection, or everything when nothing is selected, onto the
+    /// key's scale; nothing without a key.
+    func snapSelectionOrAllToScale() {
+        guard let document, let key = editor.key else { return }
+
+        let ids = editor.selection.isEmpty ? Set(document.notes.map(\.id)) : editor.selection
+
+        commit(document.snapToScale(ids, key: key))
+        auditionSelection()
     }
 }

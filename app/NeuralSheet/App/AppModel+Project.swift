@@ -43,7 +43,8 @@ extension AppModel {
                        gridOffsetSeconds: editor.grid.offsetSeconds,
                        gridDivision: editor.grid.division,
                        snapEnabled: editor.snapEnabled,
-                       targetProgram: editor.targetProgram)
+                       targetProgram: editor.targetProgram,
+                       key: editor.key)
     }
 
     /// Everything `project.json` holds, ready to be written.
@@ -58,6 +59,7 @@ extension AppModel {
         state.gridDivision = editor.grid.division
         state.snapEnabled = editor.snapEnabled
         state.targetProgram = editor.targetProgram
+        state.key = editor.key
         state.workspace = workspace
         state.playheadSeconds = playheadSeconds
         state.playheadCentered = followPlayhead
