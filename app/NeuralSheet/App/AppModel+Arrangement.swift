@@ -48,13 +48,15 @@ extension AppModel {
         }
     }
 
-    /// One string's open pitch, which makes the tuning custom.
+    /// One string's open pitch, which makes the tuning custom. Any tuning change drops the
+    /// manual string choices, as choosing a preset does: they were made for the old pitches.
     func setPartTuning(string: Int, pitch: Int, program: Int) {
         updatePart(program) { display in
             guard var tab = display.tab, string >= 0, string < tab.tuning.count else { return }
             tab.tuning[string] = min(max(pitch, 0), 127)
             tab.presetName = nil
             display.tab = tab
+            display.strings = [:]
         }
     }
 
