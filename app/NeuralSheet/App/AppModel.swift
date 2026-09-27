@@ -254,8 +254,24 @@ import UniformTypeIdentifiers
     var followPlayhead: Bool = true
 
     /// The Loop button: playback repeats the marked range, or the whole take without one (loop
-    /// design §5). Transient, like the range. `AppModel+Loop.swift` is its only writer.
+    /// design §5). Transient, like the range. `AppModel+Practice.swift` is its only writer.
     var loopEnabled = false
+
+    /// The SPEED pill: how fast the take plays, its pitch unchanged, the MIDI on the same clock
+    /// (speed design §5). 1 is the take's own. Transient, like the loop. Clamped to
+    /// ``speedRange``.
+    var playbackSpeed: Double = 1 {
+        didSet {
+            let clamped = playbackSpeed.isFinite
+                ? min(max(playbackSpeed, AppModel.speedRange.lowerBound), AppModel.speedRange.upperBound) : 1
+
+            if clamped != playbackSpeed {
+                playbackSpeed = clamped
+            }
+
+            engine.speed = clamped
+        }
+    }
 
     /// The MUTE button. In the original this cleared the input pass-through before the player ran;
     /// the standalone never routes the input to the output, so here it mutes the app's own output

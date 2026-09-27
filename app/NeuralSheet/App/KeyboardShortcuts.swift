@@ -14,6 +14,7 @@ import NeuralSheetCore
 /// | m | mute input toggle |
 /// | c | centre playhead toggle |
 /// | l | loop toggle (ours; the original's Loop button was disabled) |
+/// | - / = | the playback speed a step slower / faster (ours) |
 /// | [ / ] | the mix a tenth toward the original / the MIDI (ours; the original had no key for it) |
 /// | Esc | close the instrument picker, else clear the marked range |
 ///
@@ -100,6 +101,12 @@ import NeuralSheetCore
         // Before the repeat guard as well: held, the mix keeps sliding.
         if !shift, let characters = event.charactersIgnoringModifiers, characters == "[" || characters == "]" {
             model.nudgeMix(steps: characters == "[" ? -1 : 1)
+            return true
+        }
+
+        // And the speed. `=` rather than `+`, so the key beside `-` works without Shift.
+        if !shift, let characters = event.charactersIgnoringModifiers, characters == "-" || characters == "=" {
+            model.nudgeSpeed(steps: characters == "-" ? -1 : 1)
             return true
         }
 

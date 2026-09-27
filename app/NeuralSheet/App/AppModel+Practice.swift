@@ -1,8 +1,11 @@
 import Foundation
 import NeuralSheetCore
 
-/// The loop (loop design §5): the Loop button's toggle, and what the engine is told to repeat.
+/// The practice controls: the loop (loop design §5) and the playback speed (speed design §5).
+/// Both transient; neither is in the project file.
 extension AppModel {
+    // MARK: - Loop
+
     /// The Loop button and the `l` key: only over a take that can play.
     func toggleLoop() {
         guard state.canPlay else { return }
@@ -21,5 +24,26 @@ extension AppModel {
         if engine.loop != loop {
             engine.loop = loop
         }
+    }
+
+    // MARK: - Speed
+
+    /// What the SPEED pill spans: half speed to one and a half, the take's own in the middle.
+    static let speedRange = 0.5 ... 1.5
+
+    /// What one press of `-` or `=` and one notch of the slider move the speed by.
+    static let speedStep = 0.05
+
+    /// The keys: a step slower (`steps < 0`) or faster, landing on multiples of the step so a
+    /// few presses from wherever the slider was left reach round numbers.
+    func nudgeSpeed(steps: Int) {
+        let notches = ((playbackSpeed + Double(steps) * AppModel.speedStep) / AppModel.speedStep).rounded()
+
+        playbackSpeed = min(max(notches * AppModel.speedStep, AppModel.speedRange.lowerBound), AppModel.speedRange.upperBound)
+    }
+
+    /// The slider's double-click: the take's own speed.
+    func resetSpeed() {
+        playbackSpeed = 1
     }
 }
