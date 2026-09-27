@@ -105,11 +105,13 @@ struct TopBar: View {
             }
             .tooltip("Play / Pause | Space")
 
-            // No loop transport yet; the button is here so the layout is the final one.
-            transportButton(isEnabled: false,
+            // Inventory §1.3 had this permanently disabled ("Loop (not implemented yet)"); it
+            // loops the marked range, or the whole take, since the loop design.
+            transportButton(isOn: model.loopEnabled,
+                            isEnabled: canPlay,
                             on: Theme.accentFillActive,
                             foregroundOn: Theme.accent,
-                            action: {}) { _ in
+                            action: model.toggleLoop) { _ in
                 ZStack {
                     Icons.LoopStroked()
                         .stroke(style: Icons.strokeStyle(scale: k))
@@ -118,7 +120,7 @@ struct TopBar: View {
                 }
                 .frame(width: s(16), height: s(16))
             }
-            .tooltip("Loop (not implemented yet)")
+            .tooltip("Loop | l")
 
             transportButton(isOn: model.followPlayhead,
                             isEnabled: canPlay,
