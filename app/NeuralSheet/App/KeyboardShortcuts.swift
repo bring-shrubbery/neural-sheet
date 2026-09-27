@@ -108,6 +108,9 @@ import NeuralSheetCore
         // The Score tab's keys: the selected tab note a string up or down. Up is toward the top
         // tab line, up the page, whatever pitch that string is tuned to.
         if model.workspace == .score, !shift, event.keyCode == KeyCode.up || event.keyCode == KeyCode.down {
+            // With nothing selected the key is not the Score tab's; it falls through.
+            guard model.selectedTabNote != nil else { return false }
+
             model.moveSelectedTabString(by: event.keyCode == KeyCode.up ? 1 : -1)
             return true
         }
