@@ -25,6 +25,7 @@ Work towards v2 starts here: user-experience improvements beyond NeuralNote pari
 - Loop playback: Loop on the top bar, or `l`, repeats the marked range, or the whole take without one.
 - Playback speed: the SPEED pill on the top bar plays the take slower or faster with its pitch unchanged.
 - Tempo from the music: Tap on the Edit toolbar (or `t`) sets it from your taps, Detect finds it and the downbeat in the audio.
+- Export the transcription as sheet music: File → Export MusicXML… writes a score any notation program opens.
 
 ### Changed
 
