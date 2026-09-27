@@ -21,6 +21,8 @@ import UniformTypeIdentifiers
     let engine: PlaybackEngine
     let recorder: Recorder
     let transcriber: TranscriptionEngine
+    /// The stem separation (stem separation design §3), for a run with Stems on.
+    let separator = StemSeparator()
     let modelStore: ModelStore
     let downloader: ModelDownloader
 
@@ -161,6 +163,10 @@ import UniformTypeIdentifiers
     /// The region re-run in flight, or nil (`AppModel+RegionTranscription.swift`, its only
     /// writer). While it is set the editor is read-only and the clears refuse.
     var regionJob: RegionJob?
+
+    /// The stems run in flight, or nil (`AppModel+Stems.swift`, its only writer). Only ever set
+    /// while `jobActive`.
+    var stemsJob: StemsJob?
 
     /// The instrument a strip click singled out: the roll fades every other instrument while it
     /// is set. Both tabs; not part of the project file.
@@ -416,7 +422,7 @@ import UniformTypeIdentifiers
             return ModelManifest.defaultSize
         }
 
-        return ModelSize.allCases.first(where: installedModels.contains)
+        return ModelSize.transcription.first(where: installedModels.contains)
     }
 
     /// Re-scanned at 10 Hz by ``modelPollTimer`` and whenever a download changes phase.
@@ -427,7 +433,7 @@ import UniformTypeIdentifiers
     /// No model installed and nothing else to do on the roll: the roll says so, and points at
     /// Settings (§3.2).
     var needsModelNotice: Bool {
-        installedModels.isEmpty && (state == .empty || state == .audioLoaded)
+        !hasTranscriptionModel && (state == .empty || state == .audioLoaded)
     }
 
     /// The Settings window's tab. Set before opening the window to land on a particular one.
@@ -751,6 +757,7 @@ import UniformTypeIdentifiers
             transcriber.cancel()
         }
 
+        abandonStemsRun()
         transcription = TranscriptionState()
         staging.reset()
         document = nil

@@ -107,6 +107,13 @@ extension AppModel {
         transcription.jobModelPath = modelPath
         startDrainTimer()
 
+        // With Stems on and the weights installed, the separator first and the engine four
+        // times after (stem separation design §5); the same state, staging and drain.
+        if settings.separateStems, let stemsPath = modelStore.installedPath(for: .stems) {
+            launchStemsRun(modelPath: modelPath, stemsPath: stemsPath, source: source)
+            return
+        }
+
         let staging = self.staging
 
         transcriber.run(
@@ -133,7 +140,12 @@ extension AppModel {
         guard state == .processing, jobActive else { return }
 
         transcription.cancelLatched = true
-        transcriber.cancel()
+
+        if stemsJob != nil {
+            cancelStemsRun()
+        } else {
+            transcriber.cancel()
+        }
     }
 
     // MARK: - Drain
@@ -145,7 +157,7 @@ extension AppModel {
         }
     }
 
-    private func stopDrainTimer() {
+    func stopDrainTimer() {
         drainTimer?.invalidate()
         drainTimer = nil
     }
@@ -193,8 +205,9 @@ extension AppModel {
 
     // MARK: - Completion
 
-    /// `_handleFinishedJob`, on the main actor. The engine has already freed the model.
-    private func handleFinished(_ result: Result<[EngineNote], EngineError>) {
+    /// `_handleFinishedJob`, on the main actor. The engine has already freed the model. Also
+    /// where a stems run lands, with its four results as one.
+    func handleFinished(_ result: Result<[EngineNote], EngineError>) {
         guard jobActive else { return }
 
         // Dropped before anything below runs: `clear()` and `clearTranscription()` refuse to work
