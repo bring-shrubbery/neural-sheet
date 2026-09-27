@@ -51,13 +51,13 @@ enum ScoreGlyphs {
             let gLineY = bottomLineY - 1 * sp
             let target = CGRect(x: x, y: gLineY - 4.392 * sp, width: 2.684 * sp, height: 7.024 * sp)
             drawGlyph(0x1D11E, in: target, colour: colour, context: ctx)
-            if clef.isOctaveDown { drawOctaveMark(under: target, sp: sp, colour: colour, context: ctx) }
+            if clef.isOctaveDown { drawOctaveMark(under: target, bottomLineY: bottomLineY, sp: sp, colour: colour, context: ctx) }
 
         case .bass, .bass8vb:
             let fLineY = bottomLineY - 3 * sp
             let target = CGRect(x: x, y: fLineY - 1.048 * sp, width: 2.736 * sp, height: 3.642 * sp)
             drawGlyph(0x1D122, in: target, colour: colour, context: ctx)
-            if clef.isOctaveDown { drawOctaveMark(under: target, sp: sp, colour: colour, context: ctx) }
+            if clef.isOctaveDown { drawOctaveMark(under: target, bottomLineY: bottomLineY, sp: sp, colour: colour, context: ctx) }
 
         case .alto, .tenor:
             let centreY = bottomLineY - (clef == .alto ? 2 : 3) * sp
@@ -72,10 +72,12 @@ enum ScoreGlyphs {
         }
     }
 
-    /// The 8 of an octave clef, centred under the clef's tail.
-    private static func drawOctaveMark(under target: CGRect, sp: CGFloat, colour: CGColor, context ctx: CGContext) {
+    /// The 8 of an octave clef, centred under the clef's tail and clear of the bottom line (the
+    /// bass clef's tail ends above it).
+    private static func drawOctaveMark(under target: CGRect, bottomLineY: CGFloat, sp: CGFloat, colour: CGColor, context ctx: CGContext) {
         let font = CTFontCreateWithName(Fonts.sansName(600) as CFString, 1.4 * sp, nil)
-        let rect = CGRect(x: target.midX - 0.8 * sp, y: target.maxY, width: 1.6 * sp, height: 1.6 * sp)
+        let top = max(target.maxY, bottomLineY + 0.5 * sp)
+        let rect = CGRect(x: target.midX - 0.8 * sp, y: top, width: 1.6 * sp, height: 1.6 * sp)
         TimelineText.draw("8", font: font, colour: colour, in: rect, anchor: .centred, context: ctx)
     }
 
