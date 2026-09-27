@@ -1,12 +1,16 @@
 import Foundation
 
-/// Writes a transcription as a MusicXML score (MusicXML design): `score-partwise`, one part per
-/// instrument in the sidebar's order, 4/4 at the grid's tempo from the grid's downbeat, the
-/// notes quantized to the grid's division, chords, ties, rests, a clef by range or two staves,
-/// and a percussion staff for the drums.
+/// Writes a transcription as a MusicXML score (MusicXML design; arrangement design §5):
+/// `score-partwise`, one part per instrument in the sidebar's order as the arrangement shows
+/// it, 4/4 at the grid's tempo from the grid's downbeat, the notes quantized to the grid's
+/// division, chords, ties, rests, each part in its clef and at its written transposition, a
+/// tab part beside a fretted part's notation, a percussion staff for the drums, hidden parts
+/// left out, and the sheet's title, credits and copyright.
 ///
-/// The rhythm lives in `MusicXMLWriter+Rhythm.swift`, the pitches in `MusicXMLWriter+Pitch.swift`;
-/// this file assembles the document.
+/// The measures come from `ScoreDocument`, so the export and the Score tab agree by
+/// construction. The rhythm lives in `MusicXMLWriter+Rhythm.swift`, the pitches in
+/// `MusicXMLWriter+Pitch.swift`, the notation parts in `MusicXMLWriter+Parts.swift` and the tab
+/// parts in `MusicXMLWriter+Tab.swift`; this file assembles the document.
 public enum MusicXMLWriter {
     /// Units per quarter note: enough for 32nds and every dotted value between.
     public static let divisions = 24
@@ -16,76 +20,91 @@ public enum MusicXMLWriter {
     /// The whole document.
     ///
     /// - Parameters:
+    ///   - ids: the document's ids alongside `notes`, or nil while a run streams.
     ///   - grid: the tempo, the downbeat and the division the notes are quantized to.
-    ///   - fifths: the key signature as sharps (positive) or flats; 0 is C major. Black keys are
-    ///     spelled in flats for a flat key.
-    ///   - title: the work title, or none.
-    public static func data(notes: [NoteEvent], grid: TempoGrid, fifths: Int = 0, title: String? = nil) -> Data {
-        var noteCounts: [Int: Int] = [:]
-        var notesByProgram: [Int: [NoteEvent]] = [:]
-
-        for note in notes {
-            noteCounts[note.program, default: 0] += 1
-            notesByProgram[note.program, default: []].append(note)
-        }
-
-        let channels = MidiFileWriter.channelMap(
-            programsAscending: noteCounts.keys.sorted(), noteCounts: noteCounts, mode: .reuseChannels)
-        // Ascending program, drums last: the sidebar's order, and the MIDI file's.
-        let programs = notesByProgram.keys.sorted()
-        let step = quantum(for: grid.division)
-
-        let parts = programs.map { program in
-            Part(program: program,
-                 name: Instruments.info(forProgram: program).name,
-                 channel: channels[program] ?? 1,
-                 notes: unitNotes(notesByProgram[program] ?? [], grid: grid, quantum: step))
-        }
-
-        let span = measureSpan(parts)
+    ///   - key: the project key, or none for no signature; each part writes it transposed.
+    ///   - title: the work title; nil takes the sheet's, then the take's name.
+    ///   - arrangement: which parts show, how, and what the sheet says about itself.
+    ///   - takeName: the take's name, the title of last resort.
+    public static func data(notes: [NoteEvent], ids: [NoteID?]? = nil, grid: TempoGrid, key: MusicalKey?,
+                            title: String? = nil, arrangement: ScoreArrangement = ScoreArrangement(),
+                            takeName: String? = nil) -> Data {
+        let document = ScoreDocument.build(notes: notes, ids: ids, grid: grid, key: key, arrangement: arrangement)
+        let channels = channelMap(notes)
+        let sheet = arrangement.sheet
+        let workTitle = title ?? sheet.resolvedTitle(takeName: takeName)
         var xml = ""
 
         xml += "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
         xml += "<!DOCTYPE score-partwise PUBLIC \"-//Recordare//DTD MusicXML 4.0 Partwise//EN\" \"http://www.musicxml.org/dtds/partwise.dtd\">\n"
         xml += "<score-partwise version=\"4.0\">\n"
 
-        if let title, !title.isEmpty {
-            xml += "  <work><work-title>\(escaped(title))</work-title></work>\n"
+        if !workTitle.isEmpty {
+            xml += "  <work><work-title>\(escaped(workTitle))</work-title></work>\n"
         }
 
-        xml += "  <identification><encoding><software>NeuralSheet</software></encoding></identification>\n"
+        xml += "  <identification>\n"
+        if !sheet.composer.isEmpty { xml += "    <creator type=\"composer\">\(escaped(sheet.composer))</creator>\n" }
+        if !sheet.arranger.isEmpty { xml += "    <creator type=\"arranger\">\(escaped(sheet.arranger))</creator>\n" }
+        if !sheet.copyright.isEmpty { xml += "    <rights>\(escaped(sheet.copyright))</rights>\n" }
+        xml += "    <encoding><software>NeuralSheet</software></encoding>\n"
+        xml += "  </identification>\n"
+
+        if !sheet.subtitle.isEmpty {
+            xml += "  <credit page=\"1\"><credit-type>subtitle</credit-type><credit-words>\(escaped(sheet.subtitle))</credit-words></credit>\n"
+        }
+
         xml += "  <part-list>\n"
 
-        for (index, part) in parts.enumerated() {
+        for (index, part) in document.parts.enumerated() {
             let id = "P\(index + 1)"
-            let program = part.program == NoteEvent.drumProgram ? 1 : part.program + 1
+            let channel = channels[part.program] ?? 1
 
-            xml += "    <score-part id=\"\(id)\">\n"
-            xml += "      <part-name>\(escaped(part.name))</part-name>\n"
-            xml += "      <score-instrument id=\"\(id)-I1\"><instrument-name>\(escaped(part.name))</instrument-name></score-instrument>\n"
-            xml += "      <midi-instrument id=\"\(id)-I1\"><midi-channel>\(part.channel)</midi-channel><midi-program>\(program)</midi-program></midi-instrument>\n"
-            xml += "    </score-part>\n"
+            if part.display.showsNotation {
+                xml += scorePartXML(id: id, name: part.name, program: part.program, channel: channel)
+            }
+
+            if part.tab != nil {
+                xml += scorePartXML(id: "\(id)T", name: "\(part.name) (TAB)", program: part.program, channel: channel)
+            }
         }
 
-        if parts.isEmpty {
+        if document.parts.isEmpty {
             // A score needs a part; an empty transcription gets one empty staff.
             xml += "    <score-part id=\"P1\"><part-name></part-name></score-part>\n"
         }
 
         xml += "  </part-list>\n"
 
-        if parts.isEmpty {
-            xml += partXML(Part(program: 0, name: "", channel: 1, notes: []), id: "P1", span: span, grid: grid,
-                           fifths: fifths, isFirst: true)
+        if document.parts.isEmpty {
+            xml += notationPartXML(emptyPart, id: "P1", grid: grid, writesTempo: true)
         }
 
-        for (index, part) in parts.enumerated() {
-            xml += partXML(part, id: "P\(index + 1)", span: span, grid: grid, fifths: fifths, isFirst: index == 0)
+        var writesTempo = true
+
+        for (index, part) in document.parts.enumerated() {
+            let id = "P\(index + 1)"
+
+            if part.display.showsNotation {
+                xml += notationPartXML(part, id: id, grid: grid, writesTempo: writesTempo)
+                writesTempo = false
+            }
+
+            if let tab = part.tab {
+                xml += tabPartXML(tab, id: "\(id)T", fifths: document.fifths, grid: grid, writesTempo: writesTempo)
+                writesTempo = false
+            }
         }
 
         xml += "</score-partwise>\n"
 
         return Data(xml.utf8)
+    }
+
+    /// The document with no arrangement and a plain key signature: `fifths` sharps (positive)
+    /// or flats, 0 being no signature; black keys are spelled in flats for a flat key.
+    public static func data(notes: [NoteEvent], grid: TempoGrid, fifths: Int = 0, title: String? = nil) -> Data {
+        data(notes: notes, ids: nil, grid: grid, key: fifths == 0 ? nil : MusicalKey.major(fifths: fifths), title: title)
     }
 
     /// `"song_NNTranscription.musicxml"`, or `"NNTranscription.musicxml"` for a recorded take.
@@ -97,8 +116,42 @@ public enum MusicXMLWriter {
         return "\(name)_NNTranscription.musicxml"
     }
 
+    // MARK: - The part list
+
+    /// The MIDI channel of each program, as the MIDI file assigns them.
+    private static func channelMap(_ notes: [NoteEvent]) -> [Int: Int] {
+        var noteCounts: [Int: Int] = [:]
+
+        for note in notes {
+            noteCounts[note.program, default: 0] += 1
+        }
+
+        return MidiFileWriter.channelMap(programsAscending: noteCounts.keys.sorted(), noteCounts: noteCounts, mode: .reuseChannels)
+    }
+
+    private static func scorePartXML(id: String, name: String, program: Int, channel: Int) -> String {
+        let midiProgram = program == NoteEvent.drumProgram ? 1 : program + 1
+        var xml = ""
+
+        xml += "    <score-part id=\"\(id)\">\n"
+        xml += "      <part-name>\(escaped(name))</part-name>\n"
+        xml += "      <score-instrument id=\"\(id)-I1\"><instrument-name>\(escaped(name))</instrument-name></score-instrument>\n"
+        xml += "      <midi-instrument id=\"\(id)-I1\"><midi-channel>\(channel)</midi-channel><midi-program>\(midiProgram)</midi-program></midi-instrument>\n"
+        xml += "    </score-part>\n"
+
+        return xml
+    }
+
+    /// One treble staff of one resting measure, for a transcription with nothing in it.
+    private static var emptyPart: ScorePart {
+        let measure = ScoreDocument.measure(bar: 0, notes: [], transposition: 0, clef: .treble, isDrums: false, fifths: 0)
+
+        return ScorePart(program: 0, name: "", abbreviation: "", staves: [ScoreStaff(clef: .treble, measures: [measure])])
+    }
+
     // MARK: - Parts and measures
 
+    /// One instrument's quantized notes, the score model's raw material.
     struct Part {
         var program: Int
         var name: String
@@ -120,148 +173,6 @@ public enum MusicXMLWriter {
         let lastBar = Int((Double(last) / Double(barUnits)).rounded(.up))
 
         return firstBar ..< max(lastBar, firstBar + 1)
-    }
-
-    private static func partXML(_ part: Part, id: String, span: Range<Int>, grid: TempoGrid, fifths: Int,
-                                isFirst: Bool) -> String {
-        let layout: StaffLayout = part.isDrums ? .percussion : staffLayout(for: part.notes.map(\.pitch))
-        let preferFlats = fifths < 0
-        var xml = "  <part id=\"\(id)\">\n"
-
-        // Two staves split at middle C; one staff takes everything.
-        let staffNotes: [[UnitNote]] = layout == .grand
-            ? [part.notes.filter { $0.pitch >= middleC }, part.notes.filter { $0.pitch < middleC }]
-            : [part.notes]
-
-        for (measureIndex, bar) in span.enumerated() {
-            let from = bar * barUnits
-            let to = from + barUnits
-
-            xml += "    <measure number=\"\(measureIndex + 1)\">\n"
-
-            if measureIndex == 0 {
-                xml += "      <attributes>\n"
-                xml += "        <divisions>\(divisions)</divisions>\n"
-                xml += "        <key><fifths>\(fifths)</fifths></key>\n"
-                xml += "        <time><beats>\(TempoGrid.beatsPerBar)</beats><beat-type>4</beat-type></time>\n"
-
-                switch layout {
-                case .treble:
-                    xml += "        <clef><sign>G</sign><line>2</line></clef>\n"
-                case .bass:
-                    xml += "        <clef><sign>F</sign><line>4</line></clef>\n"
-                case .grand:
-                    xml += "        <staves>2</staves>\n"
-                    xml += "        <clef number=\"1\"><sign>G</sign><line>2</line></clef>\n"
-                    xml += "        <clef number=\"2\"><sign>F</sign><line>4</line></clef>\n"
-                case .percussion:
-                    xml += "        <clef><sign>percussion</sign><line>2</line></clef>\n"
-                }
-
-                xml += "      </attributes>\n"
-
-                if isFirst {
-                    let bpm = Int(TempoGrid.clampedBpm(grid.bpm).rounded())
-                    xml += "      <direction placement=\"above\"><direction-type><metronome><beat-unit>quarter</beat-unit>"
-                    xml += "<per-minute>\(bpm)</per-minute></metronome></direction-type><sound tempo=\"\(bpm)\"/></direction>\n"
-                }
-            }
-
-            for (staffIndex, notes) in staffNotes.enumerated() {
-                if staffIndex > 0 {
-                    xml += "      <backup><duration>\(barUnits)</duration></backup>\n"
-                }
-
-                let staff = layout.staves > 1 ? staffIndex + 1 : nil
-                let voice = staffIndex + 1
-
-                for segment in segments(notes, from: from, to: to) {
-                    xml += segmentXML(segment, measureStart: from, voice: voice, staff: staff,
-                                      isDrums: part.isDrums, preferFlats: preferFlats)
-                }
-            }
-
-            xml += "    </measure>\n"
-        }
-
-        xml += "  </part>\n"
-
-        return xml
-    }
-
-    // MARK: - Notes and rests
-
-    private static func segmentXML(_ segment: Segment, measureStart: Int, voice: Int, staff: Int?,
-                                   isDrums: Bool, preferFlats: Bool) -> String {
-        var xml = ""
-
-        if segment.isRest {
-            if segment.start == measureStart, segment.end - segment.start == barUnits {
-                xml += "      <note><rest measure=\"yes\"/><duration>\(barUnits)</duration><voice>\(voice)</voice>"
-                xml += staff.map { "<staff>\($0)</staff>" } ?? ""
-                xml += "</note>\n"
-                return xml
-            }
-
-            for value in printableDurations(segment.end - segment.start) {
-                xml += "      <note><rest/><duration>\(value.units)</duration><voice>\(voice)</voice><type>\(value.type)</type>"
-                xml += String(repeating: "<dot/>", count: value.dots)
-                xml += staff.map { "<staff>\($0)</staff>" } ?? ""
-                xml += "</note>\n"
-            }
-
-            return xml
-        }
-
-        // A segment longer than one printable value is several chords tied together.
-        var pieceStart = segment.start
-
-        for value in printableDurations(segment.end - segment.start) {
-            let pieceEnd = pieceStart + value.units
-
-            for (index, note) in segment.notes.enumerated() {
-                let tiedFrom = note.start < pieceStart
-                let tiedTo = note.end > pieceEnd
-
-                xml += "      <note>"
-                if index > 0 { xml += "<chord/>" }
-
-                if isDrums {
-                    let display = drumDisplay(note: note.pitch)
-                    xml += "<unpitched><display-step>\(display.step)</display-step><display-octave>\(display.octave)</display-octave></unpitched>"
-                } else {
-                    let spelled = spelling(midi: note.pitch, preferFlats: preferFlats)
-                    xml += "<pitch><step>\(spelled.step)</step>"
-                    if spelled.alter != 0 { xml += "<alter>\(spelled.alter)</alter>" }
-                    xml += "<octave>\(spelled.octave)</octave></pitch>"
-                }
-
-                xml += "<duration>\(value.units)</duration>"
-                if tiedFrom { xml += "<tie type=\"stop\"/>" }
-                if tiedTo { xml += "<tie type=\"start\"/>" }
-                xml += "<voice>\(voice)</voice><type>\(value.type)</type>"
-                xml += String(repeating: "<dot/>", count: value.dots)
-
-                if isDrums, let head = drumDisplay(note: note.pitch).notehead {
-                    xml += "<notehead>\(head)</notehead>"
-                }
-
-                if let staff { xml += "<staff>\(staff)</staff>" }
-
-                if tiedFrom || tiedTo {
-                    xml += "<notations>"
-                    if tiedFrom { xml += "<tied type=\"stop\"/>" }
-                    if tiedTo { xml += "<tied type=\"start\"/>" }
-                    xml += "</notations>"
-                }
-
-                xml += "</note>\n"
-            }
-
-            pieceStart = pieceEnd
-        }
-
-        return xml
     }
 
     // MARK: - Text

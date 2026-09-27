@@ -193,3 +193,81 @@ private func count(_ xpath: String, in document: XMLDocument) throws -> Int {
     #expect(MusicXMLWriter.exportFileName(sourceFileNameWithoutExtension: nil) == "NNTranscription.musicxml")
     #expect(MusicXMLWriter.exportFileName(sourceFileNameWithoutExtension: "") == "NNTranscription.musicxml")
 }
+
+// MARK: - The arrangement
+
+@Test func theExportFollowsTheArrangement() throws {
+    var arrangement = ScoreArrangement()
+    var trumpet = PartDisplay()
+    trumpet.transposition = 2
+    trumpet.clef = .treble
+    arrangement.parts[56] = trumpet
+    var guitar = PartDisplay()
+    guitar.mode = .both
+    guitar.transposition = 12
+    guitar.clef = .treble8vb
+    let template = TabTemplate.template(id: "guitar")!
+    guitar.tab = template.setup(preset: template.presets[0])
+    arrangement.parts[24] = guitar
+    var hidden = PartDisplay()
+    hidden.isHidden = true
+    arrangement.parts[0] = hidden
+    arrangement.sheet.title = "Reel"
+    arrangement.sheet.subtitle = "Set 2"
+    arrangement.sheet.composer = "Trad."
+    arrangement.sheet.arranger = "A."
+    arrangement.sheet.copyright = "© 2026"
+
+    let notes = [
+        NoteEvent(startTime: 0, endTime: 0.5, pitch: 60, program: 56),
+        NoteEvent(startTime: 0, endTime: 0.5, pitch: 64, program: 24),
+        NoteEvent(startTime: 0, endTime: 0.5, pitch: 60, program: 0),
+    ]
+    let data = MusicXMLWriter.data(notes: notes, ids: nil, grid: TempoGrid(bpm: 120, offsetSeconds: 0, division: .sixteenth),
+                                   key: MusicalKey(tonic: 0, mode: .major), title: nil, arrangement: arrangement, takeName: "take")
+    let score = try XMLDocument(data: data, options: [])
+    let guitarName = Instruments.info(forProgram: 24).name
+    let trumpetName = Instruments.info(forProgram: 56).name
+
+    #expect(try score.nodes(forXPath: "//part-list/score-part/part-name").map(\.stringValue) == [guitarName, "\(guitarName) (TAB)", trumpetName],
+            "the piano is hidden; the tab is a part of its own")
+    #expect(try score.nodes(forXPath: "//part-list/score-part/@id").map(\.stringValue) == ["P1", "P1T", "P2"])
+    #expect(try score.nodes(forXPath: "//part/@id").map(\.stringValue) == ["P1", "P1T", "P2"])
+    #expect(try score.nodes(forXPath: "//work-title").first?.stringValue == "Reel")
+    #expect(try score.nodes(forXPath: "//identification/creator[@type='composer']").first?.stringValue == "Trad.")
+    #expect(try score.nodes(forXPath: "//identification/creator[@type='arranger']").first?.stringValue == "A.")
+    #expect(try score.nodes(forXPath: "//identification/rights").first?.stringValue == "© 2026")
+    #expect(try score.nodes(forXPath: "//credit/credit-words").first?.stringValue == "Set 2")
+    #expect(try count("//direction/sound[@tempo='120']", in: score) == 1, "the tempo is on the first part only")
+
+    // The trumpet: written a tone up, D major, with the transpose element MusicXML expects (sounding = written + chromatic).
+    #expect(try score.nodes(forXPath: "//part[3]/measure[1]/attributes/key/fifths").first?.stringValue == "2")
+    #expect(try score.nodes(forXPath: "//part[3]/measure[1]/attributes/transpose/chromatic").first?.stringValue == "-2")
+    #expect(try count("//part[3]/measure[1]/attributes/transpose/octave-change", in: score) == 0)
+    #expect(try score.nodes(forXPath: "//part[3]//note/pitch/step").first?.stringValue == "D")
+
+    // The guitar's notation: treble 8vb, written an octave up; its tab: six lines, the tuning, string and fret.
+    #expect(try score.nodes(forXPath: "//part[1]/measure[1]/attributes/clef/sign").first?.stringValue == "G")
+    #expect(try score.nodes(forXPath: "//part[1]/measure[1]/attributes/clef/clef-octave-change").first?.stringValue == "-1")
+    #expect(try score.nodes(forXPath: "//part[1]/measure[1]/attributes/transpose/chromatic").first?.stringValue == "0")
+    #expect(try score.nodes(forXPath: "//part[1]/measure[1]/attributes/transpose/octave-change").first?.stringValue == "-1")
+    #expect(try score.nodes(forXPath: "//part[1]//note/pitch/octave").first?.stringValue == "5")
+    #expect(try score.nodes(forXPath: "//part[2]/measure[1]/attributes/clef/sign").first?.stringValue == "TAB")
+    #expect(try score.nodes(forXPath: "//part[2]/measure[1]/attributes/staff-details/staff-lines").first?.stringValue == "6")
+    #expect(try score.nodes(forXPath: "//part[2]/measure[1]/attributes/staff-details/staff-tuning").count == 6)
+    #expect(try score.nodes(forXPath: "//part[2]/measure[1]/attributes/staff-details/staff-tuning[@line='1']/tuning-step").first?.stringValue == "E")
+    #expect(try score.nodes(forXPath: "//part[2]/measure[1]/attributes/staff-details/staff-tuning[@line='1']/tuning-octave").first?.stringValue == "2")
+    #expect(try score.nodes(forXPath: "//part[2]/measure[1]/attributes/staff-details/staff-tuning[@line='6']/tuning-octave").first?.stringValue == "4")
+    #expect(try score.nodes(forXPath: "//part[2]//note/pitch/octave").first?.stringValue == "4", "the tab carries the sounding pitch")
+    #expect(try score.nodes(forXPath: "//part[2]//note/notations/technical/string").first?.stringValue == "1", "the high E is string 1 in MusicXML's numbering")
+    #expect(try score.nodes(forXPath: "//part[2]//note/notations/technical/fret").first?.stringValue == "0")
+    #expect(try count("//part[2]//note[rest]", in: score) == 1, "the tab rests where the notation rests")
+}
+
+@Test func transpositionsBecomeChromaticAndOctaveChange() {
+    #expect(MusicXMLWriter.transposeXML(2) == "<transpose><chromatic>-2</chromatic></transpose>")
+    #expect(MusicXMLWriter.transposeXML(12) == "<transpose><chromatic>0</chromatic><octave-change>-1</octave-change></transpose>")
+    #expect(MusicXMLWriter.transposeXML(14) == "<transpose><chromatic>-2</chromatic><octave-change>-1</octave-change></transpose>")
+    #expect(MusicXMLWriter.transposeXML(-12) == "<transpose><chromatic>0</chromatic><octave-change>1</octave-change></transpose>")
+    #expect(MusicXMLWriter.transposeXML(0).isEmpty)
+}

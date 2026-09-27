@@ -1088,11 +1088,13 @@ import UniformTypeIdentifiers
     // MARK: - MusicXML
 
     /// The score as bytes, or nil unless the transcription is finished (MusicXML design §4):
-    /// the notes quantized to the grid, titled after the take.
+    /// the notes quantized to the grid, the parts as the arrangement shows them, titled after
+    /// the sheet or the take.
     func musicXMLData() -> Data? {
         guard canExport else { return nil }
 
-        return MusicXMLWriter.data(notes: notes, grid: editor.grid, fifths: editor.key?.fifths ?? 0, title: droppedFileName)
+        return MusicXMLWriter.data(notes: notes, ids: document?.notes.map { Optional($0.id) }, grid: editor.grid,
+                                   key: editor.key, arrangement: arrangement, takeName: droppedFileName)
     }
 
     /// `<source>_NNTranscription.musicxml`, or `NNTranscription.musicxml` for a recorded take.

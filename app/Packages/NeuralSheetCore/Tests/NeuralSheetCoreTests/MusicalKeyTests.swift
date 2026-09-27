@@ -28,6 +28,12 @@ import Testing
     #expect(MusicalKey.tonicMenuName(1) == "C♯ / D♭")
 }
 
+@Test func aMajorKeyIsFoundFromItsSignature() {
+    #expect(MusicalKey.major(fifths: 2) == MusicalKey(tonic: 2, mode: .major), "D major")
+    #expect(MusicalKey.major(fifths: -1) == MusicalKey(tonic: 5, mode: .major), "F major")
+    #expect(MusicalKey.major(fifths: 0) == MusicalKey(tonic: 0, mode: .major))
+}
+
 @Test func theScaleAndItsNearestDegrees() {
     let cMajor = MusicalKey(tonic: 0, mode: .major)
     #expect(cMajor.scalePitchClasses == [0, 2, 4, 5, 7, 9, 11])

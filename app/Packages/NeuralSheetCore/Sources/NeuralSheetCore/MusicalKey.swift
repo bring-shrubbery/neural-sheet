@@ -28,6 +28,11 @@ public struct MusicalKey: Equatable, Hashable, Codable, Sendable {
         MusicalKey(tonic: tonic + semitones, mode: mode)
     }
 
+    /// The major key with a signature of `fifths`: each sharp lifts the tonic a fifth.
+    public static func major(fifths: Int) -> MusicalKey {
+        MusicalKey(tonic: fifths * 7, mode: .major)
+    }
+
     // MARK: - Signature and names
 
     /// The key signature as sharps (positive) or flats (negative). F♯ major is +6, E♭ minor −6.
