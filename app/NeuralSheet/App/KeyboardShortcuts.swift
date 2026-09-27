@@ -13,6 +13,7 @@ import NeuralSheetCore
 /// | r | record toggle |
 /// | m | mute input toggle |
 /// | c | centre playhead toggle |
+/// | l | loop toggle (ours; the original's Loop button was disabled) |
 /// | [ / ] | the mix a tenth toward the original / the MIDI (ours; the original had no key for it) |
 /// | Esc | close the instrument picker, else clear the marked range |
 ///
@@ -161,6 +162,10 @@ import NeuralSheetCore
 
         case "c":
             model.followPlayhead.toggle()
+            return true
+
+        case "l":
+            model.toggleLoop()
             return true
 
         default:

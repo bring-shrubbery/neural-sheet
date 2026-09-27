@@ -230,8 +230,9 @@ extension AppModel {
     /// that ends as a sliver clears rather than marks.
     func setRange(_ range: Range<Double>) {
         // A run owns the range for its duration (region design §4.3): the band it fills must be
-        // the stretch being decoded.
-        guard regionJob == nil else { return }
+        // the stretch being decoded. And only over a take that can play: the range is a loop
+        // as well as a re-transcription now (loop design §5).
+        guard regionJob == nil, state.canPlay else { return }
 
         let lower = max(0, range.lowerBound)
         let upper = min(duration, range.upperBound)

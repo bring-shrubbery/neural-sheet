@@ -84,7 +84,9 @@ import UniformTypeIdentifiers
 
     /// Seconds of audio: 0 when there is none, growing live while recording (refreshed by the
     /// display-link tick), `source.duration` otherwise.
-    private(set) var duration: Double = 0
+    private(set) var duration: Double = 0 {
+        didSet { if duration != oldValue { applyLoop() } }
+    }
 
     /// The dropped file's name without its extension, which the toolbar shows and the MIDI exit is
     /// named after. Nil for a recorded take.
@@ -152,7 +154,9 @@ import UniformTypeIdentifiers
     var document: NoteDocument?
 
     /// The editor's tool, selection, target instrument, snap and grid.
-    var editor = EditorState()
+    var editor = EditorState() {
+        didSet { if editor.range != oldValue.range { applyLoop() } }
+    }
 
     /// The region re-run in flight, or nil (`AppModel+RegionTranscription.swift`, its only
     /// writer). While it is set the editor is read-only and the clears refuse.
@@ -191,8 +195,9 @@ import UniformTypeIdentifiers
             workspace = .transcribe
         }
 
-        // The range marks a stretch of a finished transcription; there is none to mark otherwise.
-        if newState != .populated, editor.range != nil {
+        // The range marks a stretch of the take to loop or re-transcribe; with nothing to play
+        // there is nothing to mark (loop design §5; it was `.populated` only before the loop).
+        if !newState.canPlay, editor.range != nil {
             editor.range = nil
         }
 
@@ -247,6 +252,10 @@ import UniformTypeIdentifiers
     private(set) var goToStartGeneration = 0
 
     var followPlayhead: Bool = true
+
+    /// The Loop button: playback repeats the marked range, or the whole take without one (loop
+    /// design §5). Transient, like the range. `AppModel+Loop.swift` is its only writer.
+    var loopEnabled = false
 
     /// The MUTE button. In the original this cleared the input pass-through before the player ran;
     /// the standalone never routes the input to the output, so here it mutes the app's own output
