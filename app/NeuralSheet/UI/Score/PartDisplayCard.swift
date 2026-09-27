@@ -37,6 +37,9 @@ struct PartDisplayCard: View {
         let s = Scaled(k: k)
         let display = model.arrangement.display(for: program)
         let info = Instruments.info(forProgram: program)
+        // Drums have no tab and are notation whatever the mode (`ScoreDocument.build`), so the
+        // Display and Tab rows, which could only switch them away from it, are not offered.
+        let isDrums = program == NoteEvent.drumProgram
 
         VStack(alignment: .leading, spacing: s(Self.rowGap)) {
             Text(info.name.uppercased())
@@ -45,11 +48,13 @@ struct PartDisplayCard: View {
                 .foregroundStyle(Theme.popupTitle)
                 .lineLimit(1)
 
-            row("Display") {
-                HStack(spacing: s(2)) {
-                    ForEach(PartDisplay.Mode.allCases, id: \.self) { mode in
-                        segment(mode.name, isOn: display.mode == mode, isEnabled: mode == .notation || display.tab != nil) {
-                            model.setPartMode(mode, program: program)
+            if !isDrums {
+                row("Display") {
+                    HStack(spacing: s(2)) {
+                        ForEach(PartDisplay.Mode.allCases, id: \.self) { mode in
+                            segment(mode.name, isOn: display.mode == mode, isEnabled: mode == .notation || display.tab != nil) {
+                                model.setPartMode(mode, program: program)
+                            }
                         }
                     }
                 }
@@ -70,29 +75,31 @@ struct PartDisplayCard: View {
                 }
             }
 
-            row("Tab") {
-                menuButton(display.tab.flatMap { TabTemplate.template(id: $0.template)?.name } ?? "None") { showTemplateMenu() }
-                    .background(AnchorCatcher { templateAnchor = $0 })
-            }
-
-            if let tab = display.tab {
-                row("Tuning") {
-                    menuButton(tab.presetName ?? "Custom") { showTuningMenu(tab) }
-                        .background(AnchorCatcher { tuningAnchor = $0 })
+            if !isDrums {
+                row("Tab") {
+                    menuButton(display.tab.flatMap { TabTemplate.template(id: $0.template)?.name } ?? "None") { showTemplateMenu() }
+                        .background(AnchorCatcher { templateAnchor = $0 })
                 }
 
-                // One pitch field per string, bottom tab line first.
-                HStack(spacing: s(4)) {
-                    ForEach(Array(tab.tuning.enumerated()), id: \.offset) { string, pitch in
-                        PitchField(text: TimeFormat.pitchName(pitch), width: s(34), scale: k) {
-                            model.setPartTuning(string: string, pitch: $0, program: program)
+                if let tab = display.tab {
+                    row("Tuning") {
+                        menuButton(tab.presetName ?? "Custom") { showTuningMenu(tab) }
+                            .background(AnchorCatcher { tuningAnchor = $0 })
+                    }
+
+                    // One pitch field per string, bottom tab line first.
+                    HStack(spacing: s(4)) {
+                        ForEach(Array(tab.tuning.enumerated()), id: \.offset) { string, pitch in
+                            PitchField(text: TimeFormat.pitchName(pitch), width: s(34), scale: k) {
+                                model.setPartTuning(string: string, pitch: $0, program: program)
+                            }
                         }
                     }
-                }
 
-                row("Frets") {
-                    NumberField(value: Double(tab.frets), range: 1 ... 36, decimals: 0, width: 40) {
-                        model.setPartFrets(Int($0), program: program)
+                    row("Frets") {
+                        NumberField(value: Double(tab.frets), range: 1 ... 36, decimals: 0, width: 40) {
+                            model.setPartFrets(Int($0), program: program)
+                        }
                     }
                 }
             }
