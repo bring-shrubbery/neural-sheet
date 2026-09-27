@@ -42,18 +42,27 @@ enum ScoreGlyphs {
     // MARK: - Clefs
 
     /// The treble clef about the G line (`gLineY`), the bass clef about the F line (`fLineY`),
-    /// with SMuFL's extents; the percussion clef as two thick bars about the middle line.
+    /// the C clef about the alto's middle line or the tenor's fourth, with SMuFL's extents; the
+    /// octave clefs are their parents with a small 8 under the tail; the percussion clef is two
+    /// thick bars about the middle line.
     static func drawClef(_ clef: Clef, x: CGFloat, bottomLineY: CGFloat, sp: CGFloat, colour: CGColor, context ctx: CGContext) {
         switch clef {
-        case .treble:
+        case .treble, .treble8vb:
             let gLineY = bottomLineY - 1 * sp
             let target = CGRect(x: x, y: gLineY - 4.392 * sp, width: 2.684 * sp, height: 7.024 * sp)
             drawGlyph(0x1D11E, in: target, colour: colour, context: ctx)
+            if clef.isOctaveDown { drawOctaveMark(under: target, sp: sp, colour: colour, context: ctx) }
 
-        case .bass:
+        case .bass, .bass8vb:
             let fLineY = bottomLineY - 3 * sp
             let target = CGRect(x: x, y: fLineY - 1.048 * sp, width: 2.736 * sp, height: 3.642 * sp)
             drawGlyph(0x1D122, in: target, colour: colour, context: ctx)
+            if clef.isOctaveDown { drawOctaveMark(under: target, sp: sp, colour: colour, context: ctx) }
+
+        case .alto, .tenor:
+            let centreY = bottomLineY - (clef == .alto ? 2 : 3) * sp
+            let target = CGRect(x: x, y: centreY - 2.024 * sp, width: 2.796 * sp, height: 4.048 * sp)
+            drawGlyph(0x1D121, in: target, colour: colour, context: ctx)
 
         case .percussion:
             ctx.setFillColor(colour)
@@ -61,6 +70,13 @@ enum ScoreGlyphs {
             ctx.fill(CGRect(x: x + 0.5 * sp, y: middle - sp, width: 0.5 * sp, height: 2 * sp))
             ctx.fill(CGRect(x: x + 1.4 * sp, y: middle - sp, width: 0.5 * sp, height: 2 * sp))
         }
+    }
+
+    /// The 8 of an octave clef, centred under the clef's tail.
+    private static func drawOctaveMark(under target: CGRect, sp: CGFloat, colour: CGColor, context ctx: CGContext) {
+        let font = CTFontCreateWithName(Fonts.sansName(600) as CFString, 1.4 * sp, nil)
+        let rect = CGRect(x: target.midX - 0.8 * sp, y: target.maxY, width: 1.6 * sp, height: 1.6 * sp)
+        TimelineText.draw("8", font: font, colour: colour, in: rect, anchor: .centred, context: ctx)
     }
 
     // MARK: - Accidentals
