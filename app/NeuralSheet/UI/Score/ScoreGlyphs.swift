@@ -72,6 +72,16 @@ enum ScoreGlyphs {
         }
     }
 
+    /// "TAB" stacked down the staff's height, in place of a clef.
+    static func drawTabClef(x: CGFloat, topLineY: CGFloat, bottomLineY: CGFloat, sp: CGFloat, colour: CGColor, context ctx: CGContext) {
+        let font = CTFontCreateWithName(Fonts.sansName(600) as CFString, 1.6 * sp, nil)
+        let height = bottomLineY - topLineY
+        for (index, letter) in ["T", "A", "B"].enumerated() {
+            let y = topLineY + height * (CGFloat(index) + 0.5) / 3
+            TimelineText.draw(letter, font: font, colour: colour, in: CGRect(x: x, y: y - sp, width: 2.4 * sp, height: 2 * sp), anchor: .centred, context: ctx)
+        }
+    }
+
     /// The 8 of an octave clef, centred under the clef's tail and clear of the bottom line (the
     /// bass clef's tail ends above it).
     private static func drawOctaveMark(under target: CGRect, bottomLineY: CGFloat, sp: CGFloat, colour: CGColor, context ctx: CGContext) {

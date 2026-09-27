@@ -5,7 +5,8 @@ import SwiftUI
 
 /// The Score tab's block (score design §5): a vertically scrolling ``ScoreView`` that mirrors the
 /// model — the notes, the grid, the key and the arrangement rebuild the document and the layout,
-/// the width relays the systems, the playhead moves the cursor — and seeks on click.
+/// the width relays the systems, the playhead moves the cursor, the tab selection repaints —
+/// seeks on a click on empty score and selects a tab note on a click on its number.
 final class ScoreContainerView: NSView {
     let model: AppModel
 
@@ -54,6 +55,16 @@ final class ScoreContainerView: NSView {
 
             self.model.seek(toSeconds: self.score.document.seconds(atMeasure: measure, units: units, grid: self.model.editor.grid))
         }
+
+        score.onSelectTabNote = { [weak self] hit in
+            guard let self else { return }
+
+            if let hit {
+                self.model.selectTabNote(program: hit.program, id: hit.id)
+            } else {
+                self.model.deselectTabNote()
+            }
+        }
     }
 
     required init?(coder: NSCoder) {
@@ -93,6 +104,7 @@ final class ScoreContainerView: NSView {
             _ = model.editor.grid
             _ = model.editor.key
             _ = model.arrangement
+            _ = model.selectedTabNote
             _ = model.state
             _ = model.isPlaying
             _ = model.playheadSeconds
@@ -106,7 +118,8 @@ final class ScoreContainerView: NSView {
     }
 
     /// Rebuilds what changed: the document on the notes, the grid, the key or the arrangement;
-    /// the layout on the document or the width; the cursor every time.
+    /// the layout on the document or the width; a repaint on the tab selection; the cursor
+    /// every time.
     func sync() {
         let model = self.model
         let notes = model.notes
@@ -120,8 +133,16 @@ final class ScoreContainerView: NSView {
             lastKey = key
             lastArrangement = arrangement
             hasDocument = true
+            score.arrangement = arrangement
             score.document = model.scoreDocument()
             relayout()
+        }
+
+        let selected = model.selectedTabNote
+
+        if selected?.program != score.selectedTabNote?.program || selected?.id != score.selectedTabNote?.id {
+            score.selectedTabNote = selected
+            score.needsDisplay = true
         }
 
         updateCursor()
