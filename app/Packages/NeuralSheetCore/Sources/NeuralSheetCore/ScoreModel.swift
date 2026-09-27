@@ -55,7 +55,9 @@ public struct ScoreDocument: Equatable, Sendable {
 
             var staves: [ScoreStaff] = []
 
-            if display.showsNotation {
+            // Drums have no tab, so a drum part is notation whatever its mode says: a template
+            // and Tab left over from another instrument must not lose it its staff.
+            if display.showsNotation || isDrums {
                 let clefs: [Clef] = isDrums ? [.percussion] : display.clef.resolve(for: written.map(\.pitch))
                 let staffNotes: [(Clef, [MusicXMLWriter.UnitNote])] = clefs.count == 2
                     ? [(clefs[0], written.filter { $0.pitch >= MusicXMLWriter.middleC }),

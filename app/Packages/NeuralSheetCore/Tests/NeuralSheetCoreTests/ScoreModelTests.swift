@@ -245,3 +245,24 @@ private extension ScorePiece {
     #expect(score.parts[0].tab == nil)
     #expect(score.parts[0].staves[0].measures[0].pieces[0].notes[0].id == nil)
 }
+
+@Test func aDrumPartSetToTabKeepsItsPercussionStaff() throws {
+    var arrangement = ScoreArrangement()
+    var drums = PartDisplay()
+    drums.mode = .tab
+    drums.tab = TabTemplate.template(id: "guitar")!.setup(preset: TabTemplate.template(id: "guitar")!.presets[0])
+    arrangement.parts[NoteEvent.drumProgram] = drums
+
+    let score = ScoreDocument.build(notes: [note(36, at: 0, length: 0.1, program: NoteEvent.drumProgram)],
+                                    grid: grid, key: nil, arrangement: arrangement)
+
+    #expect(score.parts.count == 1)
+    #expect(score.parts[0].staves.count == 1, "drums are notation whatever the mode")
+    #expect(score.parts[0].staves[0].clef == .percussion)
+    #expect(score.parts[0].tab == nil, "and never tab")
+
+    let data = MusicXMLWriter.data(notes: [note(36, at: 0, length: 0.1, program: NoteEvent.drumProgram)],
+                                   ids: nil, grid: grid, key: nil, arrangement: arrangement)
+    let xml = try XMLDocument(data: data, options: [])
+    #expect(try xml.nodes(forXPath: "//part/@id").map(\.stringValue) == ["P1"], "the export writes the part too")
+}

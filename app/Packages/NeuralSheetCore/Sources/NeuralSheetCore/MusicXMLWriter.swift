@@ -60,7 +60,8 @@ public enum MusicXMLWriter {
             let id = "P\(index + 1)"
             let channel = channels[part.program] ?? 1
 
-            if part.display.showsNotation {
+            // The document decides what a part shows: a drum part has its staff whatever its mode.
+            if !part.staves.isEmpty {
                 xml += scorePartXML(id: id, name: part.name, program: part.program, channel: channel)
             }
 
@@ -85,7 +86,7 @@ public enum MusicXMLWriter {
         for (index, part) in document.parts.enumerated() {
             let id = "P\(index + 1)"
 
-            if part.display.showsNotation {
+            if !part.staves.isEmpty {
                 xml += notationPartXML(part, id: id, grid: grid, writesTempo: writesTempo)
                 writesTempo = false
             }
