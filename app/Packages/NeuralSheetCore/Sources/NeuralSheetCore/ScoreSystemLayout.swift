@@ -6,7 +6,7 @@ import Foundation
 /// for the cursor and the click. A page layout stacks these systems onto pages.
 ///
 /// All lengths in points, already scaled; `sp` is the staff space.
-public struct ScoreSystemLayout {
+public struct ScoreSystemLayout: Sendable {
     /// One row of one part — a staff or its tab — at its y in a system.
     public struct StaffRow: Equatable, Sendable {
         public enum Kind: Equatable, Sendable {
