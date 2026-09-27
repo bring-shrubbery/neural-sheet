@@ -75,3 +75,25 @@ private func quarters(_ count: Int, program: Int = 0, pitch: Int = 67) -> [NoteE
     #expect(abs(box.units(forX: x) - 36) < 0.01)
     #expect(layout.hitTest(CGPoint(x: x, y: layout.systems[0].frame.midY))?.measure == 1)
 }
+
+@Test func thePrefixReservesTheWrittenKeySignature() {
+    // A project in C with a trumpet written a tone up: the part's signature has two sharps
+    // although the project key has none, and the prefix must make room for them.
+    var arrangement = ScoreArrangement()
+    var trumpet = PartDisplay()
+    trumpet.transposition = 2
+    arrangement.parts[56] = trumpet
+
+    let score = ScoreDocument.build(notes: quarters(4, program: 56, pitch: 67), grid: grid,
+                                    key: MusicalKey(tonic: 0, mode: .major), arrangement: arrangement)
+    #expect(score.fifths == 0)
+    #expect(score.parts[0].writtenFifths == 2)
+    #expect(score.parts[0].staves.count == 1)
+
+    let sp: CGFloat = 8
+    let layout = ScoreSystemLayout(document: score, arrangement: arrangement, width: 900, sp: sp)
+    let box = layout.systems[0].measures[0]
+    let needed = (ScoreSystemLayout.clefWidth + ScoreSystemLayout.timeSignatureWidth + 2 * ScoreSystemLayout.accidentalWidth) * sp
+
+    #expect(box.contentX - box.x >= needed - 0.01, "the clef, two sharps and the time signature fit before the first note")
+}

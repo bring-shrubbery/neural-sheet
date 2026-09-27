@@ -149,7 +149,11 @@ public struct ScoreSystemLayout: Sendable {
 
         let available = max(sp * 12, width - (ScoreSystemLayout.leftMargin + ScoreSystemLayout.rightMargin) * sp)
         let naturalWidths = (0..<document.measureCount).map { naturalWidth(measure: $0, in: document) }
-        let signatureWidth = CGFloat(abs(document.fifths)) * ScoreSystemLayout.accidentalWidth * sp
+        // The renderer draws each part's written signature (the project key's, transposed with
+        // the part), so the prefix reserves the widest of them, not the project key's own: a
+        // project in C with a trumpet at +2 still needs room for two sharps.
+        let widestSignature = document.parts.map { abs($0.writtenFifths) }.max() ?? 0
+        let signatureWidth = CGFloat(widestSignature) * ScoreSystemLayout.accidentalWidth * sp
         let prefixFirst = (ScoreSystemLayout.clefWidth + ScoreSystemLayout.timeSignatureWidth + 1) * sp + signatureWidth
         let prefixLater = (ScoreSystemLayout.clefWidth + 1) * sp + signatureWidth
 
