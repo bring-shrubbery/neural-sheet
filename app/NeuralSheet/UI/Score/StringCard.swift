@@ -37,7 +37,7 @@ struct StringCard: View {
                     let playable = fret >= 0 && fret <= tab.frets
 
                     MenuRow(title: title(string: string, open: open, count: tab.tuning.count),
-                            isTicked: manual == string,
+                            isTicked: manual == string || (manual == nil && hit.string == string),
                             chip: playable ? nil : Theme.warn) {
                         host.dismiss()
                         model.setString(string, program: hit.program, id: hit.id)

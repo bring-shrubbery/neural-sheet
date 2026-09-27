@@ -214,6 +214,8 @@ final class ScoreContainerView: NSView {
         let width = scrollView.contentSize.width
 
         guard width > 0 else {
+            // Remembered as the width laid out for, so the first real width relays out.
+            layoutWidth = width
             score.layout = nil
             return
         }

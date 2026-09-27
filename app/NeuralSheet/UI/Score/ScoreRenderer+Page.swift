@@ -13,6 +13,11 @@ extension ScoreRenderer {
         ctx.setFillColor(style.paper)
         ctx.fill(frame)
 
+        // A line's-width edge, so the sheet reads against the surround.
+        ctx.setStrokeColor(style.line)
+        ctx.setLineWidth(pixel)
+        ctx.stroke(frame.insetBy(dx: pixel / 2, dy: pixel / 2))
+
         if page.index == 0 {
             drawHeader(in: CGRect(x: frame.minX + margin, y: frame.minY + margin,
                                   width: frame.width - 2 * margin, height: PageSize.headerHeight * scale),

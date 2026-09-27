@@ -68,12 +68,12 @@ struct MainView: View {
                 Sidebar(model: model)
 
                 VStack(spacing: 0) {
-                    // The Edit toolbar serves the Score tab too: the grid and the key are the
-                    // score's parameters (score design §1).
-                    if model.workspace == .transcribe {
-                        Toolbar(model: model)
-                    } else {
-                        EditToolbar(model: model)
+                    // One row per tab; the Score toolbar carries the grid and the key too, since
+                    // they are the score's parameters (score design §1).
+                    switch model.workspace {
+                    case .transcribe: Toolbar(model: model)
+                    case .edit: EditToolbar(model: model)
+                    case .score: ScoreToolbar(model: model)
                     }
 
                     // The timeline stays in the hierarchy under the score, so its zoom, scroll
