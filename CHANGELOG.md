@@ -26,6 +26,7 @@ Work towards v2 starts here: user-experience improvements beyond NeuralNote pari
 - Playback speed: the SPEED pill on the top bar plays the take slower or faster with its pitch unchanged.
 - Tempo from the music: Tap on the Edit toolbar (or `t`) sets it from your taps, Detect finds it and the downbeat in the audio.
 - Export the transcription as sheet music: File → Export MusicXML… writes a score any notation program opens.
+- The project's key: Detect finds it, the KEY controls on the Edit toolbar set it, the piano roll shows its scale, and Edit → Snap to Scale pulls stray notes onto it.
 
 ### Changed
 
