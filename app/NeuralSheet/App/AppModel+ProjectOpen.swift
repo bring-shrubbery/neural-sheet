@@ -100,6 +100,7 @@ extension AppModel {
         editor.grid.division = saved.gridDivision
         editor.snapEnabled = saved.snapEnabled
         editor.key = saved.key
+        arrangement = saved.arrangement
         followPlayhead = saved.playheadCentered
         zoomLevel = saved.zoomLevel
         verticalZoom = saved.verticalZoom

@@ -160,6 +160,13 @@ import UniformTypeIdentifiers
         didSet { if editor.range != oldValue.range { applyLoop() } }
     }
 
+    /// How the Score tab shows the transcription (arrangement design §3.1). Saved with the
+    /// project; `AppModel+Arrangement.swift` is its only writer.
+    var arrangement = ScoreArrangement()
+
+    /// The tab note the Score tab has selected, whose string ↑/↓ move. Transient.
+    var selectedTabNote: (program: Int, id: NoteID)?
+
     /// The region re-run in flight, or nil (`AppModel+RegionTranscription.swift`, its only
     /// writer). While it is set the editor is read-only and the clears refuse.
     var regionJob: RegionJob?

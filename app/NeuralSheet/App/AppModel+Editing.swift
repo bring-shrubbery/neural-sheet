@@ -58,6 +58,7 @@ extension AppModel {
         editor.selection = editor.selection.filter(document.contains)
         publishNotes()
         validateTargetProgram()
+        pruneStringChoices()
     }
 
     /// If the target instrument has left the mix, the first strip takes over; a highlight on an

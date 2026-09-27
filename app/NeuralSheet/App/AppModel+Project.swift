@@ -44,7 +44,8 @@ extension AppModel {
                        gridDivision: editor.grid.division,
                        snapEnabled: editor.snapEnabled,
                        targetProgram: editor.targetProgram,
-                       key: editor.key)
+                       key: editor.key,
+                       arrangement: arrangement)
     }
 
     /// Everything `project.json` holds, ready to be written.
@@ -60,6 +61,7 @@ extension AppModel {
         state.snapEnabled = editor.snapEnabled
         state.targetProgram = editor.targetProgram
         state.key = editor.key
+        state.arrangement = arrangement
         state.workspace = workspace.savedWorkspace
         state.playheadSeconds = playheadSeconds
         state.playheadCentered = followPlayhead
@@ -94,6 +96,8 @@ extension AppModel {
         resetMixerSettingsForLaunch()
         selectedGroups = []
         editor = EditorState()
+        arrangement = ScoreArrangement()
+        selectedTabNote = nil
         followPlayhead = true
         zoomLevel = 1
         verticalZoom = -1

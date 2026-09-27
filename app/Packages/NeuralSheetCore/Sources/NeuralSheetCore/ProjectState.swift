@@ -46,6 +46,8 @@ public struct ProjectState: Codable, Equatable, Sendable {
     public var targetProgram: Int? = nil
     /// The project's key (key design §2); nil for none.
     public var key: MusicalKey? = nil
+    /// How the Score tab shows the transcription (arrangement design §3.1).
+    public var arrangement = ScoreArrangement()
 
     // View state: written on every save, never what makes the project edited.
 
@@ -112,7 +114,7 @@ public struct ProjectState: Codable, Equatable, Sendable {
 
     private enum CodingKeys: String, CodingKey {
         case formatVersion, audioFileName, audioDisplayName, selectedGroups, mixer
-        case exportTempo, gridOffsetSeconds, gridDivision, snapEnabled, targetProgram, key
+        case exportTempo, gridOffsetSeconds, gridDivision, snapEnabled, targetProgram, key, arrangement
         case workspace, playheadSeconds, playheadCentered, zoomLevel, verticalZoom
     }
 
@@ -137,6 +139,8 @@ public struct ProjectState: Codable, Equatable, Sendable {
         snapEnabled = try container.decodeIfPresent(Bool.self, forKey: .snapEnabled) ?? defaults.snapEnabled
         targetProgram = try container.decodeIfPresent(Int.self, forKey: .targetProgram)
         key = try container.decodeIfPresent(MusicalKey.self, forKey: .key)
+        arrangement =
+            try container.decodeIfPresent(ScoreArrangement.self, forKey: .arrangement) ?? defaults.arrangement
         workspace = try container.decodeIfPresent(Workspace.self, forKey: .workspace) ?? defaults.workspace
         playheadSeconds =
             try container.decodeIfPresent(Double.self, forKey: .playheadSeconds) ?? defaults.playheadSeconds

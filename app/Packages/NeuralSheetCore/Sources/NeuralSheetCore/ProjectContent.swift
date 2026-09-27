@@ -16,6 +16,7 @@ public struct ProjectContent: Equatable, Sendable {
     public var snapEnabled: Bool
     public var targetProgram: Int?
     public var key: MusicalKey?
+    public var arrangement: ScoreArrangement
 
     public init(
         transcription: ProjectTranscription?,
@@ -26,7 +27,8 @@ public struct ProjectContent: Equatable, Sendable {
         gridDivision: GridDivision,
         snapEnabled: Bool,
         targetProgram: Int?,
-        key: MusicalKey? = nil
+        key: MusicalKey? = nil,
+        arrangement: ScoreArrangement = ScoreArrangement()
     ) {
         self.transcription = transcription
         self.selectedGroups = selectedGroups
@@ -37,5 +39,6 @@ public struct ProjectContent: Equatable, Sendable {
         self.snapEnabled = snapEnabled
         self.targetProgram = targetProgram
         self.key = key
+        self.arrangement = arrangement
     }
 }

@@ -50,6 +50,8 @@ private func makeProjectTempDirectory() throws -> URL {
     state.snapEnabled = false
     state.targetProgram = 128
     state.key = MusicalKey(tonic: 3, mode: .minor)
+    state.arrangement.layout = .pages
+    state.arrangement.parts[24] = { var d = PartDisplay(); d.mode = .tab; return d }()
     state.workspace = .edit
     state.playheadSeconds = 12.25
     state.playheadCentered = false
@@ -59,6 +61,13 @@ private func makeProjectTempDirectory() throws -> URL {
     try state.save(to: url)
 
     #expect(try ProjectState.read(from: url) == state)
+}
+
+@Test func aProjectWithoutAnArrangementOpensWithTheDefaults() throws {
+    let url = FileManager.default.temporaryDirectory.appendingPathComponent("noarr-\(UUID().uuidString).json")
+    defer { try? FileManager.default.removeItem(at: url) }
+    try Data("{\"formatVersion\": 1}".utf8).write(to: url)
+    #expect(try ProjectState.read(from: url).arrangement == ScoreArrangement())
 }
 
 @Test func projectStateMissingFileIsUnreadable() throws {
