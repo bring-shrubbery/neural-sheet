@@ -49,7 +49,7 @@ final class ScoreContainerView: NSView {
         scrollView.hasHorizontalScroller = false
         scrollView.autohidesScrollers = true
         scrollView.drawsBackground = true
-        scrollView.backgroundColor = NSColor(cgColor: ScorePalette.paper) ?? .black
+        scrollView.backgroundColor = NSColor(cgColor: ScoreRenderer.Style.screen.paper) ?? .black
         scrollView.documentView = score
         scrollView.contentView.postsBoundsChangedNotifications = true
         addSubview(scrollView)
@@ -222,7 +222,7 @@ final class ScoreContainerView: NSView {
         let layout = ScoreLayout(document: score.document, arrangement: model.arrangement, width: width, scale: scale)
         score.layout = layout
         // The surround shows past the last page and under a short score.
-        scrollView.backgroundColor = NSColor(cgColor: layout.mode == .pages ? ScoreView.surround : ScorePalette.paper) ?? .black
+        scrollView.backgroundColor = NSColor(cgColor: layout.mode == .pages ? ScoreView.surround : ScoreRenderer.Style.screen.paper) ?? .black
         score.frame = CGRect(x: 0, y: 0, width: width, height: max(layout.totalHeight, scrollView.contentSize.height))
         score.needsDisplay = true
         cursorSystemIndex = nil

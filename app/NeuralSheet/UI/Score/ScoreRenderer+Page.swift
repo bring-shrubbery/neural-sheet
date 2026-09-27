@@ -10,7 +10,7 @@ extension ScoreRenderer {
                   scale: CGFloat, in ctx: CGContext, hits: inout [TabHit], names: inout [NameHit]) {
         let margin = PageSize.margin * scale
 
-        ctx.setFillColor(ScorePalette.paper)
+        ctx.setFillColor(style.paper)
         ctx.fill(frame)
 
         if page.index == 0 {
@@ -38,23 +38,23 @@ extension ScoreRenderer {
         let subtitle = CTFontCreateWithName(Fonts.sansName(500) as CFString, 1.8 * sp, nil)
         let small = CTFontCreateWithName(Fonts.sansName(500) as CFString, 1.6 * sp, nil)
 
-        TimelineText.draw(sheet.resolvedTitle(takeName: takeName), font: title, colour: ScorePalette.ink,
+        TimelineText.draw(sheet.resolvedTitle(takeName: takeName), font: title, colour: style.ink,
                           in: CGRect(x: rect.minX, y: rect.minY, width: rect.width, height: 3.6 * sp), anchor: .centred, context: ctx)
 
         if !sheet.subtitle.isEmpty {
-            TimelineText.draw(sheet.subtitle, font: subtitle, colour: ScorePalette.ink,
+            TimelineText.draw(sheet.subtitle, font: subtitle, colour: style.ink,
                               in: CGRect(x: rect.minX, y: rect.minY + 3.6 * sp, width: rect.width, height: 2.2 * sp),
                               anchor: .centred, context: ctx)
         }
 
         if !sheet.composer.isEmpty {
-            TimelineText.draw(sheet.composer, font: small, colour: ScorePalette.ink,
+            TimelineText.draw(sheet.composer, font: small, colour: style.ink,
                               in: CGRect(x: rect.minX, y: rect.maxY - 4 * sp, width: rect.width, height: 2 * sp),
                               anchor: .centredRight, context: ctx)
         }
 
         if !sheet.arranger.isEmpty {
-            TimelineText.draw("arr. " + sheet.arranger, font: small, colour: ScorePalette.ink,
+            TimelineText.draw("arr. " + sheet.arranger, font: small, colour: style.ink,
                               in: CGRect(x: rect.minX, y: rect.maxY - 2 * sp, width: rect.width, height: 2 * sp),
                               anchor: .centredRight, context: ctx)
         }
@@ -66,10 +66,10 @@ extension ScoreRenderer {
         let font = CTFontCreateWithName(Fonts.sansName(400) as CFString, 1.2 * sp, nil)
 
         if !arrangement.sheet.copyright.isEmpty {
-            TimelineText.draw(arrangement.sheet.copyright, font: font, colour: ScorePalette.faint, in: rect, anchor: .centred, context: ctx)
+            TimelineText.draw(arrangement.sheet.copyright, font: font, colour: style.faint, in: rect, anchor: .centred, context: ctx)
         }
 
-        TimelineText.draw("\(pageIndex + 1)", font: font, colour: ScorePalette.faint, in: rect,
+        TimelineText.draw("\(pageIndex + 1)", font: font, colour: style.faint, in: rect,
                           anchor: pageIndex % 2 == 0 ? .centredRight : .centredLeft, context: ctx)
     }
 }

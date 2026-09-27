@@ -15,7 +15,7 @@ extension ScoreRenderer {
     }
 
     func drawChord(_ piece: ScorePiece, x: CGFloat, row: ScoreSystemLayout.StaffRow, in ctx: CGContext) {
-        let ink = ScorePalette.ink
+        let ink = style.ink
         let stemUp = ScoreRenderer.stemUp(piece)
         let whole = piece.type == "whole"
 
@@ -43,7 +43,7 @@ extension ScoreRenderer {
                 // just inside a note on a space.
                 for ledger in stride(from: below ? -2 : 10, through: note.step, by: below ? -2 : 2) {
                     let ledgerY = row.bottomLineY - CGFloat(ledger) * sp / 2
-                    ctx.fill(CGRect(x: headX - 0.95 * sp, y: ledgerY - pixel / 2, width: 1.9 * sp, height: pixel), ScorePalette.line)
+                    ctx.fill(CGRect(x: headX - 0.95 * sp, y: ledgerY - pixel / 2, width: 1.9 * sp, height: pixel), style.line)
                 }
             }
 
@@ -91,7 +91,7 @@ extension ScoreRenderer {
 
     /// A quarter note and "= 120".
     func drawTempo(x: CGFloat, y: CGFloat, in ctx: CGContext) {
-        let ink = ScorePalette.ink
+        let ink = style.ink
         let head = CGPoint(x: x + 0.6 * sp, y: y)
         ScoreGlyphs.drawHead(.normal, hollow: false, whole: false, centre: head, sp: sp * 0.8, colour: ink, context: ctx)
         ctx.fill(CGRect(x: head.x + 0.42 * sp, y: y - 2.6 * sp, width: max(1, 0.1 * sp), height: 2.6 * sp), ink)

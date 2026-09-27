@@ -23,6 +23,14 @@ struct ScoreRenderer {
     let document: ScoreDocument
     let arrangement: ScoreArrangement
     let sp: CGFloat
+    let style: Style
+
+    init(document: ScoreDocument, arrangement: ScoreArrangement, sp: CGFloat, style: Style = .screen) {
+        self.document = document
+        self.arrangement = arrangement
+        self.sp = sp
+        self.style = style
+    }
 
     var pixel: CGFloat { max(1, (sp / 8).rounded()) }
 
@@ -51,7 +59,7 @@ struct ScoreRenderer {
 
     /// Five lines for a staff, one per string for a tab, and the left edge joining every row.
     private func drawStaffLines(_ system: ScoreSystemLayout.System, in ctx: CGContext) {
-        let line = ScorePalette.line
+        let line = style.line
 
         for row in system.rows {
             for y in lineYs(of: row) {
@@ -81,14 +89,14 @@ struct ScoreRenderer {
             let top = row.topLineY
 
             for (index, box) in system.measures.enumerated() where index > 0 {
-                ctx.fill(CGRect(x: box.x - pixel / 2, y: top, width: pixel, height: row.height), ScorePalette.line)
+                ctx.fill(CGRect(x: box.x - pixel / 2, y: top, width: pixel, height: row.height), style.line)
             }
 
             ctx.fill(CGRect(x: system.frame.maxX - pixel, y: top, width: pixel, height: row.height),
-                     isFinalSystem ? ScorePalette.ink : ScorePalette.line)
+                     isFinalSystem ? style.ink : style.line)
 
             if isFinalSystem {
-                ctx.fill(CGRect(x: system.frame.maxX - 0.5 * sp - pixel, y: top, width: pixel, height: row.height), ScorePalette.ink)
+                ctx.fill(CGRect(x: system.frame.maxX - 0.5 * sp - pixel, y: top, width: pixel, height: row.height), style.ink)
             }
         }
     }
@@ -98,7 +106,7 @@ struct ScoreRenderer {
     /// but a name wider than the margin's room ("Acoustic Guitar") is abbreviated on the first
     /// system too rather than clipped.
     private func drawPrefixes(_ system: ScoreSystemLayout.System, in ctx: CGContext, names: inout [NameHit]) {
-        let ink = ScorePalette.ink
+        let ink = style.ink
         let isFirst = system.showsTimeSignature
         let nameFont = TimelineFonts.meta(sp / 8)
 
@@ -163,7 +171,7 @@ struct ScoreRenderer {
 
         if arrangement.sheet.showsMeasureNumbers {
             let numberFont = TimelineFonts.scaleLabel(sp / 8)
-            TimelineText.draw("\(first.index + 1)", font: numberFont, colour: ScorePalette.faint,
+            TimelineText.draw("\(first.index + 1)", font: numberFont, colour: style.faint,
                               in: CGRect(x: first.x, y: y - 2.6 * sp, width: 6 * sp, height: 1.6 * sp),
                               anchor: .centredLeft, context: ctx)
         }
@@ -178,7 +186,7 @@ struct ScoreRenderer {
     /// The staff's pieces over the system's measures: rests, chords, and ties to whatever comes
     /// next at the same pitch.
     private func drawStaffMusic(_ staff: ScoreStaff, row: ScoreSystemLayout.StaffRow, system: ScoreSystemLayout.System, in ctx: CGContext) {
-        let ink = ScorePalette.ink
+        let ink = style.ink
 
         for (boxIndex, box) in system.measures.enumerated() where box.index < staff.measures.count {
             let measure = staff.measures[box.index]
@@ -229,15 +237,35 @@ struct ScoreRenderer {
     }
 }
 
-/// The score's colours, as `CGColor`s.
-enum ScorePalette {
-    static let paper = TimelinePalette.cg(Theme.bgRoot)
-    static let ink = TimelinePalette.cg(Theme.textBright)
-    static let line = TimelinePalette.cg(Theme.textScale)
-    static let faint = TimelinePalette.cg(Theme.textFaint)
-    static let cursor = TimelinePalette.cg(Theme.accent)
-    /// A tab fret no string can hold.
-    static let unplayable = TimelinePalette.cg(Theme.warn)
-    static let selection = TimelinePalette.cg(Theme.accent, alpha: 0.35)
-    static let selectionEdge = TimelinePalette.cg(Theme.accent)
+extension ScoreRenderer {
+    /// The score's colours (arrangement design §4): the screen's, the theme's paper and ink, or
+    /// the print's, black on white. The view draws its own surround, cursor and selection outline
+    /// from `screen` too, so no colour is defined twice.
+    struct Style {
+        var paper: CGColor
+        var ink: CGColor
+        var line: CGColor
+        var faint: CGColor
+        /// A tab fret no string can hold.
+        var unplayable: CGColor
+        var cursor: CGColor
+        var selectionEdge: CGColor
+
+        static let screen = Style(paper: TimelinePalette.cg(Theme.bgRoot),
+                                  ink: TimelinePalette.cg(Theme.textBright),
+                                  line: TimelinePalette.cg(Theme.textScale),
+                                  faint: TimelinePalette.cg(Theme.textFaint),
+                                  unplayable: TimelinePalette.cg(Theme.warn),
+                                  cursor: TimelinePalette.cg(Theme.accent),
+                                  selectionEdge: TimelinePalette.cg(Theme.accent))
+
+        /// For paper: the unplayable warning and the accent stay the screen's.
+        static let print = Style(paper: CGColor(gray: 1, alpha: 1),
+                                 ink: CGColor(gray: 0, alpha: 1),
+                                 line: CGColor(gray: 0.45, alpha: 1),
+                                 faint: CGColor(gray: 0.55, alpha: 1),
+                                 unplayable: TimelinePalette.cg(Theme.warn),
+                                 cursor: TimelinePalette.cg(Theme.accent),
+                                 selectionEdge: TimelinePalette.cg(Theme.accent))
+    }
 }

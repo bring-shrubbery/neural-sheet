@@ -39,7 +39,7 @@ final class ScoreView: NSView {
     /// A click on a part's name, with the program and the point in the window.
     var onClickPartName: ((Int, NSPoint) -> Void)?
 
-    let cursor = FillView(colour: ScorePalette.cursor)
+    let cursor = FillView(colour: ScoreRenderer.Style.screen.cursor)
 
     override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
@@ -125,7 +125,7 @@ final class ScoreView: NSView {
         guard let ctx = NSGraphicsContext.current?.cgContext else { return }
 
         guard let layout else {
-            ctx.fill(rect.intersection(bounds), ScorePalette.paper)
+            ctx.fill(rect.intersection(bounds), ScoreRenderer.Style.screen.paper)
             return
         }
 
@@ -133,7 +133,7 @@ final class ScoreView: NSView {
 
         switch layout.mode {
         case .continuous:
-            ctx.fill(rect.intersection(bounds), ScorePalette.paper)
+            ctx.fill(rect.intersection(bounds), ScoreRenderer.Style.screen.paper)
 
             for (index, system) in layout.systems.enumerated() where system.frame.insetBy(dx: 0, dy: -8 * layout.sp).intersects(rect) {
                 var collected: [TabHit] = []
@@ -167,7 +167,7 @@ final class ScoreView: NSView {
         }
 
         if let selected = selectedTabNote, let hit = hits.first(where: { $0.program == selected.program && $0.id == selected.id }) {
-            ctx.setStrokeColor(ScorePalette.selectionEdge)
+            ctx.setStrokeColor(ScoreRenderer.Style.screen.selectionEdge)
             ctx.setLineWidth(max(1, layout.sp / 8))
             ctx.stroke(hit.frame.insetBy(dx: -layout.sp * 0.15, dy: -layout.sp * 0.15))
         }

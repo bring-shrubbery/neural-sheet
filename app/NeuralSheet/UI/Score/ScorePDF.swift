@@ -9,7 +9,7 @@ enum ScorePDF {
         paged.layout = .pages
 
         let layout = ScorePageLayout(document: document, arrangement: paged, pageSize: paged.pageSize, sp: ScorePageLayout.pageStaffSpace)
-        let renderer = ScoreRenderer(document: document, arrangement: paged, sp: layout.sp)
+        let renderer = ScoreRenderer(document: document, arrangement: paged, sp: layout.sp, style: .print)
         let data = NSMutableData()
 
         guard let consumer = CGDataConsumer(data: data as CFMutableData) else { return nil }

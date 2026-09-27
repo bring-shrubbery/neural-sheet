@@ -19,7 +19,7 @@ extension ScoreRenderer {
                 if piece.isRest {
                     // A tab rest: the notation's rest glyph, small, centred on the tab.
                     ScoreGlyphs.drawRest(type: piece.type, dots: piece.dots, x: x, bottomLineY: row.bottomLineY - row.height / 2 + 2 * sp * 0.7,
-                                         sp: sp * 0.7, colour: ScorePalette.line, context: ctx)
+                                         sp: sp * 0.7, colour: style.line, context: ctx)
                     continue
                 }
 
@@ -32,10 +32,10 @@ extension ScoreRenderer {
                     let frame = CGRect(x: x - width / 2, y: y - 0.75 * sp, width: width, height: 1.5 * sp)
 
                     // A box in the paper colour so the number covers the line.
-                    ctx.setFillColor(ScorePalette.paper)
+                    ctx.setFillColor(style.paper)
                     ctx.fill(frame.insetBy(dx: 0, dy: 0.15 * sp))
 
-                    let colour = placement.isPlayable ? ScorePalette.ink : ScorePalette.unplayable
+                    let colour = placement.isPlayable ? style.ink : style.unplayable
                     TimelineText.draw(text, font: font, colour: colour, in: frame, anchor: .centred, context: ctx)
 
                     if let id = note.id {
@@ -58,10 +58,10 @@ extension ScoreRenderer {
                 let stemWidth = max(pixel, 0.13 * sp)
                 let top = row.bottomLineY + 0.6 * sp
                 let bottom = top + 2.6 * sp
-                ctx.setFillColor(ScorePalette.ink)
+                ctx.setFillColor(style.ink)
                 ctx.fill(CGRect(x: x - stemWidth / 2, y: top, width: stemWidth, height: bottom - top))
                 ScoreGlyphs.drawFlags(count: piece.flags, stemEnd: CGPoint(x: x + stemWidth / 2, y: bottom), stemUp: false, sp: sp,
-                                      colour: ScorePalette.ink, context: ctx)
+                                      colour: style.ink, context: ctx)
 
                 for dot in 0..<piece.dots {
                     ctx.fillEllipse(in: CGRect(x: x + (0.6 + CGFloat(dot) * 0.5) * sp, y: bottom - 0.4 * sp, width: 0.35 * sp, height: 0.35 * sp))
