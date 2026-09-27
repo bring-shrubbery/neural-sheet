@@ -1,5 +1,7 @@
+import AppKit
 import Foundation
 import NeuralSheetCore
+import UniformTypeIdentifiers
 
 /// The Score tab's arrangement commands (arrangement design §5): every write to
 /// `arrangement` goes through here, so the pruning and the defaults live in one place.
@@ -144,5 +146,35 @@ extension AppModel {
 
     func setPageSize(_ size: PageSize) {
         if arrangement.pageSize != size { arrangement.pageSize = size }
+    }
+
+    // MARK: - Export PDF
+
+    /// `<source>_NNTranscription.pdf`, or `NNTranscription.pdf` for a recorded take.
+    func pdfExportFileName() -> String {
+        guard let name = droppedFileName, !name.isEmpty else { return "NNTranscription.pdf" }
+        return "\(name)_NNTranscription.pdf"
+    }
+
+    /// File → Export PDF…: the pages, whatever the tab shows, through a save panel titled
+    /// "Export PDF" in the Music folder.
+    func exportPDF() {
+        guard canExport, let data = ScorePDF.data(document: scoreDocument(), arrangement: arrangement, takeName: droppedFileName) else { return }
+
+        let panel = NSSavePanel()
+        panel.title = "Export PDF"
+        panel.message = "Export PDF"
+        panel.directoryURL = paths.musicFolder
+        panel.nameFieldStringValue = pdfExportFileName()
+        panel.allowedContentTypes = [.pdf]
+        panel.canCreateDirectories = true
+
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+
+        do {
+            try data.write(to: url, options: .atomic)
+        } catch {
+            showError("Error", "Could not write the PDF file.")
+        }
     }
 }
