@@ -53,6 +53,23 @@ public struct LoopWindow: Equatable, Sendable {
         return (min(blockEnd, end), wrapped(blockEnd))
     }
 
+    /// ``wrapped(_:)`` for a fractional position: the playhead advances by fractions of a frame
+    /// at any speed but 1 (speed design §3).
+    public func wrapped(_ position: Double) -> Double {
+        guard position >= Double(end) else { return position }
+
+        return Double(start) + (position - Double(end)).truncatingRemainder(dividingBy: Double(length))
+    }
+
+    /// ``advance(from:frames:)`` for a fractional playhead covering `span` take-frames.
+    public func advance(from playhead: Double, span: Double) -> (renderEnd: Double, next: Double) {
+        let blockEnd = playhead + span
+
+        guard playhead < Double(end) else { return (blockEnd, Double(start)) }
+
+        return (min(blockEnd, Double(end)), wrapped(blockEnd))
+    }
+
     /// Both ends in one 64-bit word, `start` in the high half; never 0, which stands for no loop.
     /// Frame counts fit the half-words up to a day of audio at 48 kHz.
     public var packed: UInt64 {
