@@ -290,3 +290,6 @@ each would need, unplayable ones red.
   (white paper, black ink) in the PDF, which also draws no page edge.
 - In the MusicXML export a part on an octave clef writes its pitches for that clef and drops
   the octave from `<transpose>`, since readers already shift a pitch for `clef-octave-change`.
+- The part card shows one pitch field per string whenever the part has a tab, under the
+  Tuning menu of presets, rather than behind a "Custom…" item in that menu; editing a field
+  makes the tuning custom, and choosing a preset sets the fields back.
