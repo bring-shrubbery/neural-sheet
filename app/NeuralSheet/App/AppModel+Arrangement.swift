@@ -163,7 +163,13 @@ extension AppModel {
     /// File → Export PDF…: the pages, whatever the tab shows, through a save panel titled
     /// "Export PDF" in the Music folder.
     func exportPDF() {
-        guard canExport, let data = ScorePDF.data(document: scoreDocument(), arrangement: arrangement, takeName: droppedFileName) else { return }
+        guard canExport else { return }
+
+        // A PDF context that cannot be made is as much a failure as a file that cannot be written.
+        guard let data = ScorePDF.data(document: scoreDocument(), arrangement: arrangement, takeName: droppedFileName) else {
+            showError("Error", "Could not write the PDF file.")
+            return
+        }
 
         let panel = NSSavePanel()
         panel.title = "Export PDF"
