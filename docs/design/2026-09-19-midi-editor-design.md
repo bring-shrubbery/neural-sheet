@@ -6,7 +6,8 @@ velocity, snap and quantize them to a tempo grid — inside a new **Edit** tab, 
 transcription part of the saved session so edits survive a relaunch.
 
 The window gains a DaVinci-Resolve-style tab strip: **Transcribe** (today's window) and **Edit**
-(unlocked once a transcription exists). More tabs can follow.
+(unlocked once a transcription exists). More tabs can follow. *Since the score design
+(`2026-09-27-score-view-design.md`): a third, **Score**, unlocked with Edit.*
 
 This is the first feature past the parity checkpoint. Where it departs from the NeuralNote
 inventory (`2026-09-17-neuralnote-feature-inventory.md`) it says so in §9; everything it does not
