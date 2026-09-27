@@ -1071,6 +1071,43 @@ import UniformTypeIdentifiers
         }
     }
 
+    // MARK: - MusicXML
+
+    /// The score as bytes, or nil unless the transcription is finished (MusicXML design §4):
+    /// the notes quantized to the grid, titled after the take.
+    func musicXMLData() -> Data? {
+        guard canExport else { return nil }
+
+        return MusicXMLWriter.data(notes: notes, grid: editor.grid, title: droppedFileName)
+    }
+
+    /// `<source>_NNTranscription.musicxml`, or `NNTranscription.musicxml` for a recorded take.
+    func musicXMLExportFileName() -> String {
+        MusicXMLWriter.exportFileName(sourceFileNameWithoutExtension: droppedFileName)
+    }
+
+    /// File → Export MusicXML…: a save panel titled "Export MusicXML" in the Music folder, the
+    /// MIDI exit's shape. No dialog: the tempo and the division are the Edit toolbar's.
+    func exportMusicXML() {
+        guard let data = musicXMLData() else { return }
+
+        let panel = NSSavePanel()
+        panel.title = "Export MusicXML"
+        panel.message = "Export MusicXML"
+        panel.directoryURL = paths.musicFolder
+        panel.nameFieldStringValue = musicXMLExportFileName()
+        panel.allowedContentTypes = [UTType(filenameExtension: "musicxml", conformingTo: .xml) ?? .xml]
+        panel.canCreateDirectories = true
+
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+
+        do {
+            try data.write(to: url, options: .atomic)
+        } catch {
+            showError("Error", "Could not write the MusicXML file.")
+        }
+    }
+
     // MARK: - Updates
 
     /// Check for Updates…, from the app menu and Settings. Sparkle shows the result itself,

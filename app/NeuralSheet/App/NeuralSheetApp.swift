@@ -76,7 +76,7 @@ struct NeuralSheetApp: App {
         }
     }
 
-    /// The document commands (projects design §5.7). Export MIDI… only once there is a finished
+    /// The document commands (projects design §5.7). Export MIDI… and Export MusicXML… only once there is a finished
     /// transcription.
     @CommandsBuilder
     private func fileMenu(model: AppModel) -> some Commands {
@@ -131,6 +131,10 @@ struct NeuralSheetApp: App {
 
             Button("Export MIDI…") { model.requestExport() }
                 .keyboardShortcut("e", modifiers: [.command, .shift])
+                .disabled(!model.canExport)
+
+            Button("Export MusicXML…") { model.exportMusicXML() }
+                .keyboardShortcut("e", modifiers: [.command, .shift, .option])
                 .disabled(!model.canExport)
         }
     }
