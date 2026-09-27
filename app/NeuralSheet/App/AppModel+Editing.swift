@@ -42,8 +42,18 @@ extension AppModel {
 
     /// Makes the document from the model's own output. The merge is the post-processing every
     /// raw note goes through; from here on the document's invariants replace it.
+    ///
+    /// A fresh document (a finished run, Revert to Transcription) numbers its notes 0…n−1 again,
+    /// so the tab's manual string choices, keyed by note id, would land on unrelated notes: they
+    /// are dropped along with the tab selection. A saved document arrives with its own ids, and
+    /// the choices made for them stay (arrangement design §5).
     func installDocument(rawNotes: [NoteEvent], document: NoteDocument? = nil) {
         transcription.rawNotes = rawNotes
+
+        if document == nil {
+            dropStringChoices()
+        }
+
         self.document = document ?? NoteDocument(events: mergeOverlappingNotesWithSamePitch(rawNotes))
         editor.selection = []
         applyDocument()

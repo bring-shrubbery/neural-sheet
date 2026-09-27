@@ -120,6 +120,16 @@ extension AppModel {
         return ScoreDocument.build(notes: notes, ids: ids, grid: editor.grid, key: editor.key, arrangement: arrangement)
     }
 
+    /// Drops every manual string choice and the tab selection: for a document whose ids start
+    /// over (see `installDocument`), where pruning against the new ids would keep the wrong ones.
+    func dropStringChoices() {
+        for (program, display) in arrangement.parts where !display.strings.isEmpty {
+            arrangement.parts[program]?.strings = [:]
+        }
+
+        selectedTabNote = nil
+    }
+
     /// Drops manual string choices for notes the document no longer has. After every commit.
     func pruneStringChoices() {
         guard let document else { return }
