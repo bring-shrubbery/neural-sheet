@@ -12,6 +12,9 @@ public struct ScoreDocument: Equatable, Sendable {
     public var fifths: Int
     public var bpm: Double
 
+    /// The empty score: no parts, no measures.
+    public static let empty = ScoreDocument(parts: [], measureCount: 0, firstBar: 0, fifths: 0, bpm: TempoGrid.defaultBpm)
+
     /// The score for `notes` on `grid` in `key`.
     public static func build(notes: [NoteEvent], grid: TempoGrid, key: MusicalKey?) -> ScoreDocument {
         var notesByProgram: [Int: [NoteEvent]] = [:]
