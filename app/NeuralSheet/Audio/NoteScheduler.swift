@@ -146,7 +146,8 @@ nonisolated final class NoteScheduler: @unchecked Sendable {
     private var activeCount = 0
 
     /// Where the previous block ended. A block that does not start there is a discontinuity — a
-    /// wrap, or a seek whose flag has not arrived yet — and the cursor is rebuilt.
+    /// loop jump, a wrap, or a seek whose flag has not arrived yet — and the cursor is rebuilt,
+    /// what was sounding released and what covers the new position re-attacked.
     private var lastEndTime = -1.0
 
     init() {
@@ -252,6 +253,8 @@ nonisolated final class NoteScheduler: @unchecked Sendable {
 
         // A new list re-anchors what is sounding rather than cutting it.
         let generation = listGeneration.load(ordering: .acquiring)
+        var resync = shouldResync.load(ordering: .relaxed)
+
         if generation != listGenerationSeen {
             listGenerationSeen = generation
             // Unretained, and only the buffer is kept: the object's lifetime stays the main
@@ -267,9 +270,18 @@ nonisolated final class NoteScheduler: @unchecked Sendable {
             reanchorActive(at: t0)
         } else if t0 != lastEndTime {
             updateCursor(at: t0)
+
+            // A jump the transport made itself -- the loop going back to its start -- arrives
+            // with no flag, and what was sounding at the loop's end does not belong at its start
+            // any more than after a seek. The first block ever is not a jump. Through the same
+            // path as the flag, so a seek, which raises the flag *and* jumps, releases and
+            // re-attacks once.
+            if playing, lastEndTime >= 0 {
+                resync = true
+            }
         }
 
-        if shouldResync.load(ordering: .relaxed) {
+        if resync {
             while activeCount > 0 {
                 stopActive(at: activeCount - 1, sampleOffset: 0, into: &events)
             }

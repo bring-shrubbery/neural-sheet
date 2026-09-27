@@ -37,8 +37,19 @@ private nonisolated final class RenderState: @unchecked Sendable {
     /// The master meter's level, as a `Double` bit pattern.
     let masterLevelBits = Atomic<UInt64>(RmsMeter.floorDb.bitPattern)
 
+    /// The loop as ``LoopWindow/packed``, 0 for none (loop design §4). One word, so the block
+    /// never reads one end from a newer loop than the other.
+    let loopBits = Atomic<UInt64>(0)
+
     /// Render thread only: where the last block's gain ramp ended.
     var previousSourceGain: Float = 0
+
+    /// Render thread only: the playhead the last rendered block started at, and whether that
+    /// block was the one just before this. The take is read one buffer behind the playhead, and
+    /// through a loop jump "one buffer behind" is the previous block's start, not `playhead -
+    /// frames`.
+    var lastBlockStart = 0
+    var continuous = false
 
     /// Tap thread only. Replaced (with the engine stopped) when the device rate changes.
     var meter = RmsMeter(sampleRate: 48000)
@@ -250,6 +261,13 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
         didSet { updateGains() }
     }
 
+    /// The stretch of the take playback repeats, in seconds, or nil to play through to the end
+    /// (loop design §4). Clamped to the take and converted at the device rate here, and again
+    /// whenever either changes.
+    var loop: Range<Double>? {
+        didSet { applyLoop() }
+    }
+
     init() {
         let rate = engine.outputNode.outputFormat(forBus: 0).sampleRate
         sampleRate = rate > 0 ? rate : 44100
@@ -350,7 +368,22 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
         synthBank.scheduler.seek(toSeconds: 0)
         synthBank.allNotesOff()
 
+        // The window is clamped to the take, so a new take means clamping it again.
+        applyLoop()
+
         retire(retiring)
+    }
+
+    /// Hands the render block the loop as frames at the current rate, clamped to the current
+    /// take; 0 -- no loop -- with no take or a window that does not fit it.
+    private func applyLoop() {
+        let window = loop.flatMap { seconds in
+            currentSource.flatMap { source in
+                LoopWindow(seconds: seconds, sampleRate: sampleRate, frameCount: source.frameCount)
+            }
+        }
+
+        state.loopBits.store(window?.packed ?? 0, ordering: .relaxed)
     }
 
     /// A wrap the poll has not picked up yet is superseded by an explicit seek or a new take: the
@@ -549,6 +582,9 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
         if let source = currentSource, source.deviceRate != sampleRate {
             setSource(source)
         }
+
+        // The loop is frames at the device rate, so a new rate means converting it again.
+        applyLoop()
 
         refreshInputTap()
 
@@ -982,6 +1018,7 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
 
             let playing = state.playing.load(ordering: .relaxed)
             let source = state.source.pointee?.takeUnretainedValue()
+            let loop = LoopWindow(packed: state.loopBits.load(ordering: .relaxed))
 
             let startSeconds = Double(playhead) / rate
             var endSeconds = startSeconds
@@ -992,7 +1029,9 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
                 let total = source.frameCount
                 // One buffer behind the playhead: the MIDI for [playhead, playhead + buffer) is
                 // being scheduled a cycle ahead, and this delay is what keeps the two aligned.
-                let readStart = playhead - frames
+                // Through a loop jump the buffer behind is the previous block's start, which is
+                // the same thing until the jump and the right thing after it (loop design §4).
+                let readStart = seek < 0 && state.continuous ? state.lastBlockStart : playhead - frames
                 let step = (targetGain - startGain) / Float(frames)
                 let outputs = min(buffers.count, 2)
 
@@ -1006,24 +1045,40 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
                     var gain = startGain
 
                     for i in 0..<frames {
-                        let index = readStart + i
+                        // A read window that crosses the loop's end takes the rest from its start.
+                        let index = loop?.wrapped(readStart + i) ?? (readStart + i)
                         let sample = index >= 0 && index < total ? base[index] : 0
                         output[i] = sample * gain
                         gain += step
                     }
                 }
 
-                playhead += frames
-                endSeconds = Double(playhead) / rate
+                state.lastBlockStart = playhead
+                state.continuous = true
                 rendered = true
 
-                // `playhead - frames` is where this block started: once that is at or past the end,
-                // every sample has been handed over and the take is done.
-                if playhead - frames >= total {
-                    playhead = 0
-                    state.playing.store(false, ordering: .relaxed)
-                    wrapped = true
+                if let loop {
+                    // The synth stops at the loop's end; the playhead carries the overshoot past
+                    // its start. The end of the take is never reached: the jump comes first.
+                    let advanced = loop.advance(from: playhead, frames: frames)
+                    endSeconds = Double(advanced.renderEnd) / rate
+                    playhead = advanced.next
+                } else {
+                    playhead += frames
+                    endSeconds = Double(playhead) / rate
+
+                    // `playhead - frames` is where this block started: once that is at or past
+                    // the end, every sample has been handed over and the take is done.
+                    if playhead - frames >= total {
+                        playhead = 0
+                        state.playing.store(false, ordering: .relaxed)
+                        wrapped = true
+                    }
                 }
+            } else {
+                // A block that did not render breaks the run: the next one reads a buffer behind
+                // wherever the playhead is by then.
+                state.continuous = false
             }
 
             state.playheadFrames.store(playhead, ordering: .relaxed)
