@@ -250,6 +250,8 @@ extension ScoreRenderer {
         var unplayable: CGColor
         var cursor: CGColor
         var selectionEdge: CGColor
+        /// The line around a page, so the sheet reads against the surround; nil draws none.
+        var pageEdge: CGColor?
 
         static let screen = Style(paper: TimelinePalette.cg(Theme.bgRoot),
                                   ink: TimelinePalette.cg(Theme.textBright),
@@ -257,15 +259,18 @@ extension ScoreRenderer {
                                   faint: TimelinePalette.cg(Theme.textFaint),
                                   unplayable: TimelinePalette.cg(Theme.warn),
                                   cursor: TimelinePalette.cg(Theme.accent),
-                                  selectionEdge: TimelinePalette.cg(Theme.accent))
+                                  selectionEdge: TimelinePalette.cg(Theme.accent),
+                                  pageEdge: TimelinePalette.cg(Theme.textScale))
 
-        /// For paper: the unplayable warning and the accent stay the screen's.
+        /// For paper: the unplayable warning and the accent stay the screen's; the page has no
+        /// surround to read against, so no edge.
         static let print = Style(paper: CGColor(gray: 1, alpha: 1),
                                  ink: CGColor(gray: 0, alpha: 1),
                                  line: CGColor(gray: 0.45, alpha: 1),
                                  faint: CGColor(gray: 0.55, alpha: 1),
                                  unplayable: TimelinePalette.cg(Theme.warn),
                                  cursor: TimelinePalette.cg(Theme.accent),
-                                 selectionEdge: TimelinePalette.cg(Theme.accent))
+                                 selectionEdge: TimelinePalette.cg(Theme.accent),
+                                 pageEdge: nil)
     }
 }
