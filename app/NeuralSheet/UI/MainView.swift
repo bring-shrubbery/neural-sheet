@@ -68,21 +68,34 @@ struct MainView: View {
                 Sidebar(model: model)
 
                 VStack(spacing: 0) {
-                    if model.workspace == .edit {
-                        EditToolbar(model: model)
-                    } else {
+                    // The Edit toolbar serves the Score tab too: the grid and the key are the
+                    // score's parameters (score design §1).
+                    if model.workspace == .transcribe {
                         Toolbar(model: model)
+                    } else {
+                        EditToolbar(model: model)
                     }
 
-                    TimelineView(model: model)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .overlay {
-                            if model.workspace == .transcribe, model.needsModelNotice {
-                                NoModelNotice(model: model)
-                                    .padding(.leading, TimelineMetrics.gutterWidth)
-                                    .padding(.top, TimelineMetrics.pianoRollY)
-                            }
+                    // The timeline stays in the hierarchy under the score, so its zoom, scroll
+                    // and pitch range survive a visit to the Score tab.
+                    ZStack {
+                        TimelineView(model: model)
+                            .opacity(model.workspace == .score ? 0 : 1)
+                            .allowsHitTesting(model.workspace != .score)
+                            .accessibilityHidden(model.workspace == .score)
+
+                        if model.workspace == .score {
+                            ScoreTabView(model: model)
                         }
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .overlay {
+                        if model.workspace == .transcribe, model.needsModelNotice {
+                            NoModelNotice(model: model)
+                                .padding(.leading, TimelineMetrics.gutterWidth)
+                                .padding(.top, TimelineMetrics.pianoRollY)
+                        }
+                    }
 
                     StatusBar(model: model)
                 }

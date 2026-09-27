@@ -1,8 +1,8 @@
 import NeuralSheetCore
 import SwiftUI
 
-/// The workspace tabs under the top bar (design §3.1): TRANSCRIBE, and EDIT once there is a
-/// finished transcription. Room to the right for more.
+/// The workspace tabs under the top bar (design §3.1): TRANSCRIBE, and EDIT and SCORE (score
+/// design) once there is a finished transcription.
 struct TabStrip: View {
     let model: AppModel
 
@@ -26,6 +26,11 @@ struct TabStrip: View {
                       isActive: model.workspace == .edit,
                       isEnabled: model.canEdit,
                       tooltip: model.canEdit ? nil : "Transcribe the audio first") { model.setWorkspace(.edit) }
+
+            TabButton(title: "SCORE",
+                      isActive: model.workspace == .score,
+                      isEnabled: model.canEdit,
+                      tooltip: model.canEdit ? nil : "Transcribe the audio first") { model.setWorkspace(.score) }
 
             Spacer(minLength: 0)
         }
