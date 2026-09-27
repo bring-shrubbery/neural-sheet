@@ -3,37 +3,72 @@ import Foundation
 /// Where a pitch sits on a staff (score design §3): diatonic steps from a clef's bottom line,
 /// the key signature's positions, and which accidental a spelled note shows under a key.
 public enum Clef: Equatable, Sendable {
-    case treble, bass, percussion
+    case treble, bass, alto, tenor, treble8vb, bass8vb, percussion
 
-    /// The diatonic number of the bottom line: E4 for the treble staff, G2 for the bass; the
-    /// percussion staff places its display positions as the treble does.
+    /// The diatonic number of the bottom line: E4 for the treble staff, G2 for the bass, F3 for
+    /// the alto, D3 for the tenor; the octave clefs the same as their parents (the octave is in
+    /// the part's transposition); the percussion staff places its display positions as the
+    /// treble does.
     var baseline: Int {
         switch self {
-        case .treble, .percussion: ScorePitch.diatonic(step: "E", octave: 4)
-        case .bass: ScorePitch.diatonic(step: "G", octave: 2)
+        case .treble, .treble8vb, .percussion: ScorePitch.diatonic(step: "E", octave: 4)
+        case .bass, .bass8vb: ScorePitch.diatonic(step: "G", octave: 2)
+        case .alto: ScorePitch.diatonic(step: "F", octave: 3)
+        case .tenor: ScorePitch.diatonic(step: "D", octave: 3)
         }
     }
+
+    public var isOctaveDown: Bool { self == .treble8vb || self == .bass8vb }
 
     /// Staff steps from the bottom line (0), a step per line or space, negative below.
     public func step(forStep letter: String, octave: Int) -> Int {
         ScorePitch.diatonic(step: letter, octave: octave) - baseline
     }
 
-    /// The staff steps the key signature's accidentals sit on, in signature order.
+    /// The staff steps the key signature's accidentals sit on, in signature order: the treble
+    /// and bass staves' conventional places, the C clefs' letters each at its one step inside
+    /// the staff.
     public func signaturePositions(fifths: Int) -> [Int] {
         guard fifths != 0 else { return [] }
 
         let count = min(abs(fifths), 7)
+        let letters = (fifths > 0 ? ScorePitch.sharpOrder : ScorePitch.flatOrder).prefix(count)
 
-        switch (self, fifths > 0) {
-        case (.bass, true):
-            return ScorePitch.trebleSharps.prefix(count).map { $0 - 2 }
-        case (.bass, false):
-            return ScorePitch.trebleFlats.prefix(count).map { $0 - 2 }
-        case (_, true):
-            return Array(ScorePitch.trebleSharps.prefix(count))
-        case (_, false):
-            return Array(ScorePitch.trebleFlats.prefix(count))
+        switch self {
+        case .treble, .treble8vb, .percussion:
+            return Array((fifths > 0 ? ScorePitch.trebleSharps : ScorePitch.trebleFlats).prefix(count))
+        case .bass, .bass8vb:
+            return (fifths > 0 ? ScorePitch.trebleSharps : ScorePitch.trebleFlats).prefix(count).map { $0 - 2 }
+        case .alto, .tenor:
+            // Each letter's step in the window 2…8, which every letter enters exactly once.
+            return letters.map { letter in
+                let index = ScorePitch.letters.firstIndex(of: letter) ?? 0
+                let raw = (index - baseline % 7 + 7) % 7   // the letter's step in 0…6
+                return raw < 2 ? raw + 7 : raw
+            }
+        }
+    }
+}
+
+extension ClefChoice {
+    /// The staves a choice stands for: the range rule for `automatic`, two for the grand staff.
+    public func resolve(for pitches: [Int]) -> [Clef] {
+        switch self {
+        case .automatic:
+            switch MusicXMLWriter.staffLayout(for: pitches) {
+            case .treble: return [.treble]
+            case .bass: return [.bass]
+            case .grand: return [.treble, .bass]
+            case .percussion: return [.percussion]
+            }
+        case .treble: return [.treble]
+        case .bass: return [.bass]
+        case .grand: return [.treble, .bass]
+        case .alto: return [.alto]
+        case .tenor: return [.tenor]
+        case .treble8vb: return [.treble8vb]
+        case .bass8vb: return [.bass8vb]
+        case .percussion: return [.percussion]
         }
     }
 }

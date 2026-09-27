@@ -23,6 +23,11 @@ public struct MusicalKey: Equatable, Hashable, Codable, Sendable {
         self.mode = mode
     }
 
+    /// The same mode from the tonic `semitones` away: the written key of a transposing part.
+    public func transposed(by semitones: Int) -> MusicalKey {
+        MusicalKey(tonic: tonic + semitones, mode: mode)
+    }
+
     // MARK: - Signature and names
 
     /// The key signature as sharps (positive) or flats (negative). F♯ major is +6, E♭ minor −6.

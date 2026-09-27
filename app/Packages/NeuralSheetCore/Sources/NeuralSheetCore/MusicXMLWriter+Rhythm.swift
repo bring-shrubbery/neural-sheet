@@ -9,6 +9,7 @@ extension MusicXMLWriter {
         var start: Int
         var end: Int
         var pitch: Int
+        var id: NoteID? = nil
     }
 
     /// The quantization step for a grid division, in units; a triplet division is straightened
@@ -27,6 +28,11 @@ extension MusicXMLWriter {
     /// Every note as units, start and end each to the nearest multiple of `quantum`, at least
     /// one quantum long; sorted by start then pitch.
     static func unitNotes(_ notes: [NoteEvent], grid: TempoGrid, quantum: Int) -> [UnitNote] {
+        unitNotes(notes, ids: nil, grid: grid, quantum: quantum)
+    }
+
+    /// ``unitNotes(_:grid:quantum:)`` with the document's ids alongside, where there are any.
+    static func unitNotes(_ notes: [NoteEvent], ids: [NoteID?]?, grid: TempoGrid, quantum: Int) -> [UnitNote] {
         let unitsPerSecond = Double(divisions) / grid.secondsPerBeat
         let step = max(1, quantum)
 
@@ -36,11 +42,12 @@ extension MusicXMLWriter {
             return Int((raw / Double(step)).rounded()) * step
         }
 
-        return notes.map { note in
+        return notes.enumerated().map { index, note in
             let start = units(note.startTime)
             let end = max(units(note.endTime), start + step)
+            let id = ids.flatMap { index < $0.count ? $0[index] : nil }
 
-            return UnitNote(start: start, end: end, pitch: note.pitch)
+            return UnitNote(start: start, end: end, pitch: note.pitch, id: id)
         }
         .sorted { ($0.start, $0.pitch, $0.end) < ($1.start, $1.pitch, $1.end) }
     }

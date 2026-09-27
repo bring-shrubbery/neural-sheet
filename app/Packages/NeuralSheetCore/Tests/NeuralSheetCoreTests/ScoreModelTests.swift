@@ -141,3 +141,106 @@ private extension ScorePiece {
     #expect(abs(score.seconds(atMeasure: 1, units: 24, grid: offsetGrid) - 1.6) < 1e-9)
     #expect(score.seconds(atMeasure: 0, units: 0, grid: offsetGrid) == 0, "measure 1 begins before the take: clamped")
 }
+
+@Test func newClefsHaveTheirBaselines() {
+    #expect(Clef.alto.step(forStep: "F", octave: 3) == 0)
+    #expect(Clef.alto.step(forStep: "C", octave: 4) == 4, "middle C on the alto's middle line")
+    #expect(Clef.tenor.step(forStep: "D", octave: 3) == 0)
+    #expect(Clef.tenor.step(forStep: "C", octave: 4) == 6, "middle C on the tenor's fourth line")
+    #expect(Clef.treble8vb.step(forStep: "E", octave: 4) == 0, "the octave is in the transposition, not the clef")
+    #expect(Clef.bass8vb.step(forStep: "G", octave: 2) == 0)
+    #expect(Clef.treble8vb.isOctaveDown && Clef.bass8vb.isOctaveDown && !Clef.treble.isOctaveDown)
+    // Alto and tenor signatures sit inside the staff, one position per letter.
+    #expect(Clef.alto.signaturePositions(fifths: 1) == [7], "F♯ in the alto's top space")
+    #expect(Clef.tenor.signaturePositions(fifths: -1) == [5], "B♭ in the tenor's third space")
+    #expect(Clef.alto.signaturePositions(fifths: 3).count == 3)
+}
+
+@Test func clefChoicesResolve() {
+    #expect(ClefChoice.automatic.resolve(for: [72, 74]) == [.treble])
+    #expect(ClefChoice.automatic.resolve(for: [40, 43]) == [.bass])
+    #expect(ClefChoice.grand.resolve(for: [60]) == [.treble, .bass])
+    #expect(ClefChoice.alto.resolve(for: [60]) == [.alto])
+    #expect(ClefChoice.treble8vb.resolve(for: [40]) == [.treble8vb])
+    #expect(ClefChoice.percussion.resolve(for: []) == [.percussion])
+}
+
+@Test func keysTranspose() {
+    #expect(MusicalKey(tonic: 0, mode: .major).transposed(by: 2) == MusicalKey(tonic: 2, mode: .major))
+    #expect(MusicalKey(tonic: 0, mode: .minor).transposed(by: 9) == MusicalKey(tonic: 9, mode: .minor))
+    #expect(MusicalKey(tonic: 5, mode: .major).transposed(by: -12) == MusicalKey(tonic: 5, mode: .major))
+}
+
+@Test func aTrumpetPartIsWrittenAToneUp() {
+    var arrangement = ScoreArrangement()
+    var trumpet = PartDisplay()
+    trumpet.transposition = 2
+    arrangement.parts[56] = trumpet
+
+    let notes = [note(60, at: 0, program: 56), note(65, at: 0.5, program: 56)]
+    let score = ScoreDocument.build(notes: notes, grid: grid, key: MusicalKey(tonic: 0, mode: .major), arrangement: arrangement)
+    let part = score.parts[0]
+
+    #expect(part.writtenFifths == 2, "C major sounds; D major is written")
+    #expect(part.display.transposition == 2)
+    let first = part.staves[0].measures[0].pieces[0].notes[0]
+    #expect(first.pitch == 60 && first.writtenPitch == 62)
+    #expect(first.step == -1, "D4 hangs just under the treble staff")
+    #expect(first.accidental == nil)
+    let second = part.staves[0].measures[0].pieces[1].notes[0]
+    #expect(second.writtenPitch == 67 && second.accidental == nil, "G in D major")
+}
+
+@Test func aGuitarPartGetsATabStaffAndKeepsItsIds() {
+    var arrangement = ScoreArrangement()
+    var guitar = PartDisplay()
+    guitar.mode = .both
+    guitar.transposition = 12
+    guitar.clef = .treble8vb
+    guitar.tab = TabTemplate.template(id: "guitar")!.setup(preset: TabTemplate.template(id: "guitar")!.presets[0])
+    guitar.strings = [NoteID(7): 1]
+    arrangement.parts[24] = guitar
+
+    let notes = [note(64, at: 0, program: 24), note(55, at: 0, program: 24), note(38, at: 0.5, program: 24)]
+    let ids: [NoteID?] = [NoteID(7), NoteID(8), NoteID(9)]
+    let score = ScoreDocument.build(notes: notes, ids: ids, grid: grid, key: nil, arrangement: arrangement)
+    let part = score.parts[0]
+
+    #expect(part.staves.map(\.clef) == [.treble8vb])
+    #expect(part.tab?.tuning == [40, 45, 50, 55, 59, 64])
+
+    let chord = part.tab!.measures[0].pieces[0]
+    #expect(chord.notes.map(\.id) == [NoteID(8), NoteID(7)], "ascending pitch, ids carried")
+    #expect(chord.notes[1].placement == .init(string: 1, fret: 19, isPlayable: true), "the manual choice")
+    #expect(chord.notes[0].placement == .init(string: 3, fret: 0, isPlayable: true))
+
+    let low = part.tab!.measures[0].pieces[1]
+    #expect(low.notes[0].placement?.isPlayable == false, "D2 is below the guitar")
+
+    // The notation staff shows the written octave: E4 sounding is written E5.
+    #expect(part.staves[0].measures[0].pieces[0].notes.map(\.writtenPitch) == [67, 76])
+}
+
+@Test func tabOnlyAndHiddenParts() {
+    var arrangement = ScoreArrangement()
+    var bass = PartDisplay()
+    bass.mode = .tab
+    bass.tab = TabTemplate.template(id: "bass")!.setup(preset: TabTemplate.template(id: "bass")!.presets[0])
+    arrangement.parts[33] = bass
+    var hidden = PartDisplay()
+    hidden.isHidden = true
+    arrangement.parts[0] = hidden
+
+    let score = ScoreDocument.build(notes: [note(43, at: 0, program: 33), note(60, at: 0)], grid: grid, key: nil, arrangement: arrangement)
+    #expect(score.parts.map(\.program) == [33], "the piano is hidden")
+    #expect(score.parts[0].staves.isEmpty)
+    #expect(score.parts[0].tab != nil)
+    #expect(score.measureCount == 1)
+}
+
+@Test func theOldBuildStillWorks() {
+    let score = ScoreDocument.build(notes: [note(60, at: 0)], grid: grid, key: nil)
+    #expect(score.parts[0].display == PartDisplay())
+    #expect(score.parts[0].tab == nil)
+    #expect(score.parts[0].staves[0].measures[0].pieces[0].notes[0].id == nil)
+}
