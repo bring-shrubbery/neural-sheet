@@ -52,7 +52,7 @@ Non-goals
 | The staff space on a page | 7 pt, so a page holds what a printed part does; the continuous view keeps its 8 authored points. |
 | Metadata | Title (default: the take's name, or "Untitled"), subtitle, composer, arranger, copyright (the footer); switches for measure numbers, part names and the tempo mark, all on by default. |
 | PDF | One PDF context, one page per laid-out page, the same renderer as the view, at 72 pt per inch. Save panel titled "Export PDF" in the Music folder, `<name>_NNTranscription.pdf`. |
-| Toolbar | A `ScoreToolbar` on the Score tab: Continuous / Pages, A4 / Letter, KEY, TEMPO, Sheet…, Export PDF. The Edit toolbar stays on the Edit tab. |
+| Toolbar | A `ScoreToolbar` on the Score tab: Continuous / Pages, A4 / Letter, KEY, TEMPO, Parts, Sheet…, Export PDF. The Edit toolbar stays on the Edit tab. |
 | Compatibility | `arrangement` is one optional key the previous version ignores; the Score tab still writes `edit` as its saved workspace. |
 
 ## 3. Core
@@ -238,7 +238,8 @@ each would need, unplayable ones red.
 
 - `ScoreToolbar`: Continuous / Pages as a two-segment `FlatButton` pair; A4 / Letter likewise,
   enabled in Pages; the KEY and TEMPO controls extracted from `EditToolbar` into a shared
-  `GridControls` view; `Sheet…` opening the metadata card; `Export PDF`.
+  `GridControls` view; a `Parts` menu listing every instrument in the mix, ticked when shown;
+  `Sheet…` opening the metadata card; `Export PDF`.
 - `PartDisplayCard`: the part's chip and name; rows Display (Notation / Tab / Both), Clef
   (menu), Transposition (menu of presets plus a semitone field), Template (menu; "None"), Tuning
   (menu of the template's presets plus "Custom…", which shows one pitch field per string in tab
@@ -272,3 +273,20 @@ each would need, unplayable ones red.
 5. **app**: the PDF export and the menu item.
 6. **core + app**: the MusicXML writer follows the arrangement.
 7. **docs**: AGENTS.md departures, the changelog, the score design's note.
+
+## 10. Decisions made during implementation
+
+- The alto, tenor and octave clefs are drawn with Apple Symbols' C clef (U+1D121, at its SMuFL
+  extents) and, for an octave clef, the parent glyph with a small "8" beneath it; flat key
+  signatures on the alto clef take the treble pattern one step down.
+- A part name wider than the left margin falls back to the part's abbreviation on the first
+  system too, not only on the systems after it.
+- The Score toolbar has a Parts menu listing every instrument in the mix, ticked when shown,
+  because a hidden part loses its name in the score and with it the card that would show it
+  again.
+- Pagination keeps two staff spaces of slack above and below a system, so ink that overhangs
+  the staff (ledger lines, a high clef, a low stem) stays out of the header and footer bands.
+- The renderer takes a `Style`: the screen's dark palette in the Score tab, a print palette
+  (white paper, black ink) in the PDF, which also draws no page edge.
+- In the MusicXML export a part on an octave clef writes its pitches for that clef and drops
+  the octave from `<transpose>`, since readers already shift a pitch for `clef-octave-change`.
