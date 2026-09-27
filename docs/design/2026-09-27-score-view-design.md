@@ -36,6 +36,8 @@ Non-goals
 - Accidental memory within a bar. Every altered note carries its accidental; a natural appears
   where the key would alter the step. Unambiguous, if busier than an engraver would set it.
 
+*Since the arrangement design (`2026-09-27-score-arrangement-design.md`): per-part display, tablature, pages and a PDF export.*
+
 ## 2. Decisions
 
 | Question | Decision |
