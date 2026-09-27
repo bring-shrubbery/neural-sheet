@@ -218,12 +218,12 @@ struct ScoreLayout {
         return accidentals.keys.sorted().map { (units: $0, accidentals: accidentals[$0] ?? 0) }
     }
 
-    /// How wide a stretch of `units` needs to be: a 32nd gets 2.2 spaces, and each doubling 1.2
+    /// How wide a stretch of `units` needs to be: a 32nd gets 1.6 spaces, and each doubling 0.9
     /// more, so long notes take room without dwarfing the short ones.
     private func gapWidth(units: Int) -> CGFloat {
         let ratio = max(1, Double(units) / 3)
 
-        return sp * CGFloat(2.2 + 1.2 * log2(ratio))
+        return sp * CGFloat(1.6 + 0.9 * log2(ratio))
     }
 
     private func naturalWidth(measure: Int, in document: ScoreDocument) -> CGFloat {

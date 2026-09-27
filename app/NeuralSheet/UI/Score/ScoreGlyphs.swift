@@ -27,6 +27,9 @@ enum ScoreGlyphs {
 
         ctx.saveGState()
         ctx.setFillColor(colour)
+        // AppKit leaves a flipped text matrix in a flipped view's context; the glyph is placed
+        // through the CTM alone here.
+        ctx.textMatrix = .identity
         // The view is flipped; CoreText draws y-up. Map the glyph's ink box onto the target.
         ctx.translateBy(x: target.minX, y: target.maxY)
         ctx.scaleBy(x: target.width / bounds.width, y: -target.height / bounds.height)

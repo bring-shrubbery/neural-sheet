@@ -117,7 +117,9 @@ final class ScoreView: NSView {
             if row.staffIndex == 0 {
                 let colour = TimelinePalette.cg(Instruments.info(forProgram: part.program).colour, alpha: 1)
                 let label = isFirst ? part.name : part.abbreviation
-                let centreY = row.bottomLineY - 2 * sp - CGFloat(part.staves.count - 1) * (4 + ScoreLayout.staffGap) * sp / 2
+                // The middle of the part's staves: the first staff's middle, then half the way
+                // down to the last.
+                let centreY = row.bottomLineY - 2 * sp + CGFloat(part.staves.count - 1) * (4 + ScoreLayout.staffGap) * sp / 2
                 TimelineText.draw(label, font: nameFont, colour: colour,
                                   in: CGRect(x: 0, y: centreY - sp, width: system.frame.minX - 0.6 * sp, height: 2 * sp),
                                   anchor: .centredRight, context: ctx)
@@ -214,10 +216,10 @@ final class ScoreView: NSView {
 
         // Seconds in a chord: a note a step above a placed note moves right of it.
         var shifted: [Bool] = []
-        var previousStep = Int.min
+        var previousStep: Int?
         var previousShifted = false
         for note in piece.notes {
-            let shift = note.step - previousStep == 1 && !previousShifted
+            let shift = previousStep.map { note.step - $0 == 1 } == true && !previousShifted
             shifted.append(shift)
             previousStep = note.step
             previousShifted = shift
