@@ -120,9 +120,10 @@ public struct ModelStore: Sendable {
         Set(ModelSize.allCases.filter { installedPath(for: $0) != nil })
     }
 
-    /// The size to transcribe with: the preference, else the default, else anything installed.
+    /// The size to transcribe with: the preference, else the default, else any transcription
+    /// checkpoint installed. Never the stems.
     public func resolve(preferred: ModelSize?) -> ModelSize? {
-        if let preferred, installedPath(for: preferred) != nil {
+        if let preferred, ModelSize.transcription.contains(preferred), installedPath(for: preferred) != nil {
             return preferred
         }
 
@@ -130,7 +131,7 @@ public struct ModelStore: Sendable {
             return ModelManifest.defaultSize
         }
 
-        return ModelSize.allCases.first { installedPath(for: $0) != nil }
+        return ModelSize.transcription.first { installedPath(for: $0) != nil }
     }
 
     /// Removes partial files named for another digest: a build pinned to other weights started them

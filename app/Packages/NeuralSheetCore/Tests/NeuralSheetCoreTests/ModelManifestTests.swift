@@ -33,7 +33,9 @@ private func makeFile(at url: URL, size: Int64) throws {
 // MARK: - ModelSize
 
 @Test func modelSizeDisplayNamesAndHints() {
-    #expect(ModelSize.allCases == [.small, .medium, .large])
+    #expect(ModelSize.allCases == [.small, .medium, .large, .stems])
+    #expect(ModelSize.transcription == [.small, .medium, .large])
+    #expect(ModelSize.stems.displayName == "Stems")
     #expect(ModelSize.small.displayName == "Small")
     #expect(ModelSize.medium.displayName == "Medium")
     #expect(ModelSize.large.displayName == "Large")
@@ -87,6 +89,28 @@ private func makeFile(at url: URL, size: Int64) throws {
 
 @Test func manifestAllCoversEverySize() {
     #expect(ModelManifest.all.map(\.size) == ModelSize.allCases)
+}
+
+@Test func theStemsWeightsArePinnedToTheirDataset() {
+    let spec = ModelManifest.spec(for: .stems)
+    #expect(spec.fileName == "ggml-model-htdemucs-4s-f16.bin")
+    #expect(spec.byteSize == 83_994_361)
+    #expect(spec.sha256Hex.hasPrefix("72b17c42"))
+    #expect(spec.url.absoluteString == "https://huggingface.co/datasets/Retrobear/demucs.cpp/resolve/8f58ac0491bbea657275bcd3e38af1ab3a27bfc9/ggml-model-htdemucs-4s-f16.bin")
+    #expect(spec.partFileName == "ggml-model-htdemucs-4s-f16.bin.72b17c42.part")
+}
+
+@Test func theStoreNeverTranscribesWithTheStems() throws {
+    try withTempPaths { paths in
+        let store = ModelStore(paths: paths)
+        try paths.ensureDirectories()
+        try makeFile(at: paths.models.appendingPathComponent(ModelManifest.spec(for: .stems).fileName),
+                     size: ModelManifest.spec(for: .stems).byteSize)
+
+        #expect(store.installed() == [.stems])
+        #expect(store.resolve(preferred: .stems) == nil)
+        #expect(store.resolve(preferred: nil) == nil)
+    }
 }
 
 // MARK: - AppPaths

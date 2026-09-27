@@ -15,6 +15,9 @@ public struct GlobalSettings: Codable, Equatable, Sendable {
     public var editorScale: Double = 1.0
     public var tooltipsVisible = true
     public var midiOverflowMode: MidiOverflowMode = .reuseChannels
+    /// The Transcribe toolbar's Stems toggle (stem separation design §2): separate the take
+    /// first and transcribe each stem with its own instruments.
+    public var separateStems = false
 
     /// Recent projects the user removed from the welcome window's list, by path: the system's
     /// recent-documents list has no per-item removal, so the app filters it through this. A
@@ -26,12 +29,14 @@ public struct GlobalSettings: Codable, Equatable, Sendable {
         editorScale: Double = 1.0,
         tooltipsVisible: Bool = true,
         midiOverflowMode: MidiOverflowMode = .reuseChannels,
+        separateStems: Bool = false,
         hiddenRecentProjects: [String] = []
     ) {
         self.modelSize = modelSize
         self.editorScale = editorScale
         self.tooltipsVisible = tooltipsVisible
         self.midiOverflowMode = midiOverflowMode
+        self.separateStems = separateStems
         self.hiddenRecentProjects = hiddenRecentProjects
     }
 
@@ -61,7 +66,7 @@ public struct GlobalSettings: Codable, Equatable, Sendable {
     // MARK: - Codable
 
     private enum CodingKeys: String, CodingKey {
-        case modelSize, editorScale, tooltipsVisible, midiOverflowMode, hiddenRecentProjects
+        case modelSize, editorScale, tooltipsVisible, midiOverflowMode, separateStems, hiddenRecentProjects
     }
 
     /// Every key falls back to its default, so a file written by a version that did not have one
@@ -77,6 +82,7 @@ public struct GlobalSettings: Codable, Equatable, Sendable {
         midiOverflowMode =
             try container.decodeIfPresent(MidiOverflowMode.self, forKey: .midiOverflowMode)
             ?? defaults.midiOverflowMode
+        separateStems = try container.decodeIfPresent(Bool.self, forKey: .separateStems) ?? defaults.separateStems
         hiddenRecentProjects =
             try container.decodeIfPresent([String].self, forKey: .hiddenRecentProjects)
             ?? defaults.hiddenRecentProjects

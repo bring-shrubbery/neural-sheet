@@ -1,10 +1,16 @@
 import Foundation
 
-/// One of the three transcription checkpoints the app can download.
+/// One of the models the app can download: the three transcription checkpoints, and the stem
+/// separation weights (stem separation design §2), which share the store, the downloader and
+/// the Settings rows but are never transcribed with.
 public enum ModelSize: String, CaseIterable, Codable, Sendable {
     case small
     case medium
     case large
+    case stems
+
+    /// The sizes the transcriber chooses from, in order.
+    public static let transcription: [ModelSize] = [.small, .medium, .large]
 
     /// The name shown in the model panel.
     public var displayName: String {
@@ -12,6 +18,7 @@ public enum ModelSize: String, CaseIterable, Codable, Sendable {
         case .small: "Small"
         case .medium: "Medium"
         case .large: "Large"
+        case .stems: "Stems"
         }
     }
 
@@ -21,6 +28,7 @@ public enum ModelSize: String, CaseIterable, Codable, Sendable {
         case .small: "Fastest"
         case .medium: "Recommended"
         case .large: "Largest, slowest"
+        case .stems: "Separates drums, bass and vocals first"
         }
     }
 }
@@ -64,6 +72,11 @@ public enum ModelManifest {
     /// The size used when nothing else is known.
     public static let defaultSize: ModelSize = .medium
 
+    /// Where the stem separation weights come from: the demucs.cpp ggml conversions, pinned.
+    public static let stemsRepo = "datasets/Retrobear/demucs.cpp"
+    public static let stemsRevision = "8f58ac0491bbea657275bcd3e38af1ab3a27bfc9"
+    public static let stemsLicenceURL = URL(string: "https://huggingface.co/datasets/Retrobear/demucs.cpp")!
+
     public static func url(forFileName fileName: String) -> URL {
         // Constant components, so this cannot fail.
         URL(string: "https://\(host)/\(repo)/resolve/\(revision)/\(repoDirectory)/\(fileName)")!
@@ -83,6 +96,11 @@ public enum ModelManifest {
             ModelSpec(
                 size: .large, fileName: "muscriptor-large-f16.gguf", byteSize: 2_739_142_176,
                 sha256Hex: "35a750fb1ab1e77195cdc2c0b9b4aeea2f4d59f11f729f02af9920c4854ef72e")
+        case .stems:
+            ModelSpec(
+                size: .stems, fileName: "ggml-model-htdemucs-4s-f16.bin", byteSize: 83_994_361,
+                sha256Hex: "72b17c42d308982ddb5069bc3bf48b81a5aac4cb6516e4366c0fa7cef6df0064",
+                url: URL(string: "https://\(host)/\(stemsRepo)/resolve/\(stemsRevision)/ggml-model-htdemucs-4s-f16.bin")!)
         }
     }
 
