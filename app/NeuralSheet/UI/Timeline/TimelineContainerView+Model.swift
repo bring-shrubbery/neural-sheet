@@ -38,6 +38,7 @@ extension TimelineContainerView {
             _ = model.editor.tool
             _ = model.editor.range
             _ = model.editor.snapEnabled
+            _ = model.editor.key
             _ = model.regionJob
         } onChange: { [weak self] in
             // Called before the new value lands, from whichever context wrote it: the read has to
@@ -78,7 +79,8 @@ extension TimelineContainerView {
                            tool: model.editor.tool,
                            range: model.editor.range,
                            snapEnabled: model.editor.snapEnabled,
-                           regionProgress: model.regionJob?.progress)
+                           regionProgress: model.regionJob?.progress,
+                           key: model.editor.key)
         let old = snapshot
         let first = !hasSynced
         // The document's identified notes, or the run's placeholders (ids nothing hit-tests).
@@ -110,6 +112,12 @@ extension TimelineContainerView {
             ruler.grid = new.grid
             roll.grid = new.grid
             ruler.needsDisplay = true
+            roll.needsDisplay = true
+        }
+
+        // Both tabs: the key colours the lanes wherever the roll is.
+        if first || new.key != old.key {
+            roll.key = new.key
             roll.needsDisplay = true
         }
 

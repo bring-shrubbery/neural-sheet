@@ -40,6 +40,8 @@ enum TimelinePalette {
 
     /// `PianoRoll::_drawLanes` while there are no notes: the lanes at 55 %.
     static let laneWhiteEmpty = cg(Theme.laneWhite, alpha: 0.55)
+    /// Key design §5: the tonic's lanes, a wash over the light lane.
+    static let laneTonic = cg(Theme.accent, alpha: 0.10)
     static let laneBlackEmpty = cg(Theme.laneBlack, alpha: 0.55)
     static let divOctaveEmpty = cg(Theme.divOctave, alpha: 0.55)
 

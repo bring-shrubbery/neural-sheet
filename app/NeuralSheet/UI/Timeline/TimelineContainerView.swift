@@ -98,6 +98,7 @@ final class TimelineContainerView: NSView {
         var range: Range<Double>?
         var snapEnabled = true
         var regionProgress: Float?
+        var key: MusicalKey?
     }
 
     var snapshot = Snapshot()

@@ -24,6 +24,10 @@ final class PianoRollView: NSView {
     /// the caller decides.
     var grid: TempoGrid?
 
+    /// The project's key, whose scale colours the lanes in both tabs (key design §5); nil
+    /// colours them by key colour. Whole-view repaint: the caller decides.
+    var key: MusicalKey?
+
     /// The click is a seek; the container owns the model.
     var onSeek: ((Double) -> Void)?
 
@@ -243,7 +247,9 @@ final class PianoRollView: NSView {
     }
 
     /// `PianoRoll::_drawLanes`: `laneWhite` / `laneBlack` by key colour, held back to 55 % while
-    /// there is nothing on them, and a 1 px `divOctave` separator under every C.
+    /// there is nothing on them, and a 1 px `divOctave` separator under every C. With a key set
+    /// (key design §5) the lanes go by the scale instead: in-scale light, out-of-scale dark, the
+    /// tonic's washed with the accent.
     private func drawLanes(_ ctx: CGContext, in dirtyRect: CGRect) {
         let k = geometry.scale
         let range = geometry.pitchRange
@@ -259,12 +265,16 @@ final class PianoRollView: NSView {
 
             guard laneRect.intersects(dirtyRect) else { continue }
 
-            let white = !KeyboardLayout.isBlack(note)
+            let white = key.map { $0.contains(pitch: note) } ?? !KeyboardLayout.isBlack(note)
             let colour = empty
                 ? (white ? TimelinePalette.laneWhiteEmpty : TimelinePalette.laneBlackEmpty)
                 : (white ? TimelinePalette.laneWhite : TimelinePalette.laneBlack)
 
             ctx.fill(laneRect, colour)
+
+            if let key, key.isTonic(pitch: note) {
+                ctx.fill(laneRect, TimelinePalette.laneTonic)
+            }
 
             // An octave separator on each C, which is the only thing standing in for the vertical
             // grid the Transcribe tab deliberately does without.

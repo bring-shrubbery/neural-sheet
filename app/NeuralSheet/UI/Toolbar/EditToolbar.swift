@@ -13,6 +13,10 @@ struct EditToolbar: View {
     @Environment(\.uiScale) private var k
     @State private var divisionMenu = PopupMenuPresenter()
     @State private var divisionAnchor: NSView?
+    @State private var tonicMenu = PopupMenuPresenter()
+    @State private var tonicAnchor: NSView?
+    @State private var modeMenu = PopupMenuPresenter()
+    @State private var modeAnchor: NSView?
 
     private typealias Metrics = Toolbar.Metrics
 
@@ -54,8 +58,24 @@ struct EditToolbar: View {
 
                     labelButton("Tap", tooltip: "Tap in time with playback to set the tempo | t", action: model.tap)
 
-                    labelButton("Detect", tooltip: "Find the tempo and the downbeat in the audio",
+                    labelButton("Detect", tooltip: "Find the tempo, the downbeat and the key",
                                 isEnabled: !model.isDetectingTempo, action: model.detectTempo)
+                }
+
+                // The key (key design §5): a tonic, then a mode once there is one.
+                HStack(spacing: s(6)) {
+                    pillLabel("KEY")
+
+                    labelButton(editor.key?.tonicName ?? "—", tooltip: "The project's key, or none") {
+                        showTonicMenu()
+                    }
+                    .background(AnchorCatcher { tonicAnchor = $0 })
+
+                    labelButton(editor.key?.mode.name.capitalized ?? "Major", tooltip: "Major or minor",
+                                isEnabled: editor.key != nil) {
+                        showModeMenu()
+                    }
+                    .background(AnchorCatcher { modeAnchor = $0 })
                 }
 
                 labelButton("Quantize", tooltip: "Quantize selection (⌘U)", action: model.quantizeSelectionOrAll)
@@ -148,6 +168,51 @@ struct EditToolbar: View {
         TrackedLabel(string: text, em: Fonts.Tracking.pillLabel, pointSize: Fonts.Size.pillLabel,
                      font: Fonts.pillLabel(k), scale: k)
             .foregroundStyle(Theme.textLabel)
+    }
+
+    /// The tonic menu under its button: None, then the twelve pitch classes, the current one
+    /// ticked.
+    private func showTonicMenu() {
+        guard let anchor = tonicAnchor else { return }
+
+        let menu = tonicMenu
+        let model = model
+        let titles = ["None"] + (0..<12).map(MusicalKey.tonicMenuName)
+        let width = PopupMenuPresenter.width(forTitles: titles, scale: k)
+
+        menu.show(from: anchor, width: width, scale: k) {
+            MenuRow(title: "None", isTicked: model.editor.key == nil) {
+                menu.dismiss()
+                model.setKeyTonic(nil)
+            }
+
+            MenuSeparator()
+
+            ForEach(0..<12, id: \.self) { pitchClass in
+                MenuRow(title: MusicalKey.tonicMenuName(pitchClass), isTicked: model.editor.key?.tonic == pitchClass) {
+                    menu.dismiss()
+                    model.setKeyTonic(pitchClass)
+                }
+            }
+        }
+    }
+
+    /// The mode menu under its button.
+    private func showModeMenu() {
+        guard let anchor = modeAnchor else { return }
+
+        let menu = modeMenu
+        let model = model
+        let width = PopupMenuPresenter.width(forTitles: ["Major", "Minor"], scale: k)
+
+        menu.show(from: anchor, width: width, scale: k) {
+            ForEach(MusicalKey.Mode.allCases, id: \.self) { mode in
+                MenuRow(title: mode.name.capitalized, isTicked: model.editor.key?.mode == mode) {
+                    menu.dismiss()
+                    model.setKeyMode(mode)
+                }
+            }
+        }
     }
 
     /// The division menu under its button: every `GridDivision`, the current one ticked.
