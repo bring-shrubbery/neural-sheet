@@ -41,8 +41,26 @@ private nonisolated final class RenderState: @unchecked Sendable {
     /// never reads one end from a newer loop than the other.
     let loopBits = Atomic<UInt64>(0)
 
+    /// The playback speed as a `Float` bit pattern, 1 for the take's own (speed design §4).
+    let speedBits = Atomic<UInt32>(Float(1).bitPattern)
+
+    /// Render thread only: the playhead to the fraction of a frame. ``playheadFrames`` is its
+    /// rounding, published for the main thread; at any speed but 1 a block covers a fractional
+    /// number of take frames and the fraction has to be kept somewhere.
+    var playheadExact = 0.0
+
     /// Render thread only: where the last block's gain ramp ended.
     var previousSourceGain: Float = 0
+
+    /// Render thread only: the stretch at any speed but 1, and whether the previous block used
+    /// it (so it carries on rather than being reset). Replaced with the engine stopped when the
+    /// rate changes. The scratch takes the stretcher's second channel when the output has one.
+    var stretcher = TimeStretcher(sampleRate: 48000, maxBlockFrames: RenderState.maxBlockFrames)
+    var stretching = false
+    let stretchScratch = UnsafeMutableBufferPointer<Float>.allocate(capacity: RenderState.maxBlockFrames)
+
+    /// The largest block the stretch path serves; a bigger one is silence rather than an overrun.
+    static let maxBlockFrames = 8192
 
     /// Render thread only: the playhead the last rendered block started at, and whether that
     /// block was the one just before this. The take is read one buffer behind the playhead, and
@@ -60,12 +78,14 @@ private nonisolated final class RenderState: @unchecked Sendable {
     init() {
         source.initialize(to: nil)
         meterScratch.initialize(repeating: 0)
+        stretchScratch.initialize(repeating: 0)
     }
 
     deinit {
         source.deinitialize(count: 1)
         source.deallocate()
         meterScratch.deallocate()
+        stretchScratch.deallocate()
     }
 
     /// Tap thread. Folds the master mixer's output to mono and pushes it into the meter.
@@ -268,6 +288,15 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
         didSet { applyLoop() }
     }
 
+    /// How fast the take plays, its pitch unchanged: 0.5 is half speed (speed design §4). The
+    /// MIDI clock follows it. Clamped to what the stretch handles.
+    var speed: Double = 1 {
+        didSet {
+            let clamped = speed.isFinite ? min(max(speed, TimeStretcher.minSpeed), TimeStretcher.maxSpeed) : 1
+            state.speedBits.store(Float(clamped).bitPattern, ordering: .relaxed)
+        }
+    }
+
     init() {
         let rate = engine.outputNode.outputFormat(forBus: 0).sampleRate
         sampleRate = rate > 0 ? rate : 44100
@@ -364,7 +393,9 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
 
         supersedePendingWrap()
         state.playheadFrames.store(0, ordering: .relaxed)
-        state.pendingSeek.store(-1, ordering: .relaxed)
+        // As a seek rather than a store into the frames alone: the block keeps the exact
+        // position in a field of its own, and only a seek reaches it.
+        state.pendingSeek.store(0, ordering: .relaxed)
         synthBank.scheduler.seek(toSeconds: 0)
         synthBank.allNotesOff()
 
@@ -476,6 +507,9 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
         else { return }
 
         state.meter = RmsMeter(sampleRate: sampleRate)
+        // Its windows are seconds, so a new rate means new buffers. The engine is stopped.
+        state.stretcher = TimeStretcher(sampleRate: sampleRate, maxBlockFrames: RenderState.maxBlockFrames)
+        state.stretching = false
 
         let node = AVAudioSourceNode(format: format, renderBlock: makeRenderBlock())
         sourceNode = node
@@ -1013,75 +1047,124 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
             state.previousSourceGain = targetGain
 
             let seek = state.pendingSeek.exchange(-1, ordering: .relaxed)
-            var playhead = state.playheadFrames.load(ordering: .relaxed)
-            if seek >= 0 { playhead = seek }
+            var playhead = state.playheadExact
+            if seek >= 0 { playhead = Double(seek) }
 
             let playing = state.playing.load(ordering: .relaxed)
             let source = state.source.pointee?.takeUnretainedValue()
             let loop = LoopWindow(packed: state.loopBits.load(ordering: .relaxed))
+            let speed = Double(Float(bitPattern: state.speedBits.load(ordering: .relaxed)))
+            // The take frames this block covers: `frames` at the take's own speed.
+            let span = Double(frames) * speed
 
-            let startSeconds = Double(playhead) / rate
+            let startSeconds = playhead / rate
             var endSeconds = startSeconds
             var rendered = false
             var wrapped = false
 
             if playing, let source, source.frameCount > 0, frames > 0 {
                 let total = source.frameCount
-                // One buffer behind the playhead: the MIDI for [playhead, playhead + buffer) is
-                // being scheduled a cycle ahead, and this delay is what keeps the two aligned.
-                // Through a loop jump the buffer behind is the previous block's start, which is
-                // the same thing until the jump and the right thing after it (loop design §4).
-                let readStart = seek < 0 && state.continuous ? state.lastBlockStart : playhead - frames
                 let step = (targetGain - startGain) / Float(frames)
                 let outputs = min(buffers.count, 2)
 
-                for channel in 0..<outputs {
-                    guard let output = buffers[channel].mData?.assumingMemoryBound(to: Float.self)
-                    else { continue }
+                if speed != 1 {
+                    // The stretch (speed design §4). It reads the take itself, through the same
+                    // wrapped index as the direct read, and keeps its own place in it from one
+                    // block to the next; a seek, a block that did not render or a return from
+                    // speed 1 starts it again one block behind the playhead, where the direct
+                    // read would be.
+                    let input = TimeStretcher.Input(
+                        left: source.base(ofChannel: 0),
+                        right: source.base(ofChannel: min(1, source.channelCount - 1)),
+                        frameCount: total, isStereo: source.channelCount > 1, loop: loop)
 
-                    // A mono take feeds both outputs.
-                    let base = source.base(
-                        ofChannel: min(channel, source.channelCount - 1))
-                    var gain = startGain
-
-                    for i in 0..<frames {
-                        // A read window that crosses the loop's end takes the rest from its start.
-                        let index = loop?.wrapped(readStart + i) ?? (readStart + i)
-                        let sample = index >= 0 && index < total ? base[index] : 0
-                        output[i] = sample * gain
-                        gain += step
+                    if !state.stretching || seek >= 0 {
+                        state.stretcher.reset(at: playhead - span, input: input)
                     }
+
+                    state.stretcher.speed = speed
+
+                    if let left = buffers[0].mData?.assumingMemoryBound(to: Float.self),
+                        let scratch = state.stretchScratch.baseAddress, frames <= RenderState.maxBlockFrames
+                    {
+                        let rightOutput = outputs > 1 ? buffers[1].mData?.assumingMemoryBound(to: Float.self) : nil
+                        let right = rightOutput ?? scratch
+
+                        state.stretcher.render(left: left, right: right, frames: frames, input: input)
+
+                        var gain = startGain
+                        for i in 0..<frames {
+                            left[i] *= gain
+                            if rightOutput != nil { right[i] *= gain }
+                            gain += step
+                        }
+                    }
+
+                    state.stretching = true
+                    // The direct read's continuity is broken: it comes back a block behind.
+                    state.continuous = false
+                } else {
+                    let blockStart = Int(playhead.rounded())
+                    // One buffer behind the playhead: the MIDI for [playhead, playhead + buffer)
+                    // is being scheduled a cycle ahead, and this delay is what keeps the two
+                    // aligned. Through a loop jump the buffer behind is the previous block's
+                    // start, which is the same thing until the jump and the right thing after it
+                    // (loop design §4).
+                    let readStart = seek < 0 && state.continuous ? state.lastBlockStart : blockStart - frames
+
+                    for channel in 0..<outputs {
+                        guard let output = buffers[channel].mData?.assumingMemoryBound(to: Float.self)
+                        else { continue }
+
+                        // A mono take feeds both outputs.
+                        let base = source.base(
+                            ofChannel: min(channel, source.channelCount - 1))
+                        var gain = startGain
+
+                        for i in 0..<frames {
+                            // A read window that crosses the loop's end takes the rest from its
+                            // start.
+                            let index = loop?.wrapped(readStart + i) ?? (readStart + i)
+                            let sample = index >= 0 && index < total ? base[index] : 0
+                            output[i] = sample * gain
+                            gain += step
+                        }
+                    }
+
+                    state.lastBlockStart = blockStart
+                    state.continuous = true
+                    state.stretching = false
                 }
 
-                state.lastBlockStart = playhead
-                state.continuous = true
                 rendered = true
 
                 if let loop {
                     // The synth stops at the loop's end; the playhead carries the overshoot past
                     // its start. The end of the take is never reached: the jump comes first.
-                    let advanced = loop.advance(from: playhead, frames: frames)
-                    endSeconds = Double(advanced.renderEnd) / rate
+                    let advanced = loop.advance(from: playhead, span: span)
+                    endSeconds = advanced.renderEnd / rate
                     playhead = advanced.next
                 } else {
-                    playhead += frames
-                    endSeconds = Double(playhead) / rate
+                    playhead += span
+                    endSeconds = playhead / rate
 
-                    // `playhead - frames` is where this block started: once that is at or past
+                    // `playhead - span` is where this block started: once that is at or past
                     // the end, every sample has been handed over and the take is done.
-                    if playhead - frames >= total {
+                    if playhead - span >= Double(total) {
                         playhead = 0
                         state.playing.store(false, ordering: .relaxed)
                         wrapped = true
                     }
                 }
             } else {
-                // A block that did not render breaks the run: the next one reads a buffer behind
-                // wherever the playhead is by then.
+                // A block that did not render breaks both runs: the next one reads a buffer
+                // behind wherever the playhead is by then.
                 state.continuous = false
+                state.stretching = false
             }
 
-            state.playheadFrames.store(playhead, ordering: .relaxed)
+            state.playheadExact = playhead
+            state.playheadFrames.store(Int(playhead.rounded()), ordering: .relaxed)
 
             // After the playhead store, not before: the poll re-anchors the scheduler to
             // ``playheadSeconds``, and bumping the generation first would let it read the position
@@ -1092,12 +1175,14 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
 
             // Every block, playing or not: a stop, a seek or a swapped note list all leave
             // note-offs to deliver and this is what delivers them.
+            // At `rate / speed`: a note Δ seconds into the block lands Δ × rate / speed output
+            // frames in, and its length stretches with the audio (speed design §2).
             bank.schedule(
                 from: startSeconds,
                 to: endSeconds,
                 renderTime: timestamp.pointee,
                 frameCount: frames,
-                sampleRate: rate
+                sampleRate: rate / speed
             )
 
             isSilence.pointee = ObjCBool(!rendered)
