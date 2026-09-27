@@ -5,7 +5,8 @@ import SwiftUI
 /// The window's top strip (`TopBar.cpp`): transport and position readout. Authored 54 px tall,
 /// every extent scaled by `\.uiScale`.
 ///
-/// Left to right: five transport buttons, `TimeDisplay`, then the rest of the row empty. Every
+/// Left to right: five transport buttons, `TimeDisplay`, the SPEED pill (ours, speed design §6),
+/// then the rest of the row empty. Every
 /// control is 30 tall and sits at y = 11 in the 53 px above the 1 px bottom border, which is
 /// where JUCE's integer `withSizeKeepingCentre` put them. The wordmark, the Model button and the
 /// gear NeuralNote had here are gone: the model and the settings live in the Settings window
@@ -49,6 +50,9 @@ struct TopBar: View {
 
                 gap
                 TimeDisplay(model: model)
+
+                gap
+                SpeedPill(model: model)
 
                 Spacer(minLength: 0)
             }
