@@ -60,7 +60,7 @@ extension AppModel {
         state.snapEnabled = editor.snapEnabled
         state.targetProgram = editor.targetProgram
         state.key = editor.key
-        state.workspace = workspace
+        state.workspace = workspace.savedWorkspace
         state.playheadSeconds = playheadSeconds
         state.playheadCentered = followPlayhead
         state.zoomLevel = zoomLevel

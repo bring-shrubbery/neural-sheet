@@ -245,7 +245,7 @@ struct NeuralSheetApp: App {
 
     // MARK: - View menu
 
-    /// The two tabs (⌘1, ⌘2; Edit only once there is a finished transcription) and Reset Zoom,
+    /// The three tabs (⌘1, ⌘2, ⌘3; Edit and Score only once there is a finished transcription) and Reset Zoom,
     /// which the gear menu used to hold: horizontal back to 1, vertical back to automatic. ⌘0, as
     /// every other app has it.
     private func viewMenu(model: AppModel) -> some Commands {
@@ -255,6 +255,10 @@ struct NeuralSheetApp: App {
 
             Button("Edit") { model.setWorkspace(.edit) }
                 .keyboardShortcut("2", modifiers: .command)
+                .disabled(!model.canEdit)
+
+            Button("Score") { model.setWorkspace(.score) }
+                .keyboardShortcut("3", modifiers: .command)
                 .disabled(!model.canEdit)
 
             Divider()

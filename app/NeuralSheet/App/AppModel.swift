@@ -208,8 +208,8 @@ import UniformTypeIdentifiers
         }
     }
 
-    /// The tab switch (⌘1, ⌘2, the segmented control): Edit only with a finished transcription.
-    /// Beside ``workspace`` because its setter is this file's.
+    /// The tab switch (⌘1, ⌘2, ⌘3, the tab strip): Edit and Score only with a finished
+    /// transcription. Beside ``workspace`` because its setter is this file's.
     func setWorkspace(_ workspace: Workspace) {
         guard workspace != self.workspace else { return }
         guard workspace == .transcribe || canEdit else { return }
