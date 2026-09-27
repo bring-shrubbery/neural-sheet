@@ -45,7 +45,7 @@ struct ModelSettingsView: View {
     static let licenceURL = URL(string: "https://huggingface.co/DamRsn/muscriptor-gguf")!
 
     var body: some View {
-        let hasInstalledModel = !model.installedModels.isEmpty
+        let hasInstalledModel = model.hasTranscriptionModel
 
         Form {
             Section {
@@ -60,6 +60,26 @@ struct ModelSettingsView: View {
             } footer: {
                 Text(hasInstalledModel ? "Select the model to transcribe with." : "Download a model to start transcribing.")
                     .foregroundStyle(.secondary)
+            }
+
+            // The stem separation weights (stem separation design §6): one row, installed or
+            // downloadable, never selected as the transcription model.
+            Section {
+                ModelRowView(row: stemsRow,
+                             select: {},
+                             download: { model.startDownload(.stems) },
+                             cancel: { model.cancelDownload(.stems) })
+            } header: {
+                Text("Stem separation")
+            } footer: {
+                HStack(spacing: 4) {
+                    Text(model.hasStemsModel
+                        ? "With Stems on, the take is separated into drums, bass, vocals and the rest before it is transcribed."
+                        : "Download to separate the take into drums, bass, vocals and the rest before transcribing.")
+                    Text("·")
+                    Link("Weights: MIT", destination: ModelManifest.stemsLicenceURL)
+                }
+                .foregroundStyle(.secondary)
             }
 
             Section {
@@ -104,8 +124,19 @@ struct ModelSettingsView: View {
         }
     }
 
+    private var stemsRow: ModelRow {
+        let isInstalled = model.installedModels.contains(.stems)
+        let phase = model.downloadPhases[.stems] ?? .idle
+
+        return ModelRow(size: .stems,
+                        isInstalled: isInstalled,
+                        isInUse: isInstalled,
+                        phase: phase,
+                        partialBytes: !isInstalled && phase == .idle ? partialBytes[.stems] ?? 0 : 0)
+    }
+
     private var rows: [ModelRow] {
-        ModelSize.allCases.map { size in
+        ModelSize.transcription.map { size in
             let isInstalled = model.installedModels.contains(size)
             let phase = model.downloadPhases[size] ?? .idle
 

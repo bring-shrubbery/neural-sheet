@@ -69,7 +69,7 @@ extension TimelineContainerView {
                            finalizedThrough: model.finalizedThrough,
                            mixer: model.mixer,
                            highlightedProgram: model.highlightedProgram,
-                           hasModel: !model.installedModels.isEmpty,
+                           hasModel: model.hasTranscriptionModel,
                            transcribeLabel: model.transcribeLabel,
                            canTranscribe: model.canTranscribe,
                            peaksIdentity: ObjectIdentifier(model.peaks),

@@ -125,9 +125,11 @@ struct TranscriptionProgress: View {
     let model: AppModel
 
     static let caption = "TRANSCRIBING"
+    /// While the stems are being separated (stem separation design §6).
+    static let separatingCaption = "SEPARATING"
 
     var body: some View {
-        ProgressGroup(caption: Self.caption,
+        ProgressGroup(caption: model.isSeparatingStems ? Self.separatingCaption : Self.caption,
                       progress: model.transcriptionProgress,
                       cancelling: model.cancelLatched,
                       cancelTooltip: "Cancel transcription",

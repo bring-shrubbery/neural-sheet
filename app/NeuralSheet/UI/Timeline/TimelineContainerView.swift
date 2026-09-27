@@ -462,7 +462,7 @@ final class TimelineContainerView: NSView {
         let k = scale
         let state = model.state
         let rollIsIdle = state == .audioLoaded || state == .empty
-        let hasModel = !model.installedModels.isEmpty
+        let hasModel = model.hasTranscriptionModel
 
         if let ctaHost {
             ctaHost.rootView = TranscribeCTA(label: model.transcribeLabel, isEnabled: state == .audioLoaded, scale: k,

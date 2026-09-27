@@ -5,8 +5,8 @@ import SwiftUI
 /// The row above the timeline (`NnToolbar`): what is loaded on the left, what can be done with the
 /// transcription on the right.
 ///
-/// Right to left: the bin and Re-transcribe (ours, the Edit toolbar's twin), each a
-/// `toolbarButton` (28) tall with 12 between them. The Drag MIDI out, the Export button and the
+/// Right to left: the bin, Re-transcribe (ours, the Edit toolbar's twin) and the Stems toggle
+/// (ours, stem separation design §6), each a `toolbarButton` (28) tall with 12 between them. The Drag MIDI out, the Export button and the
 /// EXPORT TEMPO pill NeuralNote had here are gone: File → Export MIDI… (⇧⌘E), with the tempo
 /// asked for in its dialog, is how a transcription leaves the app.
 struct Toolbar: View {
@@ -50,6 +50,8 @@ struct Toolbar: View {
                     Spacer(minLength: 0)
                 }
 
+                stemsToggle
+
                 // The same Re-transcribe the Edit toolbar has: a range can be marked in either tab.
                 RetranscribeButton(model: model)
                 clearButton(canClear: canClear)
@@ -69,6 +71,31 @@ struct Toolbar: View {
     }
 
     // MARK: - Clear
+
+    /// Stems: separate the take before transcribing. Lit on the accent while on; dimmed, and
+    /// pointing at Settings, without the weights.
+    private var stemsToggle: some View {
+        let s = Scaled(k: k)
+        let installed = model.hasStemsModel
+
+        return FlatButton(isOn: model.separateStems && installed,
+                          isEnabled: installed,
+                          idle: Theme.bgControlAlt,
+                          on: Theme.accentFillActive,
+                          foregroundIdle: Theme.textButton,
+                          foregroundOn: Theme.accentText,
+                          corner: s(Metrics.corner),
+                          action: { model.separateStems.toggle() }) { _ in
+            Text("Stems")
+                .font(Fonts.buttonLabel(k))
+                .fixedSize()
+                .padding(.horizontal, s(Metrics.buttonPadX))
+                .frame(height: s(Metrics.buttonHeight))
+        }
+        .tooltip(installed
+            ? "Separate the take into drums, bass, vocals and the rest before transcribing, each with its own instruments"
+            : "Download the Stems model in Settings › Model")
+    }
 
     private func clearButton(canClear: Bool) -> some View {
         let s = Scaled(k: k)
