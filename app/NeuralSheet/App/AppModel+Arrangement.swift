@@ -160,12 +160,6 @@ extension AppModel {
 
     // MARK: - Export PDF
 
-    /// `<source>_NNTranscription.pdf`, or `NNTranscription.pdf` for a recorded take.
-    func pdfExportFileName() -> String {
-        guard let name = droppedFileName, !name.isEmpty else { return "NNTranscription.pdf" }
-        return "\(name)_NNTranscription.pdf"
-    }
-
     /// File → Export PDF…: the pages, whatever the tab shows, through a save panel titled
     /// "Export PDF" in the Music folder.
     func exportPDF() {
@@ -175,7 +169,7 @@ extension AppModel {
         panel.title = "Export PDF"
         panel.message = "Export PDF"
         panel.directoryURL = paths.musicFolder
-        panel.nameFieldStringValue = pdfExportFileName()
+        panel.nameFieldStringValue = PDFExport.fileName(sourceFileNameWithoutExtension: droppedFileName)
         panel.allowedContentTypes = [.pdf]
         panel.canCreateDirectories = true
 
