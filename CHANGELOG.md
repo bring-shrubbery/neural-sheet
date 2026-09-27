@@ -22,6 +22,7 @@ Work towards v2 starts here: user-experience improvements beyond NeuralNote pari
 - Automatic releases: every change on `main` that passes CI is published as a signed disk image.
 - A website at [neural-sheet.quassum.com](https://neural-sheet.quassum.com).
 - Return / Enter goes to start; `[` and `]` step the mix.
+- Loop playback: Loop on the top bar, or `l`, repeats the marked range, or the whole take without one.
 
 ### Changed
 

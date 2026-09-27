@@ -117,6 +117,10 @@ Cleared by: `escapePressed` (after the drag cancel and before the deselect, see 
 `resetTranscription` (which every clear, load and close goes through), and `transition(to:)`
 leaving `.populated`. Undo and redo do not touch it.
 
+*Since the loop design (`2026-09-27-loop-playback-design.md`): the range is also the loop, so it
+can be marked in any state that can play and is cleared by `transition(to:)` only when the new
+state cannot. Re-transcribe still needs `.populated`.*
+
 ### 4.3 The region run (`AppModel+RegionTranscription.swift`, new)
 
 ```swift
