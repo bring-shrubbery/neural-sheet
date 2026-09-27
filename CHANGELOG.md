@@ -28,6 +28,7 @@ Work towards v2 starts here: user-experience improvements beyond NeuralNote pari
 - Export the transcription as sheet music: File → Export MusicXML… writes a score any notation program opens.
 - The project's key: Detect finds it, the KEY controls on the Edit toolbar set it, the piano roll shows its scale, and Edit → Snap to Scale pulls stray notes onto it.
 - A Score tab: the transcription as sheet music, following the playhead.
+- Stems: turn it on in the Transcribe toolbar, download the Stems model in Settings, and Transcribe separates drums, bass, vocals and the rest before transcribing each.
 
 ### Changed
 
