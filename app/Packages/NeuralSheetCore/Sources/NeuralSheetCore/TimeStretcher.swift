@@ -1,3 +1,4 @@
+import Accelerate
 import Foundation
 
 /// A pitch-preserving time stretch of the take, for playing it slower or faster than it was
@@ -176,7 +177,8 @@ public final class TimeStretcher {
 
         // The offset whose overlap best continues the tail: the dot product over the root of
         // the candidate's energy, the energy kept as a sliding sum so the search is linear in
-        // the span plus the products.
+        // the span plus the products. The products through vDSP: a plain loop of this size is
+        // a few milliseconds in a debug build, which is longer than a block.
         var energy: Float = 0
         for i in 0..<overlapLength {
             energy += candidates[i] * candidates[i]
@@ -184,15 +186,13 @@ public final class TimeStretcher {
 
         var bestOffset = 0
         var bestScore = -Float.greatestFiniteMagnitude
+        let reference = UnsafePointer(tailMono.baseAddress.unsafelyUnwrapped)
+        let candidateBase = UnsafePointer(candidates.baseAddress.unsafelyUnwrapped)
+        let length = vDSP_Length(overlapLength)
 
         for k in 0..<seekLength {
             var dot: Float = 0
-            let segment = candidates.baseAddress.unsafelyUnwrapped + k
-            let reference = tailMono.baseAddress.unsafelyUnwrapped
-
-            for i in 0..<overlapLength {
-                dot += reference[i] * segment[i]
-            }
+            vDSP_dotpr(reference, 1, candidateBase + k, 1, &dot, length)
 
             let score = dot / (energy.squareRoot() + 1e-9)
 
