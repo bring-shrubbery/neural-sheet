@@ -4,8 +4,8 @@ import Observation
 import SwiftUI
 
 /// The Score tab's block (score design §5): a vertically scrolling ``ScoreView`` that mirrors the
-/// model — the notes, the grid and the key rebuild the document and the layout, the width relays
-/// the systems, the playhead moves the cursor — and seeks on click.
+/// model — the notes, the grid, the key and the arrangement rebuild the document and the layout,
+/// the width relays the systems, the playhead moves the cursor — and seeks on click.
 final class ScoreContainerView: NSView {
     let model: AppModel
 
@@ -24,6 +24,7 @@ final class ScoreContainerView: NSView {
     private var lastNotes: [NoteEvent] = []
     private var lastGrid = TempoGrid()
     private var lastKey: MusicalKey?
+    private var lastArrangement = ScoreArrangement()
     private var hasDocument = false
     private var layoutWidth: CGFloat = 0
     private var cursorSystemIndex: Int?
@@ -91,6 +92,7 @@ final class ScoreContainerView: NSView {
             _ = model.notes
             _ = model.editor.grid
             _ = model.editor.key
+            _ = model.arrangement
             _ = model.state
             _ = model.isPlaying
             _ = model.playheadSeconds
@@ -103,20 +105,22 @@ final class ScoreContainerView: NSView {
         }
     }
 
-    /// Rebuilds what changed: the document on the notes, the grid or the key; the layout on the
-    /// document or the width; the cursor every time.
+    /// Rebuilds what changed: the document on the notes, the grid, the key or the arrangement;
+    /// the layout on the document or the width; the cursor every time.
     func sync() {
         let model = self.model
         let notes = model.notes
         let grid = model.editor.grid
         let key = model.editor.key
+        let arrangement = model.arrangement
 
-        if !hasDocument || notes != lastNotes || grid != lastGrid || key != lastKey {
+        if !hasDocument || notes != lastNotes || grid != lastGrid || key != lastKey || arrangement != lastArrangement {
             lastNotes = notes
             lastGrid = grid
             lastKey = key
+            lastArrangement = arrangement
             hasDocument = true
-            score.document = ScoreDocument.build(notes: notes, grid: grid, key: key)
+            score.document = model.scoreDocument()
             relayout()
         }
 
@@ -130,7 +134,8 @@ final class ScoreContainerView: NSView {
         guard width > 0 else { return }
 
         layoutWidth = width
-        let layout = ScoreLayout(document: score.document, width: width, sp: ScoreContainerView.staffSpace * scale)
+        let layout = ScoreLayout(document: score.document, arrangement: model.arrangement, width: width,
+                                 sp: ScoreContainerView.staffSpace * scale)
         score.layout = layout
         score.frame = CGRect(x: 0, y: 0, width: width, height: max(layout.totalHeight, scrollView.contentSize.height))
         score.needsDisplay = true
@@ -150,12 +155,12 @@ final class ScoreContainerView: NSView {
 
         // Follow: the system under the cursor comes into view when it changes.
         guard model.isPlaying, model.followPlayhead,
-              let systemIndex = layout.systems.firstIndex(where: { $0.measures.contains { $0.index == position.measure } }),
+              let systemIndex = layout.systems.systems.firstIndex(where: { $0.measures.contains { $0.index == position.measure } }),
               systemIndex != cursorSystemIndex
         else { return }
 
         cursorSystemIndex = systemIndex
-        let system = layout.systems[systemIndex]
+        let system = layout.systems.systems[systemIndex]
         let visible = scrollView.contentView.bounds
 
         if system.frame.minY - layout.sp * 2 < visible.minY || system.frame.maxY + layout.sp * 2 > visible.maxY {

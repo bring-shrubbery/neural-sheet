@@ -70,17 +70,19 @@ final class ScoreView: NSView {
         let sp = layout.sp
         let pixel = max(1, (sp / 8).rounded())
 
-        for system in layout.systems where system.frame.insetBy(dx: 0, dy: -8 * sp).intersects(rect) {
+        for system in layout.systems.systems where system.frame.insetBy(dx: 0, dy: -8 * sp).intersects(rect) {
             drawSystem(system, layout: layout, sp: sp, pixel: pixel, in: ctx)
         }
     }
 
-    private func drawSystem(_ system: ScoreLayout.System, layout: ScoreLayout, sp: CGFloat, pixel: CGFloat, in ctx: CGContext) {
+    /// Draws the system's staff rows; its tab rows are laid out but not drawn yet.
+    private func drawSystem(_ system: ScoreSystemLayout.System, layout: ScoreLayout, sp: CGFloat, pixel: CGFloat, in ctx: CGContext) {
         let ink = ScorePalette.ink
         let line = ScorePalette.line
+        let staffRows = system.rows.filter { if case .staff = $0.kind { true } else { false } }
 
         // Staves and the left edge joining them.
-        for row in system.rows {
+        for row in staffRows {
             for step in 0..<5 {
                 let y = row.bottomLineY - CGFloat(step) * sp
                 ctx.fill(CGRect(x: system.frame.minX, y: y - pixel / 2, width: system.frame.width, height: pixel), line)
@@ -92,7 +94,7 @@ final class ScoreView: NSView {
         // Bar lines per staff, the final one doubled.
         let isFinalSystem = system.measures.last?.index == document.measureCount - 1
 
-        for row in system.rows {
+        for row in staffRows {
             let top = row.bottomLineY - 4 * sp
 
             for (index, box) in system.measures.enumerated() where index > 0 {
@@ -110,16 +112,17 @@ final class ScoreView: NSView {
         let isFirst = system.showsTimeSignature
         let nameFont = TimelineFonts.meta(sp / 8)
 
-        for row in system.rows {
-            let part = document.parts[row.partIndex]
-            let staff = part.staves[row.staffIndex]
+        for row in staffRows {
+            guard case .staff(let staffIndex, let clef) = row.kind else { continue }
 
-            if row.staffIndex == 0 {
+            let part = document.parts[row.partIndex]
+
+            if staffIndex == 0 {
                 let colour = TimelinePalette.cg(Instruments.info(forProgram: part.program).colour, alpha: 1)
                 let label = isFirst ? part.name : part.abbreviation
                 // The middle of the part's staves: the first staff's middle, then half the way
                 // down to the last.
-                let centreY = row.bottomLineY - 2 * sp + CGFloat(part.staves.count - 1) * (4 + ScoreLayout.staffGap) * sp / 2
+                let centreY = row.bottomLineY - 2 * sp + CGFloat(part.staves.count - 1) * (4 + ScoreSystemLayout.staffGap) * sp / 2
                 TimelineText.draw(label, font: nameFont, colour: colour,
                                   in: CGRect(x: 0, y: centreY - sp, width: system.frame.minX - 0.6 * sp, height: 2 * sp),
                                   anchor: .centredRight, context: ctx)
@@ -128,18 +131,18 @@ final class ScoreView: NSView {
             guard let first = system.measures.first else { continue }
 
             var x = first.x + 0.4 * sp
-            ScoreGlyphs.drawClef(staff.clef, x: x, bottomLineY: row.bottomLineY, sp: sp, colour: ink, context: ctx)
-            x += ScoreLayout.clefWidth * sp
+            ScoreGlyphs.drawClef(clef, x: x, bottomLineY: row.bottomLineY, sp: sp, colour: ink, context: ctx)
+            x += ScoreSystemLayout.clefWidth * sp
 
-            if staff.clef != .percussion {
+            if clef != .percussion {
                 let accidental: Accidental = document.fifths > 0 ? .sharp : .flat
-                for position in staff.clef.signaturePositions(fifths: document.fifths) {
+                for position in clef.signaturePositions(fifths: document.fifths) {
                     let y = row.bottomLineY - CGFloat(position) * sp / 2
                     ScoreGlyphs.drawAccidental(accidental, x: x, y: y, sp: sp, colour: ink, context: ctx)
-                    x += ScoreLayout.accidentalWidth * sp
+                    x += ScoreSystemLayout.accidentalWidth * sp
                 }
             } else {
-                x += CGFloat(abs(document.fifths)) * ScoreLayout.accidentalWidth * sp
+                x += CGFloat(abs(document.fifths)) * ScoreSystemLayout.accidentalWidth * sp
             }
 
             if isFirst {
@@ -150,7 +153,7 @@ final class ScoreView: NSView {
         // Measure numbers above the top staff at the system's start; the tempo on the first.
         if let first = system.measures.first, let topRow = system.rows.first {
             let numberFont = TimelineFonts.scaleLabel(sp / 8)
-            let y = topRow.bottomLineY - 4 * sp
+            let y = topRow.topLineY
             TimelineText.draw("\(first.index + 1)", font: numberFont, colour: ScorePalette.faint,
                               in: CGRect(x: first.x, y: y - 2.6 * sp, width: 6 * sp, height: 1.6 * sp),
                               anchor: .centredLeft, context: ctx)
@@ -161,8 +164,10 @@ final class ScoreView: NSView {
         }
 
         // The music.
-        for row in system.rows {
-            let staff = document.parts[row.partIndex].staves[row.staffIndex]
+        for row in staffRows {
+            guard case .staff(let staffIndex, _) = row.kind else { continue }
+
+            let staff = document.parts[row.partIndex].staves[staffIndex]
 
             for (boxIndex, box) in system.measures.enumerated() where box.index < staff.measures.count {
                 let measure = staff.measures[box.index]
@@ -209,7 +214,7 @@ final class ScoreView: NSView {
         return mean < 4
     }
 
-    private func drawChord(_ piece: ScorePiece, x: CGFloat, row: ScoreLayout.StaffRow, sp: CGFloat, pixel: CGFloat, in ctx: CGContext) {
+    private func drawChord(_ piece: ScorePiece, x: CGFloat, row: ScoreSystemLayout.StaffRow, sp: CGFloat, pixel: CGFloat, in ctx: CGContext) {
         let ink = ScorePalette.ink
         let stemUp = ScoreView.stemUp(piece)
         let whole = piece.type == "whole"
