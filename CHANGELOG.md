@@ -23,6 +23,7 @@ Work towards v2 starts here: user-experience improvements beyond NeuralNote pari
 - A website at [neural-sheet.quassum.com](https://neural-sheet.quassum.com).
 - Return / Enter goes to start; `[` and `]` step the mix.
 - Loop playback: Loop on the top bar, or `l`, repeats the marked range, or the whole take without one.
+- Playback speed: the SPEED pill on the top bar plays the take slower or faster with its pitch unchanged.
 
 ### Changed
 
