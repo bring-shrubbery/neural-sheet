@@ -3,7 +3,7 @@ import NeuralSheetCore
 import SwiftUI
 
 /// The Edit tab's row above the timeline (design §6.1): tools, snap and division, tempo and
-/// downbeat, Quantize, Re-transcribe, Undo/Redo.
+/// downbeat with Tap and Detect (tempo design §5), Quantize, Re-transcribe, Undo/Redo.
 ///
 /// Same frame as `Toolbar` -- height, side padding, button height, corner -- so the two tabs'
 /// rows sit on the same divider.
@@ -51,6 +51,11 @@ struct EditToolbar: View {
                     iconButton(isOn: false, tooltip: "Set from playhead", action: model.setGridOffsetFromPlayhead) {
                         Icons.PlayheadTargetStroked()
                     }
+
+                    labelButton("Tap", tooltip: "Tap in time with playback to set the tempo | t", action: model.tap)
+
+                    labelButton("Detect", tooltip: "Find the tempo and the downbeat in the audio",
+                                isEnabled: !model.isDetectingTempo, action: model.detectTempo)
                 }
 
                 labelButton("Quantize", tooltip: "Quantize selection (⌘U)", action: model.quantizeSelectionOrAll)
@@ -119,10 +124,11 @@ struct EditToolbar: View {
         .tooltip(tooltip)
     }
 
-    private func labelButton(_ title: String, tooltip: String, action: @escaping () -> Void) -> some View {
+    private func labelButton(_ title: String, tooltip: String, isEnabled: Bool = true, action: @escaping () -> Void) -> some View {
         let s = Scaled(k: k)
 
-        return FlatButton(idle: Theme.bgControlAlt,
+        return FlatButton(isEnabled: isEnabled,
+                          idle: Theme.bgControlAlt,
                           on: Theme.bgControlActive,
                           foregroundIdle: Theme.textButton,
                           foregroundOn: Theme.textBright,
