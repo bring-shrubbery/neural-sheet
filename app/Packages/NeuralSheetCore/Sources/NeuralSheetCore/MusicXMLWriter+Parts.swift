@@ -11,6 +11,10 @@ extension MusicXMLWriter {
         let isDrums = part.program == NoteEvent.drumProgram
         let preferFlats = part.writtenFifths < 0
         let measureCount = part.staves.first?.measures.count ?? 0
+        // An octave clef shifts where a reader draws a `<pitch>` by itself, so its octave is taken
+        // out of both the pitches and the `<transpose>`: a guitar written +12 on a treble 8vb staff
+        // gets the clef and its sounding pitches, and no `<transpose>` to stack a second octave on.
+        let clefOctave = part.staves.contains { $0.clef.isOctaveDown } ? 12 : 0
         var xml = "  <part id=\"\(id)\">\n"
 
         for measureIndex in 0..<measureCount {
@@ -30,7 +34,7 @@ extension MusicXMLWriter {
                     xml += "        " + clefXML(staff.clef, number: part.staves.count > 1 ? staffIndex + 1 : nil) + "\n"
                 }
 
-                let transpose = transposeXML(isDrums ? 0 : part.display.transposition)
+                let transpose = transposeXML(isDrums ? 0 : part.display.transposition - clefOctave)
                 if !transpose.isEmpty { xml += "        \(transpose)\n" }
 
                 xml += "      </attributes>\n"
@@ -44,9 +48,11 @@ extension MusicXMLWriter {
                 }
 
                 let staffNumber = part.staves.count > 1 ? staffIndex + 1 : nil
+                let pitchShift = staff.clef.isOctaveDown ? -12 : 0
 
                 for piece in staff.measures[measureIndex].pieces {
-                    xml += pieceXML(piece, voice: staffIndex + 1, staff: staffNumber, isDrums: isDrums, preferFlats: preferFlats)
+                    xml += pieceXML(piece, voice: staffIndex + 1, staff: staffNumber, isDrums: isDrums,
+                                    preferFlats: preferFlats, pitchShift: pitchShift)
                 }
             }
 
@@ -116,9 +122,11 @@ extension MusicXMLWriter {
         return xml + "</note>\n"
     }
 
-    /// One piece of a notation staff: a rest, or a chord of written pitches, the drums unpitched
-    /// at their staff positions.
-    private static func pieceXML(_ piece: ScorePiece, voice: Int, staff: Int?, isDrums: Bool, preferFlats: Bool) -> String {
+    /// One piece of a notation staff: a rest, or a chord of written pitches (`pitchShift` semitones
+    /// off them, the octave an octave clef carries by itself), the drums unpitched at their staff
+    /// positions.
+    private static func pieceXML(_ piece: ScorePiece, voice: Int, staff: Int?, isDrums: Bool, preferFlats: Bool,
+                                 pitchShift: Int) -> String {
         guard !piece.isRest else { return restXML(piece, voice: voice, staff: staff) }
 
         var xml = ""
@@ -132,7 +140,7 @@ extension MusicXMLWriter {
                 pitch = "<unpitched><display-step>\(display.step)</display-step><display-octave>\(display.octave)</display-octave></unpitched>"
                 notehead = display.notehead
             } else {
-                pitch = pitchXML(note.writtenPitch, preferFlats: preferFlats)
+                pitch = pitchXML(note.writtenPitch + pitchShift, preferFlats: preferFlats)
                 notehead = nil
             }
 

@@ -246,12 +246,13 @@ private func count(_ xpath: String, in document: XMLDocument) throws -> Int {
     #expect(try count("//part[3]/measure[1]/attributes/transpose/octave-change", in: score) == 0)
     #expect(try score.nodes(forXPath: "//part[3]//note/pitch/step").first?.stringValue == "D")
 
-    // The guitar's notation: treble 8vb, written an octave up; its tab: six lines, the tuning, string and fret.
+    // The guitar's notation: treble 8vb, written an octave up. The clef carries the octave, so the pitch is
+    // written for it (E4 on an 8vb staff is drawn where E5 sits) and there is no transpose to stack on it.
+    // Its tab: six lines, the tuning, string and fret.
     #expect(try score.nodes(forXPath: "//part[1]/measure[1]/attributes/clef/sign").first?.stringValue == "G")
     #expect(try score.nodes(forXPath: "//part[1]/measure[1]/attributes/clef/clef-octave-change").first?.stringValue == "-1")
-    #expect(try score.nodes(forXPath: "//part[1]/measure[1]/attributes/transpose/chromatic").first?.stringValue == "0")
-    #expect(try score.nodes(forXPath: "//part[1]/measure[1]/attributes/transpose/octave-change").first?.stringValue == "-1")
-    #expect(try score.nodes(forXPath: "//part[1]//note/pitch/octave").first?.stringValue == "5")
+    #expect(try count("//part[1]/measure[1]/attributes/transpose", in: score) == 0)
+    #expect(try score.nodes(forXPath: "//part[1]//note/pitch/octave").first?.stringValue == "4")
     #expect(try score.nodes(forXPath: "//part[2]/measure[1]/attributes/clef/sign").first?.stringValue == "TAB")
     #expect(try score.nodes(forXPath: "//part[2]/measure[1]/attributes/staff-details/staff-lines").first?.stringValue == "6")
     #expect(try score.nodes(forXPath: "//part[2]/measure[1]/attributes/staff-details/staff-tuning").count == 6)
