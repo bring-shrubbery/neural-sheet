@@ -49,6 +49,7 @@ private func makeProjectTempDirectory() throws -> URL {
     state.gridDivision = .eighthTriplet
     state.snapEnabled = false
     state.targetProgram = 128
+    state.key = MusicalKey(tonic: 3, mode: .minor)
     state.workspace = .edit
     state.playheadSeconds = 12.25
     state.playheadCentered = false
