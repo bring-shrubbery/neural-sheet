@@ -52,6 +52,21 @@ private func quarters(_ count: Int, program: Int = 0, pitch: Int = 67) -> [NoteE
     #expect(moved.measures[0].x == system.measures[0].x, "x is untouched")
 }
 
+@Test func aSystemShiftsSideways() {
+    let score = ScoreDocument.build(notes: quarters(4), grid: grid, key: nil)
+    let layout = ScoreSystemLayout(document: score, arrangement: ScoreArrangement(), width: 600, sp: 8)
+    let system = layout.systems[0]
+    let moved = system.offsetX(by: 50)
+
+    #expect(moved.frame.minX == system.frame.minX + 50)
+    #expect(moved.frame.minY == system.frame.minY, "y is untouched")
+    #expect(moved.rows[0].bottomLineY == system.rows[0].bottomLineY)
+    #expect(moved.measures[0].x == system.measures[0].x + 50)
+    #expect(moved.measures[0].contentX == system.measures[0].contentX + 50)
+    #expect(moved.measures[0].onsets.map(\.units) == system.measures[0].onsets.map(\.units))
+    #expect(moved.measures[0].onsets.map(\.x) == system.measures[0].onsets.map { $0.x + 50 })
+}
+
 @Test func measurePositionsInvert() {
     let score = ScoreDocument.build(notes: quarters(8), grid: grid, key: nil)
     let layout = ScoreSystemLayout(document: score, arrangement: ScoreArrangement(), width: 900, sp: 8)

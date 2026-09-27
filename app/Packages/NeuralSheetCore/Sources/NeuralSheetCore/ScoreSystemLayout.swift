@@ -95,6 +95,21 @@ public struct ScoreSystemLayout: Sendable {
             }
             return moved
         }
+
+        /// The same system `dx` further right: the frame, every box and every onset move, the
+        /// rows stay.
+        public func offsetX(by dx: CGFloat) -> System {
+            var moved = self
+            moved.frame.origin.x += dx
+            moved.measures = measures.map { box in
+                var box = box
+                box.x += dx
+                box.contentX += dx
+                box.onsets = box.onsets.map { (units: $0.units, x: $0.x + dx) }
+                return box
+            }
+            return moved
+        }
     }
 
     public let sp: CGFloat
