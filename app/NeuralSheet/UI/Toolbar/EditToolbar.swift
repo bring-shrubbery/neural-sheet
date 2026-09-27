@@ -66,6 +66,8 @@ struct EditToolbar: View {
         .frame(height: s(Metrics.height))
         .frame(maxWidth: .infinity)
         .background(Theme.bgRoot)
+        // Switching tabs takes the row away; the menu goes with it, as the Score toolbar's do.
+        .onDisappear { divisionMenu.dismiss() }
     }
 
     // MARK: - Pieces

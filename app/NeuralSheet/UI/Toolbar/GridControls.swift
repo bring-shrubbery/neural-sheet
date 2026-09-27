@@ -61,6 +61,12 @@ struct GridControls: View {
                 .background(AnchorCatcher { modeAnchor = $0 })
             }
         }
+        // Switching tabs takes the row away; a menu left up would outlive the button it hangs
+        // from, with its monitors and observers.
+        .onDisappear {
+            tonicMenu.dismiss()
+            modeMenu.dismiss()
+        }
     }
 
     // MARK: - Menus
