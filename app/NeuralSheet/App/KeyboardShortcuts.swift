@@ -15,6 +15,7 @@ import NeuralSheetCore
 /// | c | centre playhead toggle |
 /// | l | loop toggle (ours; the original's Loop button was disabled) |
 /// | - / = | the playback speed a step slower / faster (ours) |
+/// | t | tap the tempo, while playing (ours) |
 /// | [ / ] | the mix a tenth toward the original / the MIDI (ours; the original had no key for it) |
 /// | Esc | close the instrument picker, else clear the marked range |
 ///
@@ -175,6 +176,10 @@ import NeuralSheetCore
             model.toggleLoop()
             return true
 
+        case "t":
+            model.tap()
+            return true
+
         default:
             return false
         }
@@ -226,6 +231,9 @@ import NeuralSheetCore
         case "r":
             // Recording is not possible from a finished transcription; swallowed rather than
             // reaching the record toggle.
+            return true
+        case "t":
+            model.tap()
             return true
         default:
             return nil

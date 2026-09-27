@@ -257,6 +257,13 @@ import UniformTypeIdentifiers
     /// design §5). Transient, like the range. `AppModel+Practice.swift` is its only writer.
     var loopEnabled = false
 
+    /// The taps in flight for the Tap button and the `t` key (tempo design §4).
+    /// `AppModel+Tempo.swift` is its only user.
+    @ObservationIgnored var tapTempo = TapTempo()
+
+    /// True while a tempo detection runs off the main thread; the Detect button dims.
+    var isDetectingTempo = false
+
     /// The SPEED pill: how fast the take plays, its pitch unchanged, the MIDI on the same clock
     /// (speed design §5). 1 is the take's own. Transient, like the loop. Clamped to
     /// ``speedRange``.
