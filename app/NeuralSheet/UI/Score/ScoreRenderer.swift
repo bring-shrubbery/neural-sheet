@@ -114,23 +114,29 @@ struct ScoreRenderer {
             let part = document.parts[row.partIndex]
             let partRows = system.rows.filter { $0.partIndex == row.partIndex }
 
-            if arrangement.sheet.showsPartNames, partRows.first == row, let last = partRows.last {
-                let colour = TimelinePalette.cg(Instruments.info(forProgram: part.program).colour, alpha: 1)
+            if partRows.first == row, let last = partRows.last {
                 let room = system.frame.minX - 0.6 * sp
-                var label = isFirst ? part.name : part.abbreviation
-                var width = TimelineText.width(label, font: nameFont)
+                let centreY = (row.topLineY + last.bottomLineY) / 2
+                // With the names off, the margin beside the part's first row stays the click
+                // that opens its card, since the name is the only way to it: the hit region is
+                // the whole room the name would have had.
+                var hitFrame = CGRect(x: 0, y: centreY - sp, width: room, height: 2 * sp)
 
-                if width > room, label != part.abbreviation {
-                    label = part.abbreviation
-                    width = TimelineText.width(label, font: nameFont)
+                if arrangement.sheet.showsPartNames {
+                    let colour = TimelinePalette.cg(Instruments.info(forProgram: part.program).colour, alpha: 1)
+                    var label = isFirst ? part.name : part.abbreviation
+                    var width = TimelineText.width(label, font: nameFont)
+
+                    if width > room, label != part.abbreviation {
+                        label = part.abbreviation
+                        width = TimelineText.width(label, font: nameFont)
+                    }
+
+                    TimelineText.draw(label, font: nameFont, colour: colour, in: hitFrame, anchor: .centredRight, context: ctx)
+                    hitFrame = CGRect(x: max(0, room - width), y: centreY - sp, width: min(width, room), height: 2 * sp)
                 }
 
-                let centreY = (row.topLineY + last.bottomLineY) / 2
-                TimelineText.draw(label, font: nameFont, colour: colour,
-                                  in: CGRect(x: 0, y: centreY - sp, width: room, height: 2 * sp),
-                                  anchor: .centredRight, context: ctx)
-                names.append(NameHit(program: part.program,
-                                     frame: CGRect(x: max(0, room - width), y: centreY - sp, width: min(width, room), height: 2 * sp)))
+                names.append(NameHit(program: part.program, frame: hitFrame))
             }
 
             guard let first = system.measures.first else { continue }
