@@ -27,7 +27,8 @@ public enum Clef: Equatable, Sendable {
 
     /// The staff steps the key signature's accidentals sit on, in signature order: the treble
     /// and bass staves' conventional places, the C clefs' letters each at its one step inside
-    /// the staff.
+    /// the staff (the window 2…8, except the alto's flats, which sit a step under the treble's
+    /// in 0…6).
     public func signaturePositions(fifths: Int) -> [Int] {
         guard fifths != 0 else { return [] }
 
@@ -40,11 +41,12 @@ public enum Clef: Equatable, Sendable {
         case .bass, .bass8vb:
             return (fifths > 0 ? ScorePitch.trebleSharps : ScorePitch.trebleFlats).prefix(count).map { $0 - 2 }
         case .alto, .tenor:
-            // Each letter's step in the window 2…8, which every letter enters exactly once.
+            // Each letter's step in a seven-step window, which every letter enters exactly once.
+            let lowest = self == .alto && fifths < 0 ? 0 : 2
             return letters.map { letter in
                 let index = ScorePitch.letters.firstIndex(of: letter) ?? 0
                 let raw = (index - baseline % 7 + 7) % 7   // the letter's step in 0…6
-                return raw < 2 ? raw + 7 : raw
+                return raw < lowest ? raw + 7 : raw
             }
         }
     }

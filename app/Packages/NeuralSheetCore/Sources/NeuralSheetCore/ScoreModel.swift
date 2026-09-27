@@ -88,9 +88,11 @@ public struct ScoreDocument: Equatable, Sendable {
         return ScoreDocument(parts: parts, measureCount: span.count, firstBar: span.lowerBound, fifths: key?.fifths ?? 0, bpm: grid.bpm)
     }
 
-    /// One bar of one staff: the export's segments, each split into printable values, as pieces.
-    /// `notes` are the written unit notes; each note sounds `transposition` semitones lower.
-    static func measure(bar: Int, notes: [MusicXMLWriter.UnitNote], transposition: Int, clef: Clef, isDrums: Bool, fifths: Int) -> ScoreMeasure {
+    /// One bar as pieces: the export's segments of `notes` over the bar, each split into printable
+    /// values; an empty bar is one whole-measure rest. `scoreNotes(segment, pieceStart, pieceEnd)`
+    /// gives the notes of one piece of `segment`.
+    static func pieces(bar: Int, notes: [MusicXMLWriter.UnitNote],
+                       scoreNotes: (_ segment: MusicXMLWriter.Segment, _ pieceStart: Int, _ pieceEnd: Int) -> [ScoreNote]) -> ScoreMeasure {
         let from = bar * MusicXMLWriter.barUnits
         let to = from + MusicXMLWriter.barUnits
         var pieces: [ScorePiece] = []
@@ -107,32 +109,8 @@ public struct ScoreDocument: Equatable, Sendable {
             for value in MusicXMLWriter.printableDurations(segment.end - segment.start) {
                 let pieceEnd = pieceStart + value.units
 
-                let scoreNotes = segment.notes.map { note -> ScoreNote in
-                    if isDrums {
-                        let display = MusicXMLWriter.drumDisplay(note: note.pitch)
-                        return ScoreNote(pitch: note.pitch - transposition,
-                                         step: clef.step(forStep: display.step, octave: display.octave),
-                                         accidental: nil,
-                                         tiedFrom: note.start < pieceStart,
-                                         tiedTo: note.end > pieceEnd,
-                                         head: ScoreNote.Head(notehead: display.notehead),
-                                         id: note.id,
-                                         writtenPitch: note.pitch)
-                    }
-
-                    let spelled = MusicXMLWriter.spelling(midi: note.pitch, preferFlats: fifths < 0)
-                    return ScoreNote(pitch: note.pitch - transposition,
-                                     step: clef.step(forStep: spelled.step, octave: spelled.octave),
-                                     accidental: ScorePitch.accidental(letter: spelled.step, alter: spelled.alter, fifths: fifths),
-                                     tiedFrom: note.start < pieceStart,
-                                     tiedTo: note.end > pieceEnd,
-                                     head: .normal,
-                                     id: note.id,
-                                     writtenPitch: note.pitch)
-                }
-
                 pieces.append(ScorePiece(startUnits: pieceStart - from, units: value.units, type: value.type, dots: value.dots,
-                                         notes: scoreNotes, isWholeMeasureRest: false))
+                                         notes: scoreNotes(segment, pieceStart, pieceEnd), isWholeMeasureRest: false))
                 pieceStart = pieceEnd
             }
         }
@@ -140,40 +118,50 @@ public struct ScoreDocument: Equatable, Sendable {
         return ScoreMeasure(pieces: pieces)
     }
 
-    /// One bar of a tab staff: the same segments and values as the notation, each chord's
-    /// notes placed on strings. `notes` are the sounding unit notes; a note's `step` is its
-    /// string (the renderer draws the fret on that line).
-    static func tabMeasure(bar: Int, notes: [MusicXMLWriter.UnitNote], setup: TabSetup, manual: [NoteID: Int]) -> ScoreMeasure {
-        let from = bar * MusicXMLWriter.barUnits
-        let to = from + MusicXMLWriter.barUnits
-        var pieces: [ScorePiece] = []
-
-        for segment in MusicXMLWriter.segments(notes, from: from, to: to) {
-            if segment.isRest, segment.start == from, segment.end == to {
-                pieces.append(ScorePiece(startUnits: 0, units: MusicXMLWriter.barUnits, type: "whole", dots: 0,
-                                         notes: [], isWholeMeasureRest: true))
-                continue
-            }
-
-            let placements = TabFingering.place(pitches: segment.notes.map(\.pitch), tuning: setup.tuning, frets: setup.frets,
-                                                manual: segment.notes.map { $0.id.flatMap { manual[$0] } })
-            var pieceStart = segment.start
-
-            for value in MusicXMLWriter.printableDurations(segment.end - segment.start) {
-                let pieceEnd = pieceStart + value.units
-                let scoreNotes = segment.notes.enumerated().map { index, note in
-                    ScoreNote(pitch: note.pitch, step: placements[index].string, accidental: nil,
-                              tiedFrom: note.start < pieceStart, tiedTo: note.end > pieceEnd, head: .normal,
-                              id: note.id, writtenPitch: note.pitch, placement: placements[index])
+    /// One bar of one staff. `notes` are the written unit notes; each note sounds `transposition`
+    /// semitones lower.
+    static func measure(bar: Int, notes: [MusicXMLWriter.UnitNote], transposition: Int, clef: Clef, isDrums: Bool, fifths: Int) -> ScoreMeasure {
+        pieces(bar: bar, notes: notes) { segment, pieceStart, pieceEnd in
+            segment.notes.map { note -> ScoreNote in
+                if isDrums {
+                    let display = MusicXMLWriter.drumDisplay(note: note.pitch)
+                    return ScoreNote(pitch: note.pitch - transposition,
+                                     step: clef.step(forStep: display.step, octave: display.octave),
+                                     accidental: nil,
+                                     tiedFrom: note.start < pieceStart,
+                                     tiedTo: note.end > pieceEnd,
+                                     head: ScoreNote.Head(notehead: display.notehead),
+                                     id: note.id,
+                                     writtenPitch: note.pitch)
                 }
 
-                pieces.append(ScorePiece(startUnits: pieceStart - from, units: value.units, type: value.type, dots: value.dots,
-                                         notes: scoreNotes, isWholeMeasureRest: false))
-                pieceStart = pieceEnd
+                let spelled = MusicXMLWriter.spelling(midi: note.pitch, preferFlats: fifths < 0)
+                return ScoreNote(pitch: note.pitch - transposition,
+                                 step: clef.step(forStep: spelled.step, octave: spelled.octave),
+                                 accidental: ScorePitch.accidental(letter: spelled.step, alter: spelled.alter, fifths: fifths),
+                                 tiedFrom: note.start < pieceStart,
+                                 tiedTo: note.end > pieceEnd,
+                                 head: .normal,
+                                 id: note.id,
+                                 writtenPitch: note.pitch)
             }
         }
+    }
 
-        return ScoreMeasure(pieces: pieces)
+    /// One bar of a tab staff: the same pieces as the notation, each chord's notes placed on
+    /// strings. `notes` are the sounding unit notes; a note's `step` is its string (the renderer
+    /// draws the fret on that line).
+    static func tabMeasure(bar: Int, notes: [MusicXMLWriter.UnitNote], setup: TabSetup, manual: [NoteID: Int]) -> ScoreMeasure {
+        pieces(bar: bar, notes: notes) { segment, pieceStart, pieceEnd in
+            let placements = TabFingering.place(pitches: segment.notes.map(\.pitch), tuning: setup.tuning, frets: setup.frets,
+                                                manual: segment.notes.map { $0.id.flatMap { manual[$0] } })
+
+            return segment.notes.enumerated().map { index, note in
+                ScoreNote(pitch: note.pitch, step: placements[index].string, accidental: nil,
+                          tiedFrom: note.start < pieceStart, tiedTo: note.end > pieceEnd, head: .normal,
+                          id: note.id, writtenPitch: note.pitch, placement: placements[index])
+            }
+        }
     }
 
     // MARK: - Time

@@ -153,6 +153,7 @@ private extension ScorePiece {
     // Alto and tenor signatures sit inside the staff, one position per letter.
     #expect(Clef.alto.signaturePositions(fifths: 1) == [7], "F♯ in the alto's top space")
     #expect(Clef.tenor.signaturePositions(fifths: -1) == [5], "B♭ in the tenor's third space")
+    #expect(Clef.alto.signaturePositions(fifths: -3) == [3, 6, 2], "the alto's flats a step under the treble's")
     #expect(Clef.alto.signaturePositions(fifths: 3).count == 3)
 }
 
