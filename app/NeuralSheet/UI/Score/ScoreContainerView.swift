@@ -5,10 +5,10 @@ import SwiftUI
 
 /// The Score tab's block (score design §5): a vertically scrolling ``ScoreView`` that mirrors the
 /// model — the notes, the grid, the key and the arrangement rebuild the document and the layout,
-/// the width relays the systems, the playhead moves the cursor, the tab selection repaints —
-/// seeks on a click on empty score and selects a tab note on a click on its number. A click on
-/// a part's name opens its ``PartDisplayCard`` and a right-click on a fret number the note's
-/// ``StringCard``, both in one floating panel at the pointer (arrangement design §4, §6).
+/// the width relays the systems or the pages, the playhead moves the cursor, the tab selection
+/// repaints — seeks on a click on empty score and selects a tab note on a click on its number.
+/// A click on a part's name opens its ``PartDisplayCard`` and a right-click on a fret number the
+/// note's ``StringCard``, both in one floating panel at the pointer (arrangement design §4, §6).
 final class ScoreContainerView: NSView {
     let model: AppModel
 
@@ -199,19 +199,30 @@ final class ScoreContainerView: NSView {
             score.needsDisplay = true
         }
 
+        if score.takeName != model.droppedFileName {
+            score.takeName = model.droppedFileName
+            score.needsDisplay = true
+        }
+
         updateCursor()
         observeModel()
     }
 
+    /// Lays the document out at the scroll view's width; with no width yet there is no layout,
+    /// never a stale one a shrunk document could index out of range.
     private func relayout() {
         let width = scrollView.contentSize.width
 
-        guard width > 0 else { return }
+        guard width > 0 else {
+            score.layout = nil
+            return
+        }
 
         layoutWidth = width
-        let layout = ScoreLayout(document: score.document, arrangement: model.arrangement, width: width,
-                                 sp: ScoreContainerView.staffSpace * scale)
+        let layout = ScoreLayout(document: score.document, arrangement: model.arrangement, width: width, scale: scale)
         score.layout = layout
+        // The surround shows past the last page and under a short score.
+        scrollView.backgroundColor = NSColor(cgColor: layout.mode == .pages ? ScoreView.surround : ScorePalette.paper) ?? .black
         score.frame = CGRect(x: 0, y: 0, width: width, height: max(layout.totalHeight, scrollView.contentSize.height))
         score.needsDisplay = true
         cursorSystemIndex = nil
@@ -230,12 +241,12 @@ final class ScoreContainerView: NSView {
 
         // Follow: the system under the cursor comes into view when it changes.
         guard model.isPlaying, model.followPlayhead,
-              let systemIndex = layout.systems.systems.firstIndex(where: { $0.measures.contains { $0.index == position.measure } }),
+              let systemIndex = layout.systems.firstIndex(where: { $0.measures.contains { $0.index == position.measure } }),
               systemIndex != cursorSystemIndex
         else { return }
 
         cursorSystemIndex = systemIndex
-        let system = layout.systems.systems[systemIndex]
+        let system = layout.systems[systemIndex]
         let visible = scrollView.contentView.bounds
 
         if system.frame.minY - layout.sp * 2 < visible.minY || system.frame.maxY + layout.sp * 2 > visible.maxY {
