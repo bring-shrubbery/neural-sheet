@@ -35,10 +35,13 @@ struct ScoreRenderer {
     var pixel: CGFloat { max(1, (sp / 8).rounded()) }
 
     /// Every tab number goes into `hits` and every part name into `names`, for the clicks.
-    func drawSystem(_ system: ScoreSystemLayout.System, in ctx: CGContext, hits: inout [TabHit], names: inout [NameHit]) {
+    /// `leftEdge` is the paper's left edge in the context: the page's when the system is on a
+    /// page, 0 in the continuous column. The part names have the room between it and the system.
+    func drawSystem(_ system: ScoreSystemLayout.System, leftEdge: CGFloat = 0, in ctx: CGContext,
+                    hits: inout [TabHit], names: inout [NameHit]) {
         drawStaffLines(system, in: ctx)
         drawBarLines(system, in: ctx)
-        drawPrefixes(system, in: ctx, names: &names)
+        drawPrefixes(system, leftEdge: leftEdge, in: ctx, names: &names)
         drawNumbersAndTempo(system, in: ctx)
 
         for row in system.rows {
@@ -104,8 +107,10 @@ struct ScoreRenderer {
     /// Part names, clefs (the "TAB" mark on a tab), key signatures and, on the first system, the
     /// time signature. The full name goes on the first system and the abbreviation on the rest,
     /// but a name wider than the margin's room ("Acoustic Guitar") is abbreviated on the first
-    /// system too rather than clipped.
-    private func drawPrefixes(_ system: ScoreSystemLayout.System, in ctx: CGContext, names: inout [NameHit]) {
+    /// system too rather than clipped. The room is measured from `leftEdge`, the paper's edge,
+    /// so a page centred on screen gives a name the page margin, as the PDF does, and not the
+    /// surround beside it.
+    private func drawPrefixes(_ system: ScoreSystemLayout.System, leftEdge: CGFloat, in ctx: CGContext, names: inout [NameHit]) {
         let ink = style.ink
         let isFirst = system.showsTimeSignature
         let nameFont = TimelineFonts.meta(sp / 8)
@@ -115,12 +120,12 @@ struct ScoreRenderer {
             let partRows = system.rows.filter { $0.partIndex == row.partIndex }
 
             if partRows.first == row, let last = partRows.last {
-                let room = system.frame.minX - 0.6 * sp
+                let room = system.frame.minX - leftEdge - 0.6 * sp
                 let centreY = (row.topLineY + last.bottomLineY) / 2
                 // With the names off, the margin beside the part's first row stays the click
                 // that opens its card, since the name is the only way to it: the hit region is
                 // the whole room the name would have had.
-                var hitFrame = CGRect(x: 0, y: centreY - sp, width: room, height: 2 * sp)
+                var hitFrame = CGRect(x: leftEdge, y: centreY - sp, width: room, height: 2 * sp)
 
                 if arrangement.sheet.showsPartNames {
                     let colour = TimelinePalette.cg(Instruments.info(forProgram: part.program).colour, alpha: 1)
@@ -133,7 +138,7 @@ struct ScoreRenderer {
                     }
 
                     TimelineText.draw(label, font: nameFont, colour: colour, in: hitFrame, anchor: .centredRight, context: ctx)
-                    hitFrame = CGRect(x: max(0, room - width), y: centreY - sp, width: min(width, room), height: 2 * sp)
+                    hitFrame = CGRect(x: leftEdge + max(0, room - width), y: centreY - sp, width: min(width, room), height: 2 * sp)
                 }
 
                 names.append(NameHit(program: part.program, frame: hitFrame))

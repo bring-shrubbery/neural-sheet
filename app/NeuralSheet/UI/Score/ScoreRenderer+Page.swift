@@ -27,7 +27,7 @@ extension ScoreRenderer {
         }
 
         for system in systems {
-            drawSystem(system, in: ctx, hits: &hits, names: &names)
+            drawSystem(system, leftEdge: frame.minX, in: ctx, hits: &hits, names: &names)
         }
 
         let footerHeight = ScorePageLayout.footerHeight * scale
