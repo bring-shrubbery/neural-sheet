@@ -30,6 +30,12 @@ import NeuralSheetCore
 /// | v / d / e | the select, draw and erase tools |
 /// | Esc | cancel the drag in progress, else deselect, else clear the marked range |
 ///
+/// And in the Score tab only (arrangement design §4):
+///
+/// | key | action |
+/// |---|---|
+/// | ↑ / ↓ | the selected tab note a string up / down |
+///
 /// A press while a text field has the keyboard is the field's; so is anything
 /// with Command, Control or Option down, which are the menu bar's. Only the main window's own
 /// events count: the Settings window, a menu panel or a sheet has the key when it is up, and a
@@ -97,6 +103,13 @@ import NeuralSheetCore
         // Before the repeat guard: a held arrow keeps nudging.
         if model.workspace == .edit, let handled = handleEditorKey(event, shift: shift) {
             return handled
+        }
+
+        // The Score tab's keys: the selected tab note a string up or down. Up is toward the top
+        // tab line, up the page, whatever pitch that string is tuned to.
+        if model.workspace == .score, !shift, event.keyCode == KeyCode.up || event.keyCode == KeyCode.down {
+            model.moveSelectedTabString(by: event.keyCode == KeyCode.up ? 1 : -1)
+            return true
         }
 
         // Before the repeat guard as well: held, the mix keeps sliding.

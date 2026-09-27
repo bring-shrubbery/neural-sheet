@@ -6,7 +6,9 @@ import SwiftUI
 /// The Score tab's block (score design §5): a vertically scrolling ``ScoreView`` that mirrors the
 /// model — the notes, the grid, the key and the arrangement rebuild the document and the layout,
 /// the width relays the systems, the playhead moves the cursor, the tab selection repaints —
-/// seeks on a click on empty score and selects a tab note on a click on its number.
+/// seeks on a click on empty score and selects a tab note on a click on its number. A click on
+/// a part's name opens its ``PartDisplayCard`` and a right-click on a fret number the note's
+/// ``StringCard``, both in one floating panel at the pointer (arrangement design §4, §6).
 final class ScoreContainerView: NSView {
     let model: AppModel
 
@@ -20,6 +22,8 @@ final class ScoreContainerView: NSView {
 
     private let scrollView = NSScrollView(frame: .zero)
     private let score = ScoreView(frame: .zero)
+    /// The part card's and the string card's panel; one at a time.
+    private let card = PopupMenuPresenter()
 
     /// What the last sync built the document from.
     private var lastNotes: [NoteEvent] = []
@@ -65,6 +69,14 @@ final class ScoreContainerView: NSView {
                 self.model.deselectTabNote()
             }
         }
+
+        score.onRightClickTabNote = { [weak self] hit, windowPoint in
+            self?.showStringCard(for: hit, at: windowPoint)
+        }
+
+        score.onClickPartName = { [weak self] program, windowPoint in
+            self?.showPartCard(for: program, at: windowPoint)
+        }
     }
 
     required init?(coder: NSCoder) {
@@ -88,7 +100,49 @@ final class ScoreContainerView: NSView {
 
         if window != nil {
             sync()
+        } else {
+            // Leaving the Score tab takes this view out of the window; a card left up would
+            // outlive what it was for.
+            card.dismiss()
         }
+    }
+
+    // MARK: - Cards
+
+    /// The string card for a right-clicked fret number: the note's sounding pitch comes from
+    /// the document the number was drawn from.
+    private func showStringCard(for hit: TabHit, at windowPoint: NSPoint) {
+        guard let window, let pitch = soundingPitch(program: hit.program, id: hit.id) else { return }
+
+        let card = card
+        let model = model
+
+        card.showPanel(at: window.convertPoint(toScreen: windowPoint), in: window, scale: scale) {
+            StringCard(model: model, hit: hit, pitch: pitch, host: card)
+        }
+    }
+
+    private func showPartCard(for program: Int, at windowPoint: NSPoint) {
+        guard let window else { return }
+
+        let card = card
+        let model = model
+
+        card.showPanel(at: window.convertPoint(toScreen: windowPoint), in: window, scale: scale) {
+            PartDisplayCard(model: model, program: program, host: card)
+        }
+    }
+
+    private func soundingPitch(program: Int, id: NoteID) -> Int? {
+        guard let tab = score.document.parts.first(where: { $0.program == program })?.tab else { return nil }
+
+        for measure in tab.measures {
+            for piece in measure.pieces {
+                if let note = piece.notes.first(where: { $0.id == id }) { return note.pitch }
+            }
+        }
+
+        return nil
     }
 
     // MARK: - Model mirror

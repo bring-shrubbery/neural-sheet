@@ -3,20 +3,26 @@ import NeuralSheetCore
 
 /// The page (score design §5, arrangement design §4): a ``ScoreLayout`` drawn by a
 /// ``ScoreRenderer``, with the cursor as a subview so the playhead moves without a repaint, the
-/// tab notes as drawn kept for the click, and the selected one outlined. Sized by its container
-/// to the layout's height.
+/// tab notes and the part names as drawn kept for the click, and the selected note outlined.
+/// Sized by its container to the layout's height.
 final class ScoreView: NSView {
     var document = ScoreDocument.empty
     var arrangement = ScoreArrangement()
     var layout: ScoreLayout? {
-        didSet { hitsBySystem = [:] }
+        didSet {
+            hitsBySystem = [:]
+            namesBySystem = [:]
+        }
     }
 
-    /// The tab notes as drawn, by system: the systems drawn so far with this layout, which
-    /// covers everything a click can land on. Kept per system because a tall view is tiled and
-    /// `draw(_:)` may cover one tile's systems at a time.
+    /// The tab notes and the part names as drawn, by system: the systems drawn so far with this
+    /// layout, which covers everything a click can land on. Kept per system because a tall view
+    /// is tiled and `draw(_:)` may cover one tile's systems at a time; flattened in system order
+    /// so the first hit found is the same whatever order the tiles were drawn in.
     private var hitsBySystem: [Int: [TabHit]] = [:]
-    var hits: [TabHit] { hitsBySystem.values.flatMap { $0 } }
+    private var namesBySystem: [Int: [NameHit]] = [:]
+    var hits: [TabHit] { hitsBySystem.keys.sorted().flatMap { hitsBySystem[$0] ?? [] } }
+    var nameHits: [NameHit] { namesBySystem.keys.sorted().flatMap { namesBySystem[$0] ?? [] } }
     var selectedTabNote: (program: Int, id: NoteID)?
 
     /// A click on empty score seeks; the container owns the model.
@@ -25,6 +31,8 @@ final class ScoreView: NSView {
     var onSelectTabNote: ((TabHit?) -> Void)?
     /// A right-click on a tab note, with the point in the window.
     var onRightClickTabNote: ((TabHit, NSPoint) -> Void)?
+    /// A click on a part's name, with the program and the point in the window.
+    var onClickPartName: ((Int, NSPoint) -> Void)?
 
     let cursor = FillView(colour: ScorePalette.cursor)
 
@@ -67,12 +75,22 @@ final class ScoreView: NSView {
         hits.first { $0.frame.insetBy(dx: -2, dy: -2).contains(point) }
     }
 
+    /// The part name under `point`.
+    private func nameHit(at point: NSPoint) -> NameHit? {
+        nameHits.first { $0.frame.insetBy(dx: -2, dy: -2).contains(point) }
+    }
+
     override func mouseDown(with event: NSEvent) {
         window?.makeFirstResponder(nil)
 
         guard let layout else { return }
 
         let point = convert(event.locationInWindow, from: nil)
+
+        if let name = nameHit(at: point) {
+            onClickPartName?(name.program, event.locationInWindow)
+            return
+        }
 
         if let hit = hit(at: point) {
             onSelectTabNote?(hit)
@@ -109,8 +127,10 @@ final class ScoreView: NSView {
 
         for (index, system) in layout.systems.systems.enumerated() where system.frame.insetBy(dx: 0, dy: -8 * layout.sp).intersects(rect) {
             var collected: [TabHit] = []
-            renderer.drawSystem(system, in: ctx, hits: &collected)
+            var names: [NameHit] = []
+            renderer.drawSystem(system, in: ctx, hits: &collected, names: &names)
             hitsBySystem[index] = collected
+            namesBySystem[index] = names
         }
 
         if let selected = selectedTabNote, let hit = hits.first(where: { $0.program == selected.program && $0.id == selected.id }) {

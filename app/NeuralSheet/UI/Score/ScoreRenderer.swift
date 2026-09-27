@@ -10,6 +10,12 @@ struct TabHit: Equatable {
     var string: Int
 }
 
+/// A part's name as drawn, for the click that opens its display card.
+struct NameHit: Equatable {
+    var program: Int
+    var frame: CGRect
+}
+
 /// Draws a laid-out score into any `CGContext` (arrangement design §4): the view and the PDF
 /// export share it. Staves, bar lines, clefs, signatures, part names, measure numbers and the
 /// tempo here; chords in `+Chords`, tab staves in `+Tab`, the page's header and footer in `+Page`.
@@ -20,10 +26,11 @@ struct ScoreRenderer {
 
     var pixel: CGFloat { max(1, (sp / 8).rounded()) }
 
-    func drawSystem(_ system: ScoreSystemLayout.System, in ctx: CGContext, hits: inout [TabHit]) {
+    /// Every tab number goes into `hits` and every part name into `names`, for the clicks.
+    func drawSystem(_ system: ScoreSystemLayout.System, in ctx: CGContext, hits: inout [TabHit], names: inout [NameHit]) {
         drawStaffLines(system, in: ctx)
         drawBarLines(system, in: ctx)
-        drawPrefixes(system, in: ctx)
+        drawPrefixes(system, in: ctx, names: &names)
         drawNumbersAndTempo(system, in: ctx)
 
         for row in system.rows {
@@ -87,8 +94,10 @@ struct ScoreRenderer {
     }
 
     /// Part names, clefs (the "TAB" mark on a tab), key signatures and, on the first system, the
-    /// time signature.
-    private func drawPrefixes(_ system: ScoreSystemLayout.System, in ctx: CGContext) {
+    /// time signature. The full name goes on the first system and the abbreviation on the rest,
+    /// but a name wider than the margin's room ("Acoustic Guitar") is abbreviated on the first
+    /// system too rather than clipped.
+    private func drawPrefixes(_ system: ScoreSystemLayout.System, in ctx: CGContext, names: inout [NameHit]) {
         let ink = ScorePalette.ink
         let isFirst = system.showsTimeSignature
         let nameFont = TimelineFonts.meta(sp / 8)
@@ -99,11 +108,21 @@ struct ScoreRenderer {
 
             if arrangement.sheet.showsPartNames, partRows.first == row, let last = partRows.last {
                 let colour = TimelinePalette.cg(Instruments.info(forProgram: part.program).colour, alpha: 1)
-                let label = isFirst ? part.name : part.abbreviation
+                let room = system.frame.minX - 0.6 * sp
+                var label = isFirst ? part.name : part.abbreviation
+                var width = TimelineText.width(label, font: nameFont)
+
+                if width > room, label != part.abbreviation {
+                    label = part.abbreviation
+                    width = TimelineText.width(label, font: nameFont)
+                }
+
                 let centreY = (row.topLineY + last.bottomLineY) / 2
                 TimelineText.draw(label, font: nameFont, colour: colour,
-                                  in: CGRect(x: 0, y: centreY - sp, width: system.frame.minX - 0.6 * sp, height: 2 * sp),
+                                  in: CGRect(x: 0, y: centreY - sp, width: room, height: 2 * sp),
                                   anchor: .centredRight, context: ctx)
+                names.append(NameHit(program: part.program,
+                                     frame: CGRect(x: max(0, room - width), y: centreY - sp, width: min(width, room), height: 2 * sp)))
             }
 
             guard let first = system.measures.first else { continue }
