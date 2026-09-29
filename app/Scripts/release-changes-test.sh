@@ -22,7 +22,7 @@ check() {
 check "docs only"        "docs/design/x.md README.md LICENSE NOTICE .github/MAINTAINERS .github/ISSUE_TEMPLATE/bug.yml" ""
 check "app source"       "app/NeuralSheet/App/AppModel.swift README.md" "app/NeuralSheet/App/AppModel.swift"
 check "workflow"         ".github/workflows/ci.yml .github/CODEOWNERS" ".github/workflows/ci.yml"
-check "submodule bump"   "app/ThirdParty/muscriptor.cpp .gitmodules" "app/ThirdParty/muscriptor.cpp .gitmodules"
+check "submodule bump"   "app/ThirdParty/demucs.cpp .gitmodules" "app/ThirdParty/demucs.cpp .gitmodules"
 check "script"           "app/Scripts/build-engine.sh docs/icon.png" "app/Scripts/build-engine.sh"
 check "md under app"     "app/Packages/NeuralSheetCore/README.md app/Packages/NeuralSheetCore/Package.swift" "app/Packages/NeuralSheetCore/Package.swift"
 check "nothing"          "" ""

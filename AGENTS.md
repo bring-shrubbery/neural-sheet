@@ -1,6 +1,6 @@
 # NeuralSheet — guidance for coding agents
 
-NeuralSheet is a native macOS audio-to-MIDI transcription app (SwiftUI, AppKit, AVAudioEngine) with a C++ transcription engine linked as a static library. This file is for any AI agent working in this repository. Read it fully before changing anything.
+NeuralSheet is a native macOS audio-to-MIDI transcription app (SwiftUI, AppKit, AVAudioEngine) with a pure-Swift transcription engine in a local package. This file is for any AI agent working in this repository. Read it fully before changing anything.
 
 ## First: who are you acting for?
 
@@ -13,7 +13,7 @@ NeuralSheet is a native macOS audio-to-MIDI transcription app (SwiftUI, AppKit, 
 app/                       The macOS app (Xcode project, scheme NeuralSheet)
   NeuralSheet/App/         AppModel state machine, window, shortcuts, project lifecycle, dialogs
   NeuralSheet/Audio/       PlaybackEngine, Recorder, NoteScheduler, InstrumentSynthBank, devices
-  NeuralSheet/Engine/      C bridge (nsheet_engine.h/.cpp) + TranscriptionEngine wrapper
+  NeuralSheet/Engine/      TranscriptionEngine, the app's wrapper over the NeuralSheetEngine package
   NeuralSheet/AppIcon.icon The app icon (Icon Composer document; gradient fill + notes.svg layer)
   NeuralSheet/UI/          Theme, Fonts, Icons, controls, top bar, sidebar, toolbar, status bar,
                            the Settings window (General / Model / Audio), the welcome window, and
@@ -21,8 +21,10 @@ app/                       The macOS app (Xcode project, scheme NeuralSheet)
     UI/Timeline/Editing/   The roll's edit controller
   Packages/NeuralSheetCore Pure Swift logic with tests (notes, instruments, MIDI writer, peaks,
                            resampler, meters, zoom math, settings, project file, downloader)
-  ThirdParty/muscriptor.cpp The transcription engine, git submodule (do not edit)
-  Scripts/build-engine.sh  CMake build of the engine; runs as an Xcode build phase
+  Packages/NeuralSheetEngine The transcription engine in Swift: GGUF reader, mel front end,
+                           transformer over Accelerate or Metal, decoding, note assembly
+  ThirdParty/demucs.cpp    The stem separation library, a submodule (do not edit)
+  Scripts/build-engine.sh  CMake build of demucs.cpp; runs as an Xcode build phase
 docs/design/               The behavioural inventory of NeuralNote (the parity checklist), the design,
                            the implementation plan, and the parity-pass gap list, the MIDI editor
                            design and plan
@@ -35,9 +37,10 @@ cd app
 xcodebuild -project NeuralSheet.xcodeproj -scheme NeuralSheet -configuration Debug \
   -destination 'platform=macOS,arch=arm64' build 2>&1 | tail -20      # must be warning-free in our files
 cd Packages/NeuralSheetCore && swift test                             # must pass
+cd Packages/NeuralSheetEngine && swift test                           # must pass
 ```
 
-Requirements: macOS 26, Xcode 27, CMake on PATH (`/opt/homebrew/bin/cmake` is also searched), network on the first engine build. Never edit `project.pbxproj` by hand except for build settings; source files are picked up automatically (synchronized folders).
+Requirements: macOS 26, Xcode 27, CMake on PATH (`/opt/homebrew/bin/cmake` is also searched) for the stem separation library. Never edit `project.pbxproj` by hand except for build settings; source files are picked up automatically (synchronized folders).
 
 ## Rules that are not negotiable
 

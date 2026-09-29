@@ -26,9 +26,8 @@ NeuralNote v2 is a JUCE application that also ships as an AU and VST3 plugin. Th
 
 - **Audio** goes through one `AVAudioEngine` graph. A source node owns the clock and schedules synth notes one buffer ahead, sample-aligned with the original audio, with a 128-frame I/O buffer where the device allows it.
 - **Drawing** is done by AppKit views that repaint only the strip that changed. The playhead and progress washes are layers that move without redrawing. A ten-minute file scrolls at 120 Hz.
+- **Transcription** is pure Swift: `NeuralSheetEngine`, a port of [muscriptor.cpp](https://github.com/DamRsn/muscriptor.cpp) that reads the same GGUF checkpoints and decodes on Accelerate or on Metal kernels compiled at run time.
 - **Everything else** is SwiftUI, with the original palette, typography, metrics and interaction rules ported one for one.
-
-The transcription engine itself, [muscriptor.cpp](https://github.com/DamRsn/muscriptor.cpp), is unchanged and linked as a static library.
 
 ## Usage
 
@@ -61,8 +60,7 @@ Playback uses the General MIDI synthesizer built into macOS, so no soundfont is 
 Requirements:
 
 - macOS 26 on Apple silicon, Xcode 27
-- [CMake](https://cmake.org/) (`brew install cmake`), used to build the transcription engine
-- Internet access on the first build (the engine fetches [ggml](https://github.com/ggml-org/ggml))
+- [CMake](https://cmake.org/) (`brew install cmake`), used to build the stem separation library
 
 ```sh
 git clone --recurse-submodules https://github.com/bring-shrubbery/neural-sheet.git
@@ -70,18 +68,19 @@ cd neural-sheet/app
 xcodebuild -scheme NeuralSheet -configuration Release build
 ```
 
-Or open `app/NeuralSheet.xcodeproj` in Xcode and run the **NeuralSheet** scheme. A build phase compiles the engine with CMake on first build and skips it afterwards. The app is signed for development with the hardened runtime and the microphone entitlement; to distribute it you need your own Developer ID.
+Or open `app/NeuralSheet.xcodeproj` in Xcode and run the **NeuralSheet** scheme. A build phase compiles the stem separation library with CMake on first build and skips it afterwards. The app is signed for development with the hardened runtime and the microphone entitlement; to distribute it you need your own Developer ID.
 
-The pure-Swift logic lives in a package with its own tests:
+The pure-Swift logic lives in two packages with their own tests:
 
 ```sh
 cd app/Packages/NeuralSheetCore && swift test
+cd app/Packages/NeuralSheetEngine && swift test
 ```
 
 ## Repository layout
 
 ```
-app/          The macOS app: Xcode project, Swift package, engine submodule, build scripts
+app/          The macOS app: Xcode project, Swift packages, the stem separation submodule, build scripts
 docs/design/  How the app was built: the behavioural inventory of NeuralNote, the design, the plan, the parity pass
 web/          The website (Astro), deployed to neural-sheet.quassum.com by Cloudflare Workers Builds
 ```
@@ -108,7 +107,7 @@ NeuralSheet started on **2026-09-17** as a rewrite of **NeuralNote v2** at commi
 
 - **NeuralNote v2** was developed by [Damien Ronssin](https://github.com/DamRsn), with AI assistance.
 - **NeuralNote v1** was developed by Damien Ronssin and [Tibor Vass](https://github.com/tiborvass); its interface was designed by Perrine Morel.
-- **muscriptor.cpp**, the transcription engine, is by Damien Ronssin. **MuScriptor**, the model, is by Kyutai and Mirelo ([paper](https://arxiv.org/abs/2607.08168), [project](https://github.com/muscriptor/muscriptor)).
+- **muscriptor.cpp**, the C++ engine NeuralSheet's Swift transcription engine is ported from, is by Damien Ronssin. **MuScriptor**, the model, is by Kyutai and Mirelo ([paper](https://arxiv.org/abs/2607.08168), [project](https://github.com/muscriptor/muscriptor)).
 - **NeuralSheet** is by [Antoni Silvestrovic](https://github.com/bring-shrubbery), built with Claude Code.
 
 ## License
