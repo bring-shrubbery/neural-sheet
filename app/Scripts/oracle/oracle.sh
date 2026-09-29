@@ -76,7 +76,7 @@ find_checkpoint() {
 echo "muscriptor.cpp: $COMMIT"
 echo "fixture: $FIXTURE"
 
-for size in small medium; do
+for size in small medium large; do
     if ! checkpoint=$(find_checkpoint "$size"); then
         echo "error: no muscriptor-$size-f16.gguf under \$NEURALSHEET_MODELS, ~/Library/NeuralSheet/models or ~/Library/NeuralNote/models" >&2
         exit 1

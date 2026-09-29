@@ -9,7 +9,7 @@ The dumps live in the package, tracked:
 
 ```
 app/Packages/NeuralSheetEngine/Tests/NeuralSheetEngineTests/Fixtures/oracle/
-  small-cpu/  small-metal/  medium-cpu/  medium-metal/
+  small-cpu/  small-metal/  medium-cpu/  medium-metal/  large-cpu/  large-metal/
 ```
 
 The tests read the tensors (`positions.f32`, `stft.f32`, `cond.f32`,
@@ -48,7 +48,7 @@ between a `-cpu` directory and its `-metal` one. Everything decided by a
 comparison rather than by a bit pattern agrees exactly on this fixture, for both
 sizes: `decode_steps.json`, `tokens.json`, `tokens_band.json` and all four
 `notes_*.json` are byte-identical between `small-cpu` and `small-metal`, and
-between `medium-cpu` and `medium-metal`, so no chunk diverges. (`positions.f32`,
+between `medium-cpu` and `medium-metal`, and between `large-cpu` and `large-metal`, so no chunk diverges. (`positions.f32`,
 `stft.f32` and `cond.f32` are identical too — the front-end runs on the host in
 fp32 on either backend.) The tests still read the directory for the backend they
 run on, so a future divergence shows up as a failure in one backend only.
