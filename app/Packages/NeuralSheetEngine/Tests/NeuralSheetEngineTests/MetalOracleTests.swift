@@ -33,7 +33,7 @@ import Testing
     /// Every kernel the backend dispatches, which is also every kernel the shader source
     /// is required to define.
     private static let kernelNames = [
-        "layer_norm", "matvec_f16", "matmul_f16", "copy_kv", "attn_scores", "softmax_rows",
+        "layer_norm", "matvec_f16", "matmul_tiled_f16", "copy_kv", "attn_scores", "softmax_rows",
         "attn_values", "gelu_erf", "add_inplace",
     ]
 

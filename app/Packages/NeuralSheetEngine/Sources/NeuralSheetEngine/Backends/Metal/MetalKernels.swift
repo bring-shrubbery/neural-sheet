@@ -53,6 +53,17 @@ struct MetalKernels {
     /// are this long and their trees halve it, so the dispatch must match it exactly.
     static let reduceThreads = 256
 
+    /// `GEMM_TM`, `GEMM_TN` and `GEMM_TW` in the shader source: the output tile one
+    /// threadgroup of `matmul_tiled_f16` owns and the square of it one thread owns. They
+    /// size the kernel's threadgroup arrays, so these have to be changed together with the
+    /// macros there.
+    static let gemmTile = (rows: 64, features: 64, perThread: 4)
+
+    /// The threads `matmul_tiled_f16` is dispatched with, which is `GEMM_THREADS`.
+    static let gemmThreads = MTLSize(
+        width: (gemmTile.features / gemmTile.perThread) * (gemmTile.rows / gemmTile.perThread),
+        height: 1, depth: 1)
+
     private let layerNormState: MTLComputePipelineState
     private let matvecState: MTLComputePipelineState
     private let matmulState: MTLComputePipelineState
@@ -69,7 +80,6 @@ struct MetalKernels {
 
     /// Threadgroup shapes for the kernels dispatched by thread count rather than by
     /// threadgroup, computed once from each pipeline's own limits.
-    private let matmulThreads: MTLSize
     private let planeThreads: MTLSize
     private let lineThreads: MTLSize
 
@@ -92,7 +102,7 @@ struct MetalKernels {
 
         layerNormState = try state("layer_norm")
         matvecState = try state("matvec_f16")
-        matmulState = try state("matmul_f16")
+        matmulState = try state("matmul_tiled_f16")
         copyKVState = try state("copy_kv")
         attentionScoresState = try state("attn_scores")
         softmaxState = try state("softmax_rows")
@@ -111,14 +121,13 @@ struct MetalKernels {
 
         simdWidth = max(1, matvecState.threadExecutionWidth)
 
-        // `matmul_f16`'s x is one simdgroup, reducing one dot product, and its y is the input
-        // rows that share a row of the weight: eight of them, which is enough for the weight
-        // to be read once per threadgroup out of the cache and few enough to leave the
-        // occupancy the reads need.
-        let matmulWidth = max(1, matmulState.threadExecutionWidth)
-        matmulThreads = MTLSize(
-            width: matmulWidth,
-            height: max(1, min(8, matmulState.maxTotalThreadsPerThreadgroup / matmulWidth)), depth: 1)
+        // `matmul_tiled_f16` has its tile compiled into it, so unlike the kernels below it
+        // cannot be shaped to the device: the dispatch is the one the macros imply or the
+        // kernel reads past its threadgroup arrays.
+        guard matmulState.maxTotalThreadsPerThreadgroup >= MetalKernels.gemmThreads.width else {
+            throw TranscriberError.internalError(
+                "this device runs fewer than \(MetalKernels.gemmThreads.width) threads per threadgroup")
+        }
 
         // A 2D or 3D grid is covered with the execution width along x -- so that the lanes
         // of a simdgroup read consecutive addresses -- and as many rows of that as the
@@ -159,9 +168,9 @@ struct MetalKernels {
     /// `out[r][o] = sum_i W[o][i] . x[r][i]`, over `rows` rows of `inFeatures` values.
     ///
     /// One kernel or the other by the row count, which is the whole difference between a
-    /// decode step and a prefill: `matvec_f16` puts one simdgroup on each output row of a
-    /// single input row, `matmul_f16` stacks eight input rows behind each of those
-    /// simdgroups so that they share the weight they read.
+    /// decode step and a prefill: `matvec_f16` puts one simdgroup on each output row of the
+    /// single input row and is bound by the weight it streams, `matmul_tiled_f16` tiles the
+    /// output and is bound by the arithmetic.
     func matrixProduct(
         _ encoder: MTLComputeCommandEncoder,
         weights: MTLBuffer, weightsOffset: Int, input: MTLBuffer, inputOffset: Int,
@@ -180,12 +189,15 @@ struct MetalKernels {
                 MTLSize(width: outFeatures, height: 1, depth: 1),
                 threadsPerThreadgroup: MTLSize(width: simdWidth, height: 1, depth: 1))
         } else {
-            // Whole threadgroups, not threads: the kernel's y extent is the number of input
-            // rows a group shares a weight row over, and a non-uniform last group would give
-            // some of them fewer -- so the kernel checks the row bound itself instead.
-            let groups = (rows + matmulThreads.height - 1) / matmulThreads.height
+            // Whole threadgroups, not threads: a tile is the unit of work, and a partial one
+            // at the edge of either axis is the kernel's own business -- it stages zeroes for
+            // what is not there and writes back only what is.
+            let tile = MetalKernels.gemmTile
             encoder.dispatchThreadgroups(
-                MTLSize(width: outFeatures, height: groups, depth: 1), threadsPerThreadgroup: matmulThreads)
+                MTLSize(
+                    width: (outFeatures + tile.features - 1) / tile.features,
+                    height: (rows + tile.rows - 1) / tile.rows, depth: 1),
+                threadsPerThreadgroup: MetalKernels.gemmThreads)
         }
     }
 

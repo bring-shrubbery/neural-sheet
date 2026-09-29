@@ -18,7 +18,11 @@
 
 /// The Metal Shading Language the backend compiles at load. @see MetalKernels
 enum MetalShaderSource {
-    static let source = """
+    /// The whole library: these kernels and the prefill GEMM, which is long enough and
+    /// self-contained enough to live in its own file. @see MetalShaderSource+GEMM
+    static let source = core + gemm
+
+    private static let core = """
         #include <metal_stdlib>
         using namespace metal;
 
@@ -178,50 +182,6 @@ enum MetalShaderSource {
 
             if (lane == 0) {
                 out[row] = accumulator;
-            }
-        }
-
-        /// `out = X . Wt` for several input rows: `matvec_f16` again, one simdgroup per
-        /// output element, with the input rows of a threadgroup sharing one row of the
-        /// weight.
-        ///
-        /// A thread per output element -- the obvious kernel, and the one this started as --
-        /// is eight times slower than the CPU's `cblas_sgemm` on a 504-row prefill, because
-        /// the lanes of a simdgroup then read the weight `inFeatures` apart and every lane
-        /// pulls its own cache line. Splitting the dot product across the lanes instead makes
-        /// those reads contiguous, and stacking the threadgroup in y -- every simdgroup in it
-        /// on the same output feature, a different input row -- reads each weight row once
-        /// for the whole group. That is the whole optimisation: no threadgroup memory, no
-        /// tiling, and the arithmetic is `matvec_f16`'s line for line.
-        kernel void matmul_f16(
-            device const half *weights [[buffer(0)]],
-            device const float *x [[buffer(1)]],
-            device float *out [[buffer(2)]],
-            constant MatmulParams &p [[buffer(3)]],
-            uint2 group [[threadgroup_position_in_grid]],
-            uint2 tid [[thread_position_in_threadgroup]],
-            uint2 groupSize [[threads_per_threadgroup]])
-        {
-            // Every lane of a simdgroup shares `tid.y`, so a simdgroup either runs or returns
-            // whole and the `simd_sum` below is never reached by a diverged one.
-            const uint row = group.y * groupSize.y + tid.y;
-
-            if (row >= p.rows) {
-                return;
-            }
-
-            device const half *w = weights + (ulong)group.x * p.inFeatures;
-            device const float *source = x + (ulong)row * p.inFeatures;
-
-            float accumulator = 0.0f;
-            for (uint i = tid.x; i < p.inFeatures; i += groupSize.x) {
-                accumulator = fma(float(w[i]), source[i], accumulator);
-            }
-
-            accumulator = simd_sum(accumulator);
-
-            if (tid.x == 0) {
-                out[(ulong)row * p.outFeatures + group.x] = accumulator;
             }
         }
 
