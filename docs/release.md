@@ -100,8 +100,8 @@ warning, and the website keeps offering the previous version until it is rebuilt
 Push a code change to `main`, or run the Release workflow from the Actions tab
 with **Run workflow** (only `main` is honoured). The `Decide the version` job
 prints the version and the changed paths; `Build and publish` takes about
-fifteen minutes, most of it the engine build the first time and Apple's
-notarization queue. The release appears at
+fifteen minutes, most of it the stem separation library's CMake build the
+first time and Apple's notarization queue. The release appears at
 https://github.com/bring-shrubbery/neural-sheet/releases.
 
 Until the eight secrets exist, every code push produces one red Release run

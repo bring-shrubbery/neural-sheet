@@ -38,6 +38,7 @@ Work towards v2 starts here: user-experience improvements beyond NeuralNote pari
 - Trackpad panning of the timeline is smooth.
 - Clicking the timeline, or pressing Return in a field, gives the keyboard back to the transport.
 - The window is titled after the project.
+- The transcription engine is now written in Swift, so it runs on the Mac's GPU without any C++ and can be built for iOS.
 
 ### Removed
 

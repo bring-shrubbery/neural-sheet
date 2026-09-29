@@ -69,6 +69,7 @@ Non-goals
 | Backend choice | `LoadOptions.useGPU` (default true): Metal when `MTLCreateSystemDefaultDevice()` answers, the CPU otherwise. `backendName` is `"Metal"` or `"CPU"`. |
 | Errors | `TranscriberError`, one case per `msl::Error`: `fileNotFound`, `invalidCheckpoint(String)`, `unsupportedArchitecture(String)`, `unsupportedCheckpointVersion(found: Int)`, `outOfMemory`, `contextOverflow`, `cancelled`, `invalidArgument(String)`, `internalError(String)`. `description` gives muscriptor.cpp's wording. |
 | Logging | None. The library prints nothing. |
+| Optimisation | The `NeuralSheetEngine` target is built with `-O` in Debug as well as Release (`Package.swift`), because at `-Onone` the `Float16` GEMV of a decode step runs some twenty times slower, which would make a Debug app unusable and the oracle suites a quarter of an hour of `swift test`; a session bisecting a numerics bug should drop that flag while it lasts, so the optimiser is not one of the variables. |
 | Oracle | `app/Scripts/oracle/` (C++, built against the existing engine archives) dumps, for a checkpoint and a backend: the position table's first rows, the STFT of the fixture's first frames, the whole conditioning embedding of chunk 0, the prefill logits, the first sixteen decode steps' logits and argmaxes, every chunk's greedy token stream without prelude forcing, and the note lists of the `plain`, `prelude`, `bass` and `band` variants. Committed under the package's test fixtures for `small` (CPU and Metal) and `medium` (CPU and Metal). The generator stays in the repo with the muscriptor.cpp commit it was run against; once the submodule is gone, re-running it needs a checkout. |
 | Fixtures | `fixture_3chunks_16k.wav` with its attribution, `tables.json` and `note_vectors.json` copied from the submodule into the package's test resources, so the package tests do not depend on it. |
 | Checkpoints in tests | Looked for at `$NEURALSHEET_MODELS`, then `~/Library/NeuralSheet/models`, then `~/Library/NeuralNote/models`; a test that needs one skips with a message when it is absent. Never downloaded by a test. |
@@ -187,7 +188,7 @@ backend, `Tests/NeuralSheetEngineTests/Fixtures/oracle/<size>-<backend>/`:
 
 | File | Contents |
 |---|---|
-| `hparams.json` | Every `Hparams` field, `nCtx`, the backend name, the checkpoint's file name and sha256 prefix, the muscriptor.cpp commit |
+| `hparams.json` | Every `Hparams` field, `nCtx`, the backend name, the checkpoint's file name, the muscriptor.cpp commit |
 | `positions.f32` | The first 8 rows of the position table, `[8][dim]` |
 | `stft.f32` | The first 8 frames of the fixture's chunk 0 magnitudes, `[8][1025]` |
 | `cond.f32` | The conditioning embedding of chunk 0, `[501][dim]` |

@@ -4,7 +4,7 @@
 
 **Audio-to-MIDI transcription as a native macOS app.** Record or drop a track, pick the instruments, and NeuralSheet turns it into MIDI you can play back, mix, and drag straight into your DAW. Transcription runs entirely on your machine.
 
-NeuralSheet is a from-scratch Swift rewrite of [NeuralNote](https://github.com/DamRsn/NeuralNote) by [Damien Ronssin](https://github.com/DamRsn), built to fix the two things that held the original back on the Mac: audio latency and interface smoothness. It keeps NeuralNote's design, behaviour and transcription engine, and replaces the cross-platform C++/JUCE application layer with SwiftUI, AppKit and AVAudioEngine. See [Credits](#credits) for the full story.
+NeuralSheet is a from-scratch Swift rewrite of [NeuralNote](https://github.com/DamRsn/NeuralNote) by [Damien Ronssin](https://github.com/DamRsn), built to fix the two things that held the original back on the Mac: audio latency and interface smoothness. It keeps NeuralNote's design, behaviour and transcription model, and replaces the cross-platform C++/JUCE application layer with SwiftUI, AppKit and AVAudioEngine. See [Credits](#credits) for the full story.
 
 ![NeuralSheet transcribing a track](docs/screenshot.png)
 
@@ -74,7 +74,7 @@ The pure-Swift logic lives in two packages with their own tests:
 
 ```sh
 cd app/Packages/NeuralSheetCore && swift test
-cd app/Packages/NeuralSheetEngine && swift test
+cd ../NeuralSheetEngine && swift test
 ```
 
 ## Repository layout
@@ -112,6 +112,6 @@ NeuralSheet started on **2026-09-17** as a rewrite of **NeuralNote v2** at commi
 
 ## License
 
-NeuralSheet's code is licensed under the [Apache License 2.0](LICENSE), the same licence as NeuralNote. [NOTICE](NOTICE) records the origin of the work, and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) lists every third-party component: muscriptor.cpp and ggml (MIT), PFFFT (BSD-style), stb_vorbis (public domain), and the Inter and JetBrains Mono typefaces (OFL 1.1).
+NeuralSheet's code is licensed under the [Apache License 2.0](LICENSE), the same licence as NeuralNote. [NOTICE](NOTICE) records the origin of the work, and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) lists every third-party component: muscriptor.cpp (MIT), stb_vorbis (public domain), and the Inter and JetBrains Mono typefaces (OFL 1.1). muscriptor.cpp is named there as the origin of NeuralSheet's Swift transcription engine, not as a linked library; ggml and PFFFT came with the C++ engine and are no longer part of the app.
 
 The MuScriptor model weights are **CC BY-NC 4.0, non-commercial use only**, and are downloaded separately at run time.
