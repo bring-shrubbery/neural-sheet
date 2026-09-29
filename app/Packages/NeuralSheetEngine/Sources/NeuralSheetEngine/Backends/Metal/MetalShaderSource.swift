@@ -18,10 +18,11 @@
 
 /// The Metal Shading Language the backend compiles at load. @see MetalKernels
 enum MetalShaderSource {
-    /// The whole library: these kernels, the decode matvec and the prefill GEMM. The last
-    /// two are long enough and have enough of a blocking strategy to explain that each lives
-    /// in its own file. @see MetalShaderSource+Matvec, MetalShaderSource+GEMM
-    static let source = core + matvec + gemm
+    /// The whole library: these kernels, the decode matvec, the fused decode attention and
+    /// the prefill GEMM. The last three are long enough and have enough of a blocking strategy
+    /// to explain that each lives in its own file.
+    /// @see MetalShaderSource+Matvec, MetalShaderSource+Attention, MetalShaderSource+GEMM
+    static let source = core + matvec + attention + gemm
 
     private static let core = """
         #include <metal_stdlib>

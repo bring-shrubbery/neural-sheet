@@ -32,7 +32,8 @@ extension MetalBackend {
         }
 
         let nKV = nPast + nNew
-        try reserve(nNew: nNew, nKV: nKV)
+        let fuseAttention = kernels.canFuseAttention(nNew: nNew, nKV: nKV, headDim: hparams.headDim)
+        try reserve(nNew: nNew, nKV: nKV, scoresNeeded: !fuseAttention)
 
         input.withUnsafeBytes { bytes -> Void in
             memcpy(x.buffer.contents(), bytes.baseAddress!, bytes.count)
@@ -65,13 +66,24 @@ extension MetalBackend {
                 encoder, qkv: qkv.buffer, cache: cacheBuffer, keysOffset: layer.keys,
                 valuesOffset: layer.values, nNew: nNew, nPast: nPast, dim: dim)
 
-            kernels.attentionScores(
-                encoder, qkv: qkv.buffer, cache: cacheBuffer, keysOffset: layer.keys,
-                scores: scores.buffer, attention: attention)
-            kernels.softmaxRows(encoder, scores: scores.buffer, rows: hparams.nHead * nNew, columns: nKV)
-            kernels.attentionValues(
-                encoder, scores: scores.buffer, cache: cacheBuffer, valuesOffset: layer.values,
-                out: attended.buffer, attention: attention)
+            // One kernel for a decode step and three for a prefill, which is the whole
+            // difference between the two shapes: at a single query row the score row is short
+            // enough to stay in threadgroup memory and nothing is masked, so writing it out
+            // for two more kernels to read back is most of the cost. @see canFuseAttention
+            if fuseAttention {
+                kernels.attentionDecode(
+                    encoder, qkv: qkv.buffer, cache: cacheBuffer, keysOffset: layer.keys,
+                    valuesOffset: layer.values, out: attended.buffer, attention: attention)
+            } else {
+                kernels.attentionScores(
+                    encoder, qkv: qkv.buffer, cache: cacheBuffer, keysOffset: layer.keys,
+                    scores: scores.buffer, attention: attention)
+                kernels.softmaxRows(
+                    encoder, scores: scores.buffer, rows: hparams.nHead * nNew, columns: nKV)
+                kernels.attentionValues(
+                    encoder, scores: scores.buffer, cache: cacheBuffer, valuesOffset: layer.values,
+                    out: attended.buffer, attention: attention)
+            }
 
             kernels.matrixProduct(
                 encoder, weights: weightsBuffer, weightsOffset: layer.attnOut,
@@ -125,7 +137,7 @@ extension MetalBackend {
 
     /// Grows the activation buffers to fit this window. A prefill grows them once; every
     /// decode step after it is a single row over the same buffers and allocates nothing.
-    private func reserve(nNew: Int, nKV: Int) throws {
+    private func reserve(nNew: Int, nKV: Int, scoresNeeded: Bool) throws {
         let dim = hparams.dim
         try x.reserve(nNew * dim)
         try normed.reserve(nNew * dim)
@@ -133,6 +145,12 @@ extension MetalBackend {
         try attended.reserve(nNew * dim)
         try projected.reserve(nNew * dim)
         try ffn.reserve(nNew * hparams.ffnDim)
-        try scores.reserve(hparams.nHead * nNew * nKV)
+
+        // Only the three-kernel path has an `nNew x nKV` block per head to write; the fused
+        // decode kernel keeps its row in threadgroup memory, so a run that never prefills at a
+        // wider window -- which no chunk is -- never allocates this at all.
+        if scoresNeeded {
+            try scores.reserve(hparams.nHead * nNew * nKV)
+        }
     }
 }

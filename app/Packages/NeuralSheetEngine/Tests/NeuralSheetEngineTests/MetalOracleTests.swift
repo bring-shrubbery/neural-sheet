@@ -33,7 +33,7 @@ import Testing
     /// is required to define.
     private static let kernelNames = [
         "layer_norm", "matvec_f16", "matmul_tiled_f16", "copy_kv", "attn_scores", "softmax_rows",
-        "attn_values", "gelu_erf", "add_inplace",
+        "attn_values", "attn_decode", "gelu_erf", "add_inplace",
     ]
 
     /// Skips without a Metal device or the `small` checkpoint: the package never downloads a

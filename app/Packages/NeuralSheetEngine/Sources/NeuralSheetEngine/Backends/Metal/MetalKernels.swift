@@ -73,8 +73,18 @@ struct MetalKernels {
     private let attentionScoresState: MTLComputePipelineState
     private let softmaxState: MTLComputePipelineState
     private let attentionValuesState: MTLComputePipelineState
+    private let attentionDecodeState: MTLComputePipelineState
     private let geluState: MTLComputePipelineState
     private let addState: MTLComputePipelineState
+
+    /// The device's threadgroup allocation, which is what decides whether a window's score
+    /// row fits in `attn_decode`. @see canFuseAttention
+    private let threadgroupMemory: Int
+
+    /// Whether this device will run `attn_decode`'s threadgroup at all. Every Apple GPU takes
+    /// 1024 threads, but a pipeline's own limit depends on how many registers the compiler gave
+    /// its threads, so it is read from the pipeline rather than assumed. @see canFuseAttention
+    private let fusedAttentionFits: Bool
 
     /// The threadgroup `matvec_f16` is dispatched with: `MATVEC_SIMDGROUPS` whole
     /// simdgroups, because the kernel reduces with `simd_sum` and indexes its block by
@@ -110,6 +120,7 @@ struct MetalKernels {
         attentionScoresState = try state("attn_scores")
         softmaxState = try state("softmax_rows")
         attentionValuesState = try state("attn_values")
+        attentionDecodeState = try state("attn_decode")
         geluState = try state("gelu_erf")
         addState = try state("add_inplace")
 
@@ -121,6 +132,10 @@ struct MetalKernels {
             throw TranscriberError.internalError(
                 "this device runs fewer than \(reduce) threads per threadgroup")
         }
+
+        threadgroupMemory = device.maxThreadgroupMemoryLength
+        fusedAttentionFits =
+            attentionDecodeState.maxTotalThreadsPerThreadgroup >= MetalShaderSource.attentionThreads
 
         let matvecWidth = max(1, matvecState.threadExecutionWidth) * MetalKernels.matvecBlock.simdgroups
 
@@ -273,6 +288,40 @@ struct MetalKernels {
             MTLSize(
                 width: Int(attention.headDim), height: Int(attention.nNew), depth: Int(attention.nHead)),
             threadsPerThreadgroup: planeThreads)
+    }
+
+    /// Whether `attentionDecode` can stand in for the three kernels above at this shape.
+    ///
+    /// A single query row, so there is no mask to apply; a head no wider than the threadgroup,
+    /// so the value accumulation has at least one block; a score row plus the reduction array
+    /// inside the device's threadgroup allocation; and a device that runs the threadgroup at
+    /// all. The engine's own shapes are all of that -- 2538 floats of scores plus the array is
+    /// 14 kB of the 32 kB an Apple GPU gives a threadgroup -- and the three-kernel path stays
+    /// for the prefill and for anything that is not.
+    func canFuseAttention(nNew: Int, nKV: Int, headDim: Int) -> Bool {
+        fusedAttentionFits && nNew == 1 && headDim <= MetalShaderSource.attentionThreads
+            && nKV * 4 + MetalShaderSource.attentionThreads * 4 <= threadgroupMemory
+    }
+
+    /// The whole attention block for a single query row, one threadgroup per head.
+    /// @see canFuseAttention
+    func attentionDecode(
+        _ encoder: MTLComputeCommandEncoder,
+        qkv: MTLBuffer, cache: MTLBuffer, keysOffset: Int, valuesOffset: Int,
+        out: MTLBuffer, attention: AttentionParams
+    ) {
+        var params = attention
+        encoder.setComputePipelineState(attentionDecodeState)
+        encoder.setBuffer(qkv, offset: 0, index: 0)
+        encoder.setBuffer(cache, offset: keysOffset, index: 1)
+        encoder.setBuffer(cache, offset: valuesOffset, index: 2)
+        encoder.setBuffer(out, offset: 0, index: 3)
+        encoder.setBytes(&params, length: MemoryLayout<AttentionParams>.stride, index: 4)
+        encoder.setThreadgroupMemoryLength(Int(attention.nKV) * 4, index: 0)
+        encoder.dispatchThreadgroups(
+            MTLSize(width: Int(attention.nHead), height: 1, depth: 1),
+            threadsPerThreadgroup: MTLSize(
+                width: MetalShaderSource.attentionThreads, height: 1, depth: 1))
     }
 
     /// GELU in place over `count` activations.
