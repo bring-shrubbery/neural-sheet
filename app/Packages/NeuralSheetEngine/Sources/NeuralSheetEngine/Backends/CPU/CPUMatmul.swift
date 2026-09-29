@@ -85,20 +85,28 @@ enum CPUMatmul {
     /// The blocks of eight are loaded unaligned: a weight row starts wherever the tensor
     /// data does.
     ///
-    /// Output features go out in blocks of sixteen so that a core takes enough work to be
-    /// worth the hand-off, and the reduction order is fixed rather than left to a library,
-    /// so two runs on the same input give the same bits.
+    /// The output features are split into exactly one even range per performance core, and
+    /// the reduction order within a feature is fixed rather than left to a library, so two
+    /// runs on the same input give the same bits -- and so does any split, since a feature
+    /// is always summed whole by one thread.
+    ///
+    /// One range per core and not a queue of small blocks. A block of sixteen features, which
+    /// is what this was, makes 192 iterations of `concurrentPerform` for the feed-forward's
+    /// weight, and measured over a cold 188 MB of weights that runs at 40 GB/s against the
+    /// 73 GB/s of eight even ranges: each hand-off restarts the hardware prefetcher on a new
+    /// address, and there are twenty-four times as many of them. The ranges are even rather
+    /// than work-stolen because every feature costs exactly the same, so there is nothing to
+    /// balance.
     private static func gemv(
         weights: UnsafePointer<Float16>, outFeatures: Int, inFeatures: Int,
         input: UnsafePointer<Float>, output: UnsafeMutablePointer<Float>
     ) {
-        let featuresPerBlock = 16
-        let blocks = (outFeatures + featuresPerBlock - 1) / featuresPerBlock
+        let ranges = min(CPUKernels.threadCount, outFeatures)
         let x = UnsafeRawPointer(input)
 
-        DispatchQueue.concurrentPerform(iterations: blocks) { block in
-            let first = block * featuresPerBlock
-            let last = min(first + featuresPerBlock, outFeatures)
+        DispatchQueue.concurrentPerform(iterations: ranges) { range in
+            let first = outFeatures * range / ranges
+            let last = outFeatures * (range + 1) / ranges
             for feature in first..<last {
                 let row = UnsafeRawPointer(weights + feature * inFeatures)
                 var a0 = SIMD8<Float>()
