@@ -763,7 +763,7 @@ Kernels (MSL, all F32 activations, F16 weights read with `half` and accumulated 
 |---|---|---|
 | `layer_norm` | one threadgroup per row, 256 threads | two-pass mean/variance in threadgroup memory, then `(x - mean) * rsqrt(var + eps) * w + b` |
 | `matvec_f16` | one threadgroup of 32 threads (one simdgroup) per output row, rows == 1 | each lane sums a strided slice of `W[o][i] * x[i]`, `simd_sum` |
-| `matmul_f16` | 2D grid over (outFeatures, rows), rows > 1 | one thread per output element, plain loop over `inFeatures` (prefill is ~500 rows; keep it simple, optimise later if the bench says so) |
+| `matmul_tiled_f16` | one threadgroup of 256 threads per 64 × 64 output tile, rows > 1 | a tiled GEMM: K walked in steps of 16 with both operands staged through threadgroup memory, 4 × 4 outputs per thread accumulated in `float`. This started as one thread per output element and was rewritten in Task 9b, when the prefill missed its target: see that task's report for the per-kernel numbers and the tile sweep. The tile is defined once, in `MetalShaderSource.gemmTile`, and interpolated into the MSL |
 | `copy_kv` | grid (dim, nNew) | copies k and v slices of qkv into the caches at row nPast + r |
 | `attn_scores` | grid (nKV, nNew, nHead) | `s[h][i][j] = j <= nPast + i ? dot(q_h[i], K_h[j]) * scale : -inf` |
 | `softmax_rows` | one threadgroup per (h, i) row over nKV | max, exp-sum, normalise in threadgroup memory |
