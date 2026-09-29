@@ -15,7 +15,15 @@ let package = Package(
         // references this package by path, where SwiftPM allows them.
         .target(
             name: "NeuralSheetEngine",
-            swiftSettings: [.swiftLanguageMode(.v5), .unsafeFlags(["-Xcc", "-DACCELERATE_NEW_LAPACK"])]),
+            swiftSettings: [
+                .swiftLanguageMode(.v5), .unsafeFlags(["-Xcc", "-DACCELERATE_NEW_LAPACK"]),
+                // The engine is compute code, and the C++ it replaces was always compiled
+                // Release whatever the app's configuration was (Scripts/build-engine.sh), so a
+                // Debug build optimises it too. At -Onone the Float16 SIMD GEMV of a decode
+                // step runs twenty times slower, which would make a Debug app unusable and the
+                // oracle suites a quarter of an hour of `swift test`.
+                .unsafeFlags(["-O"], .when(configuration: .debug)),
+            ]),
         .executableTarget(name: "engine-bench", dependencies: ["NeuralSheetEngine"], swiftSettings: [.swiftLanguageMode(.v5)]),
         .testTarget(
             name: "NeuralSheetEngineTests", dependencies: ["NeuralSheetEngine"],
