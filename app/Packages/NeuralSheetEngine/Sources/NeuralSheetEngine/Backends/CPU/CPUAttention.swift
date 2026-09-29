@@ -52,6 +52,11 @@ enum CPUAttention {
             return
         }
 
+        // One work item per head here, unlike `attendOneRow`'s even ranges per core. A
+        // prefill's head is two GEMMs of 504 rows, which BLAS parallelises internally and which
+        // do not all take the same time, so leaving the distribution to Dispatch is what keeps
+        // the cores busy: eight even ranges over twelve heads measured 211 ms against 187 for
+        // `small`'s CPU prefill, best of four runs each.
         DispatchQueue.concurrentPerform(iterations: nHead) { head in
             let offset = head * headDim
             let s = scores + head * nNew * nKV
@@ -107,7 +112,17 @@ enum CPUAttention {
     ) {
         let dim = nHead * headDim
 
-        DispatchQueue.concurrentPerform(iterations: nHead) { head in
+        // One even range of heads per performance core rather than one work item per head. A
+        // twelve-head model over eight workers leaves four of them idle for the second round,
+        // and the cost of that does not land here but on the weight products after it: measured
+        // on `small`, interleaving one `attend` between every four of a decode step's fifty-six
+        // products took those products from 3.15 ms to 4.69 ms, where interleaving a plain
+        // eight-way parallel read of the same bytes cost 0.43 ms and a serial read of them cost
+        // nothing at all.
+        let ranges = min(CPUKernels.threadCount, nHead)
+
+        DispatchQueue.concurrentPerform(iterations: ranges) { range in
+            for head in (nHead * range / ranges) ..< (nHead * (range + 1) / ranges) {
             let offset = head * headDim
             let s = scores + head * nKV
             let query = UnsafeRawPointer(q + offset)
@@ -160,6 +175,7 @@ enum CPUAttention {
                 }
                 out[offset + channel] = total
                 channel += 1
+            }
             }
         }
     }
