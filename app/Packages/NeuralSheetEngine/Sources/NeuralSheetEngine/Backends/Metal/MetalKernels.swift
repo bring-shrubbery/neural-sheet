@@ -53,6 +53,11 @@ struct MetalKernels {
     /// are this long and their trees halve it, so the dispatch must match it exactly.
     static let reduceThreads = 256
 
+    /// The block `matvec_f16` was compiled with, which is what its grid and its threadgroup
+    /// have to be built from. Read from the shader source rather than restated here: one
+    /// definition feeds both the `#define`s and this. @see MetalShaderSource.matvecBlock
+    static var matvecBlock: MetalShaderSource.MatvecBlock { MetalShaderSource.matvecBlock }
+
     /// The tile `matmul_tiled_f16` was compiled with, which is what its grid has to be built
     /// from. Read from the shader source rather than restated here: one definition feeds both
     /// the `#define`s and this. @see MetalShaderSource.gemmTile
@@ -71,9 +76,10 @@ struct MetalKernels {
     private let geluState: MTLComputePipelineState
     private let addState: MTLComputePipelineState
 
-    /// The simdgroup width, which is what `matvec_f16` is dispatched with: the kernel
-    /// reduces with `simd_sum`, so its threadgroup has to be exactly one simdgroup.
-    private let simdWidth: Int
+    /// The threadgroup `matvec_f16` is dispatched with: `MATVEC_SIMDGROUPS` whole
+    /// simdgroups, because the kernel reduces with `simd_sum` and indexes its block by
+    /// `simdgroup_index_in_threadgroup`.
+    private let matvecThreads: MTLSize
 
     /// Threadgroup shapes for the kernels dispatched by thread count rather than by
     /// threadgroup, computed once from each pipeline's own limits.
@@ -116,7 +122,14 @@ struct MetalKernels {
                 "this device runs fewer than \(reduce) threads per threadgroup")
         }
 
-        simdWidth = max(1, matvecState.threadExecutionWidth)
+        let matvecWidth = max(1, matvecState.threadExecutionWidth) * MetalKernels.matvecBlock.simdgroups
+
+        guard matvecState.maxTotalThreadsPerThreadgroup >= matvecWidth else {
+            throw TranscriberError.internalError(
+                "this device runs fewer than \(matvecWidth) threads per threadgroup")
+        }
+
+        matvecThreads = MTLSize(width: matvecWidth, height: 1, depth: 1)
 
         // `matmul_tiled_f16` has its tile compiled into it, so unlike the kernels below it
         // cannot be shaped to the device: the dispatch is the one the macros imply or the
@@ -165,9 +178,9 @@ struct MetalKernels {
     /// `out[r][o] = sum_i W[o][i] . x[r][i]`, over `rows` rows of `inFeatures` values.
     ///
     /// One kernel or the other by the row count, which is the whole difference between a
-    /// decode step and a prefill: `matvec_f16` puts one simdgroup on each output row of the
-    /// single input row and is bound by the weight it streams, `matmul_tiled_f16` tiles the
-    /// output and is bound by the arithmetic.
+    /// decode step and a prefill: `matvec_f16` puts a simdgroup on each block of output rows
+    /// of the single input row and is bound by the weight it streams, `matmul_tiled_f16`
+    /// tiles the output and is bound by the arithmetic.
     func matrixProduct(
         _ encoder: MTLComputeCommandEncoder,
         weights: MTLBuffer, weightsOffset: Int, input: MTLBuffer, inputOffset: Int,
@@ -182,9 +195,13 @@ struct MetalKernels {
         encoder.setBytes(&params, length: MemoryLayout<MatmulParams>.stride, index: 3)
 
         if rows == 1 {
+            // Whole threadgroups: a block of `rowsPerGroup` output rows is the unit of work,
+            // and a ragged one at the end is the kernel's own business -- it clamps the rows
+            // it reads and stores only the ones that exist.
+            let block = MetalKernels.matvecBlock.rowsPerGroup
             encoder.dispatchThreadgroups(
-                MTLSize(width: outFeatures, height: 1, depth: 1),
-                threadsPerThreadgroup: MTLSize(width: simdWidth, height: 1, depth: 1))
+                MTLSize(width: (outFeatures + block - 1) / block, height: 1, depth: 1),
+                threadsPerThreadgroup: matvecThreads)
         } else {
             // Whole threadgroups, not threads: a tile is the unit of work, and a partial one
             // at the edge of either axis is the kernel's own business -- it stages zeroes for

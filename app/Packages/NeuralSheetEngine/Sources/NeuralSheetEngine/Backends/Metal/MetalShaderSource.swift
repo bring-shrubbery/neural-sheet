@@ -18,9 +18,10 @@
 
 /// The Metal Shading Language the backend compiles at load. @see MetalKernels
 enum MetalShaderSource {
-    /// The whole library: these kernels and the prefill GEMM, which is long enough and
-    /// self-contained enough to live in its own file. @see MetalShaderSource+GEMM
-    static let source = core + gemm
+    /// The whole library: these kernels, the decode matvec and the prefill GEMM. The last
+    /// two are long enough and have enough of a blocking strategy to explain that each lives
+    /// in its own file. @see MetalShaderSource+Matvec, MetalShaderSource+GEMM
+    static let source = core + matvec + gemm
 
     private static let core = """
         #include <metal_stdlib>
@@ -152,36 +153,6 @@ enum MetalShaderSource {
 
             for (uint i = tid; i < p.dim; i += REDUCE_THREADS) {
                 destination[i] = (source[i] - mean) * inverse * weight[i] + bias[i];
-            }
-        }
-
-        /// `out = W . x` for a single input row, one simdgroup per output row.
-        ///
-        /// This is the decode step's whole cost: 200 MB of F16 weights streamed once per
-        /// token. One simdgroup per row and a strided slice per lane is what makes the
-        /// reads contiguous across the lanes, which is what a memory-bound kernel needs.
-        /// The reduction is `simd_sum` and not a threadgroup tree because the Swift
-        /// dispatches exactly one simdgroup's worth of threads.
-        kernel void matvec_f16(
-            device const half *weights [[buffer(0)]],
-            device const float *x [[buffer(1)]],
-            device float *out [[buffer(2)]],
-            constant MatmulParams &p [[buffer(3)]],
-            uint row [[threadgroup_position_in_grid]],
-            uint lane [[thread_position_in_threadgroup]],
-            uint width [[threads_per_threadgroup]])
-        {
-            device const half *w = weights + (ulong)row * p.inFeatures;
-
-            float accumulator = 0.0f;
-            for (uint i = lane; i < p.inFeatures; i += width) {
-                accumulator = fma(float(w[i]), x[i], accumulator);
-            }
-
-            accumulator = simd_sum(accumulator);
-
-            if (lane == 0) {
-                out[row] = accumulator;
             }
         }
 

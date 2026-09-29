@@ -208,9 +208,11 @@ final class MetalBackend: TransformerBackend {
     /// The tensor's byte offset inside the data section, once its type and extent are the
     /// ones the hyperparameters imply.
     ///
-    /// The offset has to be four-byte aligned because that is what Metal requires of a
-    /// buffer binding; a GGUF's data section is aligned to at least 32 bytes and so is every
-    /// tensor in it, so this rejects nothing a converter writes.
+    /// The offset has to be sixteen-byte aligned: four is what Metal requires of a buffer
+    /// binding, and `matvec_f16` reads each weight row as `half4`, which needs eight. Sixteen
+    /// rather than eight so that one number covers every vector load a kernel may grow into.
+    /// A GGUF's data section is aligned to at least 32 bytes and so is every tensor in it, so
+    /// this rejects nothing a converter writes.
     private static func offset(of info: TensorInfo, type: TensorDataType, count: Int) throws -> Int {
         guard info.dataType == type, info.elementCount == count else {
             throw TranscriberError.invalidCheckpoint(
@@ -218,7 +220,7 @@ final class MetalBackend: TransformerBackend {
                     + "expected \(count) \(type)")
         }
 
-        guard info.offset % 4 == 0 else {
+        guard info.offset % 16 == 0 else {
             throw TranscriberError.invalidCheckpoint(
                 "tensor '\(info.name)' is at offset \(info.offset), which the GPU cannot bind")
         }
