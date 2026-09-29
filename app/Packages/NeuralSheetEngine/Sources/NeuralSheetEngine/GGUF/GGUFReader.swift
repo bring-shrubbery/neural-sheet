@@ -69,8 +69,14 @@ struct GGUFReader {
         return text
     }
 
-    /// One metadata value, given the type code that preceded it.
-    mutating func value(typeCode: UInt32) throws -> GGUFValue {
+    /// How deeply metadata arrays may nest. The spec allows an array of arrays and the
+    /// converter writes none, so anything past a couple of levels is a file built to recurse
+    /// this reader off the stack rather than one ggml wrote.
+    private static let maxArrayDepth = 8
+
+    /// One metadata value, given the type code that preceded it. `depth` counts the arrays
+    /// enclosing it, so a nest of them is bounded rather than trusted.
+    mutating func value(typeCode: UInt32, depth: Int = 0) throws -> GGUFValue {
         switch typeCode {
         case 0: return .uint8(try integer(UInt8.self))
         case 1: return .int8(try integer(Int8.self))
@@ -81,7 +87,7 @@ struct GGUFReader {
         case 6: return .float32(Float(bitPattern: try integer(UInt32.self)))
         case 7: return .bool(try integer(UInt8.self) != 0)
         case 8: return .string(try string())
-        case 9: return .array(try array())
+        case 9: return .array(try array(depth: depth + 1))
         case 10: return .uint64(try integer(UInt64.self))
         case 11: return .int64(try integer(Int64.self))
         case 12: return .float64(Double(bitPattern: try integer(UInt64.self)))
@@ -90,7 +96,11 @@ struct GGUFReader {
         }
     }
 
-    private mutating func array() throws -> [GGUFValue] {
+    private mutating func array(depth: Int) throws -> [GGUFValue] {
+        guard depth <= GGUFReader.maxArrayDepth else {
+            throw TranscriberError.invalidCheckpoint("metadata nests arrays too deeply")
+        }
+
         let elementType = try integer(UInt32.self)
         let count = try size()
 
@@ -101,7 +111,7 @@ struct GGUFReader {
         values.reserveCapacity(min(count, 4096))
 
         for _ in 0 ..< count {
-            values.append(try value(typeCode: elementType))
+            values.append(try value(typeCode: elementType, depth: depth))
         }
 
         return values

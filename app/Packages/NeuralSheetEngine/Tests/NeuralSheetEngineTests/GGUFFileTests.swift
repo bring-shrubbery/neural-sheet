@@ -257,6 +257,47 @@ private func isUnsupportedArchitecture(_ error: TranscriberError?) -> Bool {
         }
     }
 
+    @Test func rejectsANonPositiveExtent() throws {
+        var writer = hparamsWriter()
+
+        // A negative dimension passes the version check and the head geometry would not even
+        // be reached: every buffer in the engine is sized from this number, so it has to be
+        // rejected where it is read.
+        writer.set("muscriptor.embedding_length", .int32(-768))
+
+        try withTemporaryFile(writer.build().data) { url in
+            let file = try GGUFFile(url: url)
+            let error = #expect(throws: TranscriberError.self) { try Hparams(file: file) }
+            #expect(isInvalidCheckpoint(error))
+
+            // The key is named, because a checkpoint with a bad extent is usually a converter
+            // bug and the message is what points at it.
+            if case .invalidCheckpoint(let message) = error {
+                #expect(message.contains("muscriptor.embedding_length"), "\(message)")
+            }
+        }
+    }
+
+    @Test func rejectsDeeplyNestedMetadataArrays() throws {
+        var writer = sampleWriter()
+
+        // Sixteen levels, which the reader used to follow one stack frame at a time. Nothing
+        // ggml writes nests at all, so the depth limit is what keeps a hand-built file from
+        // recursing the reader off the stack instead of coming back as an error.
+        var nested = GGUFValue.int32(7)
+
+        for _ in 0 ..< 16 {
+            nested = .array([nested])
+        }
+
+        writer.set("t.nested", nested)
+
+        try withTemporaryFile(writer.build().data) { url in
+            let error = #expect(throws: TranscriberError.self) { try GGUFFile(url: url) }
+            #expect(error == .invalidCheckpoint("metadata nests arrays too deeply"))
+        }
+    }
+
     @Test func readsAWholeHparamsBlock() throws {
         try withTemporaryFile(hparamsWriter().build().data) { url in
             let hparams = try Hparams(file: GGUFFile(url: url))

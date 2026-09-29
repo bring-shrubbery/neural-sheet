@@ -68,6 +68,31 @@ extension Hparams {
         nMels = try int("audio.n_mels")
         logEps = try float("audio.log_eps")
 
+        // Every extent is a count of something, and the buffers and the loops downstream are
+        // sized from these numbers without checking them again: a zero or a negative one from
+        // a corrupt or hostile file would be a trap at best and a wild write at worst, so the
+        // geometry is established here or not at all.
+        let extents: [(String, Int)] = [
+            ("embedding_length", dim), ("block_count", nLayer), ("attention.head_count", nHead),
+            ("attention.head_dim", headDim), ("feed_forward_length", ffnDim), ("vocab_size", vocabSize),
+            ("audio.sample_rate", sampleRate), ("audio.n_fft", nFFT), ("audio.hop_length", hopLength),
+            ("audio.frame_rate", frameRate), ("audio.n_mels", nMels),
+        ]
+
+        for (suffix, value) in extents where value <= 0 {
+            throw TranscriberError.invalidCheckpoint(
+                "metadata key '\(Hparams.key(suffix))' is not positive in \(file.url.lastPathComponent)")
+        }
+
+        // The two indices are offsets into the vocabulary rather than counts, so zero is a
+        // legitimate value for either; only a negative one is not, and both are used to
+        // subscript a logits buffer.
+        for (suffix, value) in [("initial_token_id", initialTokenID), ("logit_mask_start", logitMaskStart)]
+        where value < 0 {
+            throw TranscriberError.invalidCheckpoint(
+                "metadata key '\(Hparams.key(suffix))' is negative in \(file.url.lastPathComponent)")
+        }
+
         guard headDim * nHead == dim else {
             throw TranscriberError.unsupportedArchitecture(
                 "inconsistent head geometry: \(nHead) heads x \(headDim) != \(dim)")
