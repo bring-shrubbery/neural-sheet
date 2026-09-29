@@ -65,7 +65,18 @@ private func referenceAttend(
         values[index] = 1e6
     }
 
-    let q = allocate(queries)
+    // The backend hands over the q third of a `[nNew][3 · dim]` projection, so the queries
+    // sit at the head of a wider row whose remainder holds the keys and values of the same
+    // position. Those columns must not be read either, so they are poisoned the same way.
+    let qRowStride = 3 * dim
+    var padded = [Float](repeating: 1e6, count: nNew * qRowStride)
+    for row in 0..<nNew {
+        for column in 0..<dim {
+            padded[row * qRowStride + column] = queries[row * dim + column]
+        }
+    }
+
+    let q = allocate(padded)
     let k = allocate(keys)
     let v = allocate(values)
     let scores = allocate([Float](repeating: .nan, count: nHead * nNew * (nPast + nNew)))
@@ -79,8 +90,8 @@ private func referenceAttend(
     }
 
     CPUAttention.attend(
-        q: q, kCache: k, vCache: v, nNew: nNew, nPast: nPast, nHead: nHead,
-        headDim: headDim, scale: scale, scores: scores, out: out)
+        q: q, qRowStride: qRowStride, kCache: k, vCache: v, nNew: nNew, nPast: nPast,
+        nHead: nHead, headDim: headDim, scale: scale, scores: scores, out: out)
 
     let reference = referenceAttend(
         q: queries, kCache: keys, vCache: values,
@@ -115,7 +126,7 @@ private func referenceAttend(
     }
 
     CPUAttention.attend(
-        q: q, kCache: k, vCache: v, nNew: 1, nPast: 0, nHead: nHead,
+        q: q, qRowStride: dim, kCache: k, vCache: v, nNew: 1, nPast: 0, nHead: nHead,
         headDim: headDim, scale: 0.5, scores: scores, out: out)
 
     // One row attending only to itself gives a probability of exactly one, so the output

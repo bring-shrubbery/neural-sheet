@@ -13,10 +13,16 @@ import Dispatch
 enum CPUAttention {
     /// Causal attention of `nNew` query rows over the `nPast + nNew` filled cache rows.
     ///
-    /// `q` is `[nNew][nHead · headDim]` and head `h` lives at columns
-    /// `h · headDim ..< (h + 1) · headDim`; `kCache` and `vCache` are `[nCtx][nHead · headDim]`
-    /// with rows `0 ..< nPast + nNew` filled, the caller having already written this
-    /// step's keys and values at `nPast`; `out` is `[nNew][nHead · headDim]`.
+    /// `q` is `[nNew][qRowStride]` whose first `nHead · headDim` columns are the queries,
+    /// and head `h` lives at columns `h · headDim ..< (h + 1) · headDim`; `kCache` and
+    /// `vCache` are `[nCtx][nHead · headDim]` with rows `0 ..< nPast + nNew` filled, the
+    /// caller having already written this step's keys and values at `nPast`; `out` is
+    /// `[nNew][nHead · headDim]`.
+    ///
+    /// `qRowStride` is a parameter rather than `nHead · headDim` because the backend's
+    /// queries are the first third of a `[nNew][3 · dim]` projection, where k and v follow
+    /// them in the same row. BLAS takes a leading dimension anyway, so reading the slice
+    /// in place costs nothing and saves copying the queries out once per layer.
     ///
     /// The mask is bottom-right causal: query row `i` sits at position `nPast + i`, so it
     /// may attend to cache rows `0 ... nPast + i` and no further. Because that region is
@@ -28,7 +34,8 @@ enum CPUAttention {
     /// `nNew × nKV` block per head, so the heads can run at the same time without either
     /// allocating or sharing.
     static func attend(
-        q: UnsafePointer<Float>, kCache: UnsafePointer<Float>, vCache: UnsafePointer<Float>,
+        q: UnsafePointer<Float>, qRowStride: Int,
+        kCache: UnsafePointer<Float>, vCache: UnsafePointer<Float>,
         nNew: Int, nPast: Int, nHead: Int, headDim: Int, scale: Float,
         scores: UnsafeMutablePointer<Float>, out: UnsafeMutablePointer<Float>
     ) {
@@ -44,7 +51,7 @@ enum CPUAttention {
             cblas_sgemm(
                 CblasRowMajor, CblasNoTrans, CblasTrans,
                 Int32(nNew), Int32(nKV), Int32(headDim),
-                scale, q + offset, Int32(dim), kCache + offset, Int32(dim),
+                scale, q + offset, Int32(qRowStride), kCache + offset, Int32(dim),
                 0, s, Int32(nKV))
 
             for row in 0..<nNew {
