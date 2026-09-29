@@ -135,10 +135,23 @@ enum CPUMatmul {
     }
 
     /// Eight F16 weights at `index`, widened to F32.
+    ///
+    /// The widening is spelled out lane by lane rather than as `SIMD8<Float>(someSIMD8Float16)`.
+    /// That conversion looks like the obvious one and is not: the generic
+    /// `SIMD8.init<Other: BinaryFloatingPoint>` does not specialise into a pair of `fcvtl`
+    /// instructions but into an out-of-line call that checks an OS availability version on
+    /// every invocation, which on this GEMV's hundred million weights a token was eighteen
+    /// times the cost of the conversion itself. Eight `Float(Float16)` conversions into a
+    /// vector literal is the form the optimiser does turn into `fcvtl`/`fcvtl2`. The two are
+    /// bit-identical -- every F16, subnormals included, is exactly representable in F32 --
+    /// so this is a code-generation fix and not a numerical change.
     private static func half(_ row: UnsafeRawPointer, _ index: Int) -> SIMD8<Float> {
-        SIMD8<Float>(
-            row.loadUnaligned(
-                fromByteOffset: index * MemoryLayout<Float16>.stride, as: SIMD8<Float16>.self))
+        let halves = row.loadUnaligned(
+            fromByteOffset: index * MemoryLayout<Float16>.stride, as: SIMD8<Float16>.self)
+
+        return SIMD8<Float>(
+            Float(halves[0]), Float(halves[1]), Float(halves[2]), Float(halves[3]),
+            Float(halves[4]), Float(halves[5]), Float(halves[6]), Float(halves[7]))
     }
 
     /// Eight F32 activations at `index`.
