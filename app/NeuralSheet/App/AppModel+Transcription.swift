@@ -236,16 +236,25 @@ extension AppModel {
             clearTranscriptionNow()
 
         case let .failure(error):
-            let reason = AppModel.failureReason(error, modelPath: modelPath)
-
-            clearTranscriptionNow()
-
-            showError(
-                "Transcription failed.",
-                reason.isEmpty
-                    ? "The transcription model could not be loaded or run."
-                    : "The transcription model could not be loaded or run: \(reason).")
+            failRun(reason: AppModel.failureReason(error, modelPath: modelPath))
         }
+    }
+
+    /// Ends the run with the failure dialog. Also where a stems run lands when the separation
+    /// failed before the engine was reached, so there is no `EngineError` to carry its words;
+    /// the teardown above is repeated for that caller and is idempotent.
+    func failRun(reason: String) {
+        transcription.jobActive = false
+        stopDrainTimer()
+        transcription.jobModelPath = nil
+
+        clearTranscriptionNow()
+
+        showError(
+            "Transcription failed.",
+            reason.isEmpty
+                ? "The transcription model could not be loaded or run."
+                : "The transcription model could not be loaded or run: \(reason).")
     }
 
     /// The `<reason>` of the failure dialog: the library's own description, except for a checkpoint
@@ -257,12 +266,10 @@ extension AppModel {
                 + "Delete it from the models folder, then download it again"
         }
 
-        switch error {
-        case let .load(_, message), let .transcribe(_, message):
-            return message
-        case .cancelled:
-            return ""
-        }
+        // `EngineError.message` rather than the library's `description` directly: only
+        // `TranscriptionEngine` imports `NeuralSheetEngine`, so the app sees the wording
+        // through its own type.
+        return error.message
     }
 }
 

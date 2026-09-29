@@ -1,0 +1,6 @@
+NeuralSheetEngine is a Swift port of muscriptor.cpp (https://github.com/DamRsn/muscriptor.cpp),
+Copyright (c) 2026 Damien Ronssin, MIT License, which itself carries MuScriptor's MIT notice
+(Copyright (c) Kyutai and Mirelo). The full texts are in ../../../THIRD_PARTY_NOTICES.md.
+
+Tests/NeuralSheetEngineTests/Fixtures/audio/fixture_3chunks_16k.wav is an excerpt of
+"You Drive Me Insane" by Jon Worthy and the Bends, CC BY 4.0; see the README beside it.

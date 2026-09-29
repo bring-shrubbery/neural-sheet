@@ -15,7 +15,14 @@ extension AppModel {
         }
     }
 
+    /// Tab or notation and tab on a part with no template first gives it one, so the switch
+    /// works on any part: the template its program suggests (a guitar's or a bass's), or the
+    /// guitar's for the rest, in the default tuning. The Template menu changes it afterwards.
     func setPartMode(_ mode: PartDisplay.Mode, program: Int) {
+        if mode != .notation, arrangement.display(for: program).tab == nil,
+           let template = TabTemplate.template(forProgram: program) ?? TabTemplate.all.first {
+            setPartTab(template: template, preset: template.presets[0], program: program)
+        }
         updatePart(program) { $0.mode = mode }
     }
 

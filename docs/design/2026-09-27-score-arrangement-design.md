@@ -293,3 +293,6 @@ each would need, unplayable ones red.
 - The part card shows one pitch field per string whenever the part has a tab, under the
   Tuning menu of presets, rather than behind a "Custom…" item in that menu; editing a field
   makes the tuning custom, and choosing a preset sets the fields back.
+- The Display row's Tab and Both are always offered: on a part with no template they first give
+  it the one its program suggests (a guitar's or a bass's, else the guitar's) in the default
+  tuning, rather than waiting for a choice in the Template menu.

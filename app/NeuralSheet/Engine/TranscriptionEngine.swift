@@ -1,4 +1,5 @@
 import Foundation
+import NeuralSheetEngine
 
 /// One transcribed note, as the engine reports it.
 nonisolated struct EngineNote: Equatable, Sendable {
@@ -18,26 +19,41 @@ nonisolated struct EngineUpdate: Sendable {
     var progress: Float
 }
 
-/// A failure from the engine, carrying the C error code and its description.
+/// A failure from the engine, carrying the library's error and saying which half it came from.
 nonisolated enum EngineError: Error {
-    case load(code: Int32, message: String)
-    case transcribe(code: Int32, message: String)
+    case load(TranscriberError)
+    case transcribe(TranscriberError)
     case cancelled
 
     /// True when the checkpoint's format version is one this build cannot read.
     var isUnsupportedVersion: Bool {
         switch self {
-        case let .load(code, _), let .transcribe(code, _):
-            return code == Int32(NSHEET_ERR_UNSUPPORTED_CHECKPOINT_VERSION.rawValue)
+        case let .load(error), let .transcribe(error):
+            if case .unsupportedCheckpointVersion = error {
+                return true
+            }
+
+            return false
         case .cancelled:
             return false
         }
     }
+
+    /// The library's own description of the failure, for a dialog or a log; empty for a cancel,
+    /// which is not reported to the user.
+    var message: String {
+        switch self {
+        case let .load(error), let .transcribe(error):
+            return error.description
+        case .cancelled:
+            return ""
+        }
+    }
 }
 
-/// Drives the muscriptor.cpp engine through the C bridge on a dedicated thread.
+/// Drives the `NeuralSheetEngine` transcriber on a dedicated thread.
 ///
-/// One run at a time per instance: the model is loaded, used and freed within
+/// One run at a time per instance: the model is loaded, used and dropped within
 /// a single `run`, so nothing survives it.
 ///
 /// `@unchecked Sendable`: `cancelRequested` and `running` are guarded by `lock`,
@@ -62,7 +78,7 @@ nonisolated final class TranscriptionEngine: @unchecked Sendable {
         return running
     }
 
-    /// Load the model, transcribe, free it, on a dedicated thread.
+    /// Load the model, transcribe, drop it, on a dedicated thread.
     ///
     /// - Parameters:
     ///   - modelPath: A muscriptor GGUF checkpoint.
@@ -72,10 +88,10 @@ nonisolated final class TranscriptionEngine: @unchecked Sendable {
     ///     5 s chunk and once more at the end. Return `false` to cancel. Hop to the main
     ///     queue yourself for anything that touches UI.
     ///   - completion: Called on the transcription thread, **not** the main thread, with the
-    ///     authoritative result. The model is always freed before it runs.
+    ///     authoritative result. The model is always released before it runs.
     ///
     /// Calling `run` while `isRunning` is a programmer error; it reports
-    /// `EngineError.transcribe` with the invalid-argument code, on the calling thread.
+    /// `EngineError.transcribe` with an invalid-argument error, on the calling thread.
     func run(modelPath: URL,
              groups: [Int32],
              samples16k: [Float],
@@ -85,8 +101,7 @@ nonisolated final class TranscriptionEngine: @unchecked Sendable {
         if running {
             lock.unlock()
             assertionFailure("TranscriptionEngine.run while a run is in flight")
-            let code = Int32(NSHEET_ERR_INVALID_ARGUMENT.rawValue)
-            completion(.failure(.transcribe(code: code, message: Self.describe(code))))
+            completion(.failure(.transcribe(.invalidArgument("a run is already in flight"))))
             return
         }
         running = true
@@ -122,92 +137,70 @@ nonisolated final class TranscriptionEngine: @unchecked Sendable {
 
     /// Every named instrument group, in the engine's enumerator order.
     static func allGroups() -> [Int32] {
-        let total = nsheet_all_groups(nil, 0)
-
-        guard total > 0 else {
-            return []
-        }
-
-        var groups = [Int32](repeating: 0, count: total)
-        let written = groups.withUnsafeMutableBufferPointer { nsheet_all_groups($0.baseAddress, $0.count) }
-
-        return Array(groups.prefix(written))
+        NeuralSheetEngine.InstrumentGroup.allCases.map(\.rawValue)
     }
 
     /// The MIDI program the model emits for `group`, or -1 for an unknown one.
     static func program(for group: Int32) -> Int32 {
-        nsheet_program_for(group)
+        guard let group = NeuralSheetEngine.InstrumentGroup(rawValue: group) else {
+            return -1
+        }
+
+        return Int32(group.program)
     }
 
     // MARK: - Transcription thread
 
-    /// Runs on the transcription thread. The engine is freed on every path.
+    /// Runs on the transcription thread. The transcriber goes out of scope on every
+    /// path, so the checkpoint's mapping and the backend are gone before we return.
     private func loadAndTranscribe(modelPath: URL,
                                    groups: [Int32],
                                    samples16k: [Float]) -> Result<[EngineNote], EngineError> {
-        var errorCode: Int32 = 0
+        // A selection the model does not name is the caller's bug, and it is cheaper to
+        // catch it than the load is: report it before the checkpoint is even opened.
+        let instruments = groups.compactMap(NeuralSheetEngine.InstrumentGroup.init(rawValue:))
 
-        guard let engine = nsheet_load(modelPath.path, true, &errorCode) else {
-            return .failure(.load(code: errorCode, message: Self.describe(errorCode)))
+        guard instruments.count == groups.count else {
+            return .failure(.transcribe(.invalidArgument("an instrument group is not one the model names")))
         }
 
-        let result = transcribe(engine: engine, groups: groups, samples16k: samples16k)
-        nsheet_free(engine)
+        let transcriber: Transcriber
 
-        return result
+        do {
+            transcriber = try Transcriber(url: modelPath, options: LoadOptions(useGPU: true))
+        } catch {
+            return .failure(.load(Self.transcriberError(error)))
+        }
+
+        return transcribe(with: transcriber, instruments: instruments, samples16k: samples16k)
     }
 
-    private func transcribe(engine: OpaquePointer,
-                            groups: [Int32],
+    private func transcribe(with transcriber: Transcriber,
+                            instruments: [NeuralSheetEngine.InstrumentGroup],
                             samples16k: [Float]) -> Result<[EngineNote], EngineError> {
         if isCancelled {
             return .failure(.cancelled)
         }
 
-        var notes: UnsafeMutablePointer<nsheet_note>?
-        var count = 0
-
-        // `ctx` is the unretained engine that started the run; it outlives the
-        // call because `nsheet_transcribe` blocks this thread.
-        let context = Unmanaged.passUnretained(self).toOpaque()
-        let trampoline: nsheet_progress_fn = { update, ctx in
-            guard let update, let ctx else {
-                return true
+        do {
+            let notes = try transcriber.transcribe(samples: samples16k,
+                                                   options: TranscribeOptions(instruments: instruments)) { update in
+                self.handle(update: update)
             }
 
-            return Unmanaged<TranscriptionEngine>.fromOpaque(ctx).takeUnretainedValue().handle(update: update)
+            return .success(notes.map(EngineNote.init(_:)))
+        } catch TranscriberError.cancelled {
+            return .failure(.cancelled)
+        } catch {
+            return .failure(.transcribe(Self.transcriberError(error)))
         }
-
-        let status = samples16k.withUnsafeBufferPointer { samples in
-            groups.withUnsafeBufferPointer { groups in
-                nsheet_transcribe(engine,
-                                  samples.baseAddress,
-                                  samples.count,
-                                  groups.baseAddress,
-                                  groups.count,
-                                  trampoline,
-                                  context,
-                                  &notes,
-                                  &count)
-            }
-        }
-
-        guard status == Int32(NSHEET_OK.rawValue) else {
-            return .failure(status == Int32(NSHEET_ERR_CANCELLED.rawValue)
-                ? .cancelled
-                : .transcribe(code: status, message: Self.describe(status)))
-        }
-
-        defer { nsheet_free_notes(notes) }
-
-        return .success(Self.notes(from: notes, count: count))
     }
 
-    /// Called on the transcription thread by the C callback.
-    private func handle(update: UnsafePointer<nsheet_update>) -> Bool {
-        let converted = EngineUpdate(newNotes: Self.notes(from: update.pointee.new_notes, count: update.pointee.count),
-                                     finalizedThrough: update.pointee.finalized_through,
-                                     progress: update.pointee.progress)
+    /// Called on the transcription thread by the library, once per chunk.
+    private func handle(update: TranscriptionUpdate) -> Bool {
+        let converted = EngineUpdate(newNotes: update.newNotes.map(EngineNote.init(_:)),
+                                     finalizedThrough: update.finalizedThrough,
+                                     progress: update.progress)
 
         let keepGoing = updateHandler?(converted) ?? true
 
@@ -220,25 +213,23 @@ nonisolated final class TranscriptionEngine: @unchecked Sendable {
         return cancelRequested
     }
 
-    private static func notes(from pointer: UnsafePointer<nsheet_note>?, count: Int) -> [EngineNote] {
-        guard let pointer, count > 0 else {
-            return []
-        }
-
-        return UnsafeBufferPointer(start: pointer, count: count).map {
-            EngineNote(onset: $0.onset,
-                       offset: $0.offset,
-                       pitch: Int($0.pitch),
-                       program: Int($0.program),
-                       isDrum: $0.is_drum)
-        }
+    /// The library throws `TranscriberError` and nothing else; the fallback is there so a
+    /// future case cannot become a crash.
+    private static func transcriberError(_ error: any Error) -> TranscriberError {
+        error as? TranscriberError ?? .internalError(String(describing: error))
     }
+}
 
-    private static func describe(_ code: Int32) -> String {
-        guard let text = nsheet_describe_error(code) else {
-            return "unknown error"
-        }
-
-        return String(cString: text)
+private extension EngineNote {
+    /// The library's note as the app's: the same five fields.
+    ///
+    /// `nonisolated` because the conversion runs on the transcription thread; the target's
+    /// default isolation would otherwise put an extension member on the main actor.
+    nonisolated init(_ note: NeuralSheetEngine.Note) {
+        self.init(onset: note.onset,
+                  offset: note.offset,
+                  pitch: note.pitch,
+                  program: note.program,
+                  isDrum: note.isDrum)
     }
 }

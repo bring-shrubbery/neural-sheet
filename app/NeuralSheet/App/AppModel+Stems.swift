@@ -100,8 +100,9 @@ extension AppModel {
 
         case let .failure(failure):
             stemsJob = nil
-            // The main run's failure path, with the separation's own words.
-            handleFinished(.failure(.transcribe(code: 0, message: "the stems could not be separated: \(failure.message)")))
+            // The main run's failure path, with the separation's own words: the separation
+            // never reached the engine, so there is no `EngineError` to carry them.
+            failRun(reason: "the stems could not be separated: \(failure.message)")
         }
     }
 

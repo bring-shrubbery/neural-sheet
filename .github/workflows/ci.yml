@@ -28,7 +28,29 @@ jobs:
           xcodebuild -version
       - name: swift test
         working-directory: app/Packages/NeuralSheetCore
-        run: swift test 2>&1 | tail -30
+        run: |
+          set -o pipefail
+          swift test 2>&1 | tail -30
+
+  engine-tests:
+    name: Engine package tests
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v7
+      - name: Select the newest installed Xcode
+        run: |
+          # shellcheck disable=SC2012
+          XCODE=$(ls -d /Applications/Xcode_*.app | sort -V | tail -1)
+          echo "using $XCODE"
+          sudo xcode-select -s "$XCODE"
+          xcodebuild -version
+      # No checkpoint is installed on the runner, so the oracle and checkpoint
+      # suites skip themselves; the pure tests run. No test downloads a model.
+      - name: swift test
+        working-directory: app/Packages/NeuralSheetEngine
+        run: |
+          set -o pipefail
+          swift test 2>&1 | tail -30
 
   app-build:
     name: Build the app

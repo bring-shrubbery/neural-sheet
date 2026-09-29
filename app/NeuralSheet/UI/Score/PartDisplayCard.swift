@@ -52,7 +52,7 @@ struct PartDisplayCard: View {
                 row("Display") {
                     HStack(spacing: s(2)) {
                         ForEach(PartDisplay.Mode.allCases, id: \.self) { mode in
-                            segment(mode.name, isOn: display.mode == mode, isEnabled: mode == .notation || display.tab != nil) {
+                            segment(mode.name, isOn: display.mode == mode, isEnabled: true) {
                                 model.setPartMode(mode, program: program)
                             }
                         }

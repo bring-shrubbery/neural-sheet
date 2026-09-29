@@ -52,7 +52,7 @@ If you are an AI agent acting on behalf of a user in this repository, these rule
 
 ## For approved contributors
 
-If you are on the approved list, the rules are short: understand every line you submit, keep to one accepted problem per pull request, align on Discussions before changing behaviour or design, run the build and the package tests (`cd app/Packages/NeuralSheetCore && swift test`) before you push, and use a lowercase conventional title such as `fix: keep the playhead visible after a seek`. Reference issues with `refs #123` in the commit body rather than closing keywords.
+If you are on the approved list, the rules are short: understand every line you submit, keep to one accepted problem per pull request, align on Discussions before changing behaviour or design, run the build and both packages' tests (`cd app/Packages/NeuralSheetCore && swift test`, then `cd ../NeuralSheetEngine && swift test`) before you push, and use a lowercase conventional title such as `fix: keep the playhead visible after a seek`. Reference issues with `refs #123` in the commit body rather than closing keywords.
 
 ## Questions about this policy
 
