@@ -94,29 +94,46 @@ the whole-signal number a caller feels and the per-phase breakdown an
 optimisation is tuned against. It is not part of the oracle, but it is the other
 half of what the checkpoints are kept installed for, so its numbers live here.
 
-Measured on an Apple M2 Pro, 8 performance cores, `-c release`, on an otherwise
-idle machine. `real-time` is the whole transcription — the conditioning, the
-chunk loop, the note assembly and every token — against the 15 s of audio, so
-above 1× is faster than playback. The phase columns are measured warm, after
-that full transcription, over 200 decode steps on chunk 0, so they time the
-kernels rather than the first touch of a memory-mapped weight.
+Measured on an Apple M2 Pro, 8 performance cores, 19 GPU cores, `-c release`.
+`real-time` is the whole transcription — the conditioning, the chunk loop, the
+note assembly and every token — against the 15 s of audio, so above 1× is faster
+than playback. The phase columns are measured warm, after that full
+transcription, over 200 decode steps on chunk 0, so they time the kernels rather
+than the first touch of a memory-mapped weight.
 
-| Checkpoint | Backend | Real-time | Prefill | Decode mean | Decode p50 |
-|---|---|---|---|---|---|
-| `small` | CPU | 1.54 × | 200 ms | 8.28 ms/step | 7.75 ms |
-| `small` | Metal | 1.58 × | 126 ms | 6.83 ms/step | 6.80 ms |
-| `medium` | CPU | 0.60 × | 518 ms | 19.54 ms/step | 18.99 ms |
-| `medium` | Metal | 0.78 × | 327 ms | 13.89 ms/step | 13.98 ms |
+The `ggml` columns are the C++ engine over the same fixture, from the benchmark
+in muscriptor.cpp's `cpp/bench`, run in the same session on the same machine so
+that the two columns are comparable to each other. Each cell is the best of two
+to four runs.
+
+| Checkpoint | Backend | Real-time | Prefill | Decode p50 | ggml real-time | ggml prefill | ggml decode p50 |
+|---|---|---|---|---|---|---|---|
+| `small` | Metal | 4.65 × | 48 ms | 2.41 ms | 2.95 × | 62 ms | 3.14 ms |
+| `medium` | Metal | 1.87 × | 138 ms | 5.69 ms | 1.34 × | 125 ms | 7.85 ms |
+| `large` | Metal | 0.54 × | 538 ms | 20.91 ms | 0.45 × | 461 ms | 24.20 ms |
+| `small` | CPU | 1.45 × | 187 ms | 6.43 ms | 1.55 × | 1056 ms | 3.77 ms |
+| `medium` | CPU | 0.62 × | 438 ms | 16.02 ms | 0.48 × | 2878 ms | 10.36 ms |
+| `large` | CPU | 0.18 × | 1392 ms | 63.11 ms | 0.14 × | 12385 ms | 44.26 ms |
 
 The decode step is memory-bound — one pass over every F16 weight per token,
-roughly the checkpoint's own size, 200 MiB for `small` and 590 MiB for `medium` —
-so the mean tracks the size and the p50 sits within a few percent of it. Run to
-run the decode columns repeat within a few tenths of a millisecond, `medium` on
-the CPU within a millisecond (17.9…19.5 ms/step over three runs); prefill is a
-single burst over 501 frames and spreads more (`small` on the CPU was 142…200 ms
-over two runs), so a change of a few percent there is noise.
+roughly the checkpoint's own size, 200 MiB for `small`, 590 for `medium` and
+2.6 GiB for `large` — so the p50 tracks the size. On Metal it repeats within a
+few percent from run to run. On the CPU it does not: the eight performance cores
+are shared with everything else on the machine, and these rows were taken with a
+browser and an editor running (load average 5 to 10). The same build measures
+5.49 ms a step for `small` and 11.71 for `medium` on a quiet machine, against
+3.61 and 9.16 for ggml, whose own spinning thread pool holds its cores and loses
+only a few percent to a busy machine. Prefill is a single burst over 501 frames
+and spreads much more than that again.
 
-Against the targets in `docs/design/2026-09-29-swift-engine-design.md` §7 —
-Metal under 15 ms a step and prefill under 0.5 s, CPU under 15 ms a step —
-`medium` on Metal meets both and `medium` on the CPU is about 4 ms a step over,
-where ggml's CPU backend was 13 ms on an M1 Pro.
+Against the targets of the performance pass — within 15 % of ggml on every Metal
+row and within 25 % on CPU decode — Metal meets all three decode targets and
+beats ggml on every one of them, `small` and `medium` meet their prefill targets
+(`small` beats ggml, `medium` is 10 % behind it at 138 ms against a 145 ms
+target), and `large`'s prefill misses at 538 ms against a target of 480 and
+ggml's 461: what is left there is `matmul_tiled_f16`, which reaches 3.0 TFLOP/s
+of this device's 6.8. On the CPU `medium` meets its 12.6 ms target on a quiet
+machine and `small` misses its 4.8 ms one at 5.49; the CPU prefill is five to
+nine times faster than ggml's at every size, because ours is a blocked GEMM
+through `cblas_sgemm` and ggml's is not.
+
