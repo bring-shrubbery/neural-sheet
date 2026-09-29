@@ -108,10 +108,11 @@ NeuralSheet started on **2026-09-17** as a rewrite of **NeuralNote v2** at commi
 - **NeuralNote v2** was developed by [Damien Ronssin](https://github.com/DamRsn), with AI assistance.
 - **NeuralNote v1** was developed by Damien Ronssin and [Tibor Vass](https://github.com/tiborvass); its interface was designed by Perrine Morel.
 - **muscriptor.cpp**, the C++ engine NeuralSheet's Swift transcription engine is ported from, is by Damien Ronssin. **MuScriptor**, the model, is by Kyutai and Mirelo ([paper](https://arxiv.org/abs/2607.08168), [project](https://github.com/muscriptor/muscriptor)).
+- **demucs.cpp**, the library NeuralSheet separates stems with, is by [Sevag H](https://github.com/sevagh) and implements Meta's **Demucs** model; the app updates itself with [**Sparkle**](https://github.com/sparkle-project/Sparkle).
 - **NeuralSheet** is by [Antoni Silvestrovic](https://github.com/bring-shrubbery), built with Claude Code.
 
 ## License
 
-NeuralSheet's code is licensed under the [Apache License 2.0](LICENSE), the same licence as NeuralNote. [NOTICE](NOTICE) records the origin of the work, and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) lists every third-party component: muscriptor.cpp (MIT), stb_vorbis (public domain), and the Inter and JetBrains Mono typefaces (OFL 1.1). muscriptor.cpp is named there as the origin of NeuralSheet's Swift transcription engine, not as a linked library; ggml and PFFFT came with the C++ engine and are no longer part of the app.
+NeuralSheet's code is licensed under the [Apache License 2.0](LICENSE), the same licence as NeuralNote. [NOTICE](NOTICE) records the origin of the work, and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) lists every third-party component: NeuralNote (Apache-2.0) and muscriptor.cpp (MIT), the origins of the app and of its Swift transcription engine rather than linked libraries; demucs.cpp (MIT) and Eigen (MPL-2.0), linked for stem separation; Sparkle (MIT) for updates; stb_vorbis (public domain); the Inter and JetBrains Mono typefaces (OFL 1.1); the MuScriptor (CC BY-NC 4.0) and HTDemucs (MIT) model weights, downloaded at run time; and the CC BY 4.0 recording the engine's tests use.
 
 The MuScriptor model weights are **CC BY-NC 4.0, non-commercial use only**, and are downloaded separately at run time.
