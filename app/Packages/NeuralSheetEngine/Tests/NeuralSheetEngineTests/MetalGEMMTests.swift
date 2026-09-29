@@ -14,6 +14,14 @@
 // ascending order too, which makes the whole sum sequential. A tolerance here would hide the
 // one thing worth catching, a tile that sums the wrong elements.
 //
+// Since the kernel moved to `simdgroup_float8x8`, that equal-bits assertion rests on one thing
+// MSL does not promise: the order of the eight terms inside a single
+// `simdgroup_multiply_accumulate`. On every Apple GPU this has been run on it is an ascending
+// chain of fused multiply-adds, which is exactly the loop below, and the assertion holds. A
+// future device that accumulated an 8 x 8 x 8 product in another order -- pairwise, say -- would
+// fail this suite with nothing wrong in the kernel, and the fix then is a tolerance here plus a
+// fresh look at the Metal oracle dumps, not a change to `matmul_tiled_f16`.
+//
 // Four of the kernel's six bounds are observable through its output and each was checked by
 // removing it and watching this suite fail: the row and column bounds on the store (which
 // then writes into the sentinel past the result) and the two K bounds on the staging (which
@@ -196,6 +204,17 @@ import Testing
         #expect(
             tile.features % (8 * tile.simdgroupColumns) == 0,
             "the tile's features are not a whole number of 8 x 8 accumulators per simdgroup")
+
+        // The double-buffered K loop gives every thread a fixed number of staged values to
+        // fetch into registers -- `GEMM_APER` of A and `GEMM_BPER` of B -- and both loops step
+        // by the whole threadgroup, so a tile whose staged pass does not divide evenly would
+        // leave part of it unfetched on every pass and read whatever the tile held before.
+        #expect(
+            tile.rows * tile.depth % tile.threads == 0,
+            "the staged A pass is not a whole number of values per thread")
+        #expect(
+            tile.features * tile.depth % tile.threads == 0,
+            "the staged B pass is not a whole number of values per thread")
         #expect(
             MetalShaderSource.source.contains("#define GEMM_TM \(tile.rows)"),
             "the shader source was not built from the tile")

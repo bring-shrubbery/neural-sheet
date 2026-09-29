@@ -213,6 +213,12 @@ final class MetalBackend: TransformerBackend {
     /// rather than eight so that one number covers every vector load a kernel may grow into.
     /// A GGUF's data section is aligned to at least 32 bytes and so is every tensor in it, so
     /// this rejects nothing a converter writes.
+    ///
+    /// A misalignment is `.unsupportedArchitecture` and not `.invalidCheckpoint`, because a
+    /// four- or eight-aligned GGUF is a perfectly good file that the CPU backend reads without
+    /// noticing: it is these kernels that cannot take it, so `make` falls back to the CPU, as
+    /// it does for every other requirement this library puts on a device. A tensor of the wrong
+    /// type or extent above is a different thing and stays a broken checkpoint.
     private static func offset(of info: TensorInfo, type: TensorDataType, count: Int) throws -> Int {
         guard info.dataType == type, info.elementCount == count else {
             throw TranscriberError.invalidCheckpoint(
@@ -221,8 +227,9 @@ final class MetalBackend: TransformerBackend {
         }
 
         guard info.offset % 16 == 0 else {
-            throw TranscriberError.invalidCheckpoint(
-                "tensor '\(info.name)' is at offset \(info.offset), which the GPU cannot bind")
+            throw TranscriberError.unsupportedArchitecture(
+                "tensor '\(info.name)' is at offset \(info.offset), which these kernels "
+                    + "cannot bind: they read the weights in sixteen-byte vectors")
         }
 
         return info.offset

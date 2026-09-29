@@ -102,7 +102,12 @@ extension MetalShaderSource {
                 accumulator[r] = 0.0f;
             }
 
-            const uint quads = p.inFeatures / 4;
+            // The quad loop runs only when the row is a whole number of `half4`s, as
+            // `layer_norm`'s `float4` loop does: an `inFeatures` that is not a multiple of four
+            // puts the *next* row at an eight-byte offset that is not a multiple of eight, so
+            // the vector load would be misaligned rather than merely short. No checkpoint has
+            // one -- every shape is a multiple of 32 -- and the scalar tail below covers it.
+            const uint quads = (p.inFeatures % 4 == 0) ? p.inFeatures / 4 : 0;
 
             for (uint q = lane; q < quads; q += width) {
                 const uint i = q * 4;

@@ -123,59 +123,59 @@ enum CPUAttention {
 
         DispatchQueue.concurrentPerform(iterations: ranges) { range in
             for head in (nHead * range / ranges) ..< (nHead * (range + 1) / ranges) {
-            let offset = head * headDim
-            let s = scores + head * nKV
-            let query = UnsafeRawPointer(q + offset)
-
-            for row in 0 ..< nKV {
-                s[row] = dot(UnsafeRawPointer(kCache + row * dim + offset), query, headDim) * scale
-            }
-
-            CPUKernels.softmaxRows(s, rows: 1, columns: nKV, scale: 1, mask: nil)
-
-            // Thirty-two channels at a time, which is four `SIMD8` accumulators: enough to keep
-            // the multiply-adds independent, few enough to stay in registers. A head wider than
-            // the block reads its slice of the cache once per block, and those reads are of the
-            // same cache lines, so the second pass is served by L2.
-            var channel = 0
-
-            while channel + 32 <= headDim {
-                let base = vCache + offset + channel
-                var a0 = SIMD8<Float>()
-                var a1 = SIMD8<Float>()
-                var a2 = SIMD8<Float>()
-                var a3 = SIMD8<Float>()
+                let offset = head * headDim
+                let s = scores + head * nKV
+                let query = UnsafeRawPointer(q + offset)
 
                 for row in 0 ..< nKV {
-                    let weight = SIMD8<Float>(repeating: s[row])
-                    let v = UnsafeRawPointer(base + row * dim)
-                    a0 += weight * singles(v, 0)
-                    a1 += weight * singles(v, 8)
-                    a2 += weight * singles(v, 16)
-                    a3 += weight * singles(v, 24)
+                    s[row] = dot(UnsafeRawPointer(kCache + row * dim + offset), query, headDim) * scale
                 }
 
-                let destination = out + offset + channel
-                for lane in 0 ..< 8 {
-                    destination[lane] = a0[lane]
-                    destination[lane + 8] = a1[lane]
-                    destination[lane + 16] = a2[lane]
-                    destination[lane + 24] = a3[lane]
+                CPUKernels.softmaxRows(s, rows: 1, columns: nKV, scale: 1, mask: nil)
+
+                // Thirty-two channels at a time, which is four `SIMD8` accumulators: enough to keep
+                // the multiply-adds independent, few enough to stay in registers. A head wider than
+                // the block reads its slice of the cache once per block, and those reads are of the
+                // same cache lines, so the second pass is served by L2.
+                var channel = 0
+
+                while channel + 32 <= headDim {
+                    let base = vCache + offset + channel
+                    var a0 = SIMD8<Float>()
+                    var a1 = SIMD8<Float>()
+                    var a2 = SIMD8<Float>()
+                    var a3 = SIMD8<Float>()
+
+                    for row in 0 ..< nKV {
+                        let weight = SIMD8<Float>(repeating: s[row])
+                        let v = UnsafeRawPointer(base + row * dim)
+                        a0 += weight * singles(v, 0)
+                        a1 += weight * singles(v, 8)
+                        a2 += weight * singles(v, 16)
+                        a3 += weight * singles(v, 24)
+                    }
+
+                    let destination = out + offset + channel
+                    for lane in 0 ..< 8 {
+                        destination[lane] = a0[lane]
+                        destination[lane + 8] = a1[lane]
+                        destination[lane + 16] = a2[lane]
+                        destination[lane + 24] = a3[lane]
+                    }
+
+                    channel += 32
                 }
 
-                channel += 32
-            }
-
-            // The checkpoints' heads are all 64 wide, so this never runs there; it is here so
-            // that a head that is not a multiple of the block cannot fail quietly.
-            while channel < headDim {
-                var total = Float(0)
-                for row in 0 ..< nKV {
-                    total += s[row] * vCache[row * dim + offset + channel]
+                // The checkpoints' heads are all 64 wide, so this never runs there; it is here so
+                // that a head that is not a multiple of the block cannot fail quietly.
+                while channel < headDim {
+                    var total = Float(0)
+                    for row in 0 ..< nKV {
+                        total += s[row] * vCache[row * dim + offset + channel]
+                    }
+                    out[offset + channel] = total
+                    channel += 1
                 }
-                out[offset + channel] = total
-                channel += 1
-            }
             }
         }
     }

@@ -96,10 +96,14 @@ extension MetalShaderSource {
         /// 3.0.
         ///
         /// The accumulation is F32, as `GGML_PREC_F32` asks, and runs straight up K in staged
-        /// passes; within one 8 x 8 x 8 product the order of the eight terms is the hardware's,
-        /// which is why MetalGEMMTests compares against a reference in the same shape rather
-        /// than against a scalar loop. The token streams are the gate on the difference, and
-        /// the Metal oracle fixtures for all three checkpoints are unchanged by it.
+        /// passes. Within one 8 x 8 x 8 product the order of the eight terms is the hardware's
+        /// and MSL does not specify it -- but on this hardware it is an ascending chain of fused
+        /// multiply-adds, bit for bit what a scalar loop up K gives, which is why MetalGEMMTests
+        /// still compares this kernel's output against exactly such a loop for *equal bits* and
+        /// passes. That is a property of the GPU rather than of the kernel: a device that
+        /// accumulated an 8 x 8 x 8 product in some other order would fail that suite without
+        /// anything here being wrong. The token streams are the gate either way, and the Metal
+        /// oracle fixtures for all three checkpoints are unchanged.
         kernel void matmul_tiled_f16(
             device const half *weights [[buffer(0)]],
             device const float *x [[buffer(1)]],

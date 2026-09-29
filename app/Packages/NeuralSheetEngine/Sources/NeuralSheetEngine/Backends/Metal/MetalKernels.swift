@@ -159,6 +159,18 @@ struct MetalKernels {
                 "this device runs fewer than \(MetalKernels.gemmThreads.width) threads per threadgroup")
         }
 
+        // The two tiled attention kernels have their own tile compiled into them and the same
+        // constraint: their threadgroup is the one `attentionTile` implies or they read past
+        // their threadgroup array.
+        let tiledAttentionThreads = MetalKernels.attentionTile.threads
+
+        guard attentionScoresState.maxTotalThreadsPerThreadgroup >= tiledAttentionThreads,
+            attentionValuesState.maxTotalThreadsPerThreadgroup >= tiledAttentionThreads
+        else {
+            throw TranscriberError.internalError(
+                "this device runs fewer than \(tiledAttentionThreads) threads per threadgroup")
+        }
+
         // `simdgroup_float8x8` is defined over a 32-lane simdgroup, and the GEMM's tile is cut
         // into eighths on that assumption. Every Apple GPU is 32 wide; a device that is not is
         // not one these kernels can run, which `MetalBackend.make` turns into the CPU backend
@@ -328,8 +340,13 @@ struct MetalKernels {
     /// for the prefill and for anything that is not.
     func canFuseAttention(nNew: Int, nKV: Int, headDim: Int) -> Bool {
         fusedAttentionFits && nNew == 1 && headDim <= MetalShaderSource.attentionThreads
-            && nKV * 4 + MetalShaderSource.attentionThreads * 4 <= threadgroupMemory
+            && MetalKernels.attentionRowBytes(nKV) + MetalShaderSource.attentionThreads * 4
+                <= threadgroupMemory
     }
+
+    /// The threadgroup bytes `attn_decode`'s score row takes: the `nKV` floats it reads, rounded
+    /// up to the sixteen-byte unit Metal allocates threadgroup memory in.
+    private static func attentionRowBytes(_ nKV: Int) -> Int { (nKV * 4 + 15) & ~15 }
 
     /// The whole attention block for a single query row, one threadgroup per head.
     /// @see canFuseAttention
@@ -345,7 +362,8 @@ struct MetalKernels {
         encoder.setBuffer(cache, offset: valuesOffset, index: 2)
         encoder.setBuffer(out, offset: 0, index: 3)
         encoder.setBytes(&params, length: MemoryLayout<AttentionParams>.stride, index: 4)
-        encoder.setThreadgroupMemoryLength(Int(attention.nKV) * 4, index: 0)
+        encoder.setThreadgroupMemoryLength(
+            MetalKernels.attentionRowBytes(Int(attention.nKV)), index: 0)
         encoder.dispatchThreadgroups(
             MTLSize(width: Int(attention.nHead), height: 1, depth: 1),
             threadsPerThreadgroup: MTLSize(
