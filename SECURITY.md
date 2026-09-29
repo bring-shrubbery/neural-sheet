@@ -12,9 +12,9 @@ Include what you found, how to reproduce it, and the NeuralSheet version or comm
 
 ## Scope
 
-In scope: the NeuralSheet app and its Swift package, the C bridge to the transcription engine, the build scripts and GitHub workflows in this repository.
+In scope: the NeuralSheet app and its Swift packages, including the transcription engine and its GGUF parser, the C bridge to the stem separation library, the build scripts and GitHub workflows in this repository.
 
-Out of scope: the upstream transcription engine [muscriptor.cpp](https://github.com/DamRsn/muscriptor.cpp) and [ggml](https://github.com/ggml-org/ggml) (report there), the MuScriptor model itself, and Hugging Face.
+Out of scope: [muscriptor.cpp](https://github.com/DamRsn/muscriptor.cpp), the C++ engine our Swift engine is a port of, and [demucs.cpp](https://github.com/sevagh/demucs.cpp) (report there), the MuScriptor model itself, and Hugging Face.
 
 ## Supported versions
 

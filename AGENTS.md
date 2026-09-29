@@ -13,7 +13,8 @@ NeuralSheet is a native macOS audio-to-MIDI transcription app (SwiftUI, AppKit, 
 app/                       The macOS app (Xcode project, scheme NeuralSheet)
   NeuralSheet/App/         AppModel state machine, window, shortcuts, project lifecycle, dialogs
   NeuralSheet/Audio/       PlaybackEngine, Recorder, NoteScheduler, InstrumentSynthBank, devices
-  NeuralSheet/Engine/      TranscriptionEngine, the app's wrapper over the NeuralSheetEngine package
+  NeuralSheet/Engine/      TranscriptionEngine over the NeuralSheetEngine package; StemSeparator
+                           and its C bridge (nsheet_stems.h/.cpp) to demucs.cpp
   NeuralSheet/AppIcon.icon The app icon (Icon Composer document; gradient fill + notes.svg layer)
   NeuralSheet/UI/          Theme, Fonts, Icons, controls, top bar, sidebar, toolbar, status bar,
                            the Settings window (General / Model / Audio), the welcome window, and
