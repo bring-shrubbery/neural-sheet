@@ -1,10 +1,10 @@
 // The GPU half of `buildEvalGraph` in muscriptor.cpp's cpp/src/model.cpp. The C++ hands
 // its graph to ggml, so the kernels it runs on the GPU are ggml's own
 // (ggml/src/ggml-metal/ggml-metal.metal: `kernel_norm`, `kernel_mul_mv_f16_f32`,
-// `kernel_mul_mm`, `kernel_soft_max`, `kernel_gelu_erf`, `kernel_add`, `kernel_cpy`).
-// These nine are the same arithmetic written out for this one architecture, which is why
-// they are a fraction of the size: no broadcasting, no strides, no types but F16 weights
-// and F32 activations.
+// `kernel_mul_mm`, `kernel_soft_max`, `kernel_flash_attn_ext`, `kernel_gelu_erf`,
+// `kernel_add`, `kernel_cpy`). These nine are the same arithmetic written out for this one
+// architecture, which is why they are a fraction of the size: no broadcasting, no strides,
+// no types but F16 weights and F32 activations.
 //
 // The source is a Swift string and not a `.metal` file on purpose. A `.metal` file becomes
 // a `default.metallib` inside a bundle, and the bundle differs between `swift test`, the
@@ -18,11 +18,12 @@
 
 /// The Metal Shading Language the backend compiles at load. @see MetalKernels
 enum MetalShaderSource {
-    /// The whole library: these kernels, the decode matvec, the fused decode attention and
-    /// the prefill GEMM. The last three are long enough and have enough of a blocking strategy
-    /// to explain that each lives in its own file.
-    /// @see MetalShaderSource+Matvec, MetalShaderSource+Attention, MetalShaderSource+GEMM
-    static let source = core + matvec + attention + gemm
+    /// The whole library: these kernels, the decode matvec, the fused decode attention, the
+    /// prefill's two attention products and the prefill GEMM. Each of the four is long enough
+    /// and has enough of a blocking strategy to explain that it lives in its own file.
+    /// @see MetalShaderSource+Matvec, MetalShaderSource+Attention,
+    /// MetalShaderSource+PrefillAttention, MetalShaderSource+GEMM
+    static let source = core + matvec + attention + prefillAttention + gemm
 
     private static let core = """
         #include <metal_stdlib>
@@ -175,37 +176,6 @@ enum MetalShaderSource {
             values[destination] = qkv[source + 2 * p.dim];
         }
 
-        /// The scaled, causally masked attention scores, one thread per (key, query, head).
-        ///
-        /// The mask is bottom-right causal: query row `i` sits at position `nPast + i`, so
-        /// it may attend to cache rows `0 ... nPast + i` and no further. The scale is
-        /// folded in here, as the CPU folds it into the GEMM's alpha, so that the softmax
-        /// below is a plain softmax.
-        kernel void attn_scores(
-            device const float *qkv [[buffer(0)]],
-            device const float *keys [[buffer(1)]],
-            device float *scores [[buffer(2)]],
-            constant AttentionParams &p [[buffer(3)]],
-            uint3 gid [[thread_position_in_grid]])
-        {
-            device float *out = scores + ((ulong)gid.z * p.nNew + gid.y) * p.nKV + gid.x;
-
-            if (gid.x > p.nPast + gid.y) {
-                *out = -INFINITY;
-                return;
-            }
-
-            device const float *q = qkv + (ulong)gid.y * 3 * p.dim + gid.z * p.headDim;
-            device const float *k = keys + (ulong)gid.x * p.dim + gid.z * p.headDim;
-
-            float accumulator = 0.0f;
-            for (uint d = 0; d < p.headDim; ++d) {
-                accumulator = fma(q[d], k[d], accumulator);
-            }
-
-            *out = accumulator * p.scale;
-        }
-
         /// Softmax over one score row, in place, one threadgroup per (head, query).
         ///
         /// A masked entry is -infinity, so it exponentiates to exactly zero and drops out
@@ -263,29 +233,6 @@ enum MetalShaderSource {
             for (uint i = tid; i < p.columns; i += REDUCE_THREADS) {
                 values[i] *= inverse;
             }
-        }
-
-        /// The weighted sum of the cached values, one thread per (channel, query, head).
-        ///
-        /// The whole `nKV` row is summed, masked tail included: those probabilities are
-        /// exactly zero, so the rows past the query's own position contribute nothing and
-        /// need no special case.
-        kernel void attn_values(
-            device const float *scores [[buffer(0)]],
-            device const float *values [[buffer(1)]],
-            device float *out [[buffer(2)]],
-            constant AttentionParams &p [[buffer(3)]],
-            uint3 gid [[thread_position_in_grid]])
-        {
-            device const float *probabilities = scores + ((ulong)gid.z * p.nNew + gid.y) * p.nKV;
-            device const float *v = values + gid.z * p.headDim + gid.x;
-
-            float accumulator = 0.0f;
-            for (uint j = 0; j < p.nKV; ++j) {
-                accumulator = fma(probabilities[j], v[(ulong)j * p.dim], accumulator);
-            }
-
-            out[(ulong)gid.y * p.dim + gid.z * p.headDim + gid.x] = accumulator;
         }
 
         /// GELU in its exact erf form, in place. `ggml_gelu` is the tanh approximation and

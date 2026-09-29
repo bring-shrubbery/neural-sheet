@@ -32,8 +32,8 @@ import Testing
     /// Every kernel the backend dispatches, which is also every kernel the shader source
     /// is required to define.
     private static let kernelNames = [
-        "layer_norm", "matvec_f16", "matmul_tiled_f16", "copy_kv", "attn_scores", "softmax_rows",
-        "attn_values", "attn_decode", "gelu_erf", "add_inplace",
+        "layer_norm", "matvec_f16", "matmul_tiled_f16", "copy_kv", "attn_decode",
+        "attn_scores_tiled", "softmax_rows", "attn_values_tiled", "gelu_erf", "add_inplace",
     ]
 
     /// Skips without a Metal device or the `small` checkpoint: the package never downloads a

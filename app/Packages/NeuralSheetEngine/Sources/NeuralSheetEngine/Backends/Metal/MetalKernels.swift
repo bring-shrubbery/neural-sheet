@@ -91,8 +91,8 @@ struct MetalKernels {
     /// `simdgroup_index_in_threadgroup`.
     private let matvecThreads: MTLSize
 
-    /// Threadgroup shapes for the kernels dispatched by thread count rather than by
-    /// threadgroup, computed once from each pipeline's own limits.
+    /// `copy_kv`'s threadgroup, which is dispatched by thread count rather than by
+    /// threadgroup, computed once from that pipeline's own limits.
     private let planeThreads: MTLSize
     private let lineThreads: MTLSize
 
@@ -117,9 +117,9 @@ struct MetalKernels {
         matvecState = try state("matvec_f16")
         matmulState = try state("matmul_tiled_f16")
         copyKVState = try state("copy_kv")
-        attentionScoresState = try state("attn_scores")
+        attentionScoresState = try state("attn_scores_tiled")
         softmaxState = try state("softmax_rows")
-        attentionValuesState = try state("attn_values")
+        attentionValuesState = try state("attn_values_tiled")
         attentionDecodeState = try state("attn_decode")
         geluState = try state("gelu_erf")
         addState = try state("add_inplace")
@@ -164,17 +164,13 @@ struct MetalKernels {
                     + "simdgroups, and the matrix kernels are written for 32")
         }
 
-        // A 2D or 3D grid is covered with the execution width along x -- so that the lanes
-        // of a simdgroup read consecutive addresses -- and as many rows of that as the
-        // pipeline will take, capped at eight because none of those kernels is bound by
-        // occupancy. The limits are the smallest of every pipeline the shape is used for,
-        // because a threadgroup wider than a pipeline allows is a dispatch Metal rejects.
-        let planeWidth = max(1, attentionScoresState.threadExecutionWidth)
-        let planeLimit = min(
-            copyKVState.maxTotalThreadsPerThreadgroup,
-            min(attentionScoresState.maxTotalThreadsPerThreadgroup, attentionValuesState.maxTotalThreadsPerThreadgroup))
+        // `copy_kv`'s 2D grid is covered with the execution width along x -- so that the lanes
+        // of a simdgroup write consecutive addresses -- and as many rows of that as the pipeline
+        // will take, capped at eight because the kernel is not bound by occupancy.
+        let planeWidth = max(1, copyKVState.threadExecutionWidth)
         planeThreads = MTLSize(
-            width: planeWidth, height: max(1, min(8, planeLimit / planeWidth)), depth: 1)
+            width: planeWidth,
+            height: max(1, min(8, copyKVState.maxTotalThreadsPerThreadgroup / planeWidth)), depth: 1)
 
         let lineLimit = min(geluState.maxTotalThreadsPerThreadgroup, addState.maxTotalThreadsPerThreadgroup)
         lineThreads = MTLSize(width: max(1, min(256, lineLimit)), height: 1, depth: 1)
@@ -256,6 +252,23 @@ struct MetalKernels {
             MTLSize(width: dim, height: nNew, depth: 1), threadsPerThreadgroup: planeThreads)
     }
 
+    /// The tile `attn_scores_tiled` and `attn_values_tiled` were compiled with, which is what
+    /// their grids have to be built from. @see MetalShaderSource.attentionTile
+    private static var attentionTile: MetalShaderSource.GEMMTile { MetalShaderSource.attentionTile }
+
+    /// The threadgroup both prefill attention kernels are dispatched with.
+    private static var attentionTileThreads: MTLSize {
+        MTLSize(width: attentionTile.threads, height: 1, depth: 1)
+    }
+
+    /// Whole tiles of a `queries x keys` block per head. A ragged tile at either edge is the
+    /// kernel's own business: it stages zeroes for what is not there and stores only what is.
+    private static func attentionGrid(rows: Int, columns: Int, heads: Int) -> MTLSize {
+        MTLSize(
+            width: (columns + attentionTile.features - 1) / attentionTile.features,
+            height: (rows + attentionTile.rows - 1) / attentionTile.rows, depth: heads)
+    }
+
     /// The scaled, causally masked scores of every (key, query, head).
     func attentionScores(
         _ encoder: MTLComputeCommandEncoder,
@@ -267,9 +280,10 @@ struct MetalKernels {
         encoder.setBuffer(cache, offset: keysOffset, index: 1)
         encoder.setBuffer(scores, offset: 0, index: 2)
         encoder.setBytes(&params, length: MemoryLayout<AttentionParams>.stride, index: 3)
-        encoder.dispatchThreads(
-            MTLSize(width: Int(attention.nKV), height: Int(attention.nNew), depth: Int(attention.nHead)),
-            threadsPerThreadgroup: planeThreads)
+        encoder.dispatchThreadgroups(
+            MetalKernels.attentionGrid(
+                rows: Int(attention.nNew), columns: Int(attention.nKV), heads: Int(attention.nHead)),
+            threadsPerThreadgroup: MetalKernels.attentionTileThreads)
     }
 
     /// Softmax in place over each of `rows` rows of `columns` values.
@@ -294,10 +308,10 @@ struct MetalKernels {
         encoder.setBuffer(cache, offset: valuesOffset, index: 1)
         encoder.setBuffer(out, offset: 0, index: 2)
         encoder.setBytes(&params, length: MemoryLayout<AttentionParams>.stride, index: 3)
-        encoder.dispatchThreads(
-            MTLSize(
-                width: Int(attention.headDim), height: Int(attention.nNew), depth: Int(attention.nHead)),
-            threadsPerThreadgroup: planeThreads)
+        encoder.dispatchThreadgroups(
+            MetalKernels.attentionGrid(
+                rows: Int(attention.nNew), columns: Int(attention.headDim), heads: Int(attention.nHead)),
+            threadsPerThreadgroup: MetalKernels.attentionTileThreads)
     }
 
     /// Whether `attentionDecode` can stand in for the three kernels above at this shape.
