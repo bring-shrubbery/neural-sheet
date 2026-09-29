@@ -146,6 +146,7 @@ jobs:
           set -o pipefail
           xcodebuild -project NeuralSheet.xcodeproj -scheme NeuralSheet -configuration Release \
             -destination 'platform=macOS,arch=arm64' -archivePath build/NeuralSheet.xcarchive \
+            ARCHS=arm64 ONLY_ACTIVE_ARCH=YES \
             CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY="$IDENTITY" DEVELOPMENT_TEAM="$TEAM_ID" \
             MARKETING_VERSION="$VERSION" CURRENT_PROJECT_VERSION="$GITHUB_RUN_NUMBER" \
             archive 2>&1 | tee build.log | tail -30
