@@ -69,7 +69,10 @@ extension Model {
     /// which is what the reference does: it writes the prompt into `gen_sequence` and starts
     /// decoding from the end of it.
     ///
-    /// `maxTokens` counts the prompt, so the answer is never longer than it.
+    /// `maxTokens` counts the prompt, so the answer is never longer than it -- as long as the
+    /// prompt fits. A prompt longer than the budget decodes nothing and is returned whole,
+    /// which is what the C++ does; `Transcriber` never asks for one, its prompt is three tokens
+    /// against a budget of two thousand.
     func generate(
         conditioning: [Float], frameCount: Int, maxTokens: Int, eosID: Int32, prompt: [Int32] = []
     ) throws -> [Int32] {

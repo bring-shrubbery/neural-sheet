@@ -22,8 +22,9 @@ private func instrumentGroupsTable() throws -> [String: Any] {
         let groupID = try #require(Int(key))
         #expect(InstrumentGroups.representativeProgram(groupID: groupID) == programs[0])
 
-        // The representative is the only program the model emits for the group, so
-        // every program of the group must answer that group id.
+        // Only the representative is checked, and only in this direction: it is the only
+        // program the model emits for the group, so the group's other programs never come
+        // back out of a decode and what they map to is not part of this contract.
         #expect(InstrumentGroups.groupID(forProgram: programs[0]) == groupID)
     }
 

@@ -52,8 +52,8 @@ final class CPUBackend: TransformerBackend {
     /// Every layer norm's weight and bias in one F32 allocation, in layer order, with the
     /// output norm's pair last. The checkpoint stores them as F32 already, but as separate
     /// tensors, and a pass reads each of them once per layer, so they are gathered here
-    /// rather than pointed at in the mapping: 60 kB that stays in cache instead of 28
-    /// scattered pages.
+    /// rather than pointed at in the mapping: (14 x 4 + 2) x 768 x 4 = 178 kB in one
+    /// allocation for the small checkpoint, instead of 58 tensors scattered through it.
     private let normStore: UnsafeMutablePointer<Float>
 
     /// K and V for every layer, `[nCtx][dim]` each, in one allocation. This is the biggest

@@ -244,6 +244,11 @@ final class MetalBackend: TransformerBackend {
         }
 
         do {
+            // `options: nil` is Metal's default fast math, which is what ggml's own library is
+            // built with. The kernels do rely on one thing it is allowed to break: `-INFINITY`
+            // surviving `max` and `exp` in the masked softmax, which the Metal oracle dumps
+            // confirm it does on this hardware. `MTLCompileOptions.mathMode` set to `.relaxed`
+            // or `.safe` is the switch to reach for if a device ever disagrees.
             let library = try device.makeLibrary(source: MetalShaderSource.source, options: nil)
             cachedLibrary = (device, library)
             return library

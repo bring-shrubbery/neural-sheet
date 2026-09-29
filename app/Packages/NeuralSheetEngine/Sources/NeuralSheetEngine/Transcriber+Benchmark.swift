@@ -33,6 +33,11 @@ extension Transcriber {
     /// starts with a `reset` -- but it means the call is a measurement, not a step in a
     /// transcription.
     ///
+    /// It also times the model as the last `transcribe` left it configured: the conditioning
+    /// rows and the forbidden mask of that call's instrument selection, which lengthen the
+    /// prefix and mask the logits. A benchmark of the unconditional path measures a transcriber
+    /// nothing has transcribed through yet, or one whose last run selected nothing.
+    ///
     /// - Parameters:
     ///   - samples: The whole signal; `chunk` selects the window, zero-padded as usual.
     ///   - chunk: Which 5 s window to time.

@@ -33,9 +33,10 @@ struct STFT {
     /// `.internalError` when `nFFT` is not a power of two of at least 32, when
     /// `hopLength` is not positive, or when the window is the wrong length.
     ///
-    /// The power-of-two floor is vDSP's radix-2 real transform, which needs `log2n >= 5`
-    /// for its vectorised path; pffft asked for the same multiple of 32, so no
-    /// checkpoint this build reads is excluded by it.
+    /// The reference's own floor is pffft's `nFFT % 32 == 0`. This narrows it to powers of
+    /// two, because vDSP's radix-2 real FFT takes only those; `log2n >= 5` keeps the multiple
+    /// of 32 the reference asked for and is our own choice rather than a vDSP minimum. Every
+    /// checkpoint uses 2048, so nothing this build reads is excluded by either.
     init(nFFT: Int, hopLength: Int, window: [Float]) throws {
         guard nFFT >= 32, nFFT & (nFFT - 1) == 0 else {
             throw TranscriberError.internalError(
