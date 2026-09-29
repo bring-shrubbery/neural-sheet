@@ -162,7 +162,7 @@ private func referenceMagnitudes(_ samples: [Float], nFFT: Int, hopLength: Int, 
         }
     }
 
-    @Test func aSizeVDSPCannotTransformThrows() {
+    @Test func anUnusableGeometryThrows() {
         for (nFFT, hop) in [(48, 16), (16, 8), (0, 8), (64, 0)] {
             let error = #expect(throws: TranscriberError.self) {
                 try STFT(nFFT: nFFT, hopLength: hop, window: [Float](repeating: 1, count: max(nFFT, 0)))

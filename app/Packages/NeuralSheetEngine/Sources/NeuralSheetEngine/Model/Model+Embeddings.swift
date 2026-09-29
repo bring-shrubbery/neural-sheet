@@ -96,17 +96,15 @@ extension Model {
     /// The positions are added to every row of the prefix, the conditioning frames included:
     /// the frames are a sequence like any other as far as the transformer is concerned.
     func addPositions(to input: inout [Float], nNew: Int) {
-        let dim = hparams.dim
-        let first = nPast * dim
-        precondition(
-            nPast >= 0 && nPast + nNew <= positions.count,
-            "position rows \(nPast)..<\(nPast + nNew) are not in a table of \(positions.count)")
+        // Through `rows`, so the window's bounds check and the offset arithmetic are stated
+        // once, in the type that owns the table.
+        let rows = positions.rows(from: nPast, count: nNew)
 
         input.withUnsafeMutableBufferPointer { destination in
-            positions.values.withUnsafeBufferPointer { table in
+            rows.withUnsafeBufferPointer { table in
                 vDSP_vadd(
-                    destination.baseAddress!, 1, table.baseAddress! + first, 1,
-                    destination.baseAddress!, 1, vDSP_Length(nNew * dim))
+                    destination.baseAddress!, 1, table.baseAddress!, 1,
+                    destination.baseAddress!, 1, vDSP_Length(rows.count))
             }
         }
     }

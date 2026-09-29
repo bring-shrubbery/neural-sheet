@@ -46,7 +46,12 @@ enum CPUMatmul {
             rowBytes: inFeatures * MemoryLayout<Float>.stride)
         // No `kvImageDoNotTile`: a prefill's weight is millions of values and this call is
         // made from one thread, so vImage is welcome to spread the conversion itself.
-        vImageConvert_Planar16FtoPlanarF(&source, &destination, vImage_Flags(kvImageNoFlags))
+        let status = vImageConvert_Planar16FtoPlanarF(&source, &destination, vImage_Flags(kvImageNoFlags))
+
+        // The only ways this fails are a geometry or a buffer this file got wrong, never
+        // anything a checkpoint can cause, and an unconverted scratch would be multiplied as
+        // if it held the weight.
+        precondition(status == kvImageNoError, "the F16 to F32 weight conversion failed with \(status)")
 
         gemm(
             weights: scratch, outFeatures: outFeatures, inFeatures: inFeatures,

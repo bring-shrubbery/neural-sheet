@@ -72,8 +72,14 @@ public enum InstrumentGroup: Int32, CaseIterable, Hashable, Sendable {
 
     /// The group's name, e.g. "electric_bass".
     public var name: String {
-        // Every case is a named group, so the table always has an entry.
-        InstrumentGroups.name(forGroupID: Int(rawValue)) ?? ""
+        guard let name = InstrumentGroups.name(forGroupID: Int(rawValue)) else {
+            // Every case of this enum is one of the table's named groups, so reaching here is
+            // not a group without a name: it is the enum and the table having drifted apart,
+            // and an empty string would travel into a project file and a MusicXML part.
+            preconditionFailure("instrument group \(rawValue) has no name in the instrument table")
+        }
+
+        return name
     }
 
     /// The program the model emits for this group; `Note.drumProgram` for drums.

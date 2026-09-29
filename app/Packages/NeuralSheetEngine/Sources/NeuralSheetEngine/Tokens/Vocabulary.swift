@@ -61,23 +61,24 @@ enum Vocabulary {
     /// The model's 10 ms grid, in frames per second.
     static let frameRate = 100
 
-    /// Range descriptor, so `event(for:)` and `token(for:value:)` cannot disagree.
-    private struct Range {
+    /// Range descriptor, so `event(for:)` and `token(for:value:)` cannot disagree. Named so
+    /// that it does not shadow the standard library's `Range` inside this type.
+    private struct TokenRange {
         var type: EventType
         var first: Int32
         var count: Int32
     }
 
-    private static let ranges: [Range] = [
-        Range(type: .pad, first: padID, count: 1),
-        Range(type: .eos, first: eosID, count: 1),
-        Range(type: .unk, first: unkID, count: 1),
-        Range(type: .shift, first: shiftFirst, count: shiftCount),
-        Range(type: .pitch, first: pitchFirst, count: pitchCount),
-        Range(type: .velocity, first: velocityFirst, count: velocityCount),
-        Range(type: .tie, first: tieFirst, count: tieCount),
-        Range(type: .program, first: programFirst, count: programCount),
-        Range(type: .drum, first: drumFirst, count: drumCount),
+    private static let ranges: [TokenRange] = [
+        TokenRange(type: .pad, first: padID, count: 1),
+        TokenRange(type: .eos, first: eosID, count: 1),
+        TokenRange(type: .unk, first: unkID, count: 1),
+        TokenRange(type: .shift, first: shiftFirst, count: shiftCount),
+        TokenRange(type: .pitch, first: pitchFirst, count: pitchCount),
+        TokenRange(type: .velocity, first: velocityFirst, count: velocityCount),
+        TokenRange(type: .tie, first: tieFirst, count: tieCount),
+        TokenRange(type: .program, first: programFirst, count: programCount),
+        TokenRange(type: .drum, first: drumFirst, count: drumCount),
     ]
 
     /// What `tokenID` decodes to. An id outside the vocabulary answers `.unk`, which
