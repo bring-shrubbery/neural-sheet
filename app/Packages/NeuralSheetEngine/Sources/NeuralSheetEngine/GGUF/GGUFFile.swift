@@ -237,15 +237,20 @@ final class GGUFFile {
         let raw = bytes(of: tensor)
         let count = tensor.elementCount
 
+        // Spelled out step by step: nested initialisers in one expression are more than
+        // Xcode 26's type checker resolves in a Release build ("argument passed to call
+        // that takes no arguments"), and the release runner builds with that Xcode.
         switch tensor.dataType {
         case .f32:
-            return (0 ..< count).map {
-                Float(bitPattern: UInt32(littleEndian: raw.loadUnaligned(fromByteOffset: $0 * 4, as: UInt32.self)))
+            return (0 ..< count).map { index -> Float in
+                let bits = raw.loadUnaligned(fromByteOffset: index * 4, as: UInt32.self)
+                return Float(bitPattern: UInt32(littleEndian: bits))
             }
         case .f16:
-            return (0 ..< count).map {
-                Float(Float16(bitPattern: UInt16(
-                    littleEndian: raw.loadUnaligned(fromByteOffset: $0 * 2, as: UInt16.self))))
+            return (0 ..< count).map { index -> Float in
+                let bits = raw.loadUnaligned(fromByteOffset: index * 2, as: UInt16.self)
+                let half = Float16(bitPattern: UInt16(littleEndian: bits))
+                return Float(half)
             }
         }
     }

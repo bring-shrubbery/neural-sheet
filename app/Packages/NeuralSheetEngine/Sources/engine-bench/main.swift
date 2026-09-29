@@ -65,9 +65,9 @@ func readFloatWAV(_ url: URL) -> [Float] {
                 bits = integer(at: body + 14, bytes: 2)
             } else if chunk == "data" {
                 let count = min(length, raw.count - body) / 4
-                samples = (0 ..< count).map { index in
-                    Float(bitPattern: UInt32(littleEndian: raw.loadUnaligned(
-                        fromByteOffset: body + index * 4, as: UInt32.self)))
+                samples = (0 ..< count).map { index -> Float in
+                    let bits = raw.loadUnaligned(fromByteOffset: body + index * 4, as: UInt32.self)
+                    return Float(bitPattern: UInt32(littleEndian: bits))
                 }
             }
 
