@@ -28,7 +28,9 @@ jobs:
           xcodebuild -version
       - name: swift test
         working-directory: app/Packages/NeuralSheetCore
-        run: swift test 2>&1 | tail -30
+        run: |
+          set -o pipefail
+          swift test 2>&1 | tail -30
 
   engine-tests:
     name: Engine package tests
@@ -46,7 +48,9 @@ jobs:
       # suites skip themselves; the pure tests run. No test downloads a model.
       - name: swift test
         working-directory: app/Packages/NeuralSheetEngine
-        run: swift test 2>&1 | tail -30
+        run: |
+          set -o pipefail
+          swift test 2>&1 | tail -30
 
   app-build:
     name: Build the app
