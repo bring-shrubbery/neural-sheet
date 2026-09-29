@@ -17,7 +17,6 @@ import Testing
     /// vocabulary's end-of-sequence id.
     private static let maxTokens = 2000
     private static let eosID: Int32 = 1
-    private static let chunkSamples = 80_000
     private static let chunkFrames = 501
 
     /// Skips without the `small` checkpoint; the package never downloads a model, so a
@@ -31,14 +30,9 @@ import Testing
         return (model, frontEnd, audio)
     }
 
-    /// One chunk of the fixture, zero-padded to the segment length the way `Transcriber`
-    /// pads the last one. The fixture's three chunks are full, so only a fourth would pad.
+    /// One chunk of the fixture, padded the way `Transcriber` pads the last one.
     private func conditioning(_ frontEnd: ConditioningFrontEnd, _ audio: [Float], chunk: Int) throws -> [Float] {
-        var samples = [Float](repeating: 0, count: GenerateOracleTests.chunkSamples)
-        let first = chunk * GenerateOracleTests.chunkSamples
-        let available = min(GenerateOracleTests.chunkSamples, audio.count - first)
-        samples.replaceSubrange(0 ..< available, with: audio[first ..< (first + available)])
-        return try frontEnd.encodeAudio(samples)
+        try frontEnd.encodeAudio(Fixtures.chunk(audio, chunk))
     }
 
     @Test func everyChunkGeneratesTheOracleTokens() throws {

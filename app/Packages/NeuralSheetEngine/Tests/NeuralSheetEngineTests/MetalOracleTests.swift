@@ -27,7 +27,6 @@ import Testing
 
     private static let maxTokens = 2000
     private static let eosID: Int32 = 1
-    private static let chunkSamples = 80_000
     private static let chunkFrames = 501
 
     /// Every kernel the backend dispatches, which is also every kernel the shader source
@@ -42,7 +41,7 @@ import Testing
     /// run the suite.
     private func setUp(contextSize: Int = 2538) throws -> (model: Model, conditioning: [Float])? {
         guard let (model, frontEnd, audio) = try loadModel(contextSize: contextSize) else { return nil }
-        return (model, try frontEnd.encodeAudio(Array(audio[0 ..< MetalOracleTests.chunkSamples])))
+        return (model, try conditioning(frontEnd, audio, chunk: 0))
     }
 
     /// @see setUp
@@ -63,13 +62,9 @@ import Testing
         return (model, frontEnd, audio)
     }
 
-    /// One chunk of the fixture, zero-padded the way `Transcriber` pads the last one.
+    /// One chunk of the fixture, padded the way `Transcriber` pads the last one.
     private func conditioning(_ frontEnd: ConditioningFrontEnd, _ audio: [Float], chunk: Int) throws -> [Float] {
-        var samples = [Float](repeating: 0, count: MetalOracleTests.chunkSamples)
-        let first = chunk * MetalOracleTests.chunkSamples
-        let available = min(MetalOracleTests.chunkSamples, audio.count - first)
-        samples.replaceSubrange(0 ..< available, with: audio[first ..< (first + available)])
-        return try frontEnd.encodeAudio(samples)
+        try frontEnd.encodeAudio(Fixtures.chunk(audio, chunk))
     }
 
     // MARK: - The shader source

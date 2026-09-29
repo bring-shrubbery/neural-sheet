@@ -5,6 +5,8 @@
 
 import Foundation
 
+@testable import NeuralSheetEngine
+
 enum FixtureError: Error, CustomStringConvertible {
     case missing(String)
     case malformed(String)
@@ -57,6 +59,21 @@ enum Fixtures {
     /// The 16 kHz mono float32 audio fixture the reference dumps its oracle from.
     static func fixtureAudio() throws -> [Float] {
         try wavFloats("audio/fixture_3chunks_16k.wav")
+    }
+
+    /// One chunk of a signal, zero-padded to the segment length the way `Transcriber` pads
+    /// the last one, for the tests that drive `Model` directly instead of going through the
+    /// chunk loop. The audio fixture's three chunks are full, so only a fourth would pad.
+    static func chunk(_ audio: [Float], _ index: Int) -> [Float] {
+        var samples = [Float](repeating: 0, count: Transcriber.segmentSamples)
+        let first = index * Transcriber.segmentSamples
+        let available = min(Transcriber.segmentSamples, audio.count - first)
+
+        if available > 0 {
+            samples.replaceSubrange(0 ..< available, with: audio[first ..< (first + available)])
+        }
+
+        return samples
     }
 
     /// Reads a WAV whose `fmt ` format is 3 (IEEE float) by walking the RIFF chunks:
