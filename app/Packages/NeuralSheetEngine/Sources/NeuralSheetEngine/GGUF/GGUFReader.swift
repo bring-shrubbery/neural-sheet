@@ -148,6 +148,13 @@ struct GGUFReader {
                 + "does not read")
         }
 
+        // The extents fit `Int` but their product times the element size need not, and
+        // `TensorInfo.byteCount` would trap on it before `GGUFFile` could bounds-check
+        // the tensor against the mapping.
+        guard case (_, false) = elements.multipliedReportingOverflow(by: dataType.byteSize) else {
+            throw TranscriberError.invalidCheckpoint("tensor '\(name)' claims more bytes than can be addressed")
+        }
+
         return TensorInfo(name: name, shape: shape, dataType: dataType, offset: try size())
     }
 }

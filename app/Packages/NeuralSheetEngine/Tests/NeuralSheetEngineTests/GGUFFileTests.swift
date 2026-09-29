@@ -210,6 +210,20 @@ private func isUnsupportedArchitecture(_ error: TranscriberError?) -> Bool {
         }
     }
 
+    @Test func rejectsATensorWhoseByteCountOverflows() throws {
+        var writer = sampleWriter()
+
+        // An extent that fits `Int` on its own but not once it is multiplied by the
+        // element size: the byte count has to be checked where the shape is read, or
+        // computing it later is an arithmetic trap the caller cannot catch.
+        writer.addTensor("huge", shape: [1 << 62, 1], dataType: .f32, values: [])
+
+        try withTemporaryFile(writer.build().data) { url in
+            let error = #expect(throws: TranscriberError.self) { try GGUFFile(url: url) }
+            #expect(isInvalidCheckpoint(error))
+        }
+    }
+
     @Test func rejectsAnotherCheckpointFormatVersion() throws {
         var writer = hparamsWriter()
         writer.set("muscriptor.format_version", .int32(2))
