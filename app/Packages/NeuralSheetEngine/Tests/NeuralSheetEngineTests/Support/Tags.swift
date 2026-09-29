@@ -1,5 +1,6 @@
 // The tags the suites carry. Only one is needed: the checkpoint suites are the package's
-// cost, and the medium ones are minutes of decoding rather than seconds, so they say so.
+// cost, and the medium and large ones are minutes of decoding rather than seconds, so they
+// say so.
 //
 // Nothing in the package skips on a tag by itself. `swift test` selects by name
 // (`--filter MediumOracleTests`); the tag is what an Xcode test plan and a CI report group
@@ -9,6 +10,6 @@
 import Testing
 
 extension Tag {
-    /// Minutes, not seconds: a suite that decodes the `medium` checkpoint.
+    /// Minutes, not seconds: a suite that decodes the `medium` or `large` checkpoint.
     @Tag static var slow: Self
 }
