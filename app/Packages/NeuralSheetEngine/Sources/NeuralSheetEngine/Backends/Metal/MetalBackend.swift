@@ -74,16 +74,27 @@ final class MetalBackend: TransformerBackend {
     let ffn: MetalScratch
     let scores: MetalScratch
 
-    /// The hook `Model.load` calls, answering nil rather than throwing: a machine without a
-    /// usable GPU is not an error, it is the CPU backend's job. Every failure here means the
-    /// same thing to a caller -- run on the CPU instead -- so none of them is reported.
+    /// The hook `Model.load` calls. Nil means there is no GPU to run this on, which is not an
+    /// error but the CPU backend's job: no Metal device at all, a device the kernels cannot
+    /// dispatch on (`.unsupportedArchitecture`), or one whose memory the weights and the cache
+    /// do not fit (`.outOfMemory`).
+    ///
+    /// Every other failure is rethrown. A shader that will not compile, a pipeline that will
+    /// not build and a tensor whose shape contradicts the hyperparameters are a bug in this
+    /// build or a broken checkpoint, and a silent fall back to the CPU would hide exactly the
+    /// failures a test or a bug report needs to see -- the app would transcribe at a fraction
+    /// of the speed with nothing saying why.
     static func make(
         file: GGUFFile, hparams: Hparams, weights: ModelWeights, contextSize: Int
-    ) -> TransformerBackend? {
+    ) throws -> TransformerBackend? {
         guard let device = MTLCreateSystemDefaultDevice() else { return nil }
 
-        return try? MetalBackend(
-            device: device, file: file, hparams: hparams, weights: weights, contextSize: contextSize)
+        do {
+            return try MetalBackend(
+                device: device, file: file, hparams: hparams, weights: weights, contextSize: contextSize)
+        } catch TranscriberError.unsupportedArchitecture, TranscriberError.outOfMemory {
+            return nil
+        }
     }
 
     /// `.invalidCheckpoint` when a tensor is not the type or the extent the hyperparameters

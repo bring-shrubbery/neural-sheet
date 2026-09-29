@@ -82,7 +82,7 @@ final class Model {
         let backend: TransformerBackend
 
         if useGPU,
-            let metal = Model.makeMetalBackend(
+            let metal = try Model.makeMetalBackend(
                 file: file, hparams: hparams, weights: weights, contextSize: contextSize) {
             backend = metal
         } else {
@@ -96,12 +96,13 @@ final class Model {
     /// depend on Metal at all: the decision of what a GPU is, and whether this machine has
     /// one, belongs to the backend.
     ///
-    /// Nil rather than an error, so a machine with no usable device transcribes on the CPU
-    /// instead of failing to load. @see MetalBackend.make
+    /// Nil rather than an error when the machine has no usable device, so that it transcribes
+    /// on the CPU instead of failing to load; a failure that is about this build rather than
+    /// about the machine is thrown and the load fails with it. @see MetalBackend.make
     static func makeMetalBackend(
         file: GGUFFile, hparams: Hparams, weights: ModelWeights, contextSize: Int
-    ) -> TransformerBackend? {
-        MetalBackend.make(file: file, hparams: hparams, weights: weights, contextSize: contextSize)
+    ) throws -> TransformerBackend? {
+        try MetalBackend.make(file: file, hparams: hparams, weights: weights, contextSize: contextSize)
     }
 
     /// Forgets the sequence: the next `prefill` starts at position zero again.
