@@ -93,12 +93,15 @@ final class Model {
     }
 
     /// The GPU seam. It is a hook rather than a direct reference so that this file does not
-    /// depend on Metal at all: the Metal backend replaces the body, and until it exists
-    /// `load` answers the CPU whatever the caller asked for.
+    /// depend on Metal at all: the decision of what a GPU is, and whether this machine has
+    /// one, belongs to the backend.
+    ///
+    /// Nil rather than an error, so a machine with no usable device transcribes on the CPU
+    /// instead of failing to load. @see MetalBackend.make
     static func makeMetalBackend(
         file: GGUFFile, hparams: Hparams, weights: ModelWeights, contextSize: Int
     ) -> TransformerBackend? {
-        nil
+        MetalBackend.make(file: file, hparams: hparams, weights: weights, contextSize: contextSize)
     }
 
     /// Forgets the sequence: the next `prefill` starts at position zero again.
