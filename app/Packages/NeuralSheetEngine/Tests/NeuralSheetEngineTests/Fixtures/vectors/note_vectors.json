@@ -1,0 +1,2888 @@
+{
+  "provenance": {
+    "frame_rate": 100,
+    "instrument_vocabulary": "MT3_FULL_PLUS",
+    "max_shift_steps": 1001,
+    "minimum_note_duration_sec": 0.01
+  },
+  "vectors": [
+    {
+      "actions": [
+        {
+          "kind": "start",
+          "pitch": 60,
+          "program": 0,
+          "time": 0.5
+        },
+        {
+          "kind": "start",
+          "pitch": 62,
+          "program": 0,
+          "time": 0.5
+        },
+        {
+          "kind": "end",
+          "pitch": 60,
+          "program": 0,
+          "time": 0.8
+        },
+        {
+          "kind": "end",
+          "pitch": 62,
+          "program": 0,
+          "time": 0.8
+        }
+      ],
+      "chunk_events": [
+        [
+          [
+            "tie",
+            0
+          ],
+          [
+            "shift",
+            50
+          ],
+          [
+            "program",
+            0
+          ],
+          [
+            "velocity",
+            1
+          ],
+          [
+            "pitch",
+            60
+          ],
+          [
+            "shift",
+            0
+          ],
+          [
+            "velocity",
+            1
+          ],
+          [
+            "pitch",
+            62
+          ],
+          [
+            "shift",
+            80
+          ],
+          [
+            "velocity",
+            0
+          ],
+          [
+            "pitch",
+            60
+          ],
+          [
+            "velocity",
+            0
+          ],
+          [
+            "pitch",
+            62
+          ]
+        ]
+      ],
+      "chunk_tokens": [
+        [
+          1134,
+          53,
+          1135,
+          1133,
+          1064,
+          3,
+          1133,
+          1066,
+          83,
+          1132,
+          1064,
+          1132,
+          1066
+        ]
+      ],
+      "description": "`shift 0` does not rewind to the chunk start. Treating shift as a delta rather than an absolute offset would put pitch 62 at 0.00 instead of 0.50, which looks entirely plausible in a piano roll.",
+      "events": [
+        {
+          "index": 0,
+          "instrument": "acoustic_piano",
+          "kind": "start",
+          "pitch": 60,
+          "time": 0.5
+        },
+        {
+          "index": 1,
+          "instrument": "acoustic_piano",
+          "kind": "start",
+          "pitch": 62,
+          "time": 0.5
+        },
+        {
+          "kind": "end",
+          "start_index": 0,
+          "time": 0.8
+        },
+        {
+          "kind": "end",
+          "start_index": 1,
+          "time": 0.8
+        }
+      ],
+      "name": "shift_zero_is_noop",
+      "notes": [
+        {
+          "is_drum": false,
+          "offset": 0.8,
+          "onset": 0.5,
+          "pitch": 60,
+          "program": 0
+        },
+        {
+          "is_drum": false,
+          "offset": 0.8,
+          "onset": 0.5,
+          "pitch": 62,
+          "program": 0
+        }
+      ],
+      "notes_raw": [
+        {
+          "is_drum": false,
+          "offset": 0.8,
+          "onset": 0.5,
+          "pitch": 60,
+          "program": 0
+        },
+        {
+          "is_drum": false,
+          "offset": 0.8,
+          "onset": 0.5,
+          "pitch": 62,
+          "program": 0
+        }
+      ],
+      "open_keys_at_boundary": [
+        []
+      ],
+      "seek_times": [
+        0.0
+      ]
+    },
+    {
+      "actions": [
+        {
+          "kind": "start",
+          "pitch": 60,
+          "program": 0,
+          "time": 0.1
+        },
+        {
+          "kind": "end",
+          "pitch": 60,
+          "program": 0,
+          "time": 5.3
+        },
+        {
+          "kind": "start",
+          "pitch": 62,
+          "program": 0,
+          "time": 5.5
+        },
+        {
+          "kind": "end",
+          "pitch": 62,
+          "program": 0,
+          "time": 5.9
+        }
+      ],
+      "chunk_events": [
+        [
+          [
+            "tie",
+            0
+          ],
+          [
+            "shift",
+            10
+          ],
+          [
+            "program",
+            0
+          ],
+          [
+            "velocity",
+            1
+          ],
+          [
+            "pitch",
+            60
+          ]
+        ],
+        [
+          [
+            "program",
+            0
+          ],
+          [
+            "pitch",
+            60
+          ],
+          [
+            "tie",
+            0
+          ],
+          [
+            "shift",
+            30
+          ],
+          [
+            "velocity",
+            0
+          ],
+          [
+            "pitch",
+            60
+          ],
+          [
+            "shift",
+            50
+          ],
+          [
+            "velocity",
+            1
+          ],
+          [
+            "pitch",
+            62
+          ],
+          [
+            "shift",
+            90
+          ],
+          [
+            "velocity",
+            0
+          ],
+          [
+            "pitch",
+            62
+          ]
+        ]
+      ],
+      "chunk_tokens": [
+        [
+          1134,
+          13,
+          1135,
+          1133,
+          1064
+        ],
+        [
+          1135,
+          1064,
+          1134,
+          33,
+          1132,
+          1064,
+          53,
+          1133,
+          1066,
+          93,
+          1132,
+          1066
+        ]
+      ],
+      "description": "Two shifts in one chunk land at start_tick + value each, not cumulatively. In chunk 1 (seek 5.0) shift 30 then shift 50 means 5.30 then 5.50, never 5.80.",
+      "events": [
+        {
+          "index": 0,
+          "instrument": "acoustic_piano",
+          "kind": "start",
+          "pitch": 60,
+          "time": 0.1
+        },
+        {
+          "kind": "end",
+          "start_index": 0,
+          "time": 5.3
+        },
+        {
+          "index": 1,
+          "instrument": "acoustic_piano",
+          "kind": "start",
+          "pitch": 62,
+          "time": 5.5
+        },
+        {
+          "kind": "end",
+          "start_index": 1,
+          "time": 5.9
+        }
+      ],
+      "name": "shift_is_absolute_within_chunk",
+      "notes": [
+        {
+          "is_drum": false,
+          "offset": 5.3,
+          "onset": 0.1,
+          "pitch": 60,
+          "program": 0
+        },
+        {
+          "is_drum": false,
+          "offset": 5.9,
+          "onset": 5.5,
+          "pitch": 62,
+          "program": 0
+        }
+      ],
+      "notes_raw": [
+        {
+          "is_drum": false,
+          "offset": 5.3,
+          "onset": 0.1,
+          "pitch": 60,
+          "program": 0
+        },
+        {
+          "is_drum": false,
+          "offset": 5.9,
+          "onset": 5.5,
+          "pitch": 62,
+          "program": 0
+        }
+      ],
+      "open_keys_at_boundary": [
+        [],
+        [
+          [
+            0,
+            60
+          ]
+        ]
+      ],
+      "seek_times": [
+        0.0,
+        5.0
+      ]
+    },
+    {
+      "actions": [
+        {
+          "kind": "start",
+          "pitch": 60,
+          "program": 0,
+          "time": 4.9
+        },
+        {
+          "kind": "end",
+          "pitch": 60,
+          "program": 0,
+          "time": 4.95
+        },
+        {
+          "kind": "start",
+          "pitch": 62,
+          "program": 0,
+          "time": 10.1
+        },
+        {
+          "kind": "drum",
+          "pitch": 36,
+          "time": 11.0
+        },
+        {
+          "kind": "end",
+          "pitch": 62,
+          "program": 0,
+          "time": 11.5
+        }
+      ],
+      "chunk_events": [
+        [
+          [
+            "tie",
+            0
+          ],
+          [
+            "shift",
+            490
+          ],
+          [
+            "program",
+            0
+          ],
+          [
+            "velocity",
+            1
+          ],
+          [
+            "pitch",
+            60
+          ],
+          [
+            "shift",
+            495
+          ],
+          [
+            "velocity",
+            0
+          ],
+          [
+            "pitch",
+            60
+          ],
+          [
+            "shift",
+            510
+          ],
+          [
+            "velocity",
+            1
+          ],
+          [
+            "pitch",
+            62
+          ],
+          [
+            "shift",
+            600
+          ],
+          [
+            "drum",
+            36
+          ]
+        ],
+        [
+          [
+            "tie",
+            0
+          ],
+          [
+            "shift",
+            510
+          ],
+          [
+            "program",
+            0
+          ],
+          [
+            "velocity",
+            1
+          ],
+          [
+            "pitch",
+            62
+          ],
+          [
+            "shift",
+            600
+          ],
+          [
+            "drum",
+            36
+          ],
+          [
+            "shift",
+            650
+          ],
+          [
+            "velocity",
+            0
+          ],
+          [
+            "pitch",
+            62
+          ]
+        ]
+      ],
+      "chunk_tokens": [
+        [
+          1134,
+          493,
+          1135,
+          1133,
+          1064,
+          498,
+          1132,
+          1064,
+          513,
+          1133,
+          1066,
+          603,
+          1301
+        ],
+        [
+          1134,
+          513,
+          1135,
+          1133,
+          1066,
+          603,
+          1301,
+          653,
+          1132,
+          1066
+        ]
+      ],
+      "description": "Chunk 0 emits a pitch and a drum past its own window; both are dropped because their time is >= next_seek_time. The final chunk emits the identical shifts and keeps both, because next_seek_time is None there. Skipping this rule duplicates notes at every seam.",
+      "events": [
+        {
+          "index": 0,
+          "instrument": "acoustic_piano",
+          "kind": "start",
+          "pitch": 60,
+          "time": 4.9
+        },
+        {
+          "kind": "end",
+          "start_index": 0,
+          "time": 4.95
+        },
+        {
+          "index": 1,
+          "instrument": "acoustic_piano",
+          "kind": "start",
+          "pitch": 62,
+          "time": 10.1
+        },
+        {
+          "index": 2,
+          "instrument": "drums",
+          "kind": "start",
+          "pitch": 36,
+          "time": 11.0
+        },
+        {
+          "kind": "end",
+          "start_index": 2,
+          "time": 11.01
+        },
+        {
+          "kind": "end",
+          "start_index": 1,
+          "time": 11.5
+        }
+      ],
+      "name": "window_drop_and_last_chunk_exemption",
+      "notes": [
+        {
+          "is_drum": false,
+          "offset": 4.95,
+          "onset": 4.9,
+          "pitch": 60,
+          "program": 0
+        },
+        {
+          "is_drum": false,
+          "offset": 11.5,
+          "onset": 10.1,
+          "pitch": 62,
+          "program": 0
+        },
+        {
+          "is_drum": true,
+          "offset": 11.01,
+          "onset": 11.0,
+          "pitch": 36,
+          "program": 128
+        }
+      ],
+      "notes_raw": [
+        {
+          "is_drum": false,
+          "offset": 4.95,
+          "onset": 4.9,
+          "pitch": 60,
+          "program": 0
+        },
+        {
+          "is_drum": true,
+          "offset": 11.01,
+          "onset": 11.0,
+          "pitch": 36,
+          "program": 128
+        },
+        {
+          "is_drum": false,
+          "offset": 11.5,
+          "onset": 10.1,
+          "pitch": 62,
+          "program": 0
+        }
+      ],
+      "open_keys_at_boundary": [
+        [],
+        []
+      ],
+      "seek_times": [
+        0.0,
+        5.0
+      ]
+    },
+    {
+      "actions": [
+        {
+          "kind": "start",
+          "pitch": 60,
+          "program": 0,
+          "time": 0.1
+        },
+        {
+          "kind": "start",
+          "pitch": 64,
+          "program": 0,
+          "time": 0.1
+        },
+        {
+          "kind": "end",
+          "pitch": 60,
+          "program": 0,
+          "time": 5.0
+        },
+        {
+          "kind": "end",
+          "pitch": 64,
+          "program": 0,
+          "time": 5.0
+        },
+        {
+          "kind": "start",
+          "pitch": 55,
+          "program": 0,
+          "time": 10.4
+        },
+        {
+          "kind": "end",
+          "pitch": 55,
+          "program": 0,
+          "time": 10.9
+        }
+      ],
+      "chunk_events": [
+        [
+          [
+            "tie",
+            0
+          ],
+          [
+            "shift",
+            10
+          ],
+          [
+            "program",
+            0
+          ],
+          [
+            "velocity",
+            1
+          ],
+          [
+            "pitch",
+            60
+          ],
+          [
+            "pitch",
+            64
+          ]
+        ],
+        [
+          [
+            "shift",
+            20
+          ],
+          [
+            "program",
+            0
+          ],
+          [
+            "velocity",
+            1
+          ],
+          [
+            "pitch",
+            67
+          ],
+          [
+            "tie",
+            0
+          ],
+          [
+            "shift",
+            30
+          ],
+          [
+            "pitch",
+            72
+          ]
+        ],
+        [
+          [
+            "tie",
+            0
+          ],
+          [
+            "shift",
+            40
+          ],
+          [
+            "program",
+            0
+          ],
+          [
+            "velocity",
+            1
+          ],
+          [
+            "pitch",
+            55
+          ],
+          [
+            "shift",
+            90
+          ],
+          [
+            "velocity",
+            0
+          ],
+          [
+            "pitch",
+            55
+          ]
+        ]
+      ],
+      "chunk_tokens": [
+        [
+          1134,
+          13,
+          1135,
+          1133,
+          1064,
+          1068
+        ],
+        [
+          23,
+          1135,
+          1133,
+          1071,
+          1134,
+          33,
+          1076
+        ],
+        [
+          1134,
+          43,
+          1135,
+          1133,
+          1059,
+          93,
+          1132,
+          1059
+        ]
+      ],
+      "description": "A `shift` arriving before the `tie` token means the chunk never wrote a prologue: every open note closes at the boundary and the rest of that chunk is discarded, including a `tie` that shows up later. Chunk 2 then decodes normally. Ignoring this rule leaves notes open forever.",
+      "events": [
+        {
+          "index": 0,
+          "instrument": "acoustic_piano",
+          "kind": "start",
+          "pitch": 60,
+          "time": 0.1
+        },
+        {
+          "index": 1,
+          "instrument": "acoustic_piano",
+          "kind": "start",
+          "pitch": 64,
+          "time": 0.1
+        },
+        {
+          "kind": "end",
+          "start_index": 0,
+          "time": 5.0
+        },
+        {
+          "kind": "end",
+          "start_index": 1,
+          "time": 5.0
+        },
+        {
+          "index": 2,
+          "instrument": "acoustic_piano",
+          "kind": "start",
+          "pitch": 55,
+          "time": 10.4
+        },
+        {
+          "kind": "end",
+          "start_index": 2,
+          "time": 10.9
+        }
+      ],
+      "name": "malformed_chunk_closes_all_and_skips_rest",
+      "notes": [
+        {
+          "is_drum": false,
+          "offset": 5.0,
+          "onset": 0.1,
+          "pitch": 60,
+          "program": 0
+        },
+        {
+          "is_drum": false,
+          "offset": 5.0,
+          "onset": 0.1,
+          "pitch": 64,
+          "program": 0
+        },
+        {
+          "is_drum": false,
+          "offset": 10.9,
+          "onset": 10.4,
+          "pitch": 55,
+          "program": 0
+        }
+      ],
+      "notes_raw": [
+        {
+          "is_drum": false,
+          "offset": 5.0,
+          "onset": 0.1,
+          "pitch": 60,
+          "program": 0
+        },
+        {
+          "is_drum": false,
+          "offset": 5.0,
+          "onset": 0.1,
+          "pitch": 64,
+          "program": 0
+        },
+        {
+          "is_drum": false,
+          "offset": 10.9,
+          "onset": 10.4,
+          "pitch": 55,
+          "program": 0
+        }
+      ],
+      "open_keys_at_boundary": [
+        [],
+        [
+          [
+            0,
+            60
+          ],
+          [
+            0,
+            64
+          ]
+        ],
+        []
+      ],
+      "seek_times": [
+        0.0,
+        5.0,
+        10.0
+      ]
+    },
+    {
+      "actions": [
+        {
+          "kind": "start",
+          "pitch": 60,
+          "program": 0,
+          "time": 0.1
+        },
+        {
+          "kind": "start",
+          "pitch": 64,
+          "program": 0,
+          "time": 0.1
+        },
+        {
+          "kind": "end",
+          "pitch": 60,
+          "program": 0,
+          "time": 5.0
+        },
+        {
+          "kind": "end",
+          "pitch": 64,
+          "program": 0,
+          "time": 5.0
+        }
+      ],
+      "chunk_events": [
+        [
+          [
+            "tie",
+            0
+          ],
+          [
+            "shift",
+            10
+          ],
+          [
+            "program",
+            0
+          ],
+          [
+            "velocity",
+            1
+          ],
+          [
+            "pitch",
+            60
+          ],
+          [
+            "pitch",
+            64
+          ]
+        ],
+        [
+          [
+            "program",
+            0
+          ],
+          [
+            "pitch",
+            60
+          ]
+        ]
+      ],
+      "chunk_tokens": [
+        [
+          1134,
+          13,
+          1135,
+          1133,
+          1064,
+          1068
+        ],
+        [
+          1135,
+          1064
+        ]
+      ],
+      "description": "The last chunk's tokens run out mid-prologue, before its `tie`. finish() then closes everything at that chunk's seek_time rather than at onset + the minimum duration.",
+      "events": [
+        {
+          "index": 0,
+          "instrument": "acoustic_piano",
+          "kind": "start",
+          "pitch": 60,
+          "time": 0.1
+        },
+        {
+          "index": 1,
+          "instrument": "acoustic_piano",
+          "kind": "start",
+          "pitch": 64,
+          "time": 0.1
+        },
+        {
+          "kind": "end",
+          "start_index": 0,
+          "time": 5.0
+        },
+        {
+          "kind": "end",
+          "start_index": 1,
+          "time": 5.0
+        }
+      ],
+      "name": "eos_in_prologue_closes_all",
+      "notes": [
+        {
+          "is_drum": false,
+          "offset": 5.0,
+          "onset": 0.1,
+          "pitch": 60,
+          "program": 0
+        },
+        {
+          "is_drum": false,
+          "offset": 5.0,
+          "onset": 0.1,
+          "pitch": 64,
+          "program": 0
+        }
+      ],
+      "notes_raw": [
+        {
+          "is_drum": false,
+          "offset": 5.0,
+          "onset": 0.1,
+          "pitch": 60,
+          "program": 0
+        },
+        {
+          "is_drum": false,
+          "offset": 5.0,
+          "onset": 0.1,
+          "pitch": 64,
+          "program": 0
+        }
+      ],
+      "open_keys_at_boundary": [
+        [],
+        [
+          [
+            0,
+            60
+          ],
+          [
+            0,
+            64
+          ]
+        ]
+      ],
+      "seek_times": [
+        0.0,
+        5.0
+      ]
+    },
+    {
+      "actions": [
+        {
+          "kind": "start",
+          "pitch": 60,
+          "program": 0,
+          "time": 0.1
+        },
+        {
+          "kind": "start",
+          "pitch": 64,
+          "program": 0,
+          "time": 0.1
+        },
+        {
+          "kind": "start",
+          "pitch": 67,
+          "program": 0,
+          "time": 0.1
+        },
+        {
+          "kind": "end",
+          "pitch": 60,
+          "program": 0,
+          "time": 5.0
+        },
+        {
+          "kind": "end",
+          "pitch": 67,
+          "program": 0,
+          "time": 5.0
+        },
+        {
+          "kind": "end",
+          "pitch": 64,
+          "program": 0,
+          "time": 5.2
+        }
+      ],
+      "chunk_events": [
+        [
+          [
+            "tie",
+            0
+          ],
+          [
+            "shift",
+            10
+          ],
+          [
+            "program",
+            0
+          ],
+          [
+            "velocity",
+            1
+          ],
+          [
+            "pitch",
+            60
+          ],
+          [
+            "pitch",
+            64
+          ],
+          [
+            "pitch",
+            67
+          ]
+        ],
+        [
+          [
+            "program",
+            0
+          ],
+          [
+            "pitch",
+            64
+          ],
+          [
+            "tie",
+            0
+          ],
+          [
+            "shift",
+            20
+          ],
+          [
+            "velocity",
+            0
+          ],
+          [
+            "pitch",
+            64
+          ]
+        ]
+      ],
+      "chunk_tokens": [
+        [
+          1134,
+          13,
+          1135,
+          1133,
+          1064,
+          1068,
+          1071
+        ],
+        [
+          1135,
+          1068,
+          1134,
+          23,
+          1132,
+          1068
+        ]
+      ],
+      "description": "Three notes cross a boundary; the prologue re-declares one. The other two close at the boundary time, the declared one keeps its original onset.",
+      "events": [
+        {
+          "index": 0,
+          "instrument": "acoustic_piano",
+          "kind": "start",
+          "pitch": 60,
+          "time": 0.1
+        },
+        {
+          "index": 1,
+          "instrument": "acoustic_piano",
+          "kind": "start",
+          "pitch": 64,
+          "time": 0.1
+        },
+        {
+          "index": 2,
+          "instrument": "acoustic_piano",
+          "kind": "start",
+          "pitch": 67,
+          "time": 0.1
+        },
+        {
+          "kind": "end",
+          "start_index": 0,
+          "time": 5.0
+        },
+        {
+          "kind": "end",
+          "start_index": 2,
+          "time": 5.0
+        },
+        {
+          "kind": "end",
+          "start_index": 1,
+          "time": 5.2
+        }
+      ],
+      "name": "tie_prologue_partial",
+      "notes": [
+        {
+          "is_drum": false,
+          "offset": 5.0,
+          "onset": 0.1,
+          "pitch": 60,
+          "program": 0
+        },
+        {
+          "is_drum": false,
+          "offset": 5.2,
+          "onset": 0.1,
+          "pitch": 64,
+          "program": 0
+        },
+        {
+          "is_drum": false,
+          "offset": 5.0,
+          "onset": 0.1,
+          "pitch": 67,
+          "program": 0
+        }
+      ],
+      "notes_raw": [
+        {
+          "is_drum": false,
+          "offset": 5.0,
+          "onset": 0.1,
+          "pitch": 60,
+          "program": 0
+        },
+        {
+          "is_drum": false,
+          "offset": 5.0,
+          "onset": 0.1,
+          "pitch": 67,
+          "program": 0
+        },
+        {
+          "is_drum": false,
+          "offset": 5.2,
+          "onset": 0.1,
+          "pitch": 64,
+          "program": 0
+        }
+      ],
+      "open_keys_at_boundary": [
+        [],
+        [
+          [
+            0,
+            60
+          ],
+          [
+            0,
+            64
+          ],
+          [
+            0,
+            67
+          ]
+        ]
+      ],
+      "seek_times": [
+        0.0,
+        5.0
+      ]
+    },
+    {
+      "actions": [
+        {
+          "kind": "start",
+          "pitch": 60,
+          "program": 0,
+          "time": 0.1
+        },
+        {
+          "kind": "start",
+          "pitch": 64,
+          "program": 0,
+          "time": 0.1
+        },
+        {
+          "kind": "start",
+          "pitch": 40,
+          "program": 33,
+          "time": 0.1
+        },
+        {
+          "kind": "end",
+          "pitch": 60,
+          "program": 0,
+          "time": 5.2
+        },
+        {
+          "kind": "end",
+          "pitch": 64,
+          "program": 0,
+          "time": 5.2
+        },
+        {
+          "kind": "end",
+          "pitch": 40,
+          "program": 33,
+          "time": 5.2
+        }
+      ],
+      "chunk_events": [
+        [
+          [
+            "tie",
+            0
+          ],
+          [
+            "shift",
+            10
+          ],
+          [
+            "program",
+            0
+          ],
+          [
+            "velocity",
+            1
+          ],
+          [
+            "pitch",
+            60
+          ],
+          [
+            "pitch",
+            64
+          ],
+          [
+            "program",
+            33
+          ],
+          [
+            "velocity",
+            1
+          ],
+          [
+            "pitch",
+            40
+          ]
+        ],
+        [
+          [
+            "program",
+            0
+          ],
+          [
+            "pitch",
+            60
+          ],
+          [
+            "pitch",
+            64
+          ],
+          [
+            "program",
+            33
+          ],
+          [
+            "pitch",
+            40
+          ],
+          [
+            "tie",
+            0
+          ],
+          [
+            "shift",
+            20
+          ],
+          [
+            "program",
+            0
+          ],
+          [
+            "velocity",
+            0
+          ],
+          [
+            "pitch",
+            60
+          ],
+          [
+            "pitch",
+            64
+          ],
+          [
+            "program",
+            33
+          ],
+          [
+            "pitch",
+            40
+          ]
+        ]
+      ],
+      "chunk_tokens": [
+        [
+          1134,
+          13,
+          1135,
+          1133,
+          1064,
+          1068,
+          1168,
+          1133,
+          1044
+        ],
+        [
+          1135,
+          1064,
+          1068,
+          1168,
+          1044,
+          1134,
+          23,
+          1135,
+          1132,
+          1064,
+          1068,
+          1168,
+          1044
+        ]
+      ],
+      "description": "The prologue's `program` token is sticky: it is emitted once per run of pitches, not once per pitch. This is also the exact layout prelude forcing has to reproduce.",
+      "events": [
+        {
+          "index": 0,
+          "instrument": "acoustic_piano",
+          "kind": "start",
+          "pitch": 60,
+          "time": 0.1
+        },
+        {
+          "index": 1,
+          "instrument": "acoustic_piano",
+          "kind": "start",
+          "pitch": 64,
+          "time": 0.1
+        },
+        {
+          "index": 2,
+          "instrument": "electric_bass",
+          "kind": "start",
+          "pitch": 40,
+          "time": 0.1
+        },
+        {
+          "kind": "end",
+          "start_index": 0,
+          "time": 5.2
+        },
+        {
+          "kind": "end",
+          "start_index": 1,
+          "time": 5.2
+        },
+        {
+          "kind": "end",
+          "start_index": 2,
+          "time": 5.2
+        }
+      ],
+      "name": "tie_prologue_two_programs",
+      "notes": [
+        {
+          "is_drum": false,
+          "offset": 5.2,
+          "onset": 0.1,
+          "pitch": 60,
+          "program": 0
+        },
+        {
+          "is_drum": false,
+          "offset": 5.2,
+          "onset": 0.1,
+          "pitch": 64,
+          "program": 0
+        },
+        {
+          "is_drum": false,
+          "offset": 5.2,
+          "onset": 0.1,
+          "pitch": 40,
+          "program": 33
+        }
+      ],
+      "notes_raw": [
+        {
+          "is_drum": false,
+          "offset": 5.2,
+          "onset": 0.1,
+          "pitch": 60,
+          "program": 0
+        },
+        {
+          "is_drum": false,
+          "offset": 5.2,
+          "onset": 0.1,
+          "pitch": 64,
+          "program": 0
+        },
+        {
+          "is_drum": false,
+          "offset": 5.2,
+          "onset": 0.1,
+          "pitch": 40,
+          "program": 33
+        }
+      ],
+      "open_keys_at_boundary": [
+        [],
+        [
+          [
+            0,
+            60
+          ],
+          [
+            0,
+            64
+          ],
+          [
+            33,
+            40
+          ]
+        ]
+      ],
+      "seek_times": [
+        0.0,
+        5.0
+      ]
+    },
+    {
+      "actions": [
+        {
+          "kind": "start",
+          "pitch": 60,
+          "program": 0,
+          "time": 0.1
+        },
+        {
+          "kind": "end",
+          "pitch": 60,
+          "program": 0,
+          "time": 0.2
+        },
+        {
+          "kind": "start",
+          "pitch": 60,
+          "program": 0,
+          "time": 0.2
+        },
+        {
+          "kind": "end",
+          "pitch": 60,
+          "program": 0,
+          "time": 0.4
+        }
+      ],
+      "chunk_events": [
+        [
+          [
+            "tie",
+            0
+          ],
+          [
+            "shift",
+            10
+          ],
+          [
+            "program",
+            0
+          ],
+          [
+            "velocity",
+            1
+          ],
+          [
+            "pitch",
+            60
+          ],
+          [
+            "shift",
+            20
+          ],
+          [
+            "velocity",
+            1
+          ],
+          [
+            "pitch",
+            60
+          ],
+          [
+            "shift",
+            40
+          ],
+          [
+            "velocity",
+            0
+          ],
+          [
+            "pitch",
+            60
+          ]
+        ]
+      ],
+      "chunk_tokens": [
+        [
+          1134,
+          13,
+          1135,
+          1133,
+          1064,
+          23,
+          1133,
+          1064,
+          43,
+          1132,
+          1064
+        ]
+      ],
+      "description": "A pitch already open that gets velocity 1 again closes and reopens at the same instant.",
+      "events": [
+        {
+          "index": 0,
+          "instrument": "acoustic_piano",
+          "kind": "start",
+          "pitch": 60,
+          "time": 0.1
+        },
+        {
+          "kind": "end",
+          "start_index": 0,
+          "time": 0.2
+        },
+        {
+          "index": 1,
+          "instrument": "acoustic_piano",
+          "kind": "start",
+          "pitch": 60,
+          "time": 0.2
+        },
+        {
+          "kind": "end",
+          "start_index": 1,
+          "time": 0.4
+        }
+      ],
+      "name": "retrigger",
+      "notes": [
+        {
+          "is_drum": false,
+          "offset": 0.2,
+          "onset": 0.1,
+          "pitch": 60,
+          "program": 0
+        },
+        {
+          "is_drum": false,
+          "offset": 0.4,
+          "onset": 0.2,
+          "pitch": 60,
+          "program": 0
+        }
+      ],
+      "notes_raw": [
+        {
+          "is_drum": false,
+          "offset": 0.2,
+          "onset": 0.1,
+          "pitch": 60,
+          "program": 0
+        },
+        {
+          "is_drum": false,
+          "offset": 0.4,
+          "onset": 0.2,
+          "pitch": 60,
+          "program": 0
+        }
+      ],
+      "open_keys_at_boundary": [
+        []
+      ],
+      "seek_times": [
+        0.0
+      ]
+    },
+    {
+      "actions": [
+        {
+          "kind": "start",
+          "pitch": 60,
+          "program": 0,
+          "time": 0.1
+        },
+        {
+          "kind": "end",
+          "pitch": 60,
+          "program": 0,
+          "time": 0.1
+        },
+        {
+          "kind": "start",
+          "pitch": 60,
+          "program": 0,
+          "time": 0.1
+        },
+        {
+          "kind": "end",
+          "pitch": 60,
+          "program": 0,
+          "time": 0.4
+        }
+      ],
+      "chunk_events": [
+        [
+          [
+            "tie",
+            0
+          ],
+          [
+            "shift",
+            10
+          ],
+          [
+            "program",
+            0
+          ],
+          [
+            "velocity",
+            1
+          ],
+          [
+            "pitch",
+            60
+          ],
+          [
+            "velocity",
+            1
+          ],
+          [
+            "pitch",
+            60
+          ],
+          [
+            "shift",
+            40
+          ],
+          [
+            "velocity",
+            0
+          ],
+          [
+            "pitch",
+            60
+          ]
+        ]
+      ],
+      "chunk_tokens": [
+        [
+          1134,
+          13,
+          1135,
+          1133,
+          1064,
+          1133,
+          1064,
+          43,
+          1132,
+          1064
+        ]
+      ],
+      "description": "Retriggering at the same tick produces a zero-length note. validate_notes widens it to the 10 ms minimum, then trim_overlapping_notes clamps it back against the next onset and drops it. The action list still contains it; the note list must not.",
+      "events": [
+        {
+          "index": 0,
+          "instrument": "acoustic_piano",
+          "kind": "start",
+          "pitch": 60,
+          "time": 0.1
+        },
+        {
+          "kind": "end",
+          "start_index": 0,
+          "time": 0.1
+        },
+        {
+          "index": 1,
+          "instrument": "acoustic_piano",
+          "kind": "start",
+          "pitch": 60,
+          "time": 0.1
+        },
+        {
+          "kind": "end",
+          "start_index": 1,
+          "time": 0.4
+        }
+      ],
+      "name": "retrigger_zero_length_is_dropped",
+      "notes": [
+        {
+          "is_drum": false,
+          "offset": 0.4,
+          "onset": 0.1,
+          "pitch": 60,
+          "program": 0
+        }
+      ],
+      "notes_raw": [
+        {
+          "is_drum": false,
+          "offset": 0.1,
+          "onset": 0.1,
+          "pitch": 60,
+          "program": 0
+        },
+        {
+          "is_drum": false,
+          "offset": 0.4,
+          "onset": 0.1,
+          "pitch": 60,
+          "program": 0
+        }
+      ],
+      "open_keys_at_boundary": [
+        []
+      ],
+      "seek_times": [
+        0.0
+      ]
+    },
+    {
+      "actions": [
+        {
+          "kind": "start",
+          "pitch": 64,
+          "program": 0,
+          "time": 0.1
+        },
+        {
+          "kind": "end",
+          "pitch": 64,
+          "program": 0,
+          "time": 0.3
+        }
+      ],
+      "chunk_events": [
+        [
+          [
+            "tie",
+            0
+          ],
+          [
+            "shift",
+            10
+          ],
+          [
+            "pitch",
+            60
+          ],
+          [
+            "program",
+            0
+          ],
+          [
+            "pitch",
+            62
+          ],
+          [
+            "velocity",
+            1
+          ],
+          [
+            "pitch",
+            64
+          ],
+          [
+            "shift",
+            30
+          ],
+          [
+            "velocity",
+            0
+          ],
+          [
+            "pitch",
+            64
+          ]
+        ]
+      ],
+      "chunk_tokens": [
+        [
+          1134,
+          13,
+          1064,
+          1135,
+          1066,
+          1133,
+          1068,
+          33,
+          1132,
+          1068
+        ]
+      ],
+      "description": "In the body a `pitch` needs both a program and a velocity register set; without either it is silently dropped rather than defaulted.",
+      "events": [
+        {
+          "index": 0,
+          "instrument": "acoustic_piano",
+          "kind": "start",
+          "pitch": 64,
+          "time": 0.1
+        },
+        {
+          "kind": "end",
+          "start_index": 0,
+          "time": 0.3
+        }
+      ],
+      "name": "pitch_without_registers_is_ignored",
+      "notes": [
+        {
+          "is_drum": false,
+          "offset": 0.3,
+          "onset": 0.1,
+          "pitch": 64,
+          "program": 0
+        }
+      ],
+      "notes_raw": [
+        {
+          "is_drum": false,
+          "offset": 0.3,
+          "onset": 0.1,
+          "pitch": 64,
+          "program": 0
+        }
+      ],
+      "open_keys_at_boundary": [
+        []
+      ],
+      "seek_times": [
+        0.0
+      ]
+    },
+    {
+      "actions": [
+        {
+          "kind": "drum",
+          "pitch": 36,
+          "time": 0.1
+        },
+        {
+          "kind": "drum",
+          "pitch": 38,
+          "time": 0.2
+        }
+      ],
+      "chunk_events": [
+        [
+          [
+            "tie",
+            0
+          ],
+          [
+            "shift",
+            10
+          ],
+          [
+            "velocity",
+            0
+          ],
+          [
+            "drum",
+            36
+          ],
+          [
+            "shift",
+            20
+          ],
+          [
+            "drum",
+            38
+          ]
+        ]
+      ],
+      "chunk_tokens": [
+        [
+          1134,
+          13,
+          1132,
+          1301,
+          23,
+          1303
+        ]
+      ],
+      "description": "Drum hits are instantaneous and read neither register: they fire with velocity 0 set and with no program ever declared.",
+      "events": [
+        {
+          "index": 0,
+          "instrument": "drums",
+          "kind": "start",
+          "pitch": 36,
+          "time": 0.1
+        },
+        {
+          "kind": "end",
+          "start_index": 0,
+          "time": 0.11
+        },
+        {
+          "index": 1,
+          "instrument": "drums",
+          "kind": "start",
+          "pitch": 38,
+          "time": 0.2
+        },
+        {
+          "kind": "end",
+          "start_index": 1,
+          "time": 0.21000000000000002
+        }
+      ],
+      "name": "drum_ignores_velocity_and_program",
+      "notes": [
+        {
+          "is_drum": true,
+          "offset": 0.11,
+          "onset": 0.1,
+          "pitch": 36,
+          "program": 128
+        },
+        {
+          "is_drum": true,
+          "offset": 0.21000000000000002,
+          "onset": 0.2,
+          "pitch": 38,
+          "program": 128
+        }
+      ],
+      "notes_raw": [
+        {
+          "is_drum": true,
+          "offset": 0.11,
+          "onset": 0.1,
+          "pitch": 36,
+          "program": 128
+        },
+        {
+          "is_drum": true,
+          "offset": 0.21000000000000002,
+          "onset": 0.2,
+          "pitch": 38,
+          "program": 128
+        }
+      ],
+      "open_keys_at_boundary": [
+        []
+      ],
+      "seek_times": [
+        0.0
+      ]
+    },
+    {
+      "actions": [
+        {
+          "kind": "drum",
+          "pitch": 36,
+          "time": 0.1
+        },
+        {
+          "kind": "drum",
+          "pitch": 36,
+          "time": 0.1
+        }
+      ],
+      "chunk_events": [
+        [
+          [
+            "tie",
+            0
+          ],
+          [
+            "shift",
+            10
+          ],
+          [
+            "drum",
+            36
+          ],
+          [
+            "drum",
+            36
+          ]
+        ]
+      ],
+      "chunk_tokens": [
+        [
+          1134,
+          13,
+          1301,
+          1301
+        ]
+      ],
+      "description": "Two identical drum hits at one tick both reach the action list, then trim_overlapping_notes collapses them to one. This is the only path on monotonic output where trimming changes anything.",
+      "events": [
+        {
+          "index": 0,
+          "instrument": "drums",
+          "kind": "start",
+          "pitch": 36,
+          "time": 0.1
+        },
+        {
+          "kind": "end",
+          "start_index": 0,
+          "time": 0.11
+        },
+        {
+          "index": 1,
+          "instrument": "drums",
+          "kind": "start",
+          "pitch": 36,
+          "time": 0.1
+        },
+        {
+          "kind": "end",
+          "start_index": 1,
+          "time": 0.11
+        }
+      ],
+      "name": "drum_duplicate_at_same_tick",
+      "notes": [
+        {
+          "is_drum": true,
+          "offset": 0.11,
+          "onset": 0.1,
+          "pitch": 36,
+          "program": 128
+        }
+      ],
+      "notes_raw": [
+        {
+          "is_drum": true,
+          "offset": 0.11,
+          "onset": 0.1,
+          "pitch": 36,
+          "program": 128
+        },
+        {
+          "is_drum": true,
+          "offset": 0.11,
+          "onset": 0.1,
+          "pitch": 36,
+          "program": 128
+        }
+      ],
+      "open_keys_at_boundary": [
+        []
+      ],
+      "seek_times": [
+        0.0
+      ]
+    },
+    {
+      "actions": [
+        {
+          "kind": "start",
+          "pitch": 60,
+          "program": 96,
+          "time": 0.1
+        },
+        {
+          "kind": "end",
+          "pitch": 60,
+          "program": 96,
+          "time": 0.3
+        }
+      ],
+      "chunk_events": [
+        [
+          [
+            "tie",
+            0
+          ],
+          [
+            "shift",
+            10
+          ],
+          [
+            "program",
+            96
+          ],
+          [
+            "velocity",
+            1
+          ],
+          [
+            "pitch",
+            60
+          ],
+          [
+            "shift",
+            30
+          ],
+          [
+            "velocity",
+            0
+          ],
+          [
+            "pitch",
+            60
+          ]
+        ]
+      ],
+      "chunk_tokens": [
+        [
+          1134,
+          13,
+          1231,
+          1133,
+          1064,
+          33,
+          1132,
+          1064
+        ]
+      ],
+      "description": "The deliberate reference quirk from docs/TOKENIZER.md section 5: group 36 is the singleton group for GM program 96, so a decoded program 96 is named 'drums' and routed as a drum. Reproduced on purpose; this vector is what makes changing that a visible decision rather than a silent divergence.",
+      "events": [
+        {
+          "index": 0,
+          "instrument": "drums",
+          "kind": "start",
+          "pitch": 60,
+          "time": 0.1
+        },
+        {
+          "kind": "end",
+          "start_index": 0,
+          "time": 0.3
+        }
+      ],
+      "name": "program_96_decodes_as_drums",
+      "notes": [
+        {
+          "is_drum": true,
+          "offset": 0.3,
+          "onset": 0.1,
+          "pitch": 60,
+          "program": 128
+        }
+      ],
+      "notes_raw": [
+        {
+          "is_drum": true,
+          "offset": 0.3,
+          "onset": 0.1,
+          "pitch": 60,
+          "program": 128
+        }
+      ],
+      "open_keys_at_boundary": [
+        []
+      ],
+      "seek_times": [
+        0.0
+      ]
+    },
+    {
+      "actions": [
+        {
+          "kind": "start",
+          "pitch": 60,
+          "program": 0,
+          "time": 0.1
+        },
+        {
+          "kind": "start",
+          "pitch": 64,
+          "program": 0,
+          "time": 0.2
+        },
+        {
+          "kind": "end",
+          "pitch": 60,
+          "program": 0,
+          "time": 0.11
+        },
+        {
+          "kind": "end",
+          "pitch": 64,
+          "program": 0,
+          "time": 0.21000000000000002
+        }
+      ],
+      "chunk_events": [
+        [
+          [
+            "tie",
+            0
+          ],
+          [
+            "shift",
+            10
+          ],
+          [
+            "program",
+            0
+          ],
+          [
+            "velocity",
+            1
+          ],
+          [
+            "pitch",
+            60
+          ],
+          [
+            "shift",
+            20
+          ],
+          [
+            "pitch",
+            64
+          ]
+        ]
+      ],
+      "chunk_tokens": [
+        [
+          1134,
+          13,
+          1135,
+          1133,
+          1064,
+          23,
+          1068
+        ]
+      ],
+      "description": "Notes still open when the stream ends close at onset + 10 ms, and they do so in insertion order.",
+      "events": [
+        {
+          "index": 0,
+          "instrument": "acoustic_piano",
+          "kind": "start",
+          "pitch": 60,
+          "time": 0.1
+        },
+        {
+          "index": 1,
+          "instrument": "acoustic_piano",
+          "kind": "start",
+          "pitch": 64,
+          "time": 0.2
+        },
+        {
+          "kind": "end",
+          "start_index": 0,
+          "time": 0.11
+        },
+        {
+          "kind": "end",
+          "start_index": 1,
+          "time": 0.21000000000000002
+        }
+      ],
+      "name": "finish_minimum_duration",
+      "notes": [
+        {
+          "is_drum": false,
+          "offset": 0.11,
+          "onset": 0.1,
+          "pitch": 60,
+          "program": 0
+        },
+        {
+          "is_drum": false,
+          "offset": 0.21000000000000002,
+          "onset": 0.2,
+          "pitch": 64,
+          "program": 0
+        }
+      ],
+      "notes_raw": [
+        {
+          "is_drum": false,
+          "offset": 0.11,
+          "onset": 0.1,
+          "pitch": 60,
+          "program": 0
+        },
+        {
+          "is_drum": false,
+          "offset": 0.21000000000000002,
+          "onset": 0.2,
+          "pitch": 64,
+          "program": 0
+        }
+      ],
+      "open_keys_at_boundary": [
+        []
+      ],
+      "seek_times": [
+        0.0
+      ]
+    },
+    {
+      "actions": [
+        {
+          "kind": "start",
+          "pitch": 40,
+          "program": 33,
+          "time": 0.1
+        },
+        {
+          "kind": "start",
+          "pitch": 60,
+          "program": 0,
+          "time": 0.2
+        },
+        {
+          "kind": "start",
+          "pitch": 64,
+          "program": 0,
+          "time": 0.3
+        },
+        {
+          "kind": "end",
+          "pitch": 40,
+          "program": 33,
+          "time": 0.11
+        },
+        {
+          "kind": "end",
+          "pitch": 60,
+          "program": 0,
+          "time": 0.21000000000000002
+        },
+        {
+          "kind": "end",
+          "pitch": 64,
+          "program": 0,
+          "time": 0.31
+        }
+      ],
+      "chunk_events": [
+        [
+          [
+            "tie",
+            0
+          ],
+          [
+            "shift",
+            10
+          ],
+          [
+            "program",
+            33
+          ],
+          [
+            "velocity",
+            1
+          ],
+          [
+            "pitch",
+            40
+          ],
+          [
+            "shift",
+            20
+          ],
+          [
+            "program",
+            0
+          ],
+          [
+            "pitch",
+            60
+          ],
+          [
+            "shift",
+            30
+          ],
+          [
+            "pitch",
+            64
+          ]
+        ]
+      ],
+      "chunk_tokens": [
+        [
+          1134,
+          13,
+          1168,
+          1133,
+          1044,
+          23,
+          1135,
+          1064,
+          33,
+          1068
+        ]
+      ],
+      "description": "Three notes opened in an order that differs from (program, pitch) order. finish() replays their closes in insertion order, so the action list pins it. Storing the open set in a std::map or an unordered_map reorders this and nothing else notices.",
+      "events": [
+        {
+          "index": 0,
+          "instrument": "electric_bass",
+          "kind": "start",
+          "pitch": 40,
+          "time": 0.1
+        },
+        {
+          "index": 1,
+          "instrument": "acoustic_piano",
+          "kind": "start",
+          "pitch": 60,
+          "time": 0.2
+        },
+        {
+          "index": 2,
+          "instrument": "acoustic_piano",
+          "kind": "start",
+          "pitch": 64,
+          "time": 0.3
+        },
+        {
+          "kind": "end",
+          "start_index": 0,
+          "time": 0.11
+        },
+        {
+          "kind": "end",
+          "start_index": 1,
+          "time": 0.21000000000000002
+        },
+        {
+          "kind": "end",
+          "start_index": 2,
+          "time": 0.31
+        }
+      ],
+      "name": "insertion_order_survives_to_finish",
+      "notes": [
+        {
+          "is_drum": false,
+          "offset": 0.11,
+          "onset": 0.1,
+          "pitch": 40,
+          "program": 33
+        },
+        {
+          "is_drum": false,
+          "offset": 0.21000000000000002,
+          "onset": 0.2,
+          "pitch": 60,
+          "program": 0
+        },
+        {
+          "is_drum": false,
+          "offset": 0.31,
+          "onset": 0.3,
+          "pitch": 64,
+          "program": 0
+        }
+      ],
+      "notes_raw": [
+        {
+          "is_drum": false,
+          "offset": 0.11,
+          "onset": 0.1,
+          "pitch": 40,
+          "program": 33
+        },
+        {
+          "is_drum": false,
+          "offset": 0.21000000000000002,
+          "onset": 0.2,
+          "pitch": 60,
+          "program": 0
+        },
+        {
+          "is_drum": false,
+          "offset": 0.31,
+          "onset": 0.3,
+          "pitch": 64,
+          "program": 0
+        }
+      ],
+      "open_keys_at_boundary": [
+        []
+      ],
+      "seek_times": [
+        0.0
+      ]
+    },
+    {
+      "actions": [
+        {
+          "kind": "start",
+          "pitch": 60,
+          "program": 0,
+          "time": 3.0
+        },
+        {
+          "kind": "end",
+          "pitch": 60,
+          "program": 0,
+          "time": 1.0
+        },
+        {
+          "kind": "start",
+          "pitch": 60,
+          "program": 0,
+          "time": 2.0
+        },
+        {
+          "kind": "end",
+          "pitch": 60,
+          "program": 0,
+          "time": 4.0
+        }
+      ],
+      "chunk_events": [
+        [
+          [
+            "tie",
+            0
+          ],
+          [
+            "shift",
+            300
+          ],
+          [
+            "program",
+            0
+          ],
+          [
+            "velocity",
+            1
+          ],
+          [
+            "pitch",
+            60
+          ],
+          [
+            "shift",
+            100
+          ],
+          [
+            "velocity",
+            0
+          ],
+          [
+            "pitch",
+            60
+          ],
+          [
+            "shift",
+            200
+          ],
+          [
+            "velocity",
+            1
+          ],
+          [
+            "pitch",
+            60
+          ],
+          [
+            "shift",
+            400
+          ],
+          [
+            "velocity",
+            0
+          ],
+          [
+            "pitch",
+            60
+          ]
+        ]
+      ],
+      "chunk_tokens": [
+        [
+          1134,
+          303,
+          1135,
+          1133,
+          1064,
+          103,
+          1132,
+          1064,
+          203,
+          1133,
+          1064,
+          403,
+          1132,
+          1064
+        ]
+      ],
+      "description": "Shift is absolute and nothing at inference enforces that it increases, so a chunk can emit an offset earlier than the onset it closes. validate_notes repairs the inverted note and trim_overlapping_notes then truncates the enclosing one. The audio fixture never does this -- its shifts are strictly monotonic -- which is exactly why it is here.",
+      "events": [
+        {
+          "index": 0,
+          "instrument": "acoustic_piano",
+          "kind": "start",
+          "pitch": 60,
+          "time": 3.0
+        },
+        {
+          "kind": "end",
+          "start_index": 0,
+          "time": 1.0
+        },
+        {
+          "index": 1,
+          "instrument": "acoustic_piano",
+          "kind": "start",
+          "pitch": 60,
+          "time": 2.0
+        },
+        {
+          "kind": "end",
+          "start_index": 1,
+          "time": 4.0
+        }
+      ],
+      "name": "trim_out_of_order_shifts",
+      "notes": [
+        {
+          "is_drum": false,
+          "offset": 3.0,
+          "onset": 2.0,
+          "pitch": 60,
+          "program": 0
+        },
+        {
+          "is_drum": false,
+          "offset": 3.01,
+          "onset": 3.0,
+          "pitch": 60,
+          "program": 0
+        }
+      ],
+      "notes_raw": [
+        {
+          "is_drum": false,
+          "offset": 1.0,
+          "onset": 3.0,
+          "pitch": 60,
+          "program": 0
+        },
+        {
+          "is_drum": false,
+          "offset": 4.0,
+          "onset": 2.0,
+          "pitch": 60,
+          "program": 0
+        }
+      ],
+      "open_keys_at_boundary": [
+        []
+      ],
+      "seek_times": [
+        0.0
+      ]
+    },
+    {
+      "actions": [
+        {
+          "kind": "start",
+          "pitch": 60,
+          "program": 0,
+          "time": 0.1
+        },
+        {
+          "kind": "end",
+          "pitch": 60,
+          "program": 0,
+          "time": 5.0
+        }
+      ],
+      "chunk_events": [
+        [
+          [
+            "tie",
+            0
+          ],
+          [
+            "shift",
+            10
+          ],
+          [
+            "program",
+            0
+          ],
+          [
+            "velocity",
+            1
+          ],
+          [
+            "pitch",
+            60
+          ]
+        ],
+        [
+          [
+            "tie",
+            0
+          ]
+        ]
+      ],
+      "chunk_tokens": [
+        [
+          1134,
+          13,
+          1135,
+          1133,
+          1064
+        ],
+        [
+          1134
+        ]
+      ],
+      "description": "A chunk that is nothing but its tie token decodes to nothing.",
+      "events": [
+        {
+          "index": 0,
+          "instrument": "acoustic_piano",
+          "kind": "start",
+          "pitch": 60,
+          "time": 0.1
+        },
+        {
+          "kind": "end",
+          "start_index": 0,
+          "time": 5.0
+        }
+      ],
+      "name": "empty_chunk",
+      "notes": [
+        {
+          "is_drum": false,
+          "offset": 5.0,
+          "onset": 0.1,
+          "pitch": 60,
+          "program": 0
+        }
+      ],
+      "notes_raw": [
+        {
+          "is_drum": false,
+          "offset": 5.0,
+          "onset": 0.1,
+          "pitch": 60,
+          "program": 0
+        }
+      ],
+      "open_keys_at_boundary": [
+        [],
+        [
+          [
+            0,
+            60
+          ]
+        ]
+      ],
+      "seek_times": [
+        0.0,
+        5.0
+      ]
+    }
+  ]
+}
