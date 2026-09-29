@@ -1,0 +1,22 @@
+{
+  "dim": 768,
+  "n_head": 12,
+  "head_dim": 64,
+  "n_layer": 14,
+  "ffn_dim": 3072,
+  "vocab_size": 1393,
+  "initial_token_id": 1393,
+  "logit_mask_start": 1393,
+  "layer_norm_eps": 9.99999975e-06,
+  "max_period": 10000,
+  "sample_rate": 16000,
+  "n_fft": 2048,
+  "hop_length": 160,
+  "frame_rate": 100,
+  "n_mels": 512,
+  "log_eps": 9.99999997e-07,
+  "n_ctx": 2538,
+  "backend": "CPU",
+  "checkpoint": "muscriptor-small-f16.gguf",
+  "muscriptor_cpp_commit": "0ef3b14e6e39e7296a0a0202ad07b41de3e99649"
+}
