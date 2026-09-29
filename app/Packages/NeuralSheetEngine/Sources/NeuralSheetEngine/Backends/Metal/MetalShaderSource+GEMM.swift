@@ -5,19 +5,47 @@
 // asks nothing of the device beyond what the rest of the library already asks.
 
 extension MetalShaderSource {
+    /// How `matmul_tiled_f16` blocks the output: a threadgroup owns a `rows` x `features`
+    /// block and walks K in steps of `depth`, and each of its threads keeps a
+    /// `perThread` x `perThread` square of that block in registers.
+    ///
+    /// One definition, interpolated into the MSL below and read by `MetalKernels` for the
+    /// grid it dispatches. It was two -- these numbers and a matching set of `#define`s --
+    /// held together by a comment, and the two disagreeing is not a compile error: too few
+    /// threads leaves part of every tile unwritten, too many reads threadgroup memory
+    /// nothing staged, and either way the wrong answer comes back quietly.
+    struct GEMMTile: Sendable {
+        /// `GEMM_TM`, the rows of the output one threadgroup owns.
+        var rows: Int
+
+        /// `GEMM_TN`, the output features one threadgroup owns.
+        var features: Int
+
+        /// `GEMM_TK`, how far into K one staged pass reaches.
+        var depth: Int
+
+        /// `GEMM_TW`, the side of the square one thread owns.
+        var perThread: Int
+
+        /// `GEMM_THREADS`, and so the threadgroup size the kernel must be dispatched with.
+        var threads: Int { (rows / perThread) * (features / perThread) }
+    }
+
+    /// The shape measured fastest of sixteen on an M2 Pro, on a plateau rather than a peak:
+    /// 64 x 32 and 64 x 128 tiles and depths of 8 and 32 are all within a few per cent, while
+    /// 8 x 8 outputs per thread is four times worse because the accumulators stop fitting in
+    /// registers. @see docs/design/2026-09-29-swift-engine-plan.md
+    static let gemmTile = GEMMTile(rows: 64, features: 64, depth: 16, perThread: 4)
+
     /// Appended to `core`, so the `MatmulParams` struct and the includes above are in scope.
     static let gemm = """
 
-        // The prefill GEMM's tile. A threadgroup owns a GEMM_TM x GEMM_TN block of the
-        // output and walks K in steps of GEMM_TK; each of its threads owns a
-        // GEMM_TW x GEMM_TW square of that block, so the threadgroup is
-        // (GEMM_TM / GEMM_TW) x (GEMM_TN / GEMM_TW) threads. These are macros because they
-        // size the threadgroup arrays and are unrolled over, and the Swift dispatches the
-        // matching grid -- MetalKernels.gemmTile has to be changed with them.
-        #define GEMM_TM 64
-        #define GEMM_TN 64
-        #define GEMM_TK 16
-        #define GEMM_TW 4
+        // The tile, from MetalShaderSource.gemmTile. Macros rather than constants because
+        // they size the threadgroup arrays below and the inner loops are unrolled over them.
+        #define GEMM_TM \(gemmTile.rows)
+        #define GEMM_TN \(gemmTile.features)
+        #define GEMM_TK \(gemmTile.depth)
+        #define GEMM_TW \(gemmTile.perThread)
         #define GEMM_THREADS ((GEMM_TM / GEMM_TW) * (GEMM_TN / GEMM_TW))
 
         /// `out = X . Wt` for several input rows: a classic tiled GEMM.
@@ -66,10 +94,16 @@ extension MetalShaderSource {
             }
 
             for (uint kBase = 0; kBase < p.inFeatures; kBase += GEMM_TK) {
-                // The staging loops put the K index on the fast axis, so consecutive threads
-                // read consecutive addresses out of both operands. A row or column past the
-                // end of the matrix, or a K past `inFeatures`, stages an exact zero, which
-                // contributes nothing to the sum and needs no bound in the inner loop.
+                // The staging loops put the K index on the fast axis, so that consecutive
+                // threads *read* consecutive addresses out of both operands in device
+                // memory, which is the access worth coalescing. Their writes into the tiles
+                // are strided by GEMM_TM and GEMM_TN instead, and deliberately: the tiles
+                // are indexed [k][m] for the sake of the inner loop, which reads them
+                // GEMM_TK times for every once this stages them.
+                //
+                // A row or column past the end of the matrix, or a K past `inFeatures`,
+                // stages an exact zero, which contributes nothing to the sum and so needs no
+                // bound in the inner loop.
                 for (uint e = tid; e < GEMM_TM * GEMM_TK; e += GEMM_THREADS) {
                     const uint k = e % GEMM_TK;
                     const uint row = rowBase + e / GEMM_TK;
@@ -126,5 +160,13 @@ extension MetalShaderSource {
                 }
             }
         }
+
+        // This fragment is concatenated onto the rest of the library, so the macros would
+        // otherwise stay defined for whatever is appended after it.
+        #undef GEMM_TM
+        #undef GEMM_TN
+        #undef GEMM_TK
+        #undef GEMM_TW
+        #undef GEMM_THREADS
         """
 }

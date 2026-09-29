@@ -53,16 +53,13 @@ struct MetalKernels {
     /// are this long and their trees halve it, so the dispatch must match it exactly.
     static let reduceThreads = 256
 
-    /// `GEMM_TM`, `GEMM_TN` and `GEMM_TW` in the shader source: the output tile one
-    /// threadgroup of `matmul_tiled_f16` owns and the square of it one thread owns. They
-    /// size the kernel's threadgroup arrays, so these have to be changed together with the
-    /// macros there.
-    static let gemmTile = (rows: 64, features: 64, perThread: 4)
+    /// The tile `matmul_tiled_f16` was compiled with, which is what its grid has to be built
+    /// from. Read from the shader source rather than restated here: one definition feeds both
+    /// the `#define`s and this. @see MetalShaderSource.gemmTile
+    static var gemmTile: MetalShaderSource.GEMMTile { MetalShaderSource.gemmTile }
 
-    /// The threads `matmul_tiled_f16` is dispatched with, which is `GEMM_THREADS`.
-    static let gemmThreads = MTLSize(
-        width: (gemmTile.features / gemmTile.perThread) * (gemmTile.rows / gemmTile.perThread),
-        height: 1, depth: 1)
+    /// The threadgroup `matmul_tiled_f16` is dispatched with, which is `GEMM_THREADS`.
+    static var gemmThreads: MTLSize { MTLSize(width: gemmTile.threads, height: 1, depth: 1) }
 
     private let layerNormState: MTLComputePipelineState
     private let matvecState: MTLComputePipelineState
