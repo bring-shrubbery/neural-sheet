@@ -43,8 +43,9 @@ Stem separation uses the four-source Hybrid Transformer Demucs checkpoint
 `~/Library/NeuralSheet/models` from the `Retrobear/demucs.cpp` dataset on Hugging
 Face (https://huggingface.co/datasets/Retrobear/demucs.cpp, pinned to a commit in
 `app/Packages/NeuralSheetCore/Sources/NeuralSheetCore/ModelManifest.swift`). Those
-files are MIT-licensed conversions of Meta's Demucs weights; Demucs itself is MIT,
-Copyright (c) Meta Platforms, Inc. and affiliates
+files are conversions of Meta's Demucs weights and the dataset card states their
+licence as MIT (the MIT text is as reproduced for muscriptor.cpp above); Demucs
+itself is MIT, Copyright (c) Meta Platforms, Inc. and affiliates
 (https://github.com/facebookresearch/demucs). **No weights are included in this
 repository or in the app.**
 
@@ -152,6 +153,9 @@ SOFTWARE.
 
 demucs.cpp does its linear algebra with Eigen, a header-only library vendored with
 it at `app/ThirdParty/demucs.cpp/vendor/eigen` and compiled into `libdemucs.a`.
+Eigen is used unmodified, at the commit that submodule pins; its source is at
+https://gitlab.com/libeigen/eigen, which is how a recipient of the shipped
+binary obtains the Covered Software as MPL 2.0 §3.2 asks.
 Some of its files carry other MPL2-compatible licences (BSD, Apache-2.0, MINPACK);
 see `COPYING.README` and the other `COPYING.*` files in that directory. The
 primary licence, from `COPYING.MPL2`:
