@@ -154,6 +154,16 @@ struct MetalKernels {
                 "this device runs fewer than \(MetalKernels.gemmThreads.width) threads per threadgroup")
         }
 
+        // `simdgroup_float8x8` is defined over a 32-lane simdgroup, and the GEMM's tile is cut
+        // into eighths on that assumption. Every Apple GPU is 32 wide; a device that is not is
+        // not one these kernels can run, which `MetalBackend.make` turns into the CPU backend
+        // rather than into an error.
+        guard matmulState.threadExecutionWidth == 32 else {
+            throw TranscriberError.unsupportedArchitecture(
+                "the Metal device '\(device.name)' has \(matmulState.threadExecutionWidth)-lane "
+                    + "simdgroups, and the matrix kernels are written for 32")
+        }
+
         // A 2D or 3D grid is covered with the execution width along x -- so that the lanes
         // of a simdgroup read consecutive addresses -- and as many rows of that as the
         // pipeline will take, capped at eight because none of those kernels is bound by

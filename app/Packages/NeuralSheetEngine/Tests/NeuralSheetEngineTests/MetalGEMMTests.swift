@@ -189,8 +189,13 @@ import Testing
         #expect(MetalKernels.gemmThreads.width == tile.threads)
         #expect(MetalKernels.gemmThreads.height == 1)
         #expect(MetalKernels.gemmThreads.depth == 1)
-        #expect(tile.rows % tile.perThread == 0, "the tile's rows are not a whole number of squares")
-        #expect(tile.features % tile.perThread == 0, "the tile's features are not a whole number of squares")
+        #expect(tile.depth % 8 == 0, "the tile's depth is not a whole number of 8 x 8 products")
+        #expect(
+            tile.rows % (8 * tile.simdgroupRows) == 0,
+            "the tile's rows are not a whole number of 8 x 8 accumulators per simdgroup")
+        #expect(
+            tile.features % (8 * tile.simdgroupColumns) == 0,
+            "the tile's features are not a whole number of 8 x 8 accumulators per simdgroup")
         #expect(
             MetalShaderSource.source.contains("#define GEMM_TM \(tile.rows)"),
             "the shader source was not built from the tile")
