@@ -10,11 +10,13 @@ import Testing
 @testable import NeuralSheetEngine
 
 @Suite struct ConditioningOracleTests {
-    /// Skips without the `small` checkpoint or the oracle dump; the package never
-    /// downloads a model, so a clean checkout must still be able to run the suite.
+    /// Skips without the `small` checkpoint; the package never downloads a model, so a clean
+    /// checkout must still be able to run the suite. The dump is a committed fixture and is
+    /// required rather than skipped on.
     private func loadFrontEnd() throws -> (ConditioningFrontEnd, [Float])? {
-        guard let oracle = try? Fixtures.floats("oracle/small-cpu/cond.f32") else { return nil }
         guard let checkpoint = Checkpoints.url(for: .small) else { return nil }
+
+        let oracle = try Fixtures.floats("oracle/small-cpu/cond.f32")
 
         let file = try GGUFFile(url: checkpoint)
         let hparams = try Hparams(file: file)

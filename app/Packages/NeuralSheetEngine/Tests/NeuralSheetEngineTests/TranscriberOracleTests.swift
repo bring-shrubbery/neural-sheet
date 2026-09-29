@@ -24,13 +24,15 @@ import Testing
     /// machine has no weights installed.
     private func setUp() throws -> (transcriber: Transcriber, audio: [Float])? {
         guard let checkpoint = Checkpoints.url(for: .small) else { return nil }
-        guard let audio = try? Fixtures.fixtureAudio() else { return nil }
 
+        // The audio is a committed fixture, so it is read rather than skipped on: only the
+        // checkpoint decides whether this suite can run.
+        let audio = try Fixtures.fixtureAudio()
         return (try Transcriber(url: checkpoint, options: LoadOptions(useGPU: false)), audio)
     }
 
     /// Runs one variant and compares the notes and the updates it produced. Returns nil
-    /// when the fixtures or the weights are missing and the test skips.
+    /// only when the weights are missing and the test skips; a missing dump fails.
     private func expectVariant(_ variant: OracleVariant) throws -> [Note]? {
         guard let (transcriber, audio) = try setUp() else { return nil }
 
@@ -108,8 +110,11 @@ import Testing
     }
 
     @Test func duplicateGroupsCollapse() throws {
-        guard let oracle = OracleNotes.load(.bass, from: TranscriberOracleTests.directory) else { return }
         guard let (transcriber, audio) = try setUp() else { return }
+
+        let oracle = try #require(
+            OracleNotes.load(.bass, from: TranscriberOracleTests.directory),
+            "missing oracle/\(TranscriberOracleTests.directory)/notes_bass.json")
 
         // A repeated group must not add a second conditioning row: that would lengthen the
         // prefix, shift every position and change the tokens. So this is the bass variant.

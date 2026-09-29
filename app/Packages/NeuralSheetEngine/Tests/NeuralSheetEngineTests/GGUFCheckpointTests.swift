@@ -46,8 +46,9 @@ private let smallHparams = Hparams(
     @Test func agreesWithTheReferencesOwnHparamsDump() throws {
         guard let url = Checkpoints.url(for: .small) else { return }
 
-        // Skips without the oracle fixtures, which Task 3 of the plan lands.
-        guard let dump = try? Fixtures.json("oracle/small-cpu/hparams.json") as? [String: Any] else { return }
+        // The dump is committed, so it is required: the checkpoint above is the only thing
+        // a machine is allowed to be without.
+        let dump = try #require(try Fixtures.json("oracle/small-cpu/hparams.json") as? [String: Any])
 
         let hparams = try Hparams(file: GGUFFile(url: url))
 

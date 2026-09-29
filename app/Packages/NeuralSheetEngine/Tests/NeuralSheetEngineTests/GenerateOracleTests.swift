@@ -20,10 +20,12 @@ import Testing
     private static let chunkFrames = 501
 
     /// Skips without the `small` checkpoint; the package never downloads a model, so a
-    /// clean checkout must still be able to run the suite.
+    /// clean checkout must still be able to run the suite. The audio is a committed fixture
+    /// and is read rather than skipped on.
     private func setUp() throws -> (model: Model, frontEnd: ConditioningFrontEnd, audio: [Float])? {
         guard let checkpoint = Checkpoints.url(for: .small) else { return nil }
-        guard let audio = try? Fixtures.fixtureAudio() else { return nil }
+
+        let audio = try Fixtures.fixtureAudio()
 
         let model = try Model.load(url: checkpoint, useGPU: false, contextSize: 2538)
         let frontEnd = try ConditioningFrontEnd(file: model.file, weights: model.weights, hparams: model.hparams)
@@ -36,10 +38,12 @@ import Testing
     }
 
     @Test func everyChunkGeneratesTheOracleTokens() throws {
-        guard let oracle = try? Fixtures.json("oracle/small-cpu/tokens.json") as? [String: [[Int]]],
-            let chunks = oracle["chunks"]?.map({ $0.map(Int32.init) })
-        else { return }
         guard let (model, frontEnd, audio) = try setUp() else { return }
+
+        // The dump is in the repository, so it is required and not skipped on: the
+        // checkpoint above is the only thing a machine is allowed to be without.
+        let oracle = try #require(try Fixtures.json("oracle/small-cpu/tokens.json") as? [String: [[Int]]])
+        let chunks = try #require(oracle["chunks"]).map { $0.map(Int32.init) }
 
         #expect(chunks.count == 3)
 
@@ -55,11 +59,11 @@ import Testing
     }
 
     @Test func bandSelectionGeneratesTheOracleTokens() throws {
-        guard let oracle = try? Fixtures.json("oracle/small-cpu/tokens_band.json") as? [String: Any],
-            let names = oracle["instruments"] as? [String],
-            let expected = (oracle["chunk0"] as? [Int])?.map(Int32.init)
-        else { return }
         guard let (model, frontEnd, audio) = try setUp() else { return }
+
+        let oracle = try #require(try Fixtures.json("oracle/small-cpu/tokens_band.json") as? [String: Any])
+        let names = try #require(oracle["instruments"] as? [String])
+        let expected = try #require(oracle["chunk0"] as? [Int]).map(Int32.init)
 
         let band = names.compactMap { InstrumentGroups.group(forName: $0) }
         #expect(band.count == names.count)

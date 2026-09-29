@@ -180,8 +180,10 @@ private func referenceMagnitudes(_ samples: [Float], nFFT: Int, hopLength: Int, 
     /// chunk. Skips without the oracle dump or without the `small` checkpoint, whose
     /// `cond.stft_window` is the window the reference applied.
     @Test func matchesTheReferenceDump() throws {
-        guard let oracle = try? Fixtures.floats("oracle/small-cpu/stft.f32") else { return }
         guard let checkpoint = Checkpoints.url(for: .small) else { return }
+
+        // The dump is in the repository, so it is required and not skipped on.
+        let oracle = try Fixtures.floats("oracle/small-cpu/stft.f32")
 
         let file = try GGUFFile(url: checkpoint)
         let hparams = try Hparams(file: file)

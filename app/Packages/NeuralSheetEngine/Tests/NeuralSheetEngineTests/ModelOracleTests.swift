@@ -21,11 +21,13 @@ import Testing
     /// instrument row and the initial token.
     private static let defaultPrefill = 504
 
-    /// Skips without the `small` checkpoint or the oracle dump; the package never
-    /// downloads a model, so a clean checkout must still be able to run the suite.
+    /// Skips without the `small` checkpoint; the package never downloads a model, so a
+    /// clean checkout must still be able to run the suite. The audio is a committed fixture
+    /// and is read rather than skipped on.
     private func setUp(contextSize: Int = 2538) throws -> (model: Model, conditioning: [Float])? {
         guard let checkpoint = Checkpoints.url(for: .small) else { return nil }
-        guard let audio = try? Fixtures.fixtureAudio() else { return nil }
+
+        let audio = try Fixtures.fixtureAudio()
 
         let model = try Model.load(url: checkpoint, useGPU: false, contextSize: contextSize)
         let frontEnd = try ConditioningFrontEnd(file: model.file, weights: model.weights, hparams: model.hparams)
@@ -33,8 +35,10 @@ import Testing
     }
 
     @Test func prefillLogitsMatchTheOracle() throws {
-        guard let oracle = try? Fixtures.floats("oracle/small-cpu/prefill_logits.f32") else { return }
         guard let (model, conditioning) = try setUp() else { return }
+
+        // The dump is in the repository, so it is required and not skipped on.
+        let oracle = try Fixtures.floats("oracle/small-cpu/prefill_logits.f32")
 
         let logits = try model.prefill(
             conditioning: conditioning, frameCount: 501, tokens: [Int32(model.hparams.initialTokenID)])
@@ -59,11 +63,12 @@ import Testing
     }
 
     @Test func decodeStepsMatchTheOracle() throws {
-        guard let steps = try? Fixtures.json("oracle/small-cpu/decode_steps.json") as? [String: [Int]],
-            let fed = steps["fed"]?.map(Int32.init), let expected = steps["argmax"]?.map(Int32.init),
-            let oracle = try? Fixtures.floats("oracle/small-cpu/decode_logits.f32")
-        else { return }
         guard let (model, conditioning) = try setUp() else { return }
+
+        let steps = try #require(try Fixtures.json("oracle/small-cpu/decode_steps.json") as? [String: [Int]])
+        let fed = try #require(steps["fed"]).map(Int32.init)
+        let expected = try #require(steps["argmax"]).map(Int32.init)
+        let oracle = try Fixtures.floats("oracle/small-cpu/decode_logits.f32")
 
         _ = try model.prefill(
             conditioning: conditioning, frameCount: 501, tokens: [Int32(model.hparams.initialTokenID)])

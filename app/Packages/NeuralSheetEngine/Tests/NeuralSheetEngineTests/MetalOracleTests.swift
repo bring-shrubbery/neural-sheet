@@ -36,9 +36,9 @@ import Testing
         "attn_values", "gelu_erf", "add_inplace",
     ]
 
-    /// Skips without a Metal device, the `small` checkpoint or the audio fixture: the
-    /// package never downloads a model, and a machine with no GPU must still be able to
-    /// run the suite.
+    /// Skips without a Metal device or the `small` checkpoint: the package never downloads a
+    /// model, and a machine with no GPU must still be able to run the suite. The audio is a
+    /// committed fixture and is read rather than skipped on.
     private func setUp(contextSize: Int = 2538) throws -> (model: Model, conditioning: [Float])? {
         guard let (model, frontEnd, audio) = try loadModel(contextSize: contextSize) else { return nil }
         return (model, try conditioning(frontEnd, audio, chunk: 0))
@@ -50,8 +50,8 @@ import Testing
     ) throws -> (model: Model, frontEnd: ConditioningFrontEnd, audio: [Float])? {
         guard MTLCreateSystemDefaultDevice() != nil else { return nil }
         guard let checkpoint = Checkpoints.url(for: .small) else { return nil }
-        guard let audio = try? Fixtures.fixtureAudio() else { return nil }
 
+        let audio = try Fixtures.fixtureAudio()
         let model = try Model.load(url: checkpoint, useGPU: true, contextSize: contextSize)
 
         // The point of every test below: a silent fall back to the CPU would make them all
@@ -84,8 +84,11 @@ import Testing
     // MARK: - The forward pass
 
     @Test func prefillLogitsMatchTheOracle() throws {
-        guard let oracle = try? Fixtures.floats("oracle/small-cpu/prefill_logits.f32") else { return }
         guard let (model, conditioning) = try setUp() else { return }
+
+        // The dump is in the repository, so it is required and not skipped on: the device and
+        // the checkpoint are the only things a machine is allowed to be without.
+        let oracle = try Fixtures.floats("oracle/small-cpu/prefill_logits.f32")
 
         let logits = try model.prefill(
             conditioning: conditioning, frameCount: MetalOracleTests.chunkFrames,
@@ -109,11 +112,12 @@ import Testing
     }
 
     @Test func decodeStepsMatchTheOracle() throws {
-        guard let steps = try? Fixtures.json("oracle/small-metal/decode_steps.json") as? [String: [Int]],
-            let fed = steps["fed"]?.map(Int32.init), let expected = steps["argmax"]?.map(Int32.init),
-            let oracle = try? Fixtures.floats("oracle/small-cpu/decode_logits.f32")
-        else { return }
         guard let (model, conditioning) = try setUp() else { return }
+
+        let steps = try #require(try Fixtures.json("oracle/small-metal/decode_steps.json") as? [String: [Int]])
+        let fed = try #require(steps["fed"]).map(Int32.init)
+        let expected = try #require(steps["argmax"]).map(Int32.init)
+        let oracle = try Fixtures.floats("oracle/small-cpu/decode_logits.f32")
 
         _ = try model.prefill(
             conditioning: conditioning, frameCount: MetalOracleTests.chunkFrames,
@@ -228,10 +232,10 @@ import Testing
     // MARK: - The greedy loop
 
     @Test func everyChunkGeneratesTheOracleTokens() throws {
-        guard let oracle = try? Fixtures.json("oracle/small-metal/tokens.json") as? [String: [[Int]]],
-            let chunks = oracle["chunks"]?.map({ $0.map(Int32.init) })
-        else { return }
         guard let (model, frontEnd, audio) = try loadModel() else { return }
+
+        let oracle = try #require(try Fixtures.json("oracle/small-metal/tokens.json") as? [String: [[Int]]])
+        let chunks = try #require(oracle["chunks"]).map { $0.map(Int32.init) }
 
         #expect(chunks.count == 3)
 
@@ -247,11 +251,11 @@ import Testing
     }
 
     @Test func bandSelectionGeneratesTheOracleTokens() throws {
-        guard let oracle = try? Fixtures.json("oracle/small-metal/tokens_band.json") as? [String: Any],
-            let names = oracle["instruments"] as? [String],
-            let expected = (oracle["chunk0"] as? [Int])?.map(Int32.init)
-        else { return }
         guard let (model, frontEnd, audio) = try loadModel() else { return }
+
+        let oracle = try #require(try Fixtures.json("oracle/small-metal/tokens_band.json") as? [String: Any])
+        let names = try #require(oracle["instruments"] as? [String])
+        let expected = try #require(oracle["chunk0"] as? [Int]).map(Int32.init)
 
         let band = names.compactMap { InstrumentGroups.group(forName: $0) }
         #expect(band.count == names.count)

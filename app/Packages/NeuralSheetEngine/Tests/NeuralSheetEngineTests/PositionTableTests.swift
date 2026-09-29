@@ -54,8 +54,9 @@ private func referenceTable(count: Int, dim: Int, maxPeriod: Double) -> [Double]
     }
 
     @Test func matchesTheReferenceDump() throws {
-        // Skips without the oracle fixtures, which Task 3 of the plan lands.
-        guard let dump = try? Fixtures.floats("oracle/small-cpu/positions.f32") else { return }
+        // The dump is committed, so it is required: nothing here needs a checkpoint, and
+        // there is no machine this test may skip on.
+        let dump = try Fixtures.floats("oracle/small-cpu/positions.f32")
 
         let rows = dump.count / 768
         #expect(rows == 8)

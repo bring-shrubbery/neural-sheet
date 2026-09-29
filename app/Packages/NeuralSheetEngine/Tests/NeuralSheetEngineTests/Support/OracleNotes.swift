@@ -13,7 +13,7 @@ import Testing
 @testable import NeuralSheetEngine
 
 /// One of muscriptor.cpp's four test variants. The raw value is the dump's file-name stem.
-enum OracleVariant: String, CaseIterable {
+enum OracleVariant: String {
     case plain, prelude, bass, band
 
     /// The selection the oracle transcribed with, in the order it passed it: the engine
@@ -46,8 +46,8 @@ struct OracleNotes {
     var updates: [Update]
 
     /// Reads a variant's dump from one oracle directory (`small-cpu`, `medium-metal`, …),
-    /// or nil when the fixtures are not in the bundle, which is the same skip a missing
-    /// checkpoint takes.
+    /// or nil when the file is not there or is not the shape this reader expects. The dumps
+    /// are committed, so nil is a failure and not a skip: every caller reports it.
     static func load(_ variant: OracleVariant, from directory: String) -> OracleNotes? {
         guard let root = try? Fixtures.json("oracle/\(directory)/notes_\(variant.rawValue).json") as? [String: Any],
             let names = root["instruments"] as? [String],
@@ -86,13 +86,21 @@ struct OracleNotes {
 
     /// Runs one variant through a transcriber the caller has loaded and compares both
     /// halves of what it produced, the notes and the shape of the updates. Returns the
-    /// notes, or nil when the dump is not there and the test skips.
+    /// notes it compared.
+    ///
+    /// A dump that will not load records a failure rather than returning nil: the checkpoint
+    /// is what a machine may be without, and the caller has already skipped for that, while
+    /// the dumps are in the repository and their absence is a broken checkout or a rename
+    /// nobody finished.
     @discardableResult
     static func expectVariant(
         _ variant: OracleVariant, through transcriber: Transcriber, samples: [Float],
         from directory: String
-    ) throws -> [Note]? {
-        guard let oracle = load(variant, from: directory) else { return nil }
+    ) throws -> [Note] {
+        guard let oracle = load(variant, from: directory) else {
+            Issue.record("missing oracle/\(directory)/notes_\(variant.rawValue).json")
+            return []
+        }
 
         let label = "\(directory) \(variant.rawValue)"
         #expect(oracle.instruments == variant.instruments, "\(label): the dump's selection")

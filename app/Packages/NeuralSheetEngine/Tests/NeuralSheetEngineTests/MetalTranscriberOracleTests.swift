@@ -21,8 +21,10 @@ import Testing
     private func setUp() throws -> (transcriber: Transcriber, audio: [Float])? {
         guard MTLCreateSystemDefaultDevice() != nil else { return nil }
         guard let checkpoint = Checkpoints.url(for: .small) else { return nil }
-        guard let audio = try? Fixtures.fixtureAudio() else { return nil }
 
+        // The audio is a committed fixture: only the device and the checkpoint are reasons
+        // to skip, and a missing fixture must fail instead.
+        let audio = try Fixtures.fixtureAudio()
         let transcriber = try Transcriber(url: checkpoint, options: LoadOptions(useGPU: true))
 
         // The point of every test below: a silent fall back to the CPU would make them all
@@ -45,11 +47,8 @@ import Testing
     @Test func bassVariantMatches() throws {
         guard let (transcriber, audio) = try setUp() else { return }
 
-        guard let notes = try OracleNotes.expectVariant(
+        let notes = try OracleNotes.expectVariant(
             .bass, through: transcriber, samples: audio, from: "small-metal")
-        else {
-            return
-        }
 
         // A selection forbids every other instrument's tokens, so nothing else can come out:
         // the mask is a GPU kernel here, and this is what says it ran.

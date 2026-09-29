@@ -9,8 +9,8 @@
 // the plan's ladder names: every chunk's unconditional stream, and the default variant's
 // notes end to end.
 //
-// Every test skips without the medium checkpoint or its fixtures -- the package never
-// downloads a model. The suite is serialised and tagged `.slow`: each test brings up 614 MB
+// Every test skips without the medium checkpoint -- the package never downloads a model --
+// but not without its dumps, which are in the repository. The suite is serialised and tagged `.slow`: each test brings up 614 MB
 // of F16 weights and decodes a thousand-odd tokens, so this is minutes rather than seconds
 // and two of them at once only competes for memory bandwidth.
 
@@ -25,13 +25,15 @@ import Testing
     private static let chunkFrames = 501
 
     /// A medium model on one backend plus the fixture audio, or nil when the machine has no
-    /// medium checkpoint (or, on Metal, no device).
+    /// medium checkpoint (or, on Metal, no device). The audio is a committed fixture and is
+    /// read rather than skipped on.
     private func loadModel(
         useGPU: Bool
     ) throws -> (model: Model, frontEnd: ConditioningFrontEnd, audio: [Float])? {
         if useGPU, MTLCreateSystemDefaultDevice() == nil { return nil }
         guard let checkpoint = Checkpoints.url(for: .medium) else { return nil }
-        guard let audio = try? Fixtures.fixtureAudio() else { return nil }
+
+        let audio = try Fixtures.fixtureAudio()
 
         let model = try Model.load(
             url: checkpoint, useGPU: useGPU, contextSize: Transcriber.requiredContextSize)
@@ -49,8 +51,8 @@ import Testing
     private func loadTranscriber(useGPU: Bool) throws -> (transcriber: Transcriber, audio: [Float])? {
         if useGPU, MTLCreateSystemDefaultDevice() == nil { return nil }
         guard let checkpoint = Checkpoints.url(for: .medium) else { return nil }
-        guard let audio = try? Fixtures.fixtureAudio() else { return nil }
 
+        let audio = try Fixtures.fixtureAudio()
         let transcriber = try Transcriber(url: checkpoint, options: LoadOptions(useGPU: useGPU))
         #expect(transcriber.backendName == (useGPU ? "Metal" : "CPU"))
         return (transcriber, audio)
@@ -60,10 +62,12 @@ import Testing
     /// dump for the backend under test: the two agree token for token on this fixture, and
     /// reading each backend's own dump is what would show it if they ever stopped.
     private func expectOracleTokens(useGPU: Bool, directory: String) throws {
-        guard let oracle = try? Fixtures.json("oracle/\(directory)/tokens.json") as? [String: [[Int]]],
-            let chunks = oracle["chunks"]?.map({ $0.map(Int32.init) })
-        else { return }
         guard let (model, frontEnd, audio) = try loadModel(useGPU: useGPU) else { return }
+
+        // The dump is in the repository, so it is required and not skipped on: the
+        // checkpoint above is the only thing a machine is allowed to be without.
+        let oracle = try #require(try Fixtures.json("oracle/\(directory)/tokens.json") as? [String: [[Int]]])
+        let chunks = try #require(oracle["chunks"]).map { $0.map(Int32.init) }
 
         #expect(chunks.count == 3)
 
@@ -83,11 +87,12 @@ import Testing
     // MARK: - The checkpoint
 
     @Test func theInstalledCheckpointIsTheOneTheOracleDumped() throws {
-        // Skips without the checkpoint or the fixtures, like everything else here. This is
-        // the only test in the suite that costs nothing, and it is what makes a token
-        // mismatch below readable: a different medium file would fail here first.
+        // Skips without the checkpoint, like everything else here. This is the only test in
+        // the suite that costs nothing, and it is what makes a token mismatch below readable:
+        // a different medium file would fail here first.
         guard let url = Checkpoints.url(for: .medium) else { return }
-        guard let dump = try? Fixtures.json("oracle/medium-cpu/hparams.json") as? [String: Any] else { return }
+
+        let dump = try #require(try Fixtures.json("oracle/medium-cpu/hparams.json") as? [String: Any])
 
         let hparams = try Hparams(file: GGUFFile(url: url))
 
