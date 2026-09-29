@@ -3,6 +3,5 @@
 //  Objective-C / C++ headers exposed to Swift go here.
 //
 
-#include "Engine/nsheet_engine.h"
 #include "Engine/nsheet_stems.h"
 #include "Decoders/stb_vorbis.h"
