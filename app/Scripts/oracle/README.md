@@ -138,7 +138,8 @@ target), and `large`'s prefill misses at 538 ms against a target of 480 and
 ggml's 433: what is left there is `matmul_tiled_f16`, which reaches 3.0 TFLOP/s
 of this device's 6.8. On the CPU `medium` meets its 12.6 ms target on a quiet
 machine and `small` misses its 4.8 ms one at 5.49; the CPU prefill is five to nine
-times faster than ggml's on the rows as recorded and about five times when the machine
-is quiet, at every size, because ours is a blocked GEMM through `cblas_sgemm` and
-ggml's is not.
+times faster than ggml's on the rows as recorded, and three to four times on a quiet
+machine for `small` and `medium` (550 and 1720 ms for ggml against our 185 and 438;
+`large` was never measured quiet), because ours is a blocked GEMM through
+`cblas_sgemm` and ggml's is not.
 
