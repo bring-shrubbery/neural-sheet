@@ -43,9 +43,13 @@ extension MetalShaderSource {
         }
     }
 
-    /// The shape measured fastest on an M2 Pro. @see docs/design/2026-09-29-swift-engine-plan.md
+    /// The shape measured fastest on an M2 Pro, over `medium`'s `attn_qkv` and `ffn_up` at 504
+    /// rows: a 64 x 64 tile over eight simdgroups, each holding 2 x 4 accumulators. Doubling
+    /// either side of the tile, halving it, or a depth of 8 or 32 instead of 16 is 2 to 27 per
+    /// cent worse. The eight accumulators are the budget -- sixteen spill to device memory and
+    /// cost seven times as much. @see docs/design/2026-09-29-swift-engine-plan.md
     static let gemmTile = GEMMTile(
-        rows: 128, features: 64, depth: 16, simdgroupRows: 8, simdgroupColumns: 2)
+        rows: 64, features: 64, depth: 16, simdgroupRows: 4, simdgroupColumns: 2)
 
     /// Appended to `core`, so the `MatmulParams` struct and the includes above are in scope.
     static let gemm = """
@@ -88,8 +92,8 @@ extension MetalShaderSource {
         /// ggml's `kernel_mul_mm` is the same instruction on the same reasoning.
         ///
         /// Measured over `medium`'s prefill at 504 rows, best of thirty command buffers:
-        /// `attn_qkv` 49.2 ms -> 15.6 ms and `ffn_up` 65.6 -> 20.2, which is 1.6 TFLOP/s
-        /// against 5.0.
+        /// `attn_qkv` 49.2 ms -> 25.1 and `ffn_up` 65.6 -> 33.4, which is 1.6 TFLOP/s against
+        /// 3.0.
         ///
         /// The accumulation is F32, as `GGML_PREC_F32` asks, and runs straight up K in staged
         /// passes; within one 8 x 8 x 8 product the order of the eight terms is the hardware's,
@@ -126,37 +130,63 @@ extension MetalShaderSource {
                 }
             }
 
+            // The device reads of one staged pass are issued while the simdgroups are still
+            // multiplying the pass before it: a thread keeps its share of the next pass in
+            // registers -- GEMM_TM . GEMM_TK / GEMM_THREADS of A and as many of B -- and only
+            // writes it into the tiles once every simdgroup is done reading them. Without this
+            // the loads are serialised behind the products, which measured 31.0 ms against the
+            // 25.2 ms the same kernel takes with the loads elided altogether.
+            #define GEMM_APER (GEMM_TM * GEMM_TK / GEMM_THREADS)
+            #define GEMM_BPER (GEMM_TN * GEMM_TK / GEMM_THREADS)
+
+            float aNext[GEMM_APER];
+            half bNext[GEMM_BPER];
+
+            // A row or column past the end of the matrix, or a K past `inFeatures`, reads an
+            // exact zero, which contributes nothing to the product and so needs no bound in the
+            // inner loop.
+            #define GEMM_FETCH(kBase) \
+                for (uint n = 0; n < GEMM_APER; ++n) { \
+                    const uint e = tid + n * GEMM_THREADS; \
+                    const uint k = e % GEMM_TK; \
+                    const uint row = rowBase + e / GEMM_TK; \
+                    aNext[n] = (row < p.rows && (kBase) + k < p.inFeatures) \
+                        ? x[(ulong)row * p.inFeatures + (kBase) + k] : 0.0f; \
+                } \
+                for (uint n = 0; n < GEMM_BPER; ++n) { \
+                    const uint e = tid + n * GEMM_THREADS; \
+                    const uint k = e % GEMM_TK; \
+                    const uint col = colBase + e / GEMM_TK; \
+                    bNext[n] = (col < p.outFeatures && (kBase) + k < p.inFeatures) \
+                        ? weights[(ulong)col * p.inFeatures + (kBase) + k] : half(0.0f); \
+                }
+
+            // The staging writes put the K index on the fast axis of `e`, so that consecutive
+            // threads read consecutive addresses out of both operands above. Where they land is
+            // the interleaved 8 x 8 block layout, which is a scatter -- but it is paid once per
+            // staged pass and read GEMM_TK / 8 times by every simdgroup.
+            #define GEMM_PUBLISH() \
+                for (uint n = 0; n < GEMM_APER; ++n) { \
+                    const uint e = tid + n * GEMM_THREADS; \
+                    const uint k = e % GEMM_TK; \
+                    const uint m = e / GEMM_TK; \
+                    aTile[((k / 8) * (GEMM_TM / 8) + m / 8) * 64 + (m % 8) * 8 + k % 8] = aNext[n]; \
+                } \
+                for (uint n = 0; n < GEMM_BPER; ++n) { \
+                    const uint e = tid + n * GEMM_THREADS; \
+                    const uint k = e % GEMM_TK; \
+                    const uint j = e / GEMM_TK; \
+                    bTile[((k / 8) * (GEMM_TN / 8) + j / 8) * 64 + (k % 8) * 8 + j % 8] = bNext[n]; \
+                }
+
+            GEMM_FETCH(0)
+            GEMM_PUBLISH()
+            threadgroup_barrier(mem_flags::mem_threadgroup);
+
             for (uint kBase = 0; kBase < p.inFeatures; kBase += GEMM_TK) {
-                // The staging loops put the K index on the fast axis, so that consecutive
-                // threads *read* consecutive addresses out of both operands in device memory,
-                // which is the access worth coalescing. Where they *write* is the interleaved
-                // layout above, which is a scatter -- but it is paid once per staged pass and
-                // read GEMM_TK / 8 times by every simdgroup.
-                //
-                // A row or column past the end of the matrix, or a K past `inFeatures`, stages
-                // an exact zero, which contributes nothing to the product and so needs no
-                // bound in the inner loop.
-                for (uint e = tid; e < GEMM_TM * GEMM_TK; e += GEMM_THREADS) {
-                    const uint k = e % GEMM_TK;
-                    const uint m = e / GEMM_TK;
-                    const uint row = rowBase + m;
-                    const uint block = (k / 8) * (GEMM_TM / 8) + m / 8;
-                    aTile[block * 64 + (m % 8) * 8 + k % 8] =
-                        (row < p.rows && kBase + k < p.inFeatures)
-                        ? x[(ulong)row * p.inFeatures + kBase + k] : 0.0f;
+                if (kBase + GEMM_TK < p.inFeatures) {
+                    GEMM_FETCH(kBase + GEMM_TK)
                 }
-
-                for (uint e = tid; e < GEMM_TN * GEMM_TK; e += GEMM_THREADS) {
-                    const uint k = e % GEMM_TK;
-                    const uint n = e / GEMM_TK;
-                    const uint col = colBase + n;
-                    const uint block = (k / 8) * (GEMM_TN / 8) + n / 8;
-                    bTile[block * 64 + (k % 8) * 8 + n % 8] =
-                        (col < p.outFeatures && kBase + k < p.inFeatures)
-                        ? weights[(ulong)col * p.inFeatures + kBase + k] : half(0.0f);
-                }
-
-                threadgroup_barrier(mem_flags::mem_threadgroup);
 
                 for (uint k = 0; k < GEMM_TK; k += 8) {
                     threadgroup const float *aBlocks = aTile + (k / 8) * GEMM_TM * 8;
@@ -186,10 +216,19 @@ extension MetalShaderSource {
                     }
                 }
 
-                // The next pass overwrites both tiles, so every simdgroup has to be done
-                // reading them before it may start.
-                threadgroup_barrier(mem_flags::mem_threadgroup);
+                if (kBase + GEMM_TK < p.inFeatures) {
+                    // Every simdgroup has to be done reading the tiles before they are refilled,
+                    // and done refilling them before the next pass reads them.
+                    threadgroup_barrier(mem_flags::mem_threadgroup);
+                    GEMM_PUBLISH()
+                    threadgroup_barrier(mem_flags::mem_threadgroup);
+                }
             }
+
+            #undef GEMM_APER
+            #undef GEMM_BPER
+            #undef GEMM_FETCH
+            #undef GEMM_PUBLISH
 
             // A tile wholly inside the matrix -- which every one of them is for a weight whose
             // `outFeatures` is a multiple of GEMM_TN and a window that fills its rows -- stores
