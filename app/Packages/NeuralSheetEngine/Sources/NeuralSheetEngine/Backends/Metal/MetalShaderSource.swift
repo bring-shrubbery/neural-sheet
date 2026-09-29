@@ -63,10 +63,10 @@ enum MetalShaderSource {
             uint columns;
         };
 
-        // The width of the two reduction kernels' threadgroups. It is a macro rather than a
-        // parameter because it is also the size of their threadgroup arrays, and the
-        // reduction tree below halves it, so it has to be a power of two known at compile
-        // time. The Swift dispatches exactly this many threads.
+        // The width of `softmax_rows`'s threadgroup. It is a macro rather than a parameter
+        // because it is also the size of its threadgroup array, and the reduction tree halves
+        // it, so it has to be a power of two known at compile time. The Swift dispatches
+        // exactly this many threads.
         #define REDUCE_THREADS 256
 
         // 1 / sqrt(2), the same literal CPUKernels.geluErf uses.
@@ -93,12 +93,30 @@ enum MetalShaderSource {
             return signum * (1.0f - series * exp(-magnitude * magnitude));
         }
 
-        /// LayerNorm with affine parameters, one threadgroup per row.
+        /// LayerNorm with affine parameters, one simdgroup per row.
         ///
-        /// The mean and the variance accumulate in F32 here and in F64 on the CPU. The
-        /// tree reduction makes up most of the difference -- summing 768 values in a tree
-        /// of depth eight is far more accurate than summing them in sequence -- and what is
-        /// left is inside the oracle's tolerance.
+        /// A decode step runs this `2 . nLayer + 1` times on a single row of at most 1536
+        /// values, each time between two matrix products that depend on it, so what it costs is
+        /// latency. It was a 256-thread threadgroup with two tree reductions -- sixteen
+        /// `threadgroup_barrier`s over eight simdgroups, and still only one threadgroup on one
+        /// of the machine's nineteen cores. One simdgroup and two `simd_sum`s has no barriers at
+        /// all and asks nothing of the device's threadgroup size.
+        ///
+        /// Measured over those dispatches, best of thirty command buffers: on the decode row
+        /// 0.40 ms -> 0.38 for `small`, 0.73 -> 0.48 for `medium` and 1.05 -> 0.83 for `large`;
+        /// over a 504-row prefill, where there is a threadgroup per row and the `float4` loads
+        /// tell, 0.65 -> 0.32, 0.95 -> 0.60 and 2.60 -> 1.80. Against a whole decode step this
+        /// is inside the run-to-run spread -- what is left is per-dispatch latency, which no
+        /// shape of this kernel changes.
+        ///
+        /// The mean and the variance accumulate in F32 here and in F64 on the CPU, and each lane
+        /// sums its own quarter-slice before the reduction combines them, which is a third order
+        /// again -- summing 768 values 32 ways is far more accurate than summing them in
+        /// sequence, and what is left is inside the oracle's tolerance.
+        ///
+        /// The `float4` loads need sixteen-byte alignment: a row starts at `row . dim` floats
+        /// into a buffer bound at a multiple of sixteen bytes, so a `dim` that is a multiple of
+        /// four is aligned throughout and one that is not takes the scalar path.
         ///
         /// `out` may alias `x`: a thread only ever writes the elements it read.
         kernel void layer_norm(
@@ -108,52 +126,45 @@ enum MetalShaderSource {
             device const float *bias [[buffer(3)]],
             constant LayerNormParams &p [[buffer(4)]],
             uint row [[threadgroup_position_in_grid]],
-            uint tid [[thread_position_in_threadgroup]])
+            uint lane [[thread_index_in_simdgroup]],
+            uint width [[threads_per_simdgroup]])
         {
-            threadgroup float partial[REDUCE_THREADS];
-
             device const float *source = x + (ulong)row * p.dim;
             device float *destination = out + (ulong)row * p.dim;
 
+            const uint quads = (p.dim % 4 == 0) ? p.dim / 4 : 0;
+
             float total = 0.0f;
-            for (uint i = tid; i < p.dim; i += REDUCE_THREADS) {
+            for (uint q = lane; q < quads; q += width) {
+                const float4 v = *(device const float4 *)(source + q * 4);
+                total += (v.x + v.y) + (v.z + v.w);
+            }
+            for (uint i = quads * 4 + lane; i < p.dim; i += width) {
                 total += source[i];
             }
 
-            partial[tid] = total;
-            threadgroup_barrier(mem_flags::mem_threadgroup);
-
-            for (uint stride = REDUCE_THREADS / 2; stride > 0; stride >>= 1) {
-                if (tid < stride) {
-                    partial[tid] += partial[tid + stride];
-                }
-                threadgroup_barrier(mem_flags::mem_threadgroup);
-            }
-
-            const float mean = partial[0] / float(p.dim);
-
-            // Every thread has to have read partial[0] before the sum of squares overwrites it.
-            threadgroup_barrier(mem_flags::mem_threadgroup);
+            const float mean = simd_sum(total) / float(p.dim);
 
             float squares = 0.0f;
-            for (uint i = tid; i < p.dim; i += REDUCE_THREADS) {
+            for (uint q = lane; q < quads; q += width) {
+                const float4 centred = *(device const float4 *)(source + q * 4) - mean;
+                squares += (centred.x * centred.x + centred.y * centred.y)
+                    + (centred.z * centred.z + centred.w * centred.w);
+            }
+            for (uint i = quads * 4 + lane; i < p.dim; i += width) {
                 const float centred = source[i] - mean;
                 squares += centred * centred;
             }
 
-            partial[tid] = squares;
-            threadgroup_barrier(mem_flags::mem_threadgroup);
+            const float inverse = rsqrt(simd_sum(squares) / float(p.dim) + p.eps);
 
-            for (uint stride = REDUCE_THREADS / 2; stride > 0; stride >>= 1) {
-                if (tid < stride) {
-                    partial[tid] += partial[tid + stride];
-                }
-                threadgroup_barrier(mem_flags::mem_threadgroup);
+            for (uint q = lane; q < quads; q += width) {
+                const uint i = q * 4;
+                *(device float4 *)(destination + i) =
+                    (*(device const float4 *)(source + i) - mean) * inverse
+                    * *(device const float4 *)(weight + i) + *(device const float4 *)(bias + i);
             }
-
-            const float inverse = rsqrt(partial[0] / float(p.dim) + p.eps);
-
-            for (uint i = tid; i < p.dim; i += REDUCE_THREADS) {
+            for (uint i = quads * 4 + lane; i < p.dim; i += width) {
                 destination[i] = (source[i] - mean) * inverse * weight[i] + bias[i];
             }
         }

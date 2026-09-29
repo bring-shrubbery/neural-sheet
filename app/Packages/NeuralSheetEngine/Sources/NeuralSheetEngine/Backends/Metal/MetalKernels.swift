@@ -49,8 +49,8 @@ extension MetalKernels {
 /// thread-safe; the encoder a method is handed is the caller's, and this holds no state
 /// between calls.
 struct MetalKernels {
-    /// `REDUCE_THREADS` in the shader source. The reduction kernels' threadgroup arrays
-    /// are this long and their trees halve it, so the dispatch must match it exactly.
+    /// `REDUCE_THREADS` in the shader source. `softmax_rows`'s threadgroup array is this long
+    /// and its tree halves it, so the dispatch must match it exactly.
     static let reduceThreads = 256
 
     /// The block `matvec_f16` was compiled with, which is what its grid and its threadgroup
@@ -91,6 +91,10 @@ struct MetalKernels {
     /// `simdgroup_index_in_threadgroup`.
     private let matvecThreads: MTLSize
 
+    /// The threadgroup `layer_norm` is dispatched with: exactly one simdgroup, because the
+    /// kernel reduces with `simd_sum`.
+    private let layerNormThreads: MTLSize
+
     /// `copy_kv`'s threadgroup, which is dispatched by thread count rather than by
     /// threadgroup, computed once from that pipeline's own limits.
     private let planeThreads: MTLSize
@@ -126,9 +130,7 @@ struct MetalKernels {
 
         let reduce = MetalKernels.reduceThreads
 
-        guard layerNormState.maxTotalThreadsPerThreadgroup >= reduce,
-            softmaxState.maxTotalThreadsPerThreadgroup >= reduce
-        else {
+        guard softmaxState.maxTotalThreadsPerThreadgroup >= reduce else {
             throw TranscriberError.internalError(
                 "this device runs fewer than \(reduce) threads per threadgroup")
         }
@@ -136,6 +138,9 @@ struct MetalKernels {
         threadgroupMemory = device.maxThreadgroupMemoryLength
         fusedAttentionFits =
             attentionDecodeState.maxTotalThreadsPerThreadgroup >= MetalShaderSource.attentionThreads
+
+        layerNormThreads = MTLSize(
+            width: max(1, layerNormState.threadExecutionWidth), height: 1, depth: 1)
 
         let matvecWidth = max(1, matvecState.threadExecutionWidth) * MetalKernels.matvecBlock.simdgroups
 
@@ -192,8 +197,7 @@ struct MetalKernels {
         encoder.setBuffer(norms, offset: biasOffset, index: 3)
         encoder.setBytes(&params, length: MemoryLayout<LayerNormParams>.stride, index: 4)
         encoder.dispatchThreadgroups(
-            MTLSize(width: rows, height: 1, depth: 1),
-            threadsPerThreadgroup: MTLSize(width: MetalKernels.reduceThreads, height: 1, depth: 1))
+            MTLSize(width: rows, height: 1, depth: 1), threadsPerThreadgroup: layerNormThreads)
     }
 
     /// `out[r][o] = sum_i W[o][i] . x[r][i]`, over `rows` rows of `inFeatures` values.
