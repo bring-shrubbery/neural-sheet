@@ -2,14 +2,14 @@
 
 # NeuralSheet
 
-**Audio-to-MIDI transcription as a native macOS app.** Record or drop a track, pick the instruments, and NeuralSheet turns it into MIDI you can play back, mix, and drag straight into your DAW. Transcription runs entirely on your machine.
+**Audio-to-MIDI transcription as a native macOS app.** Record or drop a track, pick the instruments, and NeuralSheet turns it into MIDI you can play back, mix, edit, and export as MIDI, MusicXML or PDF. Transcription runs entirely on your machine.
 
 NeuralSheet is a from-scratch Swift rewrite of [NeuralNote](https://github.com/DamRsn/NeuralNote) by [Damien Ronssin](https://github.com/DamRsn), built to fix the two things that held the original back on the Mac: audio latency and interface smoothness. It keeps NeuralNote's design, behaviour and transcription model, and replaces the cross-platform C++/JUCE application layer with SwiftUI, AppKit and AVAudioEngine. See [Credits](#credits) for the full story.
 
 ![NeuralSheet transcribing a track](docs/screenshot.png)
 
 > [!NOTE]
-> **Status: v1.0 (September 2026).** NeuralSheet has feature parity with the NeuralNote v2 standalone app. Download the latest release from [neural-sheet.quassum.com](https://neural-sheet.quassum.com) or the [Releases page](https://github.com/bring-shrubbery/neural-sheet/releases/latest); it is signed and notarized. macOS 26 on Apple silicon only.
+> **Status: v1.1 (September 2026).** NeuralSheet reached feature parity with the NeuralNote v2 standalone app in v1.0 and has since added projects, a note editor, stem separation, key and tempo detection and a Score tab; see the [changelog](CHANGELOG.md). Download the latest release from [neural-sheet.quassum.com](https://neural-sheet.quassum.com) or the [Releases page](https://github.com/bring-shrubbery/neural-sheet/releases/latest); it is signed and notarized. macOS 26 on Apple silicon only.
 
 ## What it does
 
@@ -17,8 +17,10 @@ NeuralSheet is a from-scratch Swift rewrite of [NeuralNote](https://github.com/D
 - **Transcribe with MuScriptor.** A 100M to 1.4B parameter transformer from Kyutai and Mirelo, running locally on the GPU through Metal. Restrict it to the instruments you know are in the mix, or let it detect them.
 - **Watch the notes arrive.** The piano roll fills in as each five-second chunk is decoded. You can start playing back the part that is done while the rest is still running.
 - **Listen and mix.** Play the transcription through the built-in synthesizer, blend it with the original audio, and set the level, mute and solo of every instrument.
-- **Edit the notes.** Switch to the Edit tab: move, resize, draw and erase notes, reassign them to other instruments, set velocities, snap and quantize to a tempo grid, with undo. Edits are saved with the session.
-- **Get the MIDI out.** Drag the result onto a track in your DAW, or export a multi-track `.mid` file with one track per instrument.
+- **Edit the notes.** Switch to the Edit tab: move, resize, draw and erase notes, reassign them to other instruments, set velocities, snap and quantize to a tempo grid, with undo. Edits are saved in the project, a `.neuralsheet` file that holds the audio, the transcription and the settings.
+- **Separate stems first.** Turn on Stems and Transcribe splits the take into drums, bass, vocals and the rest with Demucs, then transcribes each with its own instruments.
+- **Read it as a score.** The Score tab shows the transcription as staff notation, or tab in any tuning, in the project's key and tempo.
+- **Get it out.** Export a multi-track `.mid` file with one track per instrument, a MusicXML score any notation program opens, or a PDF of the score.
 
 ## Why a rewrite
 
@@ -36,9 +38,9 @@ NeuralNote v2 is a JUCE application that also ships as an AU and VST3 plugin. Th
 3. **Transcribe.** The first run downloads a model (see below). Progress shows in the status bar; you can cancel at any time.
 4. **Listen.** Space plays and pauses. The **ORIG / MIDI** slider blends the source audio with the synthesized notes; each instrument has its own fader, mute and solo.
 5. **Edit.** `⌘2` opens the Edit tab. `V` selects, `D` draws, `E` erases; drag notes, or their ends; `⌥`-drag duplicates; arrows nudge. Set the tempo and where bar 1 falls in the toolbar.
-6. **Export.** Drag the **MIDI** button onto a track in your DAW, or use **Export** to save a `.mid` file. The export tempo sets how seconds map to beats.
+6. **Export.** **File → Export MIDI…** saves a `.mid` file; the project tempo sets how seconds map to beats. **Export MusicXML…** and **Export PDF…** write the score.
 
-Shortcuts: `Space` play/pause · `Enter` (or `Shift+Space`) go to start · `r` record · `m` mute · `c` centre the playhead · `Shift+Backspace` clear · `⌘`+scroll or pinch to zoom the timeline · `⌘1`/`⌘2` tabs · `⌘Z` undo · `⌘U` quantize · `⌘A` select all · `⌘`-drag ignores snap.
+Shortcuts: `Space` play/pause · `Enter` (or `Shift+Space`) go to start · `r` record · `m` mute · `c` centre the playhead · `Shift+Backspace` clear · `⌘`+scroll or pinch to zoom the timeline · `⌘1`/`⌘2`/`⌘3` tabs · `l` loop · `-`/`=` speed · `⌘Z` undo · `⌘U` quantize · `⌘A` select all · `⌘`-drag ignores snap.
 
 ## Models
 
