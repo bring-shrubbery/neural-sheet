@@ -142,6 +142,13 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
     /// or a tap again.
     var isShutDown = false
 
+    #if !os(macOS)
+    /// The audio session's interruption and route-change observers and what an interruption
+    /// stopped, iOS's only (`ios/NeuralSheet/Audio/PlaybackEngine+Session.swift`). Releasing it
+    /// removes the observers.
+    var sessionObservation: AudioSessionObservation?
+    #endif
+
     #if os(macOS)
     /// Called on the main queue when the app a take is tapping has quit (system audio design §2),
     /// outside the HAL's listener callback. The take is the model's to end.
