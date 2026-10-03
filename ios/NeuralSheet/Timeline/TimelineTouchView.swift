@@ -49,6 +49,14 @@ final class TimelineTouchView: UIView, UIScrollViewDelegate {
     var pinch = PinchState()
     var rulerPressX: CGFloat?
 
+    /// Editing (`+Editing`): the drag in progress, its recognizers, the marquee, and what opens
+    /// the note card, given the note's rect in this view's coordinates.
+    var editDrag: EditDrag?
+    weak var editPan: UIPanGestureRecognizer?
+    weak var longPress: UILongPressGestureRecognizer?
+    let marquee = UIView()
+    var onNoteCard: ((CGRect) -> Void)?
+
     /// The display link and how many quiet frames it has seen (`+Playhead`).
     var displayLink: CADisplayLink?
     var idleTicks = 0
@@ -89,6 +97,7 @@ final class TimelineTouchView: UIView, UIScrollViewDelegate {
         addSubview(keyboard)
 
         installGestures()
+        installEditingGestures()
 
         accommodationsObserver = NotificationCenter.default.addObserver(
             forName: Accommodations.didChange, object: nil, queue: .main
@@ -120,6 +129,12 @@ final class TimelineTouchView: UIView, UIScrollViewDelegate {
         sync()
         startDisplayLink()
     }
+
+    /// The document's, which every edit registers with, for anything that asks the responder
+    /// chain from here. The view never takes first responder itself: a first responder that is
+    /// not a text input brings the software keyboard up when a menu opens. The system's undo
+    /// gestures reach the same manager through the document's scene.
+    override var undoManager: UndoManager? { model.undoManager ?? super.undoManager }
 
     // MARK: - Layout
 

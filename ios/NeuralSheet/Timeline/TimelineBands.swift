@@ -61,6 +61,66 @@ final class RollBandView: TimelineBandView {
         guard let (ctx, dirty) = context(for: rect) else { return }
 
         painter.draw(ctx, in: dirty, bounds: bounds)
+
+        if showsHandles {
+            drawHandles(ctx, in: dirty)
+        }
+    }
+
+    // MARK: - End handles
+
+    /// Whether the selected notes show the end handles a drag resizes them by: while the roll
+    /// can be edited.
+    var showsHandles = false
+
+    /// A handle's touch target: at least 22 pt wide, half the minimum hit target, straddling the
+    /// note's end (iOS app design §2, Touch).
+    static let handleWidth: CGFloat = 22
+    /// More selected notes than this show no handles: a passage selected for a bulk command is not
+    /// being resized note by note, and a forest of grips would hide the notes.
+    static let handleLimit = 64
+
+    /// The two touch targets of a note drawn at `rect`: `handleWidth` wide, reaching at most a
+    /// third of the way into the note so a short one keeps a body to drag, and at least the
+    /// minimum hit target tall.
+    static func handleRects(for rect: CGRect) -> (start: CGRect, end: CGRect) {
+        let inner = min(handleWidth / 2, rect.width / 3)
+        let height = max(rect.height, TimelineTouchView.minimumHitTarget)
+        let y = rect.midY - height / 2
+
+        return (CGRect(x: rect.minX - (handleWidth - inner), y: y, width: handleWidth, height: height),
+                CGRect(x: rect.maxX - inner, y: y, width: handleWidth, height: height))
+    }
+
+    /// A grip at each end of every selected note, where a drag previews it: a bar in the selection
+    /// outline's colour, edged in the roll's ground so it reads over any instrument's fill.
+    private func drawHandles(_ ctx: CGContext, in dirty: CGRect) {
+        guard !painter.selection.isEmpty, painter.selection.count <= RollBandView.handleLimit else { return }
+
+        let reach = RollBandView.handleWidth
+        let sliver = dirty.insetBy(dx: -reach, dy: 0)
+        let gripWidth: CGFloat = 4
+
+        for index in painter.indices(crossing: sliver, of: painter.notes, buckets: painter.buckets)
+        where painter.selection.contains(painter.ids[index]) {
+            guard let shown = painter.previewed(painter.notes[index], id: painter.ids[index]),
+                let rect = painter.noteRect(shown, height: bounds.height)
+            else { continue }
+
+            let height = max(rect.height + 6, 14)
+            let inset = min(3, rect.width / 4)
+
+            for x in [rect.minX + inset, rect.maxX - inset] {
+                let grip = CGRect(x: x - gripWidth / 2, y: rect.midY - height / 2, width: gripWidth, height: height)
+                let path = CGPath(roundedRect: grip, cornerWidth: gripWidth / 2, cornerHeight: gripWidth / 2, transform: nil)
+
+                ctx.addPath(path)
+                ctx.setFillColor(TimelinePalette.textPrimary)
+                ctx.setStrokeColor(TimelinePalette.bgRoot)
+                ctx.setLineWidth(1)
+                ctx.drawPath(using: .fillStroke)
+            }
+        }
     }
 }
 

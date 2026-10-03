@@ -35,6 +35,8 @@
 		3B7A130222AA92ADDED9E327 /* Core.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = B9DABA1B3EA739FF3BB03DB7 /* Core.xcstrings */; };
 		3DCDCAFA991091C1120B0C67 /* MobileModel+Commands.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7AD1B0C795C0352D2D6E5CA2 /* MobileModel+Commands.swift */; };
 		3F56D789578E528B0B0F5FEE /* ThermalGateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC384ED7A2F2116E5237427C /* ThermalGateTests.swift */; };
+		3FC786D976CF1D91AA18D3A7 /* RollCommands.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04E271B782A0D28EB9192FED /* RollCommands.swift */; };
+		457C6340D144FE3E7CF6F1AC /* NoteCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB9146F6635CB96F830598CF /* NoteCard.swift */; };
 		4B09D841C0226EC12087C59D /* PlayheadLayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = F95A44A2234486D78619567C /* PlayheadLayer.swift */; };
 		4C0C46071F0C601289DA0A90 /* TimelineBands.swift in Sources */ = {isa = PBXBuildFile; fileRef = A79154FCE6055053D67D61BE /* TimelineBands.swift */; };
 		4D6D9EC86F2A45D1B9F5DF07 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D020775408B048B92C1AE276 /* Assets.xcassets */; };
@@ -63,6 +65,7 @@
 		8D1BDD47840F8CA8252B0DE6 /* Inter-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AE1874F7C1CF681CF5F64EE5 /* Inter-Bold.ttf */; };
 		8E3ED701546F7ACB3F3AEB89 /* SettingsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1278FD1456FACEB3B4205379 /* SettingsScreen.swift */; };
 		96901D8A448669E84A31BDEA /* NeuralSheetWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA1E02AF3C448FD8C12755D8 /* NeuralSheetWidgets.swift */; };
+		96DE81688364DBA827B5E436 /* TimelineTouchView+Editing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 281CBB975C8CF4846A2C39AE /* TimelineTouchView+Editing.swift */; };
 		97D7B68BCFAFBFB5D3132D43 /* MobileModel+Editing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B6063449B8C47775921AC6C /* MobileModel+Editing.swift */; };
 		98AA275FBFA73CFE5A0BD466 /* InstrumentSynthBank+Click.swift in Sources */ = {isa = PBXBuildFile; fileRef = 165C904AE00B7E1F9478BD74 /* InstrumentSynthBank+Click.swift */; };
 		9B85FDAD76F5857D7F46A13D /* JetBrainsMono-OFL.txt in Resources */ = {isa = PBXBuildFile; fileRef = B66F95147F9E2B13856B3FC7 /* JetBrainsMono-OFL.txt */; };
@@ -79,6 +82,7 @@
 		B0BE711ADB0966EFE8596051 /* RulerView+Drawing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A28C6DE995641684F40E549 /* RulerView+Drawing.swift */; };
 		B562B23A8E356262AFF58C8D /* VideoAudioExtractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F42D8FAD397C447B517DDA2 /* VideoAudioExtractor.swift */; };
 		B939287A1386301BF7BF9524 /* WaveformView+Drawing.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB6C0208C18EEDF4382D3A3A /* WaveformView+Drawing.swift */; };
+		C0F4408E60718D33A1838B72 /* TimelineEditingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD446906F7FC289D9CB240E7 /* TimelineEditingTests.swift */; };
 		C23285A87EC04BBAF6BB5EF8 /* TimelineGeometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C9FC29C367E646A1848567B /* TimelineGeometry.swift */; };
 		C46EDB7091F44BF5D5901BED /* MobileModel+Timeline.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D1641679D89D9E3047C06C8 /* MobileModel+Timeline.swift */; };
 		C5B75F665C784700508A030D /* OfflineRenderer+Source.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C6ACB6DFC02527238869F51 /* OfflineRenderer+Source.swift */; };
@@ -150,6 +154,7 @@
 		0372A709F93BFA81CA9CABDF /* PlaybackEngine+Mix.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PlaybackEngine+Mix.swift"; sourceTree = "<group>"; };
 		03BAAB8E7B6DAC10B47FBA96 /* NeuralSheetApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NeuralSheetApp.swift; sourceTree = "<group>"; };
 		042ACB547540D231945936A3 /* ProjectScreens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectScreens.swift; sourceTree = "<group>"; };
+		04E271B782A0D28EB9192FED /* RollCommands.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RollCommands.swift; sourceTree = "<group>"; };
 		052243AAB4D027C196C04FF2 /* InstrumentSynthBank+SoundBank.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "InstrumentSynthBank+SoundBank.swift"; sourceTree = "<group>"; };
 		087728EC95200F77CD217785 /* NeuralSheetTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = NeuralSheetTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		0C6ACB6DFC02527238869F51 /* OfflineRenderer+Source.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OfflineRenderer+Source.swift"; sourceTree = "<group>"; };
@@ -167,6 +172,7 @@
 		244D6911E5DF1CC500808F2B /* Inter-LICENSE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Inter-LICENSE.txt"; sourceTree = "<group>"; };
 		27BF13E12DFEE010EEF7B836 /* NeuralSheetCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = NeuralSheetCore; path = ../app/Packages/NeuralSheetCore; sourceTree = SOURCE_ROOT; };
 		27DAE908F39A0CF7BE43D8E9 /* InstrumentSynthBank.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstrumentSynthBank.swift; sourceTree = "<group>"; };
+		281CBB975C8CF4846A2C39AE /* TimelineTouchView+Editing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TimelineTouchView+Editing.swift"; sourceTree = "<group>"; };
 		2A0074BE848C7BBDC9A95571 /* PlaybackEngine+Poll.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PlaybackEngine+Poll.swift"; sourceTree = "<group>"; };
 		2A15ADE0B865AAF92CDB089C /* Fonts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Fonts.swift; sourceTree = "<group>"; };
 		2A49A0164420AAAE6BE36B74 /* MobileModel+Imports.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MobileModel+Imports.swift"; sourceTree = "<group>"; };
@@ -222,6 +228,7 @@
 		B66F95147F9E2B13856B3FC7 /* JetBrainsMono-OFL.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "JetBrainsMono-OFL.txt"; sourceTree = "<group>"; };
 		B6D12E5EF025B8AD7A8F7FA5 /* Recorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Recorder.swift; sourceTree = "<group>"; };
 		B9DABA1B3EA739FF3BB03DB7 /* Core.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Core.xcstrings; sourceTree = "<group>"; };
+		BB9146F6635CB96F830598CF /* NoteCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteCard.swift; sourceTree = "<group>"; };
 		BBC36832D4DC96BAFACEB669 /* stb_vorbis.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = stb_vorbis.c; sourceTree = "<group>"; };
 		BC384ED7A2F2116E5237427C /* ThermalGateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThermalGateTests.swift; sourceTree = "<group>"; };
 		BC48D300B57BD8077795CBB6 /* InstrumentSynthBank+Audition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "InstrumentSynthBank+Audition.swift"; sourceTree = "<group>"; };
@@ -242,6 +249,7 @@
 		D6D8A1F6AE3E8FA641FFEC58 /* PlaybackEngine+Transport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PlaybackEngine+Transport.swift"; sourceTree = "<group>"; };
 		D8C8D283E1ED68D29366544F /* WaveformStrip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaveformStrip.swift; sourceTree = "<group>"; };
 		DC13C36AB33D1B10DA2FC64E /* PianoRollView+Drawing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PianoRollView+Drawing.swift"; sourceTree = "<group>"; };
+		DD446906F7FC289D9CB240E7 /* TimelineEditingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineEditingTests.swift; sourceTree = "<group>"; };
 		E1252AA71F6A76830C6C9606 /* TranscribeScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscribeScreen.swift; sourceTree = "<group>"; };
 		E5819BD724FF9130668A1A2C /* Formats.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Formats.swift; sourceTree = "<group>"; };
 		E5967B7821E1CB373F791840 /* Inter-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Inter-Regular.ttf"; sourceTree = "<group>"; };
@@ -471,6 +479,7 @@
 				E5FE983D0033FCF9DB8E55A9 /* EditingCommandsTests.swift */,
 				FA27E56C67F72D123BAC9C1A /* MobileModelEditingTests.swift */,
 				BC384ED7A2F2116E5237427C /* ThermalGateTests.swift */,
+				DD446906F7FC289D9CB240E7 /* TimelineEditingTests.swift */,
 				AE3FE572A1D29D9470FC8260 /* TimelineGeometryPortTests.swift */,
 				7ED8B70ABC0F6D185F5EE0A7 /* TranscriptionRunTests.swift */,
 			);
@@ -523,7 +532,9 @@
 			isa = PBXGroup;
 			children = (
 				337D0658549051C7A9BB13AA /* InstrumentsSheet.swift */,
+				BB9146F6635CB96F830598CF /* NoteCard.swift */,
 				042ACB547540D231945936A3 /* ProjectScreens.swift */,
+				04E271B782A0D28EB9192FED /* RollCommands.swift */,
 				93CD4146B455F7D7B190DBFC /* RollScreen.swift */,
 				1278FD1456FACEB3B4205379 /* SettingsScreen.swift */,
 				E1252AA71F6A76830C6C9606 /* TranscribeScreen.swift */,
@@ -556,6 +567,7 @@
 				C058476950C2B3A57121699C /* Accommodations.swift */,
 				A79154FCE6055053D67D61BE /* TimelineBands.swift */,
 				D0B971ED352D7BE51C0B5FAB /* TimelineTouchView.swift */,
+				281CBB975C8CF4846A2C39AE /* TimelineTouchView+Editing.swift */,
 				5593BB1E6B301DC5BFDEA4CA /* TimelineTouchView+Gestures.swift */,
 				2D1E969AF609EF8BCC2FD563 /* TimelineTouchView+Playhead.swift */,
 				49408D6A6EBD2B7774A4DFC7 /* TimelineTouchView+Sync.swift */,
@@ -790,6 +802,7 @@
 				EAEF71CEF7C664D67F2B4532 /* MobileModel.swift in Sources */,
 				C6695BD73416E4C4B0B93519 /* NeuralSheetApp.swift in Sources */,
 				1C3C83F8B7BCD3DEC9C7158A /* NeuralSheetDocument.swift in Sources */,
+				457C6340D144FE3E7CF6F1AC /* NoteCard.swift in Sources */,
 				74C3F77B7218A0295A5FA90D /* NoteScheduler.swift in Sources */,
 				C5B75F665C784700508A030D /* OfflineRenderer+Source.swift in Sources */,
 				E634D3B49814BD56B667B8E0 /* OfflineRenderer.swift in Sources */,
@@ -808,6 +821,7 @@
 				0352A16A23D823B49C9AE295 /* ProjectType.swift in Sources */,
 				FFA74B58B25AC53052DB2A44 /* Recorder+Files.swift in Sources */,
 				65AFDED09D5E33BB8F728E9B /* Recorder.swift in Sources */,
+				3FC786D976CF1D91AA18D3A7 /* RollCommands.swift in Sources */,
 				01A85B1FAC35DBB86AB15CD4 /* RollScreen.swift in Sources */,
 				B0BE711ADB0966EFE8596051 /* RulerView+Drawing.swift in Sources */,
 				A4AF3C3B598343E3259E5F90 /* RunControl.swift in Sources */,
@@ -824,6 +838,7 @@
 				4C0C46071F0C601289DA0A90 /* TimelineBands.swift in Sources */,
 				5EB13AF47A8F516E17E0CAD9 /* TimelineDrawing.swift in Sources */,
 				C23285A87EC04BBAF6BB5EF8 /* TimelineGeometry.swift in Sources */,
+				96DE81688364DBA827B5E436 /* TimelineTouchView+Editing.swift in Sources */,
 				A3A7F5C6DBBDC2FB3291E48F /* TimelineTouchView+Gestures.swift in Sources */,
 				A446ACE7C91E5CA89E95B01F /* TimelineTouchView+Playhead.swift in Sources */,
 				36A33F6736621651C224AFB1 /* TimelineTouchView+Sync.swift in Sources */,
@@ -858,6 +873,7 @@
 				829669EC7B7F5384451508DF /* EditingCommandsTests.swift in Sources */,
 				E72856A77B2DFD69E8CFE133 /* MobileModelEditingTests.swift in Sources */,
 				3F56D789578E528B0B0F5FEE /* ThermalGateTests.swift in Sources */,
+				C0F4408E60718D33A1838B72 /* TimelineEditingTests.swift in Sources */,
 				32731F30E7B43A2498D8743C /* TimelineGeometryPortTests.swift in Sources */,
 				05A14C67F5D8041F4842C77C /* TranscriptionRunTests.swift in Sources */,
 			);

@@ -24,6 +24,8 @@ extension TimelineTouchView {
         var zoomLevel: Double = 1
         var verticalZoom: Double = -1
         var transportRunning = false
+        var canEdit = false
+        var comparedVersionID: UUID?
     }
 
     /// What the model holds now, read inside the observation tracker.
@@ -46,7 +48,9 @@ extension TimelineTouchView {
                         peaksIdentity: model.source.map { ObjectIdentifier($0.peaks) },
                         zoomLevel: model.zoomLevel,
                         verticalZoom: model.verticalZoom,
-                        transportRunning: model.isTransportRunning)
+                        transportRunning: model.isTransportRunning,
+                        canEdit: model.canEdit,
+                        comparedVersionID: model.comparedVersion?.id)
     }
 
     /// Applies what changed since the last sync, then arms the next one.
@@ -87,9 +91,23 @@ extension TimelineTouchView {
             roll.setNeedsDisplay()
         }
 
-        if first || new.selection != old.selection {
+        if first || new.selection != old.selection || new.canEdit != old.canEdit {
             roll.painter.selection = new.selection
+            roll.showsHandles = new.canEdit
             roll.setNeedsDisplay()
+        }
+
+        // Compare With: the version's notes ghosted behind the roll (versions design §2).
+        if first || new.comparedVersionID != old.comparedVersionID {
+            let ghosts = model.comparedVersion?.notes ?? []
+            roll.painter.ghosts = GhostNotes(notes: ghosts, buckets: RollPainter.secondBuckets(ghosts))
+            roll.setNeedsDisplay()
+        }
+
+        // A drag over notes something else has changed (an undo from the system's gesture, a
+        // command) is no longer a drag over those notes.
+        if new.notes != old.notes || new.ids != old.ids || !new.canEdit {
+            cancelEditDrag()
         }
 
         if first || new.mixer != old.mixer || new.highlightedProgram != old.highlightedProgram {

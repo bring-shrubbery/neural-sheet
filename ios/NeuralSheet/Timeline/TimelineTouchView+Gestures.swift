@@ -5,7 +5,8 @@ import UIKit
 /// zooms time about its centre, or pitch when the fingers are spread vertically; a double tap
 /// fits both again; a tap on a note selects and auditions it, on empty lanes seeks; a tap on the
 /// ruler or the waveform seeks and a drag along the ruler marks a range; a tap on a key auditions
-/// it. Long-press is left for the note card (sub-issue F).
+/// it. The edits -- drags on selected notes, the Draw tool, the long press, the two-finger tap --
+/// are `+Editing`'s.
 extension TimelineTouchView: UIGestureRecognizerDelegate {
     /// A pinch in progress: which axis it took, and the zoom it started from.
     struct PinchState {
@@ -44,6 +45,14 @@ extension TimelineTouchView: UIGestureRecognizerDelegate {
 
     /// The ruler's drag only begins on the ruler; anywhere else the scroll view pans.
     override func gestureRecognizerShouldBegin(_ recognizer: UIGestureRecognizer) -> Bool {
+        if recognizer === editPan, let pan = recognizer as? UIPanGestureRecognizer {
+            return editPanShouldBegin(pan)
+        }
+
+        if recognizer === longPress, let press = recognizer as? UILongPressGestureRecognizer {
+            return longPressShouldBegin(press)
+        }
+
         guard recognizer is UIPanGestureRecognizer, recognizer.view === scrollView else {
             return super.gestureRecognizerShouldBegin(recognizer)
         }
@@ -63,7 +72,7 @@ extension TimelineTouchView: UIGestureRecognizerDelegate {
             if let hit = noteHit(at: point) {
                 model.select(hit.id)
                 model.audition(hit.note)
-            } else {
+            } else if !insertNote(at: point) {
                 model.select(nil)
                 seek(toX: point.x)
             }
