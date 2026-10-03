@@ -35,6 +35,7 @@ Work towards v2 starts here: user-experience improvements beyond NeuralNote pari
 - Set the time signature and add tempo changes on the ruler, or let Detect follow the take's tempo through the whole recording; the grid, the score and the exports follow.
 - Clean up a transcription in bulk from the Edit menu: transpose by an interval, scale the velocity or take it from the audio, make a line legato, join or split notes, humanize a passage, and swing the grid from the Edit toolbar.
 - Bring a MIDI file in over the take: File → Import MIDI…, or drop a `.mid` on the window, as the transcription or added to it.
+- Chord symbols: Detect names the harmony from the notes, a lane above the piano roll and the score show it, click a symbol to correct it, and the MusicXML export carries it.
 
 ### Changed
 
