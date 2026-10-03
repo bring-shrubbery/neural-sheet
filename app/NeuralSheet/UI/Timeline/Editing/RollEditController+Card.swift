@@ -42,7 +42,7 @@ struct NoteCard: View {
         let s = Scaled(k: k)
 
         VStack(alignment: .leading, spacing: 0) {
-            Text(SelectionFields.countText(model.editor.selection.count).localizedUppercase)
+            Text(SelectionText.count(model.editor.selection.count).localizedUppercase)
                 .font(Fonts.sectionHeader(k))
                 .kerning(Fonts.tracking(Fonts.Tracking.sectionHeader, pointSize: Fonts.Size.sectionHeader, scale: k))
                 .foregroundStyle(Theme.popupTitle)

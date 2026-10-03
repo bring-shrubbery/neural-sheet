@@ -31,7 +31,7 @@ struct SelectionInspector: View {
 
                 Spacer(minLength: 0)
 
-                Text(SelectionFields.countText(count))
+                Text(SelectionText.count(count))
                     .font(Fonts.mono(10, weight: 400, scale: k))
                     .foregroundStyle(Theme.textFaintest)
             }
