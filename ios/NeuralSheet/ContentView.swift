@@ -2,8 +2,8 @@ import Foundation
 import NeuralSheetCore
 import SwiftUI
 
-/// The document's screen: the Transcribe screen for now (sub-issue D); the roll, the score and
-/// the transport come with sub-issues E to H. Wires what belongs to the document's lifetime: the
+/// The document's screens (`ProjectScreens`): Transcribe and the roll (sub-issues D and E); the
+/// score and the transport come with sub-issues G and H. Wires what belongs to the document's lifetime: the
 /// undo manager iOS autosaves by, a file handed over while the project is open, the scene coming
 /// back, and the document closing.
 struct ContentView: View {
@@ -16,7 +16,7 @@ struct ContentView: View {
     var body: some View {
         let model = document.model
 
-        TranscribeScreen(model: model)
+        ProjectScreens(model: model)
             .onAppear {
                 model.undoManager = undoManager
                 print("NeuralSheet: \(SettingsScreen.version); showing \"\(title)\"")

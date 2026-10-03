@@ -71,10 +71,10 @@ struct TranscribeScreen: View {
 
                 if case .recording = model.recording {
                     WaveformStrip(peaks: model.recorder.livePeaks, live: true)
-                        .padding(.vertical, 6)
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
                 } else if let source = model.source {
                     WaveformStrip(peaks: source.peaks)
-                        .padding(.vertical, 6)
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
                 } else if case let .countingIn(remaining) = model.recording {
                     Text("\(remaining)")
                         .font(.system(size: 56, weight: .semibold, design: .rounded).monospacedDigit())

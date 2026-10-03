@@ -1,55 +1,101 @@
 import NeuralSheetCore
+import QuartzCore
 import SwiftUI
+import UIKit
 
-// TODO(E): replace with a thin UIView over the shared CoreGraphics waveform drawing once the
-// drawing split (iOS app design §3.2, sub-issue E) has landed.
-
-/// The take's waveform, the whole take across the width: one min/max bar per point column, read
-/// from the peaks pyramid in a single locked pass (`WaveformPeaks.withReader`). While a take is
-/// recording it draws the live peaks, the take so far filling the width.
-struct WaveformStrip: View {
+/// The take's waveform on the Transcribe screen, the whole take across the width, drawn by the
+/// Mac's waveform painter (`WaveformView+Drawing.swift`) over a geometry zoomed to fit: the same
+/// 3-of-4 pt bars, panel and centre line as the timeline's strip. While a take is recording it
+/// draws the live peaks, the take so far filling the width.
+struct WaveformStrip: UIViewRepresentable {
     let peaks: WaveformPeaks?
     /// Redraws every frame, for the live peaks of a take in progress.
     var live = false
 
-    var body: some View {
-        if live {
-            TimelineView(.animation(minimumInterval: 1.0 / 30)) { _ in
-                canvas
-            }
-        } else {
-            canvas
+    func makeUIView(context: Context) -> WaveformStripView {
+        WaveformStripView()
+    }
+
+    func updateUIView(_ view: WaveformStripView, context: Context) {
+        view.peaks = peaks
+        view.isLive = live
+        view.setNeedsDisplay()
+    }
+}
+
+/// A `UIView` over ``WaveformPainter``: the whole of `peaks` across its bounds.
+final class WaveformStripView: UIView {
+    private let geometry = TimelineGeometry()
+
+    var peaks: WaveformPeaks?
+
+    var isLive = false {
+        didSet {
+            guard isLive != oldValue else { return }
+
+            link?.invalidate()
+            link = nil
+
+            if isLive, window != nil { startLink() }
         }
     }
 
-    private var canvas: some View {
-        Canvas { context, size in
-            guard let peaks else { return }
+    private var link: CADisplayLink?
 
-            let columns = max(Int(size.width), 1)
-            let mid = size.height / 2
-            var path = Path()
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        isOpaque = true
+        contentMode = .redraw
+        isAccessibilityElement = false
+        geometry.scale = 1
+    }
 
-            peaks.withReader { reader in
-                let count = reader.sampleCount
+    required init?(coder: NSCoder) {
+        nil
+    }
 
-                guard count > 0 else { return }
+    override func didMoveToWindow() {
+        super.didMoveToWindow()
 
-                for column in 0..<columns {
-                    let start = column * count / columns
-                    let end = max((column + 1) * count / columns, start + 1)
-                    let pair = reader.peaks(from: start, to: end)
+        link?.invalidate()
+        link = nil
 
-                    guard !pair.isEmpty else { continue }
+        if isLive, window != nil { startLink() }
+    }
 
-                    let top = mid - CGFloat(min(pair.max, 1)) * mid
-                    let bottom = mid - CGFloat(max(pair.min, -1)) * mid
-                    path.addRect(CGRect(x: CGFloat(column), y: top, width: 1, height: max(bottom - top, 1)))
-                }
-            }
+    /// 30 Hz while recording, through a proxy so the link never keeps the view alive.
+    private func startLink() {
+        let proxy = WaveformStripLinkProxy()
+        proxy.target = self
 
-            context.fill(path, with: .color(.accentColor))
-        }
-        .accessibilityHidden(true)
+        let link = CADisplayLink(target: proxy, selector: #selector(WaveformStripLinkProxy.fire))
+        link.preferredFrameRateRange = CAFrameRateRange(minimum: 15, maximum: 30, preferred: 30)
+        link.add(to: .main, forMode: .common)
+        self.link = link
+    }
+
+    override func draw(_ rect: CGRect) {
+        guard let ctx = UIGraphicsGetCurrentContext() else { return }
+
+        // The take fills the width: the zoom at which its seconds span the bounds. The band is the
+        // whole view tall, ±1.0 at the Transcribe tab's proportion of it.
+        let seconds = Double(peaks?.sampleCount ?? 0) / TimelineMetrics.peakSampleRate
+        geometry.zoom = seconds > 0 ? Double(bounds.width) / (ZoomMath.basePixelsPerSecond * seconds) : 1
+        geometry.duration = seconds
+        geometry.viewportWidth = bounds.width
+        geometry.waveformHeight = bounds.height
+        geometry.waveformAmpHalfSpan = bounds.height * TimelineMetrics.waveformAmpHalfSpan / TimelineMetrics.waveformHeight
+
+        WaveformPainter.draw(ctx, in: rect.intersection(bounds), bounds: bounds, geometry: geometry, peaks: peaks,
+                             isCompact: true, isFileOver: false)
+    }
+}
+
+/// The live strip's link target: weak on the view.
+final class WaveformStripLinkProxy: NSObject {
+    weak var target: WaveformStripView?
+
+    @objc func fire(_ link: CADisplayLink) {
+        target?.setNeedsDisplay()
     }
 }
