@@ -29,7 +29,8 @@ struct RulerTempoCard: View {
         let segment = grid.segment(atBar: bar)
 
         VStack(alignment: .leading, spacing: 0) {
-            Text("Tempo from bar \(max(1, segment.startBar))".uppercased())
+            Text(String(localized: "Tempo from bar \(max(1, segment.startBar))",
+                        comment: "Ruler card: its header, the bar the tempo segment starts at").localizedUppercase)
                 .font(Fonts.sectionHeader(k))
                 .kerning(Fonts.tracking(Fonts.Tracking.sectionHeader, pointSize: Fonts.Size.sectionHeader, scale: k))
                 .foregroundStyle(Theme.popupTitle)
@@ -74,7 +75,7 @@ struct RulerTempoCard: View {
         .popupSurface(corner: s(MenuMetrics.corner), shadow: false)
     }
 
-    private func row<Control: View>(_ label: String, @ViewBuilder control: () -> Control) -> some View {
+    private func row<Control: View>(_ label: LocalizedStringKey, @ViewBuilder control: () -> Control) -> some View {
         let s = Scaled(k: k)
 
         return HStack(spacing: 0) {
@@ -90,7 +91,7 @@ struct RulerTempoCard: View {
         .frame(height: s(SelectionFields.rowHeight))
     }
 
-    private func actionButton(_ title: String, foreground: Color, action: @escaping () -> Void) -> some View {
+    private func actionButton(_ title: LocalizedStringKey, foreground: Color, action: @escaping () -> Void) -> some View {
         let s = Scaled(k: k)
 
         return FlatButton(idle: Theme.bgControlAlt, on: Theme.bgControlActive,

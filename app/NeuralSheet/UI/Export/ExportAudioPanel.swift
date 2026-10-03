@@ -26,8 +26,8 @@ import UniformTypeIdentifiers
 
         let options = ExportAudioOptions(choice: start, hasRange: hasRange, hasNotes: hasNotes)
         let panel = NSSavePanel()
-        panel.title = "Export Audio"
-        panel.message = "Export Audio"
+        panel.title = String(localized: "Export Audio", comment: "File → Export Audio…'s save panel")
+        panel.message = String(localized: "Export Audio", comment: "File → Export Audio…'s save panel")
         panel.directoryURL = directory
         panel.nameFieldStringValue = start.format.fileName(takeName: takeName)
         panel.allowedContentTypes = [contentType(start.format)]
@@ -90,7 +90,7 @@ struct ExportAudioAccessory: View {
 
                 Picker("What", selection: $options.choice.what) {
                     ForEach(AudioExportWhat.allCases, id: \.self) { what in
-                        Text(what.title)
+                        Text(what.localizedTitle)
                             .tag(what)
                             .selectionDisabled(what.includesSynth && !options.hasNotes)
                     }
@@ -116,7 +116,7 @@ struct ExportAudioAccessory: View {
 
                 Picker("Format", selection: $options.choice.format) {
                     ForEach(AudioExportFormat.allCases, id: \.self) { format in
-                        Text(format.title).tag(format)
+                        Text(format.localizedTitle).tag(format)
                     }
                 }
                 .labelsHidden()

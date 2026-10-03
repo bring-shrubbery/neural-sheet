@@ -12,9 +12,9 @@ struct BatchStatusCell: View {
         case .loading:
             Text("Loading…").foregroundStyle(.secondary)
         case let .separating(fraction):
-            progress("Separating", fraction)
+            progress(String(localized: "Separating", comment: "Batch window: a file whose stems are being separated"), fraction)
         case let .transcribing(fraction):
-            progress("Transcribing", fraction)
+            progress(String(localized: "Transcribing", comment: "Batch window: a file being transcribed"), fraction)
         case .writing:
             Text("Writing…").foregroundStyle(.secondary)
         case let .done(notes, skipped):
@@ -32,16 +32,20 @@ struct BatchStatusCell: View {
             ProgressView(value: fraction)
                 .frame(width: 80)
                 .accessibilityHidden(true)
-            Text("\(title) \(Int(fraction * 100)) %")
+            Text(verbatim: "\(title) \(Int(fraction * 100)) %")
                 .monospacedDigit()
         }
     }
 
     static func doneText(notes: Int?, skipped: Int) -> String {
-        guard let notes else { return "Skipped: already there" }
+        guard let notes else {
+            return String(localized: "Skipped: already there", comment: "Batch window: every output of a file existed already")
+        }
 
-        let count = notes == 1 ? "Done, 1 note" : "Done, \(notes) notes"
+        let count = String(localized: "Done, \(notes) notes", comment: "Batch window: a file transcribed, with its note count")
 
-        return skipped == 0 ? count : "\(count) (\(skipped) skipped)"
+        return skipped == 0
+            ? count
+            : String(localized: "\(count) (\(skipped) skipped)", comment: "Batch window: a done file, some of whose outputs existed already")
     }
 }

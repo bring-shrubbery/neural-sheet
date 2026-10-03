@@ -62,13 +62,17 @@ struct StatusBar: View {
         // The count-in's beats to go, first, where the eye is while waiting to play (click
         // design §2).
         if model.state == .countingIn, let remaining = model.countInRemaining {
-            segments.append("Count-in \(Self.separator) \(remaining)")
+            segments.append(String(localized: "Count-in \(Self.separator) \(remaining)",
+                                   comment: "Status bar: the count-in's beats still to go"))
         }
 
+        let modelName = model.modelSize?.localizedName
+            ?? String(localized: "None", comment: "Status bar: no transcription model installed")
+
         segments += [
-            "Model: " + (model.modelSize?.displayName ?? "None"),
-            "\(status.instruments) " + (status.instruments == 1 ? "instrument" : "instruments"),
-            "\(status.notes) notes",
+            String(localized: "Model: \(modelName)", comment: "Status bar: the transcription model in use"),
+            String(localized: "\(status.instruments) instruments", comment: "Status bar: how many instruments the transcription has"),
+            String(localized: "\(status.notes) notes", comment: "Status bar: how many notes the transcription has"),
         ]
 
         if status.notes > 0, let lowest = status.lowest, let highest = status.highest {
@@ -76,13 +80,16 @@ struct StatusBar: View {
         }
 
         if model.duration > 0 {
-            segments.append("\(TimeFormat.seconds2(model.duration)) s")
+            let seconds = Formats.seconds2(model.duration)
+
+            segments.append(String(localized: "\(seconds) s", comment: "Status bar: the take's length in seconds"))
         }
 
         // While a version is ghosted behind the roll (versions design §2): how far the notes
         // are from it, by the same matching Show Differences selects with.
         if let comparison = model.comparisonSummary {
-            segments.append("\(comparison.added) added, \(comparison.missing) missing vs \(comparison.name)")
+            segments.append(String(localized: "\(comparison.added) added, \(comparison.missing) missing vs \(comparison.name)",
+                                   comment: "Status bar: notes the transcription has that the compared version lacks, and the reverse"))
         }
 
         return segments

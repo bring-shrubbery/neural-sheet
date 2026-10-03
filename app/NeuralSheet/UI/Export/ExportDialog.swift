@@ -25,7 +25,7 @@ struct ExportDialog: View {
                 Section {
                     LabeledContent("Tempo") {
                         HStack(spacing: 6) {
-                            TextField("120", text: $tempoText)
+                            TextField(Self.format(Self.defaultTempo), text: $tempoText)
                                 .textFieldStyle(.roundedBorder)
                                 .multilineTextAlignment(.trailing)
                                 .frame(width: 72)
@@ -88,11 +88,11 @@ struct ExportDialog: View {
     /// The rule the toolbar's field had (`NumericTextEditor<double>`): empty is the default,
     /// anything else is clamped into 20…999 -- `TempoGrid`'s rule, which the grid's BPM shares.
     static func tempo(from text: String) -> Double {
-        TempoGrid.clampedBpm(Double(text.trimmingCharacters(in: .whitespaces)) ?? .nan)
+        TempoGrid.clampedBpm(Formats.parseNumber(text) ?? .nan)
     }
 
-    /// Whole numbers without a decimal point, anything else as typed.
+    /// Whole numbers without a decimal point, anything else as typed, in the user's locale.
     static func format(_ tempo: Double) -> String {
-        tempo == tempo.rounded() ? String(Int(tempo)) : String(tempo)
+        tempo.formatted(.number.precision(.fractionLength(0...6)).grouping(.never))
     }
 }

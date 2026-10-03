@@ -31,7 +31,8 @@ struct ChordCard: View {
             if chords.indices.contains(index) {
                 let event = chords[index]
 
-                Text("Chord at \(model.editor.grid.barBeatLabel(at: event.seconds + 1e-6))".uppercased())
+                Text(String(localized: "Chord at \(model.editor.grid.barBeatLabel(at: event.seconds + 1e-6))",
+                            comment: "Chord card: its header, where the chord starts, e.g. \"Chord at 3.1\"").localizedUppercase)
                     .font(Fonts.sectionHeader(k))
                     .kerning(Fonts.tracking(Fonts.Tracking.sectionHeader, pointSize: Fonts.Size.sectionHeader, scale: k))
                     .foregroundStyle(Theme.popupTitle)
@@ -55,7 +56,7 @@ struct ChordCard: View {
                     }
 
                     row("Bass") {
-                        ToolbarControls.labelButton(k: k, event.chord?.slashBass.map(MusicalKey.tonicMenuName) ?? "None",
+                        ToolbarControls.labelButton(k: k, event.chord?.slashBass.map(MusicalKey.tonicMenuName) ?? Self.none,
                                                     tooltip: "The note under the chord, written after a slash",
                                                     label: Text(AccessibilityText.chordBass),
                                                     isEnabled: event.chord != nil) { showBassMenu(event) }
@@ -67,7 +68,7 @@ struct ChordCard: View {
                 FlatButton(idle: Theme.bgControlAlt, on: Theme.bgControlActive,
                            foregroundIdle: Theme.warn, foregroundOn: Theme.textBright,
                            corner: s(NumberField.corner), action: delete) { _ in
-                    Text("Delete")
+                    Text("Delete", comment: "Chord card: remove the chord")
                         .font(Fonts.buttonLabel(k))
                         .fixedSize()
                         .padding(.horizontal, s(10))
@@ -90,10 +91,10 @@ struct ChordCard: View {
     /// The quality as the menu names it: the triads in words, the rest by their suffix.
     nonisolated static func name(of quality: ChordQuality) -> String {
         switch quality {
-        case .major: "Major"
-        case .minor: "Minor"
-        case .diminished: "Diminished"
-        case .augmented: "Augmented"
+        case .major: String(localized: "Major", comment: "Chord card: a chord quality")
+        case .minor: String(localized: "Minor", comment: "Chord card: a chord quality")
+        case .diminished: String(localized: "Diminished", comment: "Chord card: a chord quality")
+        case .augmented: String(localized: "Augmented", comment: "Chord card: a chord quality")
         case .sus2: "Sus2"
         case .sus4: "Sus4"
         default: quality.suffix
@@ -145,8 +146,8 @@ struct ChordCard: View {
     private func showBassMenu(_ event: ChordEvent) {
         guard let chord = event.chord else { return }
 
-        show(bassMenu, from: bassAnchor, titles: ["None"] + (0..<12).map(MusicalKey.tonicMenuName)) { menu in
-            MenuRow(title: "None", isTicked: chord.slashBass == nil) {
+        show(bassMenu, from: bassAnchor, titles: [Self.none] + (0..<12).map(MusicalKey.tonicMenuName)) { menu in
+            MenuRow(title: Self.none, isTicked: chord.slashBass == nil) {
                 menu.dismiss()
                 model.setChord(at: index, ChordSymbol(root: chord.root, quality: chord.quality, bass: nil))
             }
@@ -177,7 +178,11 @@ struct ChordCard: View {
         }
     }
 
-    private func row<Control: View>(_ label: String, @ViewBuilder control: () -> Control) -> some View {
+    private static var none: String {
+        String(localized: "None", comment: "Chord card: no slash bass")
+    }
+
+    private func row<Control: View>(_ label: LocalizedStringKey, @ViewBuilder control: () -> Control) -> some View {
         let s = Scaled(k: k)
 
         return HStack(spacing: 0) {

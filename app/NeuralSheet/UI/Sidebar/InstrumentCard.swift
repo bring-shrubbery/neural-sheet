@@ -51,12 +51,12 @@ struct InstrumentCard: View {
                 .frame(width: s(Self.chipSize), height: s(Self.chipSize))
                 .accessibilityHidden(true)
 
-                Text(entry.info.name.uppercased())
+                Text(entry.info.localizedName.localizedUppercase)
                     .font(Fonts.sectionHeader(k))
                     .kerning(Fonts.tracking(Fonts.Tracking.sectionHeader, pointSize: Fonts.Size.sectionHeader, scale: k))
                     .foregroundStyle(Theme.popupTitle)
                     .lineLimit(1)
-                    .accessibilityLabel(Text(verbatim: entry.info.name))
+                    .accessibilityLabel(Text(verbatim: entry.info.localizedName))
                     .accessibilityAddTraits(.isHeader)
             }
             .frame(height: s(Self.labelHeight), alignment: .leading)
@@ -83,7 +83,7 @@ struct InstrumentCard: View {
                 }
 
                 row("Send to") {
-                    popupButton(title: destination.map { Instruments.info(forProgram: $0).name } ?? "—",
+                    popupButton(title: destination.map { Instruments.info(forProgram: $0).localizedName } ?? "—",
                                 label: Text(AccessibilityText.sendTo)) { sendAnchor = $0 } action: {
                         guard let sendAnchor else { return }
 
@@ -119,7 +119,7 @@ struct InstrumentCard: View {
 
     // MARK: - Pieces
 
-    private func row<Control: View>(_ label: String, @ViewBuilder control: () -> Control) -> some View {
+    private func row<Control: View>(_ label: LocalizedStringKey, @ViewBuilder control: () -> Control) -> some View {
         let s = Scaled(k: k)
 
         return HStack(spacing: 0) {
@@ -166,7 +166,7 @@ struct InstrumentCard: View {
         .background(RoundedRectangle(cornerRadius: s(NumberField.corner), style: .circular).fill(Theme.bgControlAlt))
     }
 
-    private func segment(_ title: String, isOn: Bool, action: @escaping () -> Void) -> some View {
+    private func segment(_ title: LocalizedStringKey, isOn: Bool, action: @escaping () -> Void) -> some View {
         let s = Scaled(k: k)
 
         return FlatButton(isOn: isOn, idle: .clear, on: Theme.accentFillActive,
@@ -180,7 +180,7 @@ struct InstrumentCard: View {
         }
     }
 
-    private func actionButton(_ title: String, isEnabled: Bool, foreground: Color, action: @escaping () -> Void) -> some View {
+    private func actionButton(_ title: LocalizedStringKey, isEnabled: Bool, foreground: Color, action: @escaping () -> Void) -> some View {
         let s = Scaled(k: k)
 
         return FlatButton(isEnabled: isEnabled, idle: Theme.bgControlAlt, on: Theme.bgControlActive,

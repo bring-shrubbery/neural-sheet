@@ -89,7 +89,7 @@ struct SelectionFields: View {
     // MARK: - Rows
 
     /// The label is spoken by the control beside it, so VoiceOver reads it once (a11y design §2).
-    private func row<Control: View>(_ label: String, @ViewBuilder control: () -> Control) -> some View {
+    private func row<Control: View>(_ label: LocalizedStringKey, @ViewBuilder control: () -> Control) -> some View {
         let s = Scaled(k: k)
 
         return HStack(spacing: 0) {
@@ -107,9 +107,8 @@ struct SelectionFields: View {
 
     static func countText(_ count: Int) -> String {
         switch count {
-        case 0: "No selection"
-        case 1: "1 note"
-        default: "\(count) notes"
+        case 0: String(localized: "No selection", comment: "The selection panel and the note card: nothing selected")
+        default: String(localized: "\(count) notes", comment: "The selection panel and the note card: how many notes are selected")
         }
     }
 
@@ -164,7 +163,7 @@ struct SelectionFields: View {
     private func instrumentControl(notes: [NoteEvent]) -> some View {
         let s = Scaled(k: k)
         let programs = notes.map(\.program)
-        let title = programs.isEmpty || mixed(programs) ? "—" : Instruments.info(forProgram: programs[0]).name
+        let title = programs.isEmpty || mixed(programs) ? "—" : Instruments.info(forProgram: programs[0]).localizedName
 
         return FlatButton(idle: Theme.bgControlAlt, on: Theme.bgControlActive,
                           foregroundIdle: Theme.textButton, foregroundOn: Theme.textBright,
@@ -255,7 +254,7 @@ struct LyricField: View {
     @FocusState private var isFocused: Bool
 
     var body: some View {
-        TextField("", text: $draft)
+        TextField(String(), text: $draft)
             .textFieldStyle(.plain)
             .font(Fonts.meta(scale))
             .foregroundStyle(Theme.textStrong)
@@ -292,7 +291,7 @@ struct PitchField: View {
     @FocusState private var isFocused: Bool
 
     var body: some View {
-        TextField("", text: $draft)
+        TextField(String(), text: $draft)
             .textFieldStyle(.plain)
             .font(Fonts.mono(10, weight: 500, scale: scale))
             .foregroundStyle(Theme.textStrong)

@@ -136,7 +136,9 @@ struct ScoreRenderer {
 
                 if arrangement.sheet.showsPartNames {
                     let colour = TimelinePalette.cg(Instruments.info(forProgram: part.program).colour, alpha: 1)
-                    var label = isFirst ? part.name : part.abbreviation
+                    // The instrument's name in the user's language on screen and in the PDF; the
+                    // MusicXML keeps the package's English (localization design §2).
+                    var label = isFirst ? CoreNames.localized(part.name) : part.abbreviation
                     var width = TimelineText.width(label, font: nameFont)
 
                     if width > room, label != part.abbreviation {

@@ -45,7 +45,7 @@ struct NumberField: View {
     var body: some View {
         let s = Scaled(k: k)
 
-        TextField("", text: $text)
+        TextField(String(), text: $text)
             .textFieldStyle(.plain)
             .font(Fonts.mono(10, weight: 500, scale: k))
             .foregroundStyle(Theme.textStrong)
@@ -94,7 +94,7 @@ struct NumberField: View {
 
     /// Return or focus loss: an unparseable entry is thrown away and the last value shown again.
     private func commit() {
-        guard let parsed = Double(text.trimmingCharacters(in: .whitespaces)), parsed.isFinite else {
+        guard let parsed = Formats.parseNumber(text), parsed.isFinite else {
             text = Self.format(value, decimals: decimals)
             return
         }
@@ -111,7 +111,7 @@ struct NumberField: View {
     /// Steps from what is typed, not from `value`, so an edit in progress is stepped rather than
     /// replaced. Nothing to step from -- "—" and no entry -- steps nothing.
     private func nudge(by delta: Double) {
-        guard let current = Double(text.trimmingCharacters(in: .whitespaces)) ?? value else { return }
+        guard let current = Formats.parseNumber(text) ?? value else { return }
 
         let next = min(max(current + delta, range.lowerBound), range.upperBound)
         text = Self.format(next, decimals: decimals)
@@ -122,7 +122,8 @@ struct NumberField: View {
     static func format(_ value: Double?, decimals: Int) -> String {
         guard let value else { return "—" }
 
-        return String(format: "%.\(decimals)f", value)
+        // In the user's locale, a decimal comma where there is one (localization design §2).
+        return Formats.number(value, decimals: decimals)
     }
 }
 

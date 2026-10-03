@@ -36,7 +36,7 @@ struct SheetCard: View {
             // The title's placeholder is what the header prints without one: the take's name,
             // or "Untitled".
             row("Title") {
-                SheetField(text: sheet.title ?? "", placeholder: SheetMetadata().resolvedTitle(takeName: model.droppedFileName), scale: k) { text in
+                SheetField(text: sheet.title ?? "", placeholder: CoreNames.localized(SheetMetadata().resolvedTitle(takeName: model.droppedFileName)), scale: k) { text in
                     update { $0.title = text.trimmingCharacters(in: .whitespaces).isEmpty ? nil : text }
                 }
             }
@@ -80,11 +80,12 @@ struct SheetCard: View {
         model.setSheet(sheet)
     }
 
-    private func row<Control: View>(_ label: String, @ViewBuilder control: () -> Control) -> some View {
+    private func row<Control: View>(_ label: LocalizedStringResource, @ViewBuilder control: () -> Control) -> some View {
         let s = Scaled(k: k)
+        let label = String(localized: label)
 
         return HStack(spacing: s(8)) {
-            TrackedLabel(string: label.uppercased(), em: Fonts.Tracking.pillLabel, pointSize: Fonts.Size.pillLabel,
+            TrackedLabel(string: label.localizedUppercase, em: Fonts.Tracking.pillLabel, pointSize: Fonts.Size.pillLabel,
                          font: Fonts.pillLabel(k), scale: k)
                 .foregroundStyle(Theme.textLabel)
                 .frame(width: s(Self.labelWidth), alignment: .leading)
@@ -96,8 +97,9 @@ struct SheetCard: View {
     }
 
     /// A menu row's shape with the tick box at the end, for a switch.
-    private func tick(_ label: String, isOn: Bool, action: @escaping () -> Void) -> some View {
+    private func tick(_ label: LocalizedStringResource, isOn: Bool, action: @escaping () -> Void) -> some View {
         let s = Scaled(k: k)
+        let label = String(localized: label)
 
         return HStack(spacing: 0) {
             Text(label)
@@ -132,7 +134,7 @@ private struct SheetField: View {
     @FocusState private var isFocused: Bool
 
     var body: some View {
-        TextField("", text: $draft, prompt: Text(placeholder).foregroundStyle(Theme.textFaint))
+        TextField(String(), text: $draft, prompt: Text(verbatim: placeholder).foregroundStyle(Theme.textFaint))
             .textFieldStyle(.plain)
             .font(Fonts.sans(11, weight: 500, scale: scale))
             .foregroundStyle(Theme.textStrong)

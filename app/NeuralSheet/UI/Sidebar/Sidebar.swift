@@ -139,7 +139,7 @@ struct Sidebar: View {
                 .lineLimit(1)
                 .accessibilityAddTraits(.isHeader)
 
-            Text("\(model.mixer.entries.count)")
+            Text(model.mixer.entries.count, format: .number)
                 .font(Fonts.mono(10, weight: 400, scale: k))
                 .foregroundStyle(Theme.textFaintest)
                 .lineLimit(1)

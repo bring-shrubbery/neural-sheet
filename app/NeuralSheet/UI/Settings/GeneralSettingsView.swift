@@ -74,12 +74,14 @@ struct GeneralSettingsView: View {
 
         switch toolState {
         case .notInstalled:
-            return "Install creates a link in /usr/local/bin so you can run neuralsheet in the Terminal. "
-                + "You will be asked for an administrator password."
+            return String(localized: "Install creates a link in /usr/local/bin so you can run neuralsheet in the Terminal. You will be asked for an administrator password.",
+                          comment: "Settings → General: the command-line tool's footer before it is installed")
         case .installed:
-            return "Installed. Run neuralsheet --help in the Terminal to get started."
+            return String(localized: "Installed. Run neuralsheet --help in the Terminal to get started.",
+                          comment: "Settings → General: the command-line tool's footer once installed")
         case let .other(path):
-            return "The link points at another copy of NeuralSheet (\(path)). Install points it at this one."
+            return String(localized: "The link points at another copy of NeuralSheet (\(path)). Install points it at this one.",
+                          comment: "Settings → General: the command-line tool's link points at another copy of the app")
         }
     }
 

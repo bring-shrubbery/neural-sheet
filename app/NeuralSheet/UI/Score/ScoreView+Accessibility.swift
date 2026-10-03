@@ -77,7 +77,7 @@ extension ScoreView: KeyboardFocusableView {
                 for piece in measures[box.index].pieces {
                     let x = box.x(forUnits: Double(piece.startUnits))
                     let frame = CGRect(x: x - sp, y: row.topLineY - 2 * sp, width: 2.5 * sp, height: row.height + 4 * sp)
-                    let label = Self.speech(piece, part: part.name, bar: box.index + document.firstBar + 1)
+                    let label = Self.speech(piece, part: CoreNames.localized(part.name), bar: box.index + document.firstBar + 1)
                     let element = DrawnElement(in: self, role: .button,
                                                roleDescription: piece.isRest
                                                    ? String(localized: "rest", comment: "VoiceOver: what a rest in the score is")

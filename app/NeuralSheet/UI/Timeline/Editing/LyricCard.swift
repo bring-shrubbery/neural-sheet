@@ -22,7 +22,7 @@ struct LyricCard: View {
         let note = model.editor.lyricNote.flatMap { model.document?.note($0)?.note }
 
         VStack(alignment: .leading, spacing: 0) {
-            Text(header(note).uppercased())
+            Text(header(note).localizedUppercase)
                 .font(Fonts.sectionHeader(k))
                 .kerning(Fonts.tracking(Fonts.Tracking.sectionHeader, pointSize: Fonts.Size.sectionHeader, scale: k))
                 .foregroundStyle(Theme.popupTitle)
@@ -30,7 +30,7 @@ struct LyricCard: View {
                 .frame(height: s(Self.labelHeight), alignment: .leading)
                 .accessibilityAddTraits(.isHeader)
 
-            TextField("", text: $draft)
+            TextField(String(), text: $draft)
                 .textFieldStyle(.plain)
                 .font(Fonts.meta(k))
                 .foregroundStyle(Theme.textStrong)
@@ -70,9 +70,12 @@ struct LyricCard: View {
 
     /// "Lyric · E4 at 3.2": which note the syllable goes on.
     private func header(_ note: NoteEvent?) -> String {
-        guard let note else { return "Lyric" }
+        guard let note else { return String(localized: "Lyric", comment: "Lyric card: its header with no note") }
 
-        return "Lyric · \(TimeFormat.pitchName(note.pitch)) at \(model.editor.grid.barBeatLabel(at: note.startTime + 1e-6))"
+        let pitch = TimeFormat.pitchName(note.pitch)
+        let position = model.editor.grid.barBeatLabel(at: note.startTime + 1e-6)
+
+        return String(localized: "Lyric · \(pitch) at \(position)", comment: "Lyric card: its header, the note's pitch and bar.beat, e.g. \"Lyric · E4 at 3.2\"")
     }
 
     private func advance() {

@@ -28,13 +28,13 @@ struct ManageVersionsSheet: View {
                 .width(min: 120, ideal: 150)
 
                 TableColumn("Notes") { row in
-                    Text("\(row.noteCount)")
+                    Text(row.noteCount, format: .number)
                         .monospacedDigit()
                         .frame(maxWidth: .infinity, alignment: .trailing)
                 }
                 .width(min: 50, ideal: 60)
 
-                TableColumn("") { row in
+                TableColumn(String()) { row in
                     Button("Delete") { pendingDelete = row }
                         .disabled(row.isTranscription)
                 }

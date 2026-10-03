@@ -131,7 +131,8 @@ struct Toolbar: View {
     private func showClearMenu(from anchor: NSView) {
         let clearMenu = clearMenu
         let model = model
-        let titles = ["Clear audio and transcription", "Clear transcription only"]
+        let titles = [String(localized: "Clear audio and transcription", comment: "The bin's right-click menu"),
+                      String(localized: "Clear transcription only", comment: "The bin's right-click menu")]
         let width = PopupMenuPresenter.width(forTitles: titles, scale: k)
 
         clearMenu.show(from: anchor, width: width, scale: k) {

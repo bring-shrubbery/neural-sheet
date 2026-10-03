@@ -48,7 +48,7 @@ struct RetranscribeButton: View {
             model.setRetranscribeGroups(Self.groupsInMix(model))
         }
 
-        let titles = Instruments.all.map(\.name) + ["Automatic (any instrument)"]
+        let titles = Instruments.all.map(\.localizedName) + [String(localized: Self.automatic)]
         let title = "\(TimeFormat.transport(range.lowerBound)) – \(TimeFormat.transport(range.upperBound))"
 
         // The run is the footer's button, pinned under the list: with 36 instruments to scroll
@@ -74,7 +74,7 @@ struct RetranscribeButton: View {
 
         MenuSectionLabel(title: "INSTRUMENTS THE MODEL MAY USE")
 
-        MenuRow(title: "Automatic (any instrument)", isTicked: chosen.isEmpty) {
+        MenuRow(title: Self.automatic, isTicked: chosen.isEmpty) {
             model.setRetranscribeGroups([])
             refreshRows(range: range)
         }
@@ -85,7 +85,7 @@ struct RetranscribeButton: View {
 
             ForEach(inMix, id: \.program) { info in
                 if let group = info.group {
-                    MenuRow(title: info.name, isTicked: chosen.contains(group), chip: Color(info.colour)) {
+                    MenuRow(title: info.localizedName, isTicked: chosen.contains(group), chip: Color(info.colour)) {
                         model.toggleRetranscribeGroup(group)
                         refreshRows(range: range)
                     }
@@ -98,7 +98,7 @@ struct RetranscribeButton: View {
 
         ForEach(others, id: \.program) { info in
             if let group = info.group {
-                MenuRow(title: info.name, isTicked: chosen.contains(group)) {
+                MenuRow(title: info.localizedName, isTicked: chosen.contains(group)) {
                     model.toggleRetranscribeGroup(group)
                     refreshRows(range: range)
                 }
@@ -135,6 +135,11 @@ struct RetranscribeButton: View {
         menu.refresh { rows(range: range) }
     }
 
+    /// The empty selection's row, as the sidebar's picker names it.
+    static var automatic: LocalizedStringResource {
+        LocalizedStringResource("Automatic (any instrument)", comment: "Instrument menu row: let the model choose the instruments")
+    }
+
     /// The named groups of the instruments in the mix; a `program_<n>` has none and is skipped.
     static func groupsInMix(_ model: AppModel) -> [InstrumentGroup] {
         model.mixer.entries.compactMap(\.info.group)
@@ -145,13 +150,15 @@ struct RetranscribeButton: View {
 struct RegionProgress: View {
     let model: AppModel
 
-    static let caption = "RE-TRANSCRIBING"
+    static var caption: String {
+        String(localized: "RE-TRANSCRIBING", comment: "Edit toolbar: the caption beside a region run's progress bar")
+    }
 
     var body: some View {
         ProgressGroup(caption: Self.caption,
                       progress: model.regionJob?.progress ?? 0,
                       cancelling: model.regionJob?.cancelLatched ?? false,
-                      cancelTooltip: "Cancel re-transcription",
+                      cancelTooltip: String(localized: "Cancel re-transcription"),
                       onCancel: model.cancelRegionTranscription)
     }
 }

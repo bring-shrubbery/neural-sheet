@@ -1,7 +1,8 @@
 import SwiftUI
 
 /// Every primitive in one place, so a change to the palette, the icon set or a control's states can
-/// be eyeballed against the mockup without running the app.
+/// be eyeballed against the mockup without running the app. A developer's page: its text is
+/// verbatim, kept out of the string catalog.
 struct Gallery: View {
     @State private var sliderValue: Double = 0.65
     @State private var steppedValue: Double = 4
@@ -115,7 +116,7 @@ struct Gallery: View {
                         Icons.TranscribeStroked()
                             .stroke(style: Icons.strokeStyle(scale: scale))
                             .frame(width: 14 * scale, height: 14 * scale)
-                        Text("Transcribe")
+                        Text(verbatim: "Transcribe")
                             .font(Fonts.buttonLabel(scale))
                     }
                     .padding(.horizontal, 14 * scale)
@@ -179,30 +180,30 @@ struct Gallery: View {
 
     private var menu: some View {
         MenuPanel(title: "INSTRUMENT", footer: "Right-click a strip for more") {
-            MenuRow(title: "Acoustic Grand Piano", isTicked: true) {}
-            MenuRow(title: "Electric Bass (finger)") {}
+            MenuRow(title: "Acoustic Grand Piano" as String, isTicked: true) {}
+            MenuRow(title: "Electric Bass (finger)" as String) {}
             MenuSeparator()
-            MenuRow(title: "Drum Kit", isEnabled: false) {}
-            MenuRow(title: "Synth Lead") {}
+            MenuRow(title: "Drum Kit" as String, isEnabled: false) {}
+            MenuRow(title: "Synth Lead" as String) {}
         }
     }
 
     private var surfaces: some View {
         HStack(alignment: .top, spacing: 20 * scale) {
-            Text("A popup surface")
+            Text(verbatim: "A popup surface")
                 .font(Fonts.menuItem(scale))
                 .foregroundStyle(Theme.popupItem)
                 .padding(.horizontal, 11 * scale)
                 .padding(.vertical, 6 * scale)
                 .popupSurface(corner: 8 * scale)
 
-            Text("Hover me for 800 ms")
+            Text(verbatim: "Hover me for 800 ms")
                 .font(Fonts.menuItem(scale))
                 .foregroundStyle(Theme.textButton)
                 .padding(.horizontal, 11 * scale)
                 .padding(.vertical, 6 * scale)
                 .background(RoundedRectangle(cornerRadius: 6 * scale).fill(Theme.bgControl))
-                .tooltip("Tooltips wrap at 260 points and are placed away from whichever screen edge the pointer is nearest.")
+                .tooltip("Tooltips wrap at 260 points and are placed away from whichever screen edge the pointer is nearest." as String)
         }
     }
 

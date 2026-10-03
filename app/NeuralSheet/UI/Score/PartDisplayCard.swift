@@ -27,11 +27,20 @@ struct PartDisplayCard: View {
     private static let rowGap: CGFloat = 8
     private static let labelWidth: CGFloat = 84
 
-    /// Written = sounding + semitones.
-    static let transpositionPresets: [(String, Int)] = [
-        ("None", 0), ("B♭ (+2)", 2), ("B♭ tenor (+14)", 14), ("E♭ alto (+9)", 9), ("E♭ baritone (+21)", 21),
-        ("F (+7)", 7), ("A (+3)", 3), ("Octave up (+12)", 12), ("Octave down (−12)", -12),
-    ]
+    /// Written = sounding + semitones. Computed, so the names are in the language in effect.
+    static var transpositionPresets: [(String, Int)] {
+        [
+            (String(localized: "None", comment: "Part card: no transposition"), 0),
+            ("B♭ (+2)", 2),
+            (String(localized: "B♭ tenor (+14)", comment: "Part card: a transposition, as a tenor saxophone reads"), 14),
+            (String(localized: "E♭ alto (+9)", comment: "Part card: a transposition, as an alto saxophone reads"), 9),
+            (String(localized: "E♭ baritone (+21)", comment: "Part card: a transposition, as a baritone saxophone reads"), 21),
+            ("F (+7)", 7),
+            ("A (+3)", 3),
+            (String(localized: "Octave up (+12)", comment: "Part card: written an octave above the sound"), 12),
+            (String(localized: "Octave down (−12)", comment: "Part card: written an octave below the sound"), -12),
+        ]
+    }
 
     var body: some View {
         let s = Scaled(k: k)
@@ -42,19 +51,19 @@ struct PartDisplayCard: View {
         let isDrums = program == NoteEvent.drumProgram
 
         VStack(alignment: .leading, spacing: s(Self.rowGap)) {
-            Text(info.name.uppercased())
+            Text(info.localizedName.localizedUppercase)
                 .font(Fonts.sectionHeader(k))
                 .kerning(Fonts.tracking(Fonts.Tracking.sectionHeader, pointSize: Fonts.Size.sectionHeader, scale: k))
                 .foregroundStyle(Theme.popupTitle)
                 .lineLimit(1)
-                .accessibilityLabel(Text(verbatim: info.name))
+                .accessibilityLabel(Text(verbatim: info.localizedName))
                 .accessibilityAddTraits(.isHeader)
 
             if !isDrums {
                 row("Display") {
                     HStack(spacing: s(2)) {
                         ForEach(PartDisplay.Mode.allCases, id: \.self) { mode in
-                            segment(mode.name, isOn: display.mode == mode, isEnabled: true) {
+                            segment(mode.localizedName, isOn: display.mode == mode, isEnabled: true) {
                                 model.setPartMode(mode, program: program)
                             }
                         }
@@ -63,18 +72,18 @@ struct PartDisplayCard: View {
             }
 
             row("Clef") {
-                menuButton(display.clef.name) { showClefMenu() }
+                menuButton(display.clef.localizedName) { showClefMenu() }
                     .background(AnchorCatcher { clefAnchor = $0 })
                     .accessibilityLabel(Text(AccessibilityText.clef))
-                    .accessibilityValue(Text(verbatim: display.clef.name))
+                    .accessibilityValue(Text(verbatim: display.clef.localizedName))
             }
 
             row("Transposition") {
                 HStack(spacing: s(6)) {
-                    menuButton(Self.transpositionPresets.first { $0.1 == display.transposition }?.0 ?? "Custom") { showTranspositionMenu() }
+                    menuButton(Self.transpositionPresets.first { $0.1 == display.transposition }?.0 ?? Self.custom) { showTranspositionMenu() }
                         .background(AnchorCatcher { transpositionAnchor = $0 })
                         .accessibilityLabel(Text(AccessibilityText.transposition))
-                        .accessibilityValue(Text(verbatim: Self.transpositionPresets.first { $0.1 == display.transposition }?.0 ?? "Custom"))
+                        .accessibilityValue(Text(verbatim: Self.transpositionPresets.first { $0.1 == display.transposition }?.0 ?? Self.custom))
                     NumberField(value: Double(display.transposition), range: -36 ... 36, decimals: 0, width: 40) {
                         model.setPartTransposition(Int($0), program: program)
                     }
@@ -84,14 +93,14 @@ struct PartDisplayCard: View {
 
             if !isDrums {
                 row("Tab") {
-                    menuButton(display.tab.flatMap { TabTemplate.template(id: $0.template)?.name } ?? "None") { showTemplateMenu() }
+                    menuButton(display.tab.flatMap { TabTemplate.template(id: $0.template)?.localizedName } ?? Self.none) { showTemplateMenu() }
                         .background(AnchorCatcher { templateAnchor = $0 })
                         .accessibilityLabel(Text(AccessibilityText.tab))
                 }
 
                 if let tab = display.tab {
                     row("Tuning") {
-                        menuButton(tab.presetName ?? "Custom") { showTuningMenu(tab) }
+                        menuButton(tab.presetName.map(CoreNames.localized) ?? Self.custom) { showTuningMenu(tab) }
                             .background(AnchorCatcher { tuningAnchor = $0 })
                             .accessibilityLabel(Text(AccessibilityText.tuning))
                     }
@@ -116,11 +125,11 @@ struct PartDisplayCard: View {
             }
 
             row("Hidden") {
-                segment(display.isHidden ? "Hidden" : "Shown", isOn: display.isHidden, isEnabled: true) {
+                segment(display.isHidden ? Self.hidden : Self.shown, isOn: display.isHidden, isEnabled: true) {
                     model.setPartHidden(!display.isHidden, program: program)
                 }
                 .accessibilityLabel(Text(AccessibilityText.hidden))
-                .accessibilityValue(Text(verbatim: display.isHidden ? "Hidden" : "Shown"))
+                .accessibilityValue(Text(verbatim: display.isHidden ? Self.hidden : Self.shown))
             }
         }
         .padding(s(Self.padding))
@@ -130,11 +139,16 @@ struct PartDisplayCard: View {
 
     // MARK: - Pieces
 
-    private func row<Control: View>(_ label: String, @ViewBuilder control: () -> Control) -> some View {
+    private static var custom: String { String(localized: "Custom", comment: "Part card: a transposition or tuning that is none of the presets") }
+    private static var none: String { String(localized: "None", comment: "Part card: no tab") }
+    private static var hidden: String { String(localized: "Hidden", comment: "Part card: the part is left off the score") }
+    private static var shown: String { String(localized: "Shown", comment: "Part card: the part is on the score") }
+
+    private func row<Control: View>(_ label: LocalizedStringResource, @ViewBuilder control: () -> Control) -> some View {
         let s = Scaled(k: k)
 
         return HStack(spacing: s(8)) {
-            TrackedLabel(string: label.uppercased(), em: Fonts.Tracking.pillLabel, pointSize: Fonts.Size.pillLabel,
+            TrackedLabel(string: String(localized: label).localizedUppercase, em: Fonts.Tracking.pillLabel, pointSize: Fonts.Size.pillLabel,
                          font: Fonts.pillLabel(k), scale: k)
                 .foregroundStyle(Theme.textLabel)
                 .frame(width: s(Self.labelWidth), alignment: .leading)
@@ -185,9 +199,9 @@ struct PartDisplayCard: View {
         let model = model
         let program = program
 
-        showMenu(menu, from: anchor, titles: ClefChoice.allCases.map(\.name)) {
+        showMenu(menu, from: anchor, titles: ClefChoice.allCases.map(\.localizedName)) {
             ForEach(ClefChoice.allCases, id: \.self) { clef in
-                MenuRow(title: clef.name, isTicked: model.arrangement.display(for: program).clef == clef) {
+                MenuRow(title: clef.localizedName, isTicked: model.arrangement.display(for: program).clef == clef) {
                     menu.dismiss()
                     model.setPartClef(clef, program: program)
                 }
@@ -219,8 +233,8 @@ struct PartDisplayCard: View {
         let model = model
         let program = program
 
-        showMenu(menu, from: anchor, titles: ["None"] + TabTemplate.all.map(\.name)) {
-            MenuRow(title: "None", isTicked: model.arrangement.display(for: program).tab == nil) {
+        showMenu(menu, from: anchor, titles: [Self.none] + TabTemplate.all.map(\.localizedName)) {
+            MenuRow(title: Self.none, isTicked: model.arrangement.display(for: program).tab == nil) {
                 menu.dismiss()
                 model.clearPartTab(program: program)
             }
@@ -228,7 +242,7 @@ struct PartDisplayCard: View {
             MenuSeparator()
 
             ForEach(TabTemplate.all) { template in
-                MenuRow(title: template.name, isTicked: model.arrangement.display(for: program).tab?.template == template.id) {
+                MenuRow(title: template.localizedName, isTicked: model.arrangement.display(for: program).tab?.template == template.id) {
                     menu.dismiss()
                     model.setPartTab(template: template, preset: template.presets[0], program: program)
                 }
@@ -243,9 +257,9 @@ struct PartDisplayCard: View {
         let model = model
         let program = program
 
-        showMenu(menu, from: anchor, titles: template.presets.map(\.name)) {
+        showMenu(menu, from: anchor, titles: template.presets.map(\.localizedName)) {
             ForEach(template.presets, id: \.name) { preset in
-                MenuRow(title: preset.name, isTicked: tab.presetName == preset.name) {
+                MenuRow(title: preset.localizedName, isTicked: tab.presetName == preset.name) {
                     menu.dismiss()
                     model.setPartTab(template: template, preset: preset, program: program)
                 }

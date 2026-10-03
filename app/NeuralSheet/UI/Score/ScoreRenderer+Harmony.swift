@@ -64,7 +64,7 @@ extension ScoreRenderer {
         let bar = document.bars[box.index]
         let unit = bar.timeSignature.metronomeUnit
         let font = CTFontCreateWithName(Fonts.sansName(500) as CFString, 1.4 * sp, nil)
-        let text = "= \(MusicXMLWriter.tempoText(bar.bpm / unit.quarters))"
+        let text = "= \(Formats.tempo(bar.bpm / unit.quarters))"
 
         return box.contentX + (1.8 + (unit.dotted ? 0.5 : 0)) * sp + TimelineText.width(text, font: font)
     }

@@ -47,7 +47,7 @@ struct WelcomeView: View {
                 .frame(width: 128, height: 128)
                 .accessibilityHidden(true)
 
-            Text("NeuralSheet")
+            Text(verbatim: "NeuralSheet")
                 .font(Fonts.sans(28, weight: 600))
                 .foregroundStyle(Theme.textBright)
                 .padding(.top, 14)
@@ -131,7 +131,7 @@ struct WelcomeView: View {
 
 /// One of the two rows on the left: an SF Symbol and a label, lit on hover.
 private struct WelcomeAction: View {
-    let title: String
+    let title: LocalizedStringKey
     let symbol: String
     let action: () -> Void
 

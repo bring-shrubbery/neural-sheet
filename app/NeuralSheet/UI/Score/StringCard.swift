@@ -21,10 +21,10 @@ struct StringCard: View {
         let tab = display.tab
         let manual = display.strings[hit.id]
         let strings = tab.map { Array($0.tuning.enumerated().reversed()) } ?? []
-        let titles = ["Automatic"] + strings.map { title(string: $0.offset, open: $0.element, count: tab?.tuning.count ?? 0) }
+        let titles = [Self.automatic] + strings.map { title(string: $0.offset, open: $0.element, count: tab?.tuning.count ?? 0) }
 
         MenuPanel(width: PopupMenuPresenter.width(forTitles: titles, scale: k)) {
-            MenuRow(title: "Automatic", isTicked: manual == nil) {
+            MenuRow(title: Self.automatic, isTicked: manual == nil) {
                 host.dismiss()
                 model.setString(nil, program: hit.program, id: hit.id)
             }
@@ -50,6 +50,15 @@ struct StringCard: View {
     /// "String 1 (E): fret 5", numbered from the top tab line as players count them; `string`
     /// is the tab's index, 0 being the bottom line.
     private func title(string: Int, open: Int, count: Int) -> String {
-        "String \(count - string) (\(TuningPreset.label(for: [open]))): fret \(pitch - open)"
+        let number = count - string
+        let tuning = TuningPreset.label(for: [open])
+        let fret = pitch - open
+
+        return String(localized: "String \(number) (\(tuning)): fret \(fret)",
+                      comment: "String card: a string, its open note and the fret the note takes on it, e.g. \"String 1 (E): fret 5\"")
+    }
+
+    private static var automatic: String {
+        String(localized: "Automatic", comment: "String card: let the tab choose the string")
     }
 }

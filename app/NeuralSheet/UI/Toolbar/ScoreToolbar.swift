@@ -25,15 +25,15 @@ struct ScoreToolbar: View {
         VStack(spacing: 0) {
             HStack(spacing: s(Metrics.groupGap)) {
                 HStack(spacing: s(2)) {
-                    segment("Continuous", isOn: arrangement.layout == .continuous) { model.setScoreLayout(.continuous) }
-                    segment("Pages", isOn: arrangement.layout == .pages) { model.setScoreLayout(.pages) }
+                    segment(String(localized: "Continuous", comment: "Score toolbar: the systems in one column"), isOn: arrangement.layout == .continuous) { model.setScoreLayout(.continuous) }
+                    segment(String(localized: "Pages", comment: "Score toolbar: the systems on printed pages"), isOn: arrangement.layout == .pages) { model.setScoreLayout(.pages) }
                 }
                 .padding(s(2))
                 .background(RoundedRectangle(cornerRadius: s(Metrics.corner), style: .circular).fill(Theme.bgControlAlt))
 
                 HStack(spacing: s(2)) {
                     ForEach(PageSize.allCases, id: \.self) { size in
-                        segment(size.name, isOn: arrangement.pageSize == size, isEnabled: arrangement.layout == .pages) {
+                        segment(size.localizedName, isOn: arrangement.pageSize == size, isEnabled: arrangement.layout == .pages) {
                             model.setPageSize(size)
                         }
                     }
@@ -115,13 +115,13 @@ struct ScoreToolbar: View {
         let menu = partsMenu
         let model = model
         let entries = model.mixer.entries
-        let width = PopupMenuPresenter.width(forTitles: entries.map(\.info.name), scale: k)
+        let width = PopupMenuPresenter.width(forTitles: entries.map(\.info.localizedName), scale: k)
 
         menu.show(from: anchor, width: width, scale: k) {
             ForEach(entries, id: \.program) { entry in
                 let hidden = model.arrangement.display(for: entry.program).isHidden
 
-                MenuRow(title: entry.info.name, isTicked: !hidden) {
+                MenuRow(title: entry.info.localizedName, isTicked: !hidden) {
                     menu.dismiss()
                     model.setPartHidden(!hidden, program: entry.program)
                 }

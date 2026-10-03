@@ -112,6 +112,28 @@ struct MenuRow: View {
     var chip: Color? = nil
     let action: () -> Void
 
+    /// A row whose title is a literal: localized, and in the string catalog.
+    init(title: LocalizedStringResource, isTicked: Bool = false, isEnabled: Bool = true, chip: Color? = nil,
+         action: @escaping () -> Void) {
+        self.init(verbatim: String(localized: title), isTicked: isTicked, isEnabled: isEnabled, chip: chip, action: action)
+    }
+
+    /// A row whose title is data -- an instrument, a device -- or already localized. Disfavoured,
+    /// so a literal takes the localized initialiser.
+    @_disfavoredOverload
+    init<S: StringProtocol>(title: S, isTicked: Bool = false, isEnabled: Bool = true, chip: Color? = nil,
+                            action: @escaping () -> Void) {
+        self.init(verbatim: String(title), isTicked: isTicked, isEnabled: isEnabled, chip: chip, action: action)
+    }
+
+    private init(verbatim title: String, isTicked: Bool, isEnabled: Bool, chip: Color?, action: @escaping () -> Void) {
+        self.title = title
+        self.isTicked = isTicked
+        self.isEnabled = isEnabled
+        self.chip = chip
+        self.action = action
+    }
+
     @Environment(\.uiScale) private var k
     @State private var isHovered = false
 
@@ -164,6 +186,10 @@ struct MenuRow: View {
 /// falls into groups.
 struct MenuSectionLabel: View {
     let title: String
+
+    init(title: LocalizedStringResource) {
+        self.title = String(localized: title)
+    }
 
     @Environment(\.uiScale) private var k
 

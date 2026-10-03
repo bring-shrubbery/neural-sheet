@@ -42,7 +42,7 @@ struct SpeedPill: View {
                 .tooltip("Playback speed, pitch unchanged | - =")
                 .accessibilityLabel(Text(AccessibilityText.playbackSpeed))
 
-            Text("\(percent)%")
+            Text(Formats.percent(percent))
                 .font(Fonts.meta(k))
                 .foregroundStyle(Theme.textMuted)
                 .fixedSize()
@@ -58,10 +58,15 @@ struct SpeedPill: View {
 }
 
 /// A pill's caption, boxed at the tracked width `nn::trackedTextWidth` gave it (the mix pill's
-/// labels are drawn the same way).
+/// labels are drawn the same way). Measured localized, so a longer word gets its room.
 struct PillCaption: View {
     let text: String
     let colour: Color
+
+    init(text: LocalizedStringResource, colour: Color) {
+        self.text = String(localized: text)
+        self.colour = colour
+    }
 
     @Environment(\.uiScale) private var k
 

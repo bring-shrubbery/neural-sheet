@@ -25,16 +25,16 @@ struct TimeSignatureMenus: View {
         let s = Scaled(k: k)
 
         HStack(spacing: s(2)) {
-            ToolbarControls.labelButton(k: k, "\(meter.numerator)", tooltip: "Beats in a bar",
+            ToolbarControls.labelButton(k: k, String(meter.numerator), tooltip: "Beats in a bar",
                                         label: Text(AccessibilityText.beatsInBar)) { showNumeratorMenu() }
                 .background(AnchorCatcher { numeratorAnchor = $0 })
 
-            Text("/")
+            Text(verbatim: "/")
                 .font(Fonts.buttonLabel(k))
                 .foregroundStyle(Theme.textLabel)
                 .accessibilityHidden(true)
 
-            ToolbarControls.labelButton(k: k, "\(meter.denominator)", tooltip: "The note that counts as a beat",
+            ToolbarControls.labelButton(k: k, String(meter.denominator), tooltip: "The note that counts as a beat",
                                         label: Text(AccessibilityText.beatUnit)) { showDenominatorMenu() }
                 .background(AnchorCatcher { denominatorAnchor = $0 })
         }
@@ -62,7 +62,7 @@ struct TimeSignatureMenus: View {
     }
 
     private func row(_ menu: PopupMenuPresenter, numerator: Int) -> MenuRow {
-        MenuRow(title: "\(numerator)", isTicked: meter.numerator == numerator) {
+        MenuRow(title: String(numerator), isTicked: meter.numerator == numerator) {
             menu.dismiss()
             onChange(TimeSignature(numerator: numerator, denominator: meter.denominator))
         }
@@ -71,7 +71,7 @@ struct TimeSignatureMenus: View {
     private func showDenominatorMenu() {
         show(denominatorMenu, from: denominatorAnchor, titles: Self.denominators.map(String.init)) { menu in
             ForEach(Self.denominators, id: \.self) { denominator in
-                MenuRow(title: "\(denominator)", isTicked: meter.denominator == denominator) {
+                MenuRow(title: String(denominator), isTicked: meter.denominator == denominator) {
                     menu.dismiss()
                     onChange(TimeSignature(numerator: meter.numerator, denominator: denominator))
                 }

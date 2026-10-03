@@ -217,7 +217,7 @@ final class WaveformView: NSView {
 
         let hint = WaveformView.dropHintRect(width: bounds.width, scale: k)
 
-        TimelineText.draw("OR DROP A FILE HERE", font: TimelineFonts.meta(k), colour: TimelinePalette.textScale,
+        TimelineText.draw(String(localized: "OR DROP A FILE HERE", comment: "The empty waveform, under the Load audio file button"), font: TimelineFonts.meta(k), colour: TimelinePalette.textScale,
                           in: hint, anchor: .centred, tracking: 0.06 * Fonts.Size.meta * k, context: ctx)
     }
 
@@ -299,7 +299,7 @@ private final class WaveformLabelView: NSView {
     override func draw(_ dirtyRect: NSRect) {
         guard let ctx = NSGraphicsContext.current?.cgContext else { return }
 
-        TimelineText.draw("MIX WAVEFORM", font: TimelineFonts.meta(scale), colour: TimelinePalette.textScale,
+        TimelineText.draw(String(localized: "MIX WAVEFORM", comment: "The waveform's corner label"), font: TimelineFonts.meta(scale), colour: TimelinePalette.textScale,
                           in: bounds, anchor: .topLeft, tracking: 0.1 * Fonts.Size.meta * scale, context: ctx)
     }
 }

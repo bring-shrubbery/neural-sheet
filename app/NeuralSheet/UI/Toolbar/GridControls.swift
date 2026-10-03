@@ -33,7 +33,7 @@ struct GridControls: View {
                 .tooltip("Where bar 1 starts, in seconds")
                 .accessibilityLabel(Text(AccessibilityText.beatOneAt))
 
-                ToolbarControls.iconButton(k: k, isOn: false, tooltip: "Set from playhead",
+                ToolbarControls.iconButton(k: k, isOn: false, tooltip: String(localized: "Set from playhead"),
                                            label: Text(AccessibilityText.setBeatOneFromPlayhead),
                                            action: model.setGridOffsetFromPlayhead) {
                     Icons.PlayheadTargetStroked()
@@ -55,7 +55,7 @@ struct GridControls: View {
                 }
                 .background(AnchorCatcher { tonicAnchor = $0 })
 
-                ToolbarControls.labelButton(k: k, editor.key?.mode.name.capitalized ?? "Major", tooltip: "Major or minor",
+                ToolbarControls.labelButton(k: k, (editor.key?.mode ?? .major).localizedTitle, tooltip: "Major or minor",
                                             label: Text(AccessibilityText.keyMode), isEnabled: editor.key != nil) {
                     showModeMenu()
                 }
@@ -79,11 +79,11 @@ struct GridControls: View {
 
         let menu = tonicMenu
         let model = model
-        let titles = ["None"] + (0..<12).map(MusicalKey.tonicMenuName)
+        let titles = [String(localized: "None", comment: "Menu row: no key, or no chord bass")] + (0..<12).map(MusicalKey.tonicMenuName)
         let width = PopupMenuPresenter.width(forTitles: titles, scale: k)
 
         menu.show(from: anchor, width: width, scale: k) {
-            MenuRow(title: "None", isTicked: model.editor.key == nil) {
+            MenuRow(title: titles[0], isTicked: model.editor.key == nil) {
                 menu.dismiss()
                 model.setKeyTonic(nil)
             }
@@ -105,11 +105,11 @@ struct GridControls: View {
 
         let menu = modeMenu
         let model = model
-        let width = PopupMenuPresenter.width(forTitles: ["Major", "Minor"], scale: k)
+        let width = PopupMenuPresenter.width(forTitles: MusicalKey.Mode.allCases.map(\.localizedTitle), scale: k)
 
         menu.show(from: anchor, width: width, scale: k) {
             ForEach(MusicalKey.Mode.allCases, id: \.self) { mode in
-                MenuRow(title: mode.name.capitalized, isTicked: model.editor.key?.mode == mode) {
+                MenuRow(title: mode.localizedTitle, isTicked: model.editor.key?.mode == mode) {
                     menu.dismiss()
                     model.setKeyMode(mode)
                 }
@@ -178,9 +178,18 @@ enum ToolbarControls {
     /// A button showing its value -- a division, a key, a numerator -- takes a `label` saying what
     /// the value is of, and VoiceOver reads the title as its value; a button whose title is an
     /// action is named by the title (a11y design §2).
-    static func labelButton(k: CGFloat, _ title: String, tooltip: String, label: Text? = nil, isEnabled: Bool = true,
-                            action: @escaping () -> Void) -> some View {
+    static func labelButton(k: CGFloat, _ title: LocalizedStringResource, tooltip: LocalizedStringResource, label: Text? = nil,
+                            isEnabled: Bool = true, action: @escaping () -> Void) -> some View {
+        labelButton(k: k, String(localized: title), tooltip: tooltip, label: label, isEnabled: isEnabled, action: action)
+    }
+
+    /// The same button showing data -- a division, a tonic, a numerator -- or a title already
+    /// localized. Disfavoured, so a literal takes the localized overload.
+    @_disfavoredOverload
+    static func labelButton<S: StringProtocol>(k: CGFloat, _ title: S, tooltip: LocalizedStringResource, label: Text? = nil,
+                                               isEnabled: Bool = true, action: @escaping () -> Void) -> some View {
         let s = Scaled(k: k)
+        let title = String(title)
 
         return FlatButton(isEnabled: isEnabled,
                           idle: Theme.bgControlAlt,
@@ -201,8 +210,14 @@ enum ToolbarControls {
     }
 
     /// The tracked caps label the sidebar's pills use, in front of each field.
-    static func pillLabel(k: CGFloat, _ text: String) -> some View {
-        TrackedLabel(string: text, em: Fonts.Tracking.pillLabel, pointSize: Fonts.Size.pillLabel,
+    static func pillLabel(k: CGFloat, _ text: LocalizedStringResource) -> some View {
+        pillLabel(k: k, String(localized: text))
+    }
+
+    /// The same label for a sign or text already localized.
+    @_disfavoredOverload
+    static func pillLabel<S: StringProtocol>(k: CGFloat, _ text: S) -> some View {
+        TrackedLabel(string: String(text), em: Fonts.Tracking.pillLabel, pointSize: Fonts.Size.pillLabel,
                      font: Fonts.pillLabel(k), scale: k)
             .foregroundStyle(Theme.textLabel)
     }

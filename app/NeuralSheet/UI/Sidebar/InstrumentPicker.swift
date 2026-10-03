@@ -25,10 +25,10 @@ enum InstrumentPicker {
         let inMix = model.mixer.entries.map(\.info).filter { $0.program != excluding }
         let inMixPrograms = Set(inMix.map(\.program))
         let others = Instruments.all.filter { !inMixPrograms.contains($0.program) && $0.program != excluding }
-        let width = PopupMenuPresenter.width(forTitles: Instruments.all.map(\.name), scale: scale)
+        let width = PopupMenuPresenter.width(forTitles: Instruments.all.map(\.localizedName), scale: scale)
 
         func row(_ info: InstrumentInfo, chip: Color?) -> MenuRow {
-            MenuRow(title: info.name, isTicked: current == [info.program], chip: chip) {
+            MenuRow(title: info.localizedName, isTicked: current == [info.program], chip: chip) {
                 menu.dismiss()
                 onChoose(info.program)
             }

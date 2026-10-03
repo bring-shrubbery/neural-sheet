@@ -27,7 +27,7 @@ struct AudioSettingsView: View {
             Section {
                 LabeledContent("Sound bank") {
                     HStack {
-                        Text(model.soundBankName ?? "System (General MIDI)")
+                        (model.soundBankName.map { Text(verbatim: $0) } ?? Text("System (General MIDI)"))
                             .lineLimit(1)
                             .truncationMode(.middle)
                             .foregroundStyle(.secondary)
@@ -90,15 +90,14 @@ struct AudioSettingsView: View {
 
     private static func countInLabel(_ bars: Int) -> String {
         switch bars {
-        case 0: "Off"
-        case 1: "1 bar"
-        default: "\(bars) bars"
+        case 0: String(localized: "Off", comment: "Settings → Audio: no count-in")
+        default: String(localized: "\(bars) bars", comment: "Settings → Audio: a count-in of so many bars")
         }
     }
 
     /// "System Default", then every device; the chosen one selected, the default when nothing has
     /// been chosen. Selection by id: a device that has gone since the list was read is nothing.
-    private func devicePicker(_ title: String,
+    private func devicePicker(_ title: LocalizedStringKey,
                               devices: [AudioDevice],
                               chosen: AudioDevice?,
                               choose: @escaping (AudioDevice?) -> Void) -> some View {

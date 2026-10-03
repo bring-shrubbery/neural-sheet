@@ -199,9 +199,17 @@ struct TooltipModifier: ViewModifier {
 }
 
 extension View {
-    /// Shows `text` on the popup surface after the pointer has rested here for `Tooltips.delay`.
-    func tooltip(_ text: String) -> some View {
-        modifier(TooltipModifier(text: text))
+    /// Shows `key`, localized, on the popup surface after the pointer has rested here for
+    /// `Tooltips.delay`. A literal lands here and in the string catalog.
+    func tooltip(_ key: LocalizedStringResource) -> some View {
+        modifier(TooltipModifier(text: String(localized: key)))
+    }
+
+    /// Shows `text` as it is: one already localized, or built from data. Disfavoured, as
+    /// `Text`'s is, so a literal takes the localized overload.
+    @_disfavoredOverload
+    func tooltip<S: StringProtocol>(_ text: S) -> some View {
+        modifier(TooltipModifier(text: String(text)))
     }
 }
 

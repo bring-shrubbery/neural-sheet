@@ -31,7 +31,7 @@ struct MixPill: View {
         let mix = Binding(get: { model.effectiveMix }, set: { model.mix = $0 })
 
         HStack(spacing: s(Self.gap)) {
-            MixHoldLabel(text: "ORIG",
+            MixHoldLabel(text: String(localized: "ORIG", comment: "Master panel: the mix slider's source-audio end; held, only the source plays"),
                          colour: Theme.textMuted,
                          isHeld: model.mixHold == 0,
                          begin: { model.beginMixHold(.source) },
@@ -53,7 +53,7 @@ struct MixPill: View {
                     ? "Nothing to balance while the split is on: each side plays at full in its own ear"
                     : "Balance between the source audio and the synthesised transcription | [ ]")
 
-            MixHoldLabel(text: "MIDI",
+            MixHoldLabel(text: String(localized: "MIDI", comment: "Master panel: the mix slider's MIDI end; held, only the MIDI plays"),
                          colour: Theme.accentText,
                          isHeld: model.mixHold == 1,
                          begin: { model.beginMixHold(.synth) },

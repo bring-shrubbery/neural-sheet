@@ -80,8 +80,13 @@ struct InstrumentMenu: View {
 
     @Environment(\.uiScale) private var k
 
-    private static let title = "ADD INSTRUMENT"
-    private static let footer = "TICK TO INCLUDE IN TRANSCRIPTION"
+    private static var title: String {
+        String(localized: "ADD INSTRUMENT", comment: "The sidebar's instrument picker: its header")
+    }
+
+    private static var footer: String {
+        String(localized: "TICK TO INCLUDE IN TRANSCRIPTION", comment: "The sidebar's instrument picker: its footer")
+    }
     private static let footerTracking: Double = 0.04
 
     /// One offer in the list. No group means "Automatic", which is the empty selection.
@@ -96,8 +101,8 @@ struct InstrumentMenu: View {
     /// than leaving as the state you get by unticking everything -- then the 35 named groups in
     /// enumerator order.
     fileprivate static let entries: [Entry] =
-        [Entry(name: "Automatic (any instrument)", group: nil)]
-        + Instruments.all.map { Entry(name: $0.name, group: $0.group) }
+        [Entry(name: String(localized: RetranscribeButton.automatic), group: nil)]
+        + Instruments.all.map { Entry(name: $0.localizedName, group: $0.group) }
 
     var body: some View {
         let s = Scaled(k: k)
@@ -150,7 +155,7 @@ struct InstrumentMenu: View {
         .frame(width: s(MenuMetrics.width))
         .popupSurface(corner: corner)
         .accessibilityElement(children: .contain)
-        .accessibilityLabel(Self.title)
+        .accessibilityLabel(Text(verbatim: Self.title))
     }
 
     private func listHeight(_ s: Scaled) -> CGFloat {

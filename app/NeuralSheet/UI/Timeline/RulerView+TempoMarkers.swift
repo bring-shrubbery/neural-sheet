@@ -27,7 +27,7 @@ extension RulerView {
         var flags: [TempoFlag] = []
 
         for (seconds, segment) in tempoMap.changes {
-            var label = MusicXMLWriter.tempoText(segment.bpm)
+            var label = Formats.tempo(segment.bpm)
             if segment.timeSignature != previous.timeSignature { label += " · \(segment.timeSignature.label)" }
 
             let x = CGFloat((seconds * pixelsPerSecond).rounded()) * k

@@ -39,7 +39,7 @@ struct RulerMarkerSection: View {
 
             // One layout in both states, so the panel, sized once when it opens, fits either:
             // Add Marker Here turns into Delete in place and the name field comes alive.
-            Text((marker.map { "Marker at \(model.editor.grid.barBeatLabel(at: $0.seconds + 1e-6))" } ?? "Marker").uppercased())
+            Text(header(marker).localizedUppercase)
                 .font(Fonts.sectionHeader(k))
                 .kerning(Fonts.tracking(Fonts.Tracking.sectionHeader, pointSize: Fonts.Size.sectionHeader, scale: k))
                 .foregroundStyle(Theme.popupTitle)
@@ -85,7 +85,7 @@ struct RulerMarkerSection: View {
     private func nameField(_ marker: Marker?) -> some View {
         let s = Scaled(k: k)
 
-        return TextField("", text: Binding(get: { marker?.name ?? "" },
+        return TextField(String(), text: Binding(get: { marker?.name ?? "" },
                                            set: { name in marker.map { model.renameMarker(id: $0.id, to: name) } }))
             .textFieldStyle(.plain)
             .font(Fonts.meta(k))
@@ -100,7 +100,16 @@ struct RulerMarkerSection: View {
             .accessibilityLabel(Text(AccessibilityText.markerName))
     }
 
-    private func button(_ title: String, foreground: Color, action: @escaping () -> Void) -> some View {
+    /// "Marker at 5.1", or "Marker" before there is one.
+    private func header(_ marker: Marker?) -> String {
+        guard let marker else { return String(localized: "Marker", comment: "Ruler card: the marker section's header with no marker") }
+
+        let position = model.editor.grid.barBeatLabel(at: marker.seconds + 1e-6)
+
+        return String(localized: "Marker at \(position)", comment: "Ruler card: the marker section's header, e.g. \"Marker at 5.1\"")
+    }
+
+    private func button(_ title: LocalizedStringKey, foreground: Color, action: @escaping () -> Void) -> some View {
         let s = Scaled(k: k)
 
         return FlatButton(idle: Theme.bgControlAlt, on: Theme.bgControlActive,

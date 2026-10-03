@@ -140,7 +140,7 @@ struct MasterPanel: View {
                 .tooltip("Output level")
                 .accessibilityLabel(Text(AccessibilityText.outputLevel))
 
-            Text(TimeFormat.decibels(model.masterGainDb))
+            Text(Formats.decibels(model.masterGainDb))
                 .font(Fonts.meta(k))
                 .foregroundStyle(Theme.textMuted)
                 .fixedSize()
@@ -183,7 +183,7 @@ struct MasterPanel: View {
 
     private var muteButton: some View {
         let s = Scaled(k: k)
-        let labelWidth = Self.sectionLabelWidth("MUTE")
+        let labelWidth = Self.sectionLabelWidth(String(localized: "MUTE", comment: "Master panel: the input mute button"))
         // `paintButton` centred the row on the integer centre of its content box, so a row of
         // odd width lands half a pixel left of the padding edge.
         let contentWidth = Self.muteIconSize + Self.iconLabelGap + labelWidth
@@ -201,7 +201,7 @@ struct MasterPanel: View {
                     .fill(.foreground)
                     .frame(width: s(Self.muteIconSize), height: s(Self.muteIconSize))
 
-                Text("MUTE")
+                Text("MUTE", comment: "Master panel: the input mute button")
                     .font(Fonts.sectionHeader(k))
                     .kerning(Fonts.tracking(Fonts.Tracking.sectionHeaderPill,
                                             pointSize: Fonts.Size.sectionHeader,
@@ -224,7 +224,7 @@ struct MasterPanel: View {
     /// The metronome on the grid's beats, in MUTE's shape, on the accent while it is on.
     private var clickButton: some View {
         let s = Scaled(k: k)
-        let labelWidth = Self.sectionLabelWidth("CLICK")
+        let labelWidth = Self.sectionLabelWidth(String(localized: "CLICK", comment: "Master panel: the metronome button"))
 
         return FlatButton(isOn: model.clickEnabled,
                           idle: Theme.bgControl,
@@ -233,7 +233,7 @@ struct MasterPanel: View {
                           foregroundOn: Theme.accentText,
                           corner: s(Self.controlCorner),
                           action: { model.toggleClick() }) { _ in
-            Text("CLICK")
+            Text("CLICK", comment: "Master panel: the metronome button")
                 .font(Fonts.sectionHeader(k))
                 .kerning(Fonts.tracking(Fonts.Tracking.sectionHeaderPill,
                                         pointSize: Fonts.Size.sectionHeader,
@@ -265,7 +265,7 @@ struct MasterPanel: View {
                 .tooltip("Click level | double-click for -6 dB")
                 .accessibilityLabel(Text(AccessibilityText.clickLevel))
 
-            Text(TimeFormat.decibels(model.clickGainDb))
+            Text(Formats.decibels(model.clickGainDb))
                 .font(Fonts.meta(k))
                 .foregroundStyle(Theme.textMuted)
                 .fixedSize()

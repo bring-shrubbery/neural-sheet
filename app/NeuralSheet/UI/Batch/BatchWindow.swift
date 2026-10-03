@@ -112,8 +112,8 @@ struct BatchWindow: View {
 
     private func chooseFiles() {
         let panel = NSOpenPanel()
-        panel.title = "Add Files"
-        panel.message = "Choose audio files or folders to transcribe"
+        panel.title = String(localized: "Add Files", comment: "Batch window: the open panel's title")
+        panel.message = String(localized: "Choose audio files or folders to transcribe", comment: "Batch window: the open panel's message")
         panel.canChooseFiles = true
         panel.canChooseDirectories = true
         panel.allowsMultipleSelection = true
@@ -139,7 +139,7 @@ private struct BatchSettingsForm: View {
                 }
 
                 ForEach(ModelSize.transcription.filter(model.installedModels.contains), id: \.self) { size in
-                    Text(size.displayName).tag(ModelSize?.some(size))
+                    Text(size.localizedName).tag(ModelSize?.some(size))
                 }
             }
 
@@ -164,7 +164,7 @@ private struct BatchSettingsForm: View {
 
             LabeledContent("Output folder") {
                 HStack {
-                    Text(batch.outDirectory?.path ?? "Next to each file")
+                    (batch.outDirectory.map { Text(verbatim: $0.path) } ?? Text("Next to each file"))
                         .lineLimit(1)
                         .truncationMode(.middle)
                         .foregroundStyle(batch.outDirectory == nil ? .secondary : .primary)
@@ -185,7 +185,7 @@ private struct BatchSettingsForm: View {
     }
 
     /// At least one output stays on: the last one cannot be turned off.
-    private func outputToggle(_ title: String, _ output: TranscriptionOutput) -> some View {
+    private func outputToggle(_ title: LocalizedStringKey, _ output: TranscriptionOutput) -> some View {
         Toggle(title, isOn: Binding(get: { batch.outputs.contains(output) }, set: { on in
             if on {
                 batch.outputs.insert(output)
@@ -198,8 +198,8 @@ private struct BatchSettingsForm: View {
 
     private func chooseFolder() {
         let panel = NSOpenPanel()
-        panel.title = "Output Folder"
-        panel.message = "Choose where the files are written"
+        panel.title = String(localized: "Output Folder", comment: "Batch window: the folder panel's title")
+        panel.message = String(localized: "Choose where the files are written", comment: "Batch window: the folder panel's message")
         panel.canChooseFiles = false
         panel.canChooseDirectories = true
         panel.canCreateDirectories = true
@@ -217,7 +217,7 @@ private struct BatchInstrumentsMenu: View {
 
     var body: some View {
         Menu(title) {
-            Toggle("Automatic (any instrument)", isOn: Binding(get: { selection.isEmpty }, set: { on in
+            Toggle(String(localized: RetranscribeButton.automatic), isOn: Binding(get: { selection.isEmpty }, set: { on in
                 if on { selection = [] }
             }))
 
@@ -225,7 +225,7 @@ private struct BatchInstrumentsMenu: View {
 
             ForEach(Instruments.all, id: \.program) { info in
                 if let group = info.group {
-                    Toggle(info.name, isOn: Binding(get: { selection.contains(group) }, set: { on in
+                    Toggle(info.localizedName, isOn: Binding(get: { selection.contains(group) }, set: { on in
                         let chosen = on ? Set(selection).union([group]) : Set(selection).subtracting([group])
                         selection = InstrumentGroup.allCases.filter(chosen.contains)
                     }))
@@ -237,9 +237,9 @@ private struct BatchInstrumentsMenu: View {
 
     private var title: String {
         switch selection.count {
-        case 0: "Automatic"
-        case 1: Instruments.info(forProgram: Instruments.program(for: selection[0])).name
-        default: "\(selection.count) instruments"
+        case 0: String(localized: "Automatic", comment: "Batch window: the instruments menu with nothing chosen, the model picks")
+        case 1: Instruments.info(forProgram: Instruments.program(for: selection[0])).localizedName
+        default: String(localized: "\(selection.count) instruments", comment: "Batch window: the instruments menu, how many are chosen")
         }
     }
 }

@@ -47,10 +47,10 @@ struct TabStrip: View {
 
     /// One tab: the label, and the accent underline flush with the strip's border when active.
     private struct TabButton: View {
-        let title: String
+        let title: LocalizedStringResource
         let isActive: Bool
         let isEnabled: Bool
-        let tooltip: String?
+        let tooltip: LocalizedStringResource?
         let action: () -> Void
 
         @Environment(\.uiScale) private var k
@@ -84,7 +84,7 @@ struct TabStrip: View {
             .onHover { isHovered = $0 }
             .onTapGesture { if isEnabled { action() } }
             .pointerStyle(isEnabled ? .link : nil)
-            .tooltip(tooltip ?? "")
+            .tooltip(tooltip.map { String(localized: $0) } ?? "")
             // A tab VoiceOver and the keyboard can choose, selected while it is the one on show
             // (a11y design §2).
             .accessibleButton(Text(title), isEnabled: isEnabled, isSelected: isActive, action: action)

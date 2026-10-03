@@ -107,7 +107,7 @@ extension ScoreRenderer {
         }
 
         let font = CTFontCreateWithName(Fonts.sansName(500) as CFString, 1.4 * sp, nil)
-        TimelineText.draw("= \(MusicXMLWriter.tempoText(bar.bpm / unit.quarters))", font: font, colour: ink,
+        TimelineText.draw("= \(Formats.tempo(bar.bpm / unit.quarters))", font: font, colour: ink,
                           in: CGRect(x: textX, y: y - 1.5 * sp, width: 10 * sp, height: 2 * sp),
                           anchor: .centredLeft, context: ctx)
     }

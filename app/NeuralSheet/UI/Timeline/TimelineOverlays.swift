@@ -6,6 +6,7 @@ import UniformTypeIdentifiers
 /// padding 17, icon gap 9, corner 6, `ctaFill` over an accent outline, `ctaText` icon and label.
 /// Visible while the roll is idle and a model is installed; enabled only with audio loaded.
 struct TranscribeCTA: View {
+    /// Already localized, by the model's `transcribeLabel`.
     let label: String
     let isEnabled: Bool
     let scale: CGFloat
@@ -71,8 +72,8 @@ struct LoadAudioButton: View {
     /// The chooser the button opens: "Select Audio File", one file, the loader's own extensions.
     static func chooseFile() -> URL? {
         let panel = NSOpenPanel()
-        panel.title = "Select Audio File"
-        panel.message = "Select Audio File"
+        panel.title = String(localized: "Select Audio File", comment: "The Load audio file button's open panel")
+        panel.message = String(localized: "Select Audio File", comment: "The Load audio file button's open panel")
         panel.allowedContentTypes = AudioFileLoader.acceptedExtensions.compactMap { UTType(filenameExtension: $0) }
         panel.allowsMultipleSelection = false
         panel.canChooseDirectories = false

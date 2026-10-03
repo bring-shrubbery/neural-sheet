@@ -27,7 +27,7 @@ struct EditToolbar: View {
                 toolSwitcher(editor.tool)
 
                 HStack(spacing: s(4)) {
-                    ToolbarControls.iconButton(k: k, isOn: editor.snapEnabled, tooltip: "Snap to grid",
+                    ToolbarControls.iconButton(k: k, isOn: editor.snapEnabled, tooltip: String(localized: "Snap to grid"),
                                                label: Text(AccessibilityText.snapToGrid),
                                                action: { model.setSnapEnabled(!editor.snapEnabled) }) {
                         Icons.MagnetStroked()
@@ -87,9 +87,9 @@ struct EditToolbar: View {
         let s = Scaled(k: k)
 
         return HStack(spacing: s(2)) {
-            ToolbarControls.iconButton(k: k, isOn: tool == .select, tooltip: "Select (V)", label: Text(AccessibilityText.selectTool), action: { model.setTool(.select) }) { Icons.ArrowStroked() }
-            ToolbarControls.iconButton(k: k, isOn: tool == .draw, tooltip: "Draw (D)", label: Text(AccessibilityText.drawTool), action: { model.setTool(.draw) }) { Icons.PencilStroked() }
-            ToolbarControls.iconButton(k: k, isOn: tool == .erase, tooltip: "Erase (E)", label: Text(AccessibilityText.eraseTool), action: { model.setTool(.erase) }) { Icons.EraserStroked() }
+            ToolbarControls.iconButton(k: k, isOn: tool == .select, tooltip: String(localized: "Select (V)"), label: Text(AccessibilityText.selectTool), action: { model.setTool(.select) }) { Icons.ArrowStroked() }
+            ToolbarControls.iconButton(k: k, isOn: tool == .draw, tooltip: String(localized: "Draw (D)"), label: Text(AccessibilityText.drawTool), action: { model.setTool(.draw) }) { Icons.PencilStroked() }
+            ToolbarControls.iconButton(k: k, isOn: tool == .erase, tooltip: String(localized: "Erase (E)"), label: Text(AccessibilityText.eraseTool), action: { model.setTool(.erase) }) { Icons.EraserStroked() }
         }
         .padding(s(2))
         .background(RoundedRectangle(cornerRadius: s(Metrics.corner), style: .circular).fill(Theme.bgControlAlt))
@@ -113,7 +113,7 @@ struct EditToolbar: View {
                 }
                 .accessibilityLabel(Text(AccessibilityText.swing))
 
-                ToolbarControls.pillLabel(k: k, "%")
+                ToolbarControls.pillLabel(k: k, "%" as String)
             }
             .disabled(!swings)
         }

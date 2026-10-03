@@ -12,9 +12,9 @@ enum SettingsTab: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .general: "General"
-        case .model: "Model"
-        case .audio: "Audio"
+        case .general: String(localized: "General", comment: "Settings: the General tab")
+        case .model: String(localized: "Model", comment: "Settings: the Model tab, the transcription models")
+        case .audio: String(localized: "Audio", comment: "Settings: the Audio tab")
         }
     }
 

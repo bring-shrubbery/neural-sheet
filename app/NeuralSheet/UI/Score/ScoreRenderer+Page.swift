@@ -45,7 +45,7 @@ extension ScoreRenderer {
         let subtitle = CTFontCreateWithName(Fonts.sansName(500) as CFString, 1.8 * sp, nil)
         let small = CTFontCreateWithName(Fonts.sansName(500) as CFString, 1.6 * sp, nil)
 
-        TimelineText.draw(sheet.resolvedTitle(takeName: takeName), font: title, colour: style.ink,
+        TimelineText.draw(CoreNames.localized(sheet.resolvedTitle(takeName: takeName)), font: title, colour: style.ink,
                           in: CGRect(x: rect.minX, y: rect.minY, width: rect.width, height: 3.6 * sp), anchor: .centred, context: ctx)
 
         if !sheet.subtitle.isEmpty {
@@ -61,7 +61,7 @@ extension ScoreRenderer {
         }
 
         if !sheet.arranger.isEmpty {
-            TimelineText.draw("arr. " + sheet.arranger, font: small, colour: style.ink,
+            TimelineText.draw(String(localized: "arr. \(sheet.arranger)", comment: "The score's title block: the arranger's credit"), font: small, colour: style.ink,
                               in: CGRect(x: rect.minX, y: rect.maxY - 2 * sp, width: rect.width, height: 2 * sp),
                               anchor: .centredRight, context: ctx)
         }

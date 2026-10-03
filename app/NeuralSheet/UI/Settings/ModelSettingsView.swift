@@ -42,7 +42,9 @@ struct ModelSettingsView: View {
     @State private var partialBytes: [ModelSize: Int64] = [:]
 
     /// Where the weights come from, and what they may be used for.
-    static let licenceText = "Model weights: CC BY-NC 4.0 (non-commercial)"
+    static var licenceText: String {
+        String(localized: "Model weights: CC BY-NC 4.0 (non-commercial)", comment: "Settings → Model: the transcription weights' licence")
+    }
     static let licenceURL = URL(string: "https://huggingface.co/DamRsn/muscriptor-gguf")!
 
     var body: some View {
@@ -77,7 +79,7 @@ struct ModelSettingsView: View {
                     Text(model.hasStemsModel
                         ? "With Stems on, the take is separated into drums, bass, vocals and the rest before it is transcribed."
                         : "Download to separate the take into drums, bass, vocals and the rest before transcribing.")
-                    Text("·")
+                    Text(verbatim: "·")
                     Link("Weights: MIT", destination: ModelManifest.stemsLicenceURL)
                 }
                 .foregroundStyle(.secondary)
@@ -96,7 +98,7 @@ struct ModelSettingsView: View {
                 Picker("Drop notes less sure than", selection: Binding(get: { model.minimumConfidence },
                                                                        set: { model.minimumConfidence = $0 })) {
                     ForEach(NoteFilter.minimumConfidenceChoices, id: \.self) { confidence in
-                        Text(confidence == 0 ? "Off" : "\(Int((confidence * 100).rounded())) %").tag(confidence)
+                        (confidence == 0 ? Text("Off") : Text(verbatim: "\(Int((confidence * 100).rounded())) %")).tag(confidence)
                     }
                 }
             } header: {
@@ -115,7 +117,7 @@ struct ModelSettingsView: View {
             } footer: {
                 HStack(spacing: 4) {
                     Text(Self.licenceText)
-                    Text("·")
+                    Text(verbatim: "·")
                     Link("Hugging Face", destination: Self.licenceURL)
                 }
                 .foregroundStyle(.secondary)
@@ -202,7 +204,7 @@ private struct ModelRowView: View {
             radio
 
             VStack(alignment: .leading, spacing: 2) {
-                Text(row.size.displayName)
+                Text(row.size.localizedName)
                     .foregroundStyle(row.isInstalled ? .primary : .secondary)
 
                 Text(meta)
@@ -257,17 +259,23 @@ private struct ModelRowView: View {
 
         switch row.phase {
         case let .failed(message) where !row.isInstalled:
-            return message
+            // The downloader's own words, in English in the package; the fixed ones are in the
+            // Core table (`CoreNames`).
+            return CoreNames.localized(message)
 
         case let .downloading(received, _) where !row.isInstalled:
-            return "\(TimeFormat.fileSize(bytes: received)) of \(TimeFormat.fileSize(bytes: spec.byteSize))"
+            return Self.progressText(Formats.fileSize(bytes: received), of: Formats.fileSize(bytes: spec.byteSize))
 
         case .verifying where !row.isInstalled:
-            return "\(TimeFormat.fileSize(bytes: spec.byteSize)) of \(TimeFormat.fileSize(bytes: spec.byteSize))"
+            return Self.progressText(Formats.fileSize(bytes: spec.byteSize), of: Formats.fileSize(bytes: spec.byteSize))
 
         default:
-            return "\(TimeFormat.fileSize(bytes: spec.byteSize))  \u{00B7}  \(row.size.hint)"
+            return "\(Formats.fileSize(bytes: spec.byteSize))  \u{00B7}  \(row.size.localizedHint)"
         }
+    }
+
+    private static func progressText(_ received: String, of total: String) -> String {
+        String(localized: "\(received) of \(total)", comment: "Settings → Model: a download's progress, e.g. \"618 MB of 2.7 GB\"")
     }
 
     @ViewBuilder
@@ -279,7 +287,7 @@ private struct ModelRowView: View {
                     .frame(width: 90)
                     .accessibilityLabel(Text(AccessibilityText.downloadProgress))
 
-                Text("\(Int((100 * row.progress).rounded()))%")
+                Text(Formats.percent(Int((100 * row.progress).rounded())))
                     .font(.caption)
                     .monospacedDigit()
                     .foregroundStyle(.secondary)
@@ -311,9 +319,11 @@ private struct ModelRowView: View {
 
     private var downloadLabel: String {
         if case .failed = row.phase {
-            return "Retry"
+            return String(localized: "Retry", comment: "Settings → Model: try a failed download again")
         }
 
-        return row.partialBytes > 0 ? "Resume" : "Download"
+        return row.partialBytes > 0
+            ? String(localized: "Resume", comment: "Settings → Model: carry on a stopped download")
+            : String(localized: "Download", comment: "Settings → Model: download a model")
     }
 }

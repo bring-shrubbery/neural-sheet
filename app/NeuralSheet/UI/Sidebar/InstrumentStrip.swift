@@ -89,7 +89,7 @@ struct InstrumentStrip: View {
 
                     VStack(alignment: .leading, spacing: 0) {
                         ZStack(alignment: .leading) {
-                            Text(entry.info.name)
+                            Text(entry.info.localizedName)
                                 .font(Fonts.instrumentName(k))
                                 .foregroundStyle((muted ? Theme.textLabel : Theme.textStrong).opacity(alpha))
                                 .lineLimit(1)
@@ -120,7 +120,7 @@ struct InstrumentStrip: View {
                 .allowsHitTesting(onSelect != nil)
                 // The name as a button that singles the instrument out, its counts as the value
                 // (a11y design §2).
-                .accessibleButton(Text(verbatim: entry.info.name), isEnabled: onSelect != nil, isSelected: isHighlighted) {
+                .accessibleButton(Text(verbatim: entry.info.localizedName), isEnabled: onSelect != nil, isSelected: isHighlighted) {
                     onSelect?()
                 }
                 .accessibilityValue(Text(verbatim: meta))
@@ -128,7 +128,7 @@ struct InstrumentStrip: View {
                 Spacer(minLength: 0)
 
                 HStack(spacing: s(Self.toggleGap)) {
-                    toggle("M",
+                    toggle(LocalizedStringResource("M", comment: "Instrument strip: the mute toggle's letter"),
                            isOn: muted,
                            onBackground: Theme.bgMuteActive,
                            onText: Theme.warn,
@@ -136,7 +136,7 @@ struct InstrumentStrip: View {
                            accessibilityName: Text(AccessibilityText.mute),
                            s: s) { model.setMuted(program: entry.program, !muted) }
 
-                    toggle("S",
+                    toggle(LocalizedStringResource("S", comment: "Instrument strip: the solo toggle's letter"),
                            isOn: settings.soloed,
                            onBackground: Theme.soloButtonBg,
                            onText: Theme.rec,
@@ -168,7 +168,7 @@ struct InstrumentStrip: View {
 
                 Spacer(minLength: 0)
 
-                Text(TimeFormat.decibels(settings.gainDb))
+                Text(Formats.decibels(settings.gainDb))
                     .font(Fonts.meta(k))
                     .foregroundStyle(Theme.textDim.opacity(alpha))
                     .lineLimit(1)
@@ -231,7 +231,7 @@ struct InstrumentStrip: View {
                 .frame(height: k)
         }
         .accessibilityElement(children: .contain)
-        .accessibilityLabel(Text(verbatim: entry.info.name))
+        .accessibilityLabel(Text(verbatim: entry.info.localizedName))
     }
 
     // MARK: - Pieces
@@ -253,11 +253,11 @@ struct InstrumentStrip: View {
         .accessibilityHidden(true)
     }
 
-    private func toggle(_ label: String,
+    private func toggle(_ label: LocalizedStringResource,
                         isOn: Bool,
                         onBackground: Color,
                         onText: Color,
-                        tooltip: String,
+                        tooltip: LocalizedStringResource,
                         accessibilityName: Text,
                         s: Scaled,
                         action: @escaping () -> Void) -> some View {
@@ -308,7 +308,7 @@ struct InstrumentStrip: View {
     private func nameWidth() -> CGFloat {
         guard let font = NSFont(name: Fonts.Name.interMedium, size: Fonts.Size.instrumentName * k) else { return 0 }
 
-        return (entry.info.name as NSString).size(withAttributes: [.font: font]).width
+        return (entry.info.localizedName as NSString).size(withAttributes: [.font: font]).width
     }
 
     /// Drums have no pitch range to report: their key numbers name pieces of a kit, not notes.
@@ -316,15 +316,17 @@ struct InstrumentStrip: View {
         let separator = " \u{00B7} "
 
         if entry.isPlaceholder {
-            return "selected" + separator + "not transcribed yet"
+            return String(localized: "selected", comment: "Instrument strip: an instrument chosen for the next run")
+                + separator + String(localized: "not transcribed yet", comment: "Instrument strip: no notes for it yet")
         }
 
         if entry.program == NoteEvent.drumProgram {
-            return "\(entry.noteCount) hits" + separator + "kit map"
+            return String(localized: "\(entry.noteCount) hits", comment: "Instrument strip: how many drum hits")
+                + separator + String(localized: "kit map", comment: "Instrument strip: the drums' notes name kit pieces, not pitches")
         }
 
-        return "\(entry.noteCount) notes" + separator
-            + TimeFormat.pitchName(entry.lowestPitch) + "-" + TimeFormat.pitchName(entry.highestPitch)
+        return String(localized: "\(entry.noteCount) notes", comment: "Instrument strip: how many notes")
+            + separator + TimeFormat.pitchName(entry.lowestPitch) + "-" + TimeFormat.pitchName(entry.highestPitch)
     }
 }
 

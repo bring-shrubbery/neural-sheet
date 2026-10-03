@@ -7,7 +7,7 @@ import NeuralSheetCore
 enum NoteSpeech {
     static func description(of note: NoteEvent, grid: TempoGrid) -> String {
         let pitch = TimeFormat.pitchName(note.pitch)
-        let instrument = Instruments.info(forProgram: note.program).name
+        let instrument = Instruments.info(forProgram: note.program).localizedName
         // Nudged past the line, as the ruler labels a beat that starts exactly on it.
         let position = grid.barBeat(at: note.startTime + 1e-6)
         let length = length(of: note, grid: grid)

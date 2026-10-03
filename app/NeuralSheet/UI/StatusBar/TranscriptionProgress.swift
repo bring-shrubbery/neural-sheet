@@ -62,7 +62,7 @@ struct ProgressGroup: View {
             bar(percent: percent, dim: dim)
                 .accessibilityHidden(true)
 
-            Text("\(percent)%")
+            Text(Formats.percent(percent))
                 .font(Fonts.statusBar(k))
                 .foregroundStyle(Theme.progressText)
                 .opacity(dim)
@@ -130,15 +130,20 @@ struct ProgressGroup: View {
 struct TranscriptionProgress: View {
     let model: AppModel
 
-    static let caption = "TRANSCRIBING"
+    static var caption: String {
+        String(localized: "TRANSCRIBING", comment: "Status bar: the caption beside a run's progress bar")
+    }
+
     /// While the stems are being separated (stem separation design §6).
-    static let separatingCaption = "SEPARATING"
+    static var separatingCaption: String {
+        String(localized: "SEPARATING", comment: "Status bar: the caption while the stems are separated")
+    }
 
     var body: some View {
         ProgressGroup(caption: model.isSeparatingStems ? Self.separatingCaption : Self.caption,
                       progress: model.transcriptionProgress,
                       cancelling: model.cancelLatched,
-                      cancelTooltip: "Cancel transcription",
+                      cancelTooltip: String(localized: "Cancel transcription"),
                       onCancel: model.cancelTranscription)
     }
 }
@@ -152,7 +157,7 @@ struct StemsExportProgress: View {
         ProgressGroup(caption: model.stemsExportCaption ?? TranscriptionProgress.separatingCaption,
                       progress: model.stemsExport?.progress ?? 0,
                       cancelling: false,
-                      cancelTooltip: "Cancel export",
+                      cancelTooltip: String(localized: "Cancel export"),
                       onCancel: model.cancelStemsExport)
     }
 }
