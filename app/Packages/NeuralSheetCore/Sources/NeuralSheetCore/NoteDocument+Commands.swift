@@ -12,7 +12,11 @@ public enum NoteEdge: Equatable, Sendable {
 extension NoteDocument {
     // MARK: - Builders
 
+    /// A note the user drew. It carries no confidence whatever it was built from: the model did
+    /// not make it, so it is never doubtful (confidence design §2).
     public mutating func insert(_ note: NoteEvent) -> EditBatch {
+        var note = note
+        note.confidence = nil
         let inserted = EditableNote(id: allocateID(), note: note)
 
         return finished(EditBatch(title: "Add Note", inserted: [inserted]))
@@ -30,7 +34,7 @@ extension NoteDocument {
     }
 
     /// Copied notes put back with the earliest of them starting at `seconds` and the rest keeping
-    /// their distance from it; pitch, instrument and velocity travel as they are.
+    /// their distance from it; pitch, instrument, velocity and confidence travel as they are.
     public mutating func paste(_ notes: [NoteEvent], at seconds: Double) -> EditBatch {
         guard let earliest = notes.map(\.startTime).min() else { return EditBatch(title: "Paste Notes") }
 

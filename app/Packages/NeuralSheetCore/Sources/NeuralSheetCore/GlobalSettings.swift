@@ -19,6 +19,19 @@ public struct GlobalSettings: Codable, Equatable, Sendable {
     /// first and transcribe each stem with its own instruments.
     public var separateStems = false
 
+    /// View → Show Confidence (confidence design §2): the roll shades notes by how sure the
+    /// model was rather than by velocity.
+    public var showsConfidence = false
+
+    /// Settings → Model → After transcription (confidence design §2): a run drops notes shorter
+    /// than this, in seconds, before they land; 0 is off. Also what Select Doubtful Notes
+    /// counts as too short.
+    public var minimumNoteLength: Double = 0
+
+    /// The same section's other control: a run drops notes the model was less sure of than this,
+    /// 0…1; 0 is off.
+    public var minimumConfidence: Double = 0
+
     /// Recent projects the user removed from the welcome window's list, by path: the system's
     /// recent-documents list has no per-item removal, so the app filters it through this. A
     /// project opened or saved again leaves the list.
@@ -30,6 +43,9 @@ public struct GlobalSettings: Codable, Equatable, Sendable {
         tooltipsVisible: Bool = true,
         midiOverflowMode: MidiOverflowMode = .reuseChannels,
         separateStems: Bool = false,
+        showsConfidence: Bool = false,
+        minimumNoteLength: Double = 0,
+        minimumConfidence: Double = 0,
         hiddenRecentProjects: [String] = []
     ) {
         self.modelSize = modelSize
@@ -37,6 +53,9 @@ public struct GlobalSettings: Codable, Equatable, Sendable {
         self.tooltipsVisible = tooltipsVisible
         self.midiOverflowMode = midiOverflowMode
         self.separateStems = separateStems
+        self.showsConfidence = showsConfidence
+        self.minimumNoteLength = minimumNoteLength
+        self.minimumConfidence = minimumConfidence
         self.hiddenRecentProjects = hiddenRecentProjects
     }
 
@@ -66,7 +85,8 @@ public struct GlobalSettings: Codable, Equatable, Sendable {
     // MARK: - Codable
 
     private enum CodingKeys: String, CodingKey {
-        case modelSize, editorScale, tooltipsVisible, midiOverflowMode, separateStems, hiddenRecentProjects
+        case modelSize, editorScale, tooltipsVisible, midiOverflowMode, separateStems
+        case showsConfidence, minimumNoteLength, minimumConfidence, hiddenRecentProjects
     }
 
     /// Every key falls back to its default, so a file written by a version that did not have one
@@ -83,6 +103,12 @@ public struct GlobalSettings: Codable, Equatable, Sendable {
             try container.decodeIfPresent(MidiOverflowMode.self, forKey: .midiOverflowMode)
             ?? defaults.midiOverflowMode
         separateStems = try container.decodeIfPresent(Bool.self, forKey: .separateStems) ?? defaults.separateStems
+        showsConfidence =
+            try container.decodeIfPresent(Bool.self, forKey: .showsConfidence) ?? defaults.showsConfidence
+        minimumNoteLength =
+            try container.decodeIfPresent(Double.self, forKey: .minimumNoteLength) ?? defaults.minimumNoteLength
+        minimumConfidence =
+            try container.decodeIfPresent(Double.self, forKey: .minimumConfidence) ?? defaults.minimumConfidence
         hiddenRecentProjects =
             try container.decodeIfPresent([String].self, forKey: .hiddenRecentProjects)
             ?? defaults.hiddenRecentProjects

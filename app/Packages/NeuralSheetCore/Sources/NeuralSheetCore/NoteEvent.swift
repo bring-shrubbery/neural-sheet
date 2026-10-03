@@ -13,6 +13,13 @@ public struct NoteEvent: Equatable, Hashable, Codable, Sendable {
     public var amplitude: Double
     /// 0-127, or ``drumProgram``.
     public var program: Int
+    /// How sure the model was of this note, 0…1, or nil for a note it did not make (inserted,
+    /// pasted from one, imported) (confidence design §2). Read through ``confidenceOrSure``.
+    ///
+    /// The synthesized Codable writes an optional with `encodeIfPresent` and reads it with
+    /// `decodeIfPresent`, so a note without one leaves no key and a project written before the
+    /// field existed reads back nil: additive, no format bump.
+    public var confidence: Double?
 
     /// The program reserved for drum hits; the model routes drums itself, so no melodic note
     /// carries it and no drum hit carries any other program.
@@ -30,6 +37,10 @@ public struct NoteEvent: Equatable, Hashable, Codable, Sendable {
         min(max(Int((amplitude * 127).rounded()), 1), 127)
     }
 
+    /// The confidence, with a note the model did not make counted as sure: it is the user's, and
+    /// nothing should mark it doubtful or fade it.
+    public var confidenceOrSure: Double { confidence ?? 1 }
+
     /// The amplitude that reads back as `velocity`, clamped to 1…127.
     public static func amplitude(forVelocity velocity: Int) -> Double {
         Double(min(max(velocity, 1), 127)) / 127.0
@@ -40,13 +51,15 @@ public struct NoteEvent: Equatable, Hashable, Codable, Sendable {
         endTime: Double,
         pitch: Int,
         amplitude: Double = NoteEvent.defaultAmplitude,
-        program: Int
+        program: Int,
+        confidence: Double? = nil
     ) {
         self.startTime = startTime
         self.endTime = endTime
         self.pitch = pitch
         self.amplitude = amplitude
         self.program = program
+        self.confidence = confidence
     }
 }
 
