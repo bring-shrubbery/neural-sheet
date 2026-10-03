@@ -111,7 +111,7 @@ import UniformTypeIdentifiers
 
     /// Seconds of audio: 0 when there is none, growing live while recording (refreshed by the
     /// display-link tick), `source.duration` otherwise.
-    // Internal setter: written from AppModel+Recording.swift and AppModel+Loading.swift.
+    // Internal setter: written from AppModel+Recording.swift, +Loading.swift and +Playback.swift.
     var duration: Double = 0 {
         didSet {
             if duration != oldValue {
@@ -343,16 +343,17 @@ import UniformTypeIdentifiers
     // MARK: - Transport
 
     /// Mirrors the engine, refreshed by the display-link tick and on every transport command.
-    // Internal setter: AppModel+Loading.swift rewinds it.
+    // Internal setter: AppModel+Loading.swift and AppModel+Playback.swift write it.
     var isPlaying: Bool = false
 
     /// Mirrors the engine, refreshed by the display-link tick and on every transport command.
-    // Internal setter: AppModel+Loading.swift rewinds it.
+    // Internal setter: AppModel+Loading.swift and AppModel+Playback.swift write it.
     var playheadSeconds: Double = 0
 
     /// Bumped by ``goToStart()``, so the timeline can scroll to its left edge (§5.1) even when the
     /// playhead was already at 0.
-    private(set) var goToStartGeneration = 0
+    // Internal setter: written from AppModel+Playback.swift.
+    var goToStartGeneration = 0
 
     var followPlayhead: Bool = true
 
@@ -723,42 +724,6 @@ import UniformTypeIdentifiers
         return (mixer.entries.count, notes.count, lowest, highest)
     }
 
-    // MARK: - Transport
-
-    func togglePlay() {
-        guard state.canPlay else { return }
-
-        if engine.isPlaying {
-            engine.pause()
-        } else {
-            engine.play()
-        }
-
-        syncTransport()
-    }
-
-    /// Stop and rewind (§5.1). The timeline follows ``goToStartGeneration`` back to its left edge.
-    func goToStart() {
-        guard state.canPlay else { return }
-
-        engine.stop()
-        syncTransport()
-        goToStartGeneration &+= 1
-    }
-
-    /// Ignored unless `0 <= seconds < duration`, as the engine has it.
-    func seek(toSeconds seconds: Double) {
-        guard state.canPlay else { return }
-
-        engine.seek(seconds: seconds)
-        syncTransport()
-    }
-
-    private func handlePlayheadWrapped() {
-        // The engine has already stopped and rewound.
-        syncTransport()
-    }
-
     // MARK: - Audio devices
 
     /// What the Audio menu shows as chosen: the engine's own, which it rolls back when a device
@@ -811,19 +776,6 @@ import UniformTypeIdentifiers
             ?? String(localized: "The audio output did not start.", comment: "Alert body: the output device would not start, with no error to say why")
 
         showError(String(localized: "Audio could not start", comment: "Alert title: the audio output would not start"), detail)
-    }
-
-    private func syncTransport() {
-        let playing = engine.isPlaying
-        let position = engine.playheadSeconds
-
-        if playing != isPlaying {
-            isPlaying = playing
-        }
-
-        if position != playheadSeconds {
-            playheadSeconds = position
-        }
     }
 
     // MARK: - Instrument selection
@@ -1049,24 +1001,6 @@ import UniformTypeIdentifiers
         verticalZoom = -1
     }
 
-    // MARK: - Display link
-
-    /// One frame: the transport mirrors, the live recording length and the meters. `dt` is the
-    /// frame interval in seconds.
-    func displayLinkTick(dt: Double) {
-        syncTransport()
-
-        if state == .recording {
-            let seconds = recorder.durationSeconds
-
-            if seconds != duration {
-                duration = seconds
-            }
-        }
-
-        advanceMeters(dt: dt)
-    }
-
     // MARK: - Meters
 
     /// One instrument's level after ballistics, or the floor for a program not in the mix.
@@ -1077,7 +1011,8 @@ import UniformTypeIdentifiers
     /// Instant attack, 24 dB/s release, every meter fed the floor once the render thread has
     /// stood still for `max(0.5 s, 2 × block)` so a stopped engine's meters fall rather than
     /// stick (§2.5).
-    private func advanceMeters(dt: Double) {
+    // Internal: called from AppModel+Playback.swift's displayLinkTick.
+    func advanceMeters(dt: Double) {
         let frames = engine.synthBank.renderedFrames
 
         if frames != lastRenderedFrames {
