@@ -2,8 +2,9 @@ import AppKit
 import NeuralSheetCore
 import SwiftUI
 
-/// The Edit tab's row above the timeline (design §6.1): tools, snap and division, tempo and
-/// downbeat with Tap and Detect (tempo design §5) and the key, Quantize, Re-transcribe, Undo/Redo.
+/// The Edit tab's row above the timeline (design §6.1): tools, snap, division and swing
+/// (editor commands design §2), tempo and downbeat with Tap and Detect (tempo design §5) and the
+/// key, Quantize, Re-transcribe, Undo/Redo.
 ///
 /// Same frame as `Toolbar` -- height, side padding, button height, corner -- so the two tabs'
 /// rows sit on the same divider. The grid and the key are ``GridControls``, shared with the
@@ -35,6 +36,8 @@ struct EditToolbar: View {
                         showDivisionMenu()
                     }
                     .background(AnchorCatcher { divisionAnchor = $0 })
+
+                    swingField(editor.grid)
                 }
 
                 GridControls(model: model)
@@ -83,6 +86,32 @@ struct EditToolbar: View {
         }
         .padding(s(2))
         .background(RoundedRectangle(cornerRadius: s(Metrics.corner), style: .circular).fill(Theme.bgControlAlt))
+    }
+
+    /// SWING (editor commands design §2): 50…75 %, 50 straight, beside the division it swings
+    /// rather than among the grid controls, which the Score toolbar shares and the score ignores
+    /// swing. Double-clicking the label puts it back to straight; off for a division that does
+    /// not swing.
+    private func swingField(_ grid: TempoGrid) -> some View {
+        let s = Scaled(k: k)
+        let swings = TempoGrid.divisionSwings(grid.division)
+
+        return HStack(spacing: s(6)) {
+            ToolbarControls.pillLabel(k: k, "SWING")
+                .onTapGesture(count: 2) { model.setSwing(TempoGrid.straightSwing) }
+
+            HStack(spacing: s(3)) {
+                NumberField(value: (grid.swing * 100).rounded(), range: 50 ... 75, decimals: 0, width: 34) {
+                    model.setSwing($0 / 100)
+                }
+
+                ToolbarControls.pillLabel(k: k, "%")
+            }
+            .disabled(!swings)
+        }
+        .padding(.leading, s(2))
+        .opacity(swings ? 1 : Theme.disabledAlpha)
+        .tooltip("Swing: how late the second of each pair of eighths or sixteenths falls; 50 % is straight")
     }
 
     /// The division menu under its button: every `GridDivision`, the current one ticked.
