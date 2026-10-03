@@ -4,3 +4,4 @@
 //
 
 #include "../../app/NeuralSheet/Engine/nsheet_stems.h"
+#include "../../app/NeuralSheet/Decoders/stb_vorbis.h"

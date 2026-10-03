@@ -7,23 +7,84 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		069D54BC216CB2E87129BDF1 /* AudioFileLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = C91568AA7498575413EDF46D /* AudioFileLoader.swift */; };
 		09BF64E9FFDB8A4377F721D8 /* NeuralSheetEngine in Frameworks */ = {isa = PBXBuildFile; productRef = 29498518F436E7FC865537DC /* NeuralSheetEngine */; };
+		0C03555B18DC99182747690C /* PlaybackEngine+Transport.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6D8A1F6AE3E8FA641FFEC58 /* PlaybackEngine+Transport.swift */; };
+		114B5FE575AE9F7158D0D55A /* MidiOutput+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FC36307604DB1A338B4F2CA /* MidiOutput+iOS.swift */; };
+		1AFA0BBB7E6B34D6451D5FD5 /* StemSeparator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E2FF7355546FE6E86E6F168 /* StemSeparator.swift */; };
+		1FC6C114F5EB243883182FF0 /* nsheet_stems.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 23317E8AEEF4AAFE949E2DC7 /* nsheet_stems.cpp */; };
+		2335EEB90EFA3D99F0D270B4 /* InstrumentSynthBank+Audition.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC48D300B57BD8077795CBB6 /* InstrumentSynthBank+Audition.swift */; };
+		28171975AA2FFA4EAF223940 /* PlaybackEngine+Lifecycle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 897641DEB991F9073B52C67C /* PlaybackEngine+Lifecycle.swift */; };
+		2D725B746393001147BAA6A2 /* PlaybackEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = C34A7F7AC3AC1E37BE06C65D /* PlaybackEngine.swift */; };
 		3469BE535358830F044B2EBA /* NeuralSheetCore in Frameworks */ = {isa = PBXBuildFile; productRef = 29C282FB9AA070942A5DC935 /* NeuralSheetCore */; };
 		4D6D9EC86F2A45D1B9F5DF07 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D020775408B048B92C1AE276 /* Assets.xcassets */; };
+		58C2CA72644510B3246DEE71 /* SynthInstrument.swift in Sources */ = {isa = PBXBuildFile; fileRef = 640D8C9858F603029AEC4018 /* SynthInstrument.swift */; };
+		65AFDED09D5E33BB8F728E9B /* Recorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6D12E5EF025B8AD7A8F7FA5 /* Recorder.swift */; };
 		69FE56DA39DEE18FC3CC1C4C /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC249053BA8637E3134E9B96 /* ContentView.swift */; };
-		B9F45467283FC8AC77E6FDCF /* nsheet_stems.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 317CDCED17D4BCC51304D82D /* nsheet_stems.cpp */; };
+		718018CDD69D85F167A439DB /* InstrumentSynthBank.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27DAE908F39A0CF7BE43D8E9 /* InstrumentSynthBank.swift */; };
+		74C3F77B7218A0295A5FA90D /* NoteScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE67184FD217E5FF0A4BB2E7 /* NoteScheduler.swift */; };
+		76738E03A70664917AABC304 /* TranscriptionEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01DF1504F6115B749D70B214 /* TranscriptionEngine.swift */; };
+		7E60F88D0081DA9F2B991A2F /* PlaybackEngine+Render.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B3D5CB6E881256ABE27AC91 /* PlaybackEngine+Render.swift */; };
+		82A8F058B53BA6E0E47D9FEF /* stb_vorbis.c in Sources */ = {isa = PBXBuildFile; fileRef = BBC36832D4DC96BAFACEB669 /* stb_vorbis.c */; };
+		8543EED6DF64204777288DBF /* PlaybackEngine+Poll.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A0074BE848C7BBDC9A95571 /* PlaybackEngine+Poll.swift */; };
+		98AA275FBFA73CFE5A0BD466 /* InstrumentSynthBank+Click.swift in Sources */ = {isa = PBXBuildFile; fileRef = 165C904AE00B7E1F9478BD74 /* InstrumentSynthBank+Click.swift */; };
+		9D5A00ABCDF9C49058FF2BBB /* PlaybackEngine+Input.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AD76373CFC75212E1F958FC /* PlaybackEngine+Input.swift */; };
+		AE5D81C82C0E6008C0F6EF5F /* InstrumentSynthBank+SoundBank.swift in Sources */ = {isa = PBXBuildFile; fileRef = 052243AAB4D027C196C04FF2 /* InstrumentSynthBank+SoundBank.swift */; };
+		B562B23A8E356262AFF58C8D /* VideoAudioExtractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F42D8FAD397C447B517DDA2 /* VideoAudioExtractor.swift */; };
+		C5B75F665C784700508A030D /* OfflineRenderer+Source.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C6ACB6DFC02527238869F51 /* OfflineRenderer+Source.swift */; };
 		C6695BD73416E4C4B0B93519 /* NeuralSheetApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03BAAB8E7B6DAC10B47FBA96 /* NeuralSheetApp.swift */; };
+		CBBD115ECF29F7FF6A76C117 /* PlaybackEngine+Session.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A415DC1264328088E2DD2A2 /* PlaybackEngine+Session.swift */; };
+		CD5FC76DC204CC7546623F61 /* PlaybackEngine+Mix.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0372A709F93BFA81CA9CABDF /* PlaybackEngine+Mix.swift */; };
+		D00DD7549DA0986C015A7457 /* InstrumentSynthBank+Mix.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A45FCF8143DFA90E81E264A /* InstrumentSynthBank+Mix.swift */; };
+		D38354151E799A8FC30615C1 /* StemFiles.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C2D55847A3F90A85BA70E83 /* StemFiles.swift */; };
+		DF56ABE40398FFF5AEA90999 /* InstrumentSynthBank+DefaultBank.swift in Sources */ = {isa = PBXBuildFile; fileRef = C11A1EB5870C27BF3292450E /* InstrumentSynthBank+DefaultBank.swift */; };
+		DFCC3D99822AAAEF4A02FF08 /* PlaybackEngine+Source.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20811F454A56C430BC95FF13 /* PlaybackEngine+Source.swift */; };
+		E634D3B49814BD56B667B8E0 /* OfflineRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D7934C2ACB2C3E53B28135E /* OfflineRenderer.swift */; };
+		F8AFF459786F5BC55D3FDC87 /* InstrumentSynthBank+Render.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FDD01CAD3090DD466753E1D /* InstrumentSynthBank+Render.swift */; };
+		FDEEFB38C39830F68867BA4F /* SourceAudio.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21860F05E117BB0BEE501F35 /* SourceAudio.swift */; };
+		FFA74B58B25AC53052DB2A44 /* Recorder+Files.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1607585F612B7640B5D91B3 /* Recorder+Files.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		01DF1504F6115B749D70B214 /* TranscriptionEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptionEngine.swift; sourceTree = "<group>"; };
+		0372A709F93BFA81CA9CABDF /* PlaybackEngine+Mix.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PlaybackEngine+Mix.swift"; sourceTree = "<group>"; };
 		03BAAB8E7B6DAC10B47FBA96 /* NeuralSheetApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NeuralSheetApp.swift; sourceTree = "<group>"; };
+		052243AAB4D027C196C04FF2 /* InstrumentSynthBank+SoundBank.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "InstrumentSynthBank+SoundBank.swift"; sourceTree = "<group>"; };
+		0C6ACB6DFC02527238869F51 /* OfflineRenderer+Source.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OfflineRenderer+Source.swift"; sourceTree = "<group>"; };
+		165C904AE00B7E1F9478BD74 /* InstrumentSynthBank+Click.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "InstrumentSynthBank+Click.swift"; sourceTree = "<group>"; };
+		1FC36307604DB1A338B4F2CA /* MidiOutput+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MidiOutput+iOS.swift"; sourceTree = "<group>"; };
+		20811F454A56C430BC95FF13 /* PlaybackEngine+Source.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PlaybackEngine+Source.swift"; sourceTree = "<group>"; };
+		21860F05E117BB0BEE501F35 /* SourceAudio.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceAudio.swift; sourceTree = "<group>"; };
+		23317E8AEEF4AAFE949E2DC7 /* nsheet_stems.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = nsheet_stems.cpp; sourceTree = "<group>"; };
 		27BF13E12DFEE010EEF7B836 /* NeuralSheetCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = NeuralSheetCore; path = ../app/Packages/NeuralSheetCore; sourceTree = SOURCE_ROOT; };
+		27DAE908F39A0CF7BE43D8E9 /* InstrumentSynthBank.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstrumentSynthBank.swift; sourceTree = "<group>"; };
+		2A0074BE848C7BBDC9A95571 /* PlaybackEngine+Poll.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PlaybackEngine+Poll.swift"; sourceTree = "<group>"; };
 		2A6F2FA61179724EEFDCA2DF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
-		317CDCED17D4BCC51304D82D /* nsheet_stems.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = nsheet_stems.cpp; path = ../app/NeuralSheet/Engine/nsheet_stems.cpp; sourceTree = "<group>"; };
+		2C2D55847A3F90A85BA70E83 /* StemFiles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StemFiles.swift; sourceTree = "<group>"; };
+		3AD76373CFC75212E1F958FC /* PlaybackEngine+Input.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PlaybackEngine+Input.swift"; sourceTree = "<group>"; };
+		3D7934C2ACB2C3E53B28135E /* OfflineRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineRenderer.swift; sourceTree = "<group>"; };
+		3F42D8FAD397C447B517DDA2 /* VideoAudioExtractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoAudioExtractor.swift; sourceTree = "<group>"; };
 		4B149A6B93FC14D59A40B663 /* NeuralSheet.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = NeuralSheet.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		A6A0DEA8EDF0E86AF43612AF /* nsheet_stems.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = nsheet_stems.h; path = ../app/NeuralSheet/Engine/nsheet_stems.h; sourceTree = "<group>"; };
+		5A45FCF8143DFA90E81E264A /* InstrumentSynthBank+Mix.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "InstrumentSynthBank+Mix.swift"; sourceTree = "<group>"; };
+		640D8C9858F603029AEC4018 /* SynthInstrument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SynthInstrument.swift; sourceTree = "<group>"; };
+		64AFE2DF14117775CB15A796 /* stb_vorbis.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = stb_vorbis.h; sourceTree = "<group>"; };
+		7A415DC1264328088E2DD2A2 /* PlaybackEngine+Session.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PlaybackEngine+Session.swift"; sourceTree = "<group>"; };
+		7E2FF7355546FE6E86E6F168 /* StemSeparator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StemSeparator.swift; sourceTree = "<group>"; };
+		897641DEB991F9073B52C67C /* PlaybackEngine+Lifecycle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PlaybackEngine+Lifecycle.swift"; sourceTree = "<group>"; };
+		9B3D5CB6E881256ABE27AC91 /* PlaybackEngine+Render.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PlaybackEngine+Render.swift"; sourceTree = "<group>"; };
+		9FDD01CAD3090DD466753E1D /* InstrumentSynthBank+Render.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "InstrumentSynthBank+Render.swift"; sourceTree = "<group>"; };
 		AC7691234BF45FA9084BBACF /* NeuralSheetEngine */ = {isa = PBXFileReference; lastKnownFileType = folder; name = NeuralSheetEngine; path = ../app/Packages/NeuralSheetEngine; sourceTree = SOURCE_ROOT; };
+		B6D12E5EF025B8AD7A8F7FA5 /* Recorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Recorder.swift; sourceTree = "<group>"; };
+		BBC36832D4DC96BAFACEB669 /* stb_vorbis.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = stb_vorbis.c; sourceTree = "<group>"; };
+		BC48D300B57BD8077795CBB6 /* InstrumentSynthBank+Audition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "InstrumentSynthBank+Audition.swift"; sourceTree = "<group>"; };
+		C11A1EB5870C27BF3292450E /* InstrumentSynthBank+DefaultBank.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "InstrumentSynthBank+DefaultBank.swift"; sourceTree = "<group>"; };
+		C34A7F7AC3AC1E37BE06C65D /* PlaybackEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaybackEngine.swift; sourceTree = "<group>"; };
+		C91568AA7498575413EDF46D /* AudioFileLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioFileLoader.swift; sourceTree = "<group>"; };
+		CAC0ECC1C2232C49E4563E40 /* nsheet_stems.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = nsheet_stems.h; sourceTree = "<group>"; };
+		CE67184FD217E5FF0A4BB2E7 /* NoteScheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteScheduler.swift; sourceTree = "<group>"; };
 		D020775408B048B92C1AE276 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		D6D8A1F6AE3E8FA641FFEC58 /* PlaybackEngine+Transport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PlaybackEngine+Transport.swift"; sourceTree = "<group>"; };
+		F1607585F612B7640B5D91B3 /* Recorder+Files.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Recorder+Files.swift"; sourceTree = "<group>"; };
 		FC249053BA8637E3134E9B96 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		FE54E2BC7CFC1D8DBA29014E /* NeuralSheet-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NeuralSheet-Bridging-Header.h"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -49,13 +110,13 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		17C3BC890F0AB12563FF310D /* Engine */ = {
+		12C5103528E1838BF112B5F4 /* neural-sheet */ = {
 			isa = PBXGroup;
 			children = (
-				317CDCED17D4BCC51304D82D /* nsheet_stems.cpp */,
-				A6A0DEA8EDF0E86AF43612AF /* nsheet_stems.h */,
+				B2CE418191E10EECCBA25398 /* app */,
 			);
-			name = Engine;
+			name = "neural-sheet";
+			path = ..;
 			sourceTree = "<group>";
 		};
 		2BD5675C191DEC69F37EEC4E /* NeuralSheet */ = {
@@ -66,6 +127,7 @@
 				2A6F2FA61179724EEFDCA2DF /* Info.plist */,
 				FE54E2BC7CFC1D8DBA29014E /* NeuralSheet-Bridging-Header.h */,
 				03BAAB8E7B6DAC10B47FBA96 /* NeuralSheetApp.swift */,
+				A90E3DAD69E9E16CF2651F4D /* Audio */,
 			);
 			path = NeuralSheet;
 			sourceTree = "<group>";
@@ -73,11 +135,79 @@
 		323CE07C7D3A82F3AB5F4749 = {
 			isa = PBXGroup;
 			children = (
-				17C3BC890F0AB12563FF310D /* Engine */,
+				12C5103528E1838BF112B5F4 /* neural-sheet */,
 				2BD5675C191DEC69F37EEC4E /* NeuralSheet */,
 				C992E487CDD65C0DB420C4DD /* Packages */,
 				0B0C06A4EEC7BAFB1526B72C /* Products */,
 			);
+			sourceTree = "<group>";
+		};
+		35F913E1AF06E8D34A2517C6 /* Audio */ = {
+			isa = PBXGroup;
+			children = (
+				C91568AA7498575413EDF46D /* AudioFileLoader.swift */,
+				27DAE908F39A0CF7BE43D8E9 /* InstrumentSynthBank.swift */,
+				BC48D300B57BD8077795CBB6 /* InstrumentSynthBank+Audition.swift */,
+				165C904AE00B7E1F9478BD74 /* InstrumentSynthBank+Click.swift */,
+				5A45FCF8143DFA90E81E264A /* InstrumentSynthBank+Mix.swift */,
+				9FDD01CAD3090DD466753E1D /* InstrumentSynthBank+Render.swift */,
+				052243AAB4D027C196C04FF2 /* InstrumentSynthBank+SoundBank.swift */,
+				CE67184FD217E5FF0A4BB2E7 /* NoteScheduler.swift */,
+				3D7934C2ACB2C3E53B28135E /* OfflineRenderer.swift */,
+				0C6ACB6DFC02527238869F51 /* OfflineRenderer+Source.swift */,
+				C34A7F7AC3AC1E37BE06C65D /* PlaybackEngine.swift */,
+				897641DEB991F9073B52C67C /* PlaybackEngine+Lifecycle.swift */,
+				0372A709F93BFA81CA9CABDF /* PlaybackEngine+Mix.swift */,
+				2A0074BE848C7BBDC9A95571 /* PlaybackEngine+Poll.swift */,
+				9B3D5CB6E881256ABE27AC91 /* PlaybackEngine+Render.swift */,
+				20811F454A56C430BC95FF13 /* PlaybackEngine+Source.swift */,
+				D6D8A1F6AE3E8FA641FFEC58 /* PlaybackEngine+Transport.swift */,
+				B6D12E5EF025B8AD7A8F7FA5 /* Recorder.swift */,
+				F1607585F612B7640B5D91B3 /* Recorder+Files.swift */,
+				21860F05E117BB0BEE501F35 /* SourceAudio.swift */,
+				2C2D55847A3F90A85BA70E83 /* StemFiles.swift */,
+				640D8C9858F603029AEC4018 /* SynthInstrument.swift */,
+				3F42D8FAD397C447B517DDA2 /* VideoAudioExtractor.swift */,
+			);
+			path = Audio;
+			sourceTree = "<group>";
+		};
+		74EE18680DC1608AF2E8BBA0 /* NeuralSheet */ = {
+			isa = PBXGroup;
+			children = (
+				35F913E1AF06E8D34A2517C6 /* Audio */,
+				C64AA8171CB7916A1C3DA79C /* Decoders */,
+				E874C823CBA969CC2EE504F8 /* Engine */,
+			);
+			path = NeuralSheet;
+			sourceTree = "<group>";
+		};
+		A90E3DAD69E9E16CF2651F4D /* Audio */ = {
+			isa = PBXGroup;
+			children = (
+				C11A1EB5870C27BF3292450E /* InstrumentSynthBank+DefaultBank.swift */,
+				1FC36307604DB1A338B4F2CA /* MidiOutput+iOS.swift */,
+				3AD76373CFC75212E1F958FC /* PlaybackEngine+Input.swift */,
+				7A415DC1264328088E2DD2A2 /* PlaybackEngine+Session.swift */,
+			);
+			path = Audio;
+			sourceTree = "<group>";
+		};
+		B2CE418191E10EECCBA25398 /* app */ = {
+			isa = PBXGroup;
+			children = (
+				74EE18680DC1608AF2E8BBA0 /* NeuralSheet */,
+			);
+			path = app;
+			sourceTree = "<group>";
+		};
+		C64AA8171CB7916A1C3DA79C /* Decoders */ = {
+			isa = PBXGroup;
+			children = (
+				BBC36832D4DC96BAFACEB669 /* stb_vorbis.c */,
+				64AFE2DF14117775CB15A796 /* stb_vorbis.h */,
+			);
+			path = Decoders;
 			sourceTree = "<group>";
 		};
 		C992E487CDD65C0DB420C4DD /* Packages */ = {
@@ -87,6 +217,17 @@
 				AC7691234BF45FA9084BBACF /* NeuralSheetEngine */,
 			);
 			name = Packages;
+			sourceTree = "<group>";
+		};
+		E874C823CBA969CC2EE504F8 /* Engine */ = {
+			isa = PBXGroup;
+			children = (
+				23317E8AEEF4AAFE949E2DC7 /* nsheet_stems.cpp */,
+				CAC0ECC1C2232C49E4563E40 /* nsheet_stems.h */,
+				7E2FF7355546FE6E86E6F168 /* StemSeparator.swift */,
+				01DF1504F6115B749D70B214 /* TranscriptionEngine.swift */,
+			);
+			path = Engine;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -190,9 +331,39 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				069D54BC216CB2E87129BDF1 /* AudioFileLoader.swift in Sources */,
 				69FE56DA39DEE18FC3CC1C4C /* ContentView.swift in Sources */,
+				2335EEB90EFA3D99F0D270B4 /* InstrumentSynthBank+Audition.swift in Sources */,
+				98AA275FBFA73CFE5A0BD466 /* InstrumentSynthBank+Click.swift in Sources */,
+				DF56ABE40398FFF5AEA90999 /* InstrumentSynthBank+DefaultBank.swift in Sources */,
+				D00DD7549DA0986C015A7457 /* InstrumentSynthBank+Mix.swift in Sources */,
+				F8AFF459786F5BC55D3FDC87 /* InstrumentSynthBank+Render.swift in Sources */,
+				AE5D81C82C0E6008C0F6EF5F /* InstrumentSynthBank+SoundBank.swift in Sources */,
+				718018CDD69D85F167A439DB /* InstrumentSynthBank.swift in Sources */,
+				114B5FE575AE9F7158D0D55A /* MidiOutput+iOS.swift in Sources */,
 				C6695BD73416E4C4B0B93519 /* NeuralSheetApp.swift in Sources */,
-				B9F45467283FC8AC77E6FDCF /* nsheet_stems.cpp in Sources */,
+				74C3F77B7218A0295A5FA90D /* NoteScheduler.swift in Sources */,
+				C5B75F665C784700508A030D /* OfflineRenderer+Source.swift in Sources */,
+				E634D3B49814BD56B667B8E0 /* OfflineRenderer.swift in Sources */,
+				9D5A00ABCDF9C49058FF2BBB /* PlaybackEngine+Input.swift in Sources */,
+				28171975AA2FFA4EAF223940 /* PlaybackEngine+Lifecycle.swift in Sources */,
+				CD5FC76DC204CC7546623F61 /* PlaybackEngine+Mix.swift in Sources */,
+				8543EED6DF64204777288DBF /* PlaybackEngine+Poll.swift in Sources */,
+				7E60F88D0081DA9F2B991A2F /* PlaybackEngine+Render.swift in Sources */,
+				CBBD115ECF29F7FF6A76C117 /* PlaybackEngine+Session.swift in Sources */,
+				DFCC3D99822AAAEF4A02FF08 /* PlaybackEngine+Source.swift in Sources */,
+				0C03555B18DC99182747690C /* PlaybackEngine+Transport.swift in Sources */,
+				2D725B746393001147BAA6A2 /* PlaybackEngine.swift in Sources */,
+				FFA74B58B25AC53052DB2A44 /* Recorder+Files.swift in Sources */,
+				65AFDED09D5E33BB8F728E9B /* Recorder.swift in Sources */,
+				FDEEFB38C39830F68867BA4F /* SourceAudio.swift in Sources */,
+				D38354151E799A8FC30615C1 /* StemFiles.swift in Sources */,
+				1AFA0BBB7E6B34D6451D5FD5 /* StemSeparator.swift in Sources */,
+				58C2CA72644510B3246DEE71 /* SynthInstrument.swift in Sources */,
+				76738E03A70664917AABC304 /* TranscriptionEngine.swift in Sources */,
+				B562B23A8E356262AFF58C8D /* VideoAudioExtractor.swift in Sources */,
+				1FC6C114F5EB243883182FF0 /* nsheet_stems.cpp in Sources */,
+				82A8F058B53BA6E0E47D9FEF /* stb_vorbis.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

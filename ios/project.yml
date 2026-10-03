@@ -39,12 +39,31 @@ targets:
     deploymentTarget: "26.0"
     sources:
       - path: NeuralSheet
-      # The stem separation bridge, compiled unchanged from the Mac's sources.
-      - path: ../app/NeuralSheet/Engine/nsheet_stems.cpp
-        group: Engine
-      - path: ../app/NeuralSheet/Engine/nsheet_stems.h
-        group: Engine
-        buildPhase: none
+      # The audio layer, shared with the Mac by path (iOS app design §2), minus the files that
+      # are the HAL's or CoreMIDI's: device lists, private aggregates, process taps, the I/O
+      # buffer request, the recording input picker and the MIDI output. Their iOS counterparts
+      # are in NeuralSheet/Audio.
+      - path: ../app/NeuralSheet/Audio
+        excludes:
+          - AudioDevices.swift
+          - InputAggregate.swift
+          - ProcessTap.swift
+          - PlaybackEngine+Devices.swift
+          - PlaybackEngine+IOBuffer.swift
+          - RecordingInput.swift
+          - MidiOutput.swift
+          - MidiOutput+Sender.swift
+          - MidiOutRing.swift
+          - InstrumentSynthBank+MidiOut.swift
+      # The engine wrapper and the stem separation bridge, compiled unchanged. The headless
+      # pipeline is the batch window's, the CLI's and Shortcuts' (not on iOS) and leans on AppModel.
+      - path: ../app/NeuralSheet/Engine
+        excludes:
+          - HeadlessTranscription.swift
+          - HeadlessTranscription+Outputs.swift
+          - HeadlessTranscription+Stems.swift
+      # The vendored Ogg Vorbis decoder AudioFileLoader reads .ogg with, as on the Mac.
+      - path: ../app/NeuralSheet/Decoders
     dependencies:
       - package: NeuralSheetCore
       - package: NeuralSheetEngine
