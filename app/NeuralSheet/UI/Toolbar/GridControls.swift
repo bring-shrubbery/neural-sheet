@@ -38,7 +38,7 @@ struct GridControls: View {
 
                 ToolbarControls.labelButton(k: k, "Tap", tooltip: "Tap in time with playback to set the tempo | t", action: model.tap)
 
-                ToolbarControls.labelButton(k: k, "Detect", tooltip: "Find the tempo, the downbeat and the key",
+                ToolbarControls.labelButton(k: k, "Detect", tooltip: "Find the tempo and its changes, the downbeat, the meter and the key",
                                             isEnabled: !model.isDetectingTempo, action: model.detectTempo)
             }
 

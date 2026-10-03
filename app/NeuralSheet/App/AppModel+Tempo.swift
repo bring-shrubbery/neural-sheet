@@ -2,8 +2,9 @@ import Foundation
 import NeuralSheetCore
 
 /// The tempo and the key from the music rather than from typing (tempo design §4, key design
-/// §4): taps along with the take set the BPM; a detection over the take's audio sets the BPM and
-/// the downbeat, and over the transcription's notes the key.
+/// §4): taps along with the take set the BPM; a detection over the take's audio sets the tempo
+/// map, the downbeat and, when the accents are clear, the meter (tempo map design §4), and over
+/// the transcription's notes the key.
 extension AppModel {
     // MARK: - Tap
 
@@ -21,19 +22,42 @@ extension AppModel {
 
     // MARK: - Detect
 
-    /// The Detect button: the take's tempo and downbeat, found off the main thread and written
-    /// to the grid when they land, unless the take has changed underneath, and then the key
-    /// from the notes. Nothing to find is said so in the standard dialog.
+    /// The Detect button: the take's tempo map and downbeat, found off the main thread and
+    /// written to the grid when they land, unless the take has changed underneath, and then the
+    /// key from the notes. Nothing to find is said so in the standard dialog. A map someone has
+    /// shaped (a change, or a meter other than 4/4) is asked about first, the way Revert asks.
     func detectTempo() {
+        guard source != nil, !isDetectingTempo else { return }
+
+        let grid = editor.grid
+        let isShaped = grid.segments.count > 1 || grid.segments.contains { $0.timeSignature != .common }
+
+        guard isShaped, let presentConfirm else {
+            runTempoDetection()
+            return
+        }
+
+        presentConfirm("Replace the tempo map?",
+                       "Detect replaces the tempo changes and the time signature with what it finds in the take.",
+                       "Replace") { [weak self] confirmed in
+            if confirmed {
+                self?.runTempoDetection()
+            }
+        }
+    }
+
+    private func runTempoDetection() {
         guard let source, !isDetectingTempo else { return }
 
         isDetectingTempo = true
 
         // The model's mono copy is immutable, so the analysis can read it off the main actor.
         let mono = source.mono16k
+        // The meter the bars are counted in when the accents do not settle it.
+        let meter = editor.grid.timeSignature
 
         Task.detached(priority: .userInitiated) { [weak self] in
-            let estimate = TempoEstimator.estimate(mono16k: mono)
+            let estimate = TempoEstimator.estimate(mono16k: mono, meter: meter)
 
             await MainActor.run { [weak self] in
                 self?.tempoDetectionDidFinish(estimate, for: source)
@@ -54,8 +78,8 @@ extension AppModel {
             return
         }
 
-        setGridBpm(estimate.bpm)
-        setGridOffset(estimate.downbeatSeconds)
+        // The whole map in one step, the meter with it when the accents were sure.
+        editor.grid.replaceMap(estimate.segments, offsetSeconds: estimate.downbeatSeconds)
         detectKey()
     }
 
