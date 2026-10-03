@@ -233,6 +233,10 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
     /// stopped and rewound by then.
     var onPlayheadWrapped: (() -> Void)?
 
+    /// Called on the main queue on every tick of the 30 Hz poll, for the count-in's state
+    /// machine (click design §2), which reads the click's clock and downbeat off the synth bank.
+    var onPoll: (() -> Void)?
+
     /// Set by the Recorder: installed on the input node's bus 0 with 1024-frame buffers. Setting it
     /// to nil removes the tap. The engine never routes the input to the output.
     var inputTap: ((AVAudioPCMBuffer, AVAudioTime) -> Void)? {
@@ -1008,6 +1012,7 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
             guard let self else { return }
 
             self.healIfNeeded()
+            self.onPoll?()
 
             let generation = self.state.wrapGeneration.load(ordering: .relaxed)
             guard generation != self.lastWrapGeneration else { return }
@@ -1182,7 +1187,8 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
                 to: endSeconds,
                 renderTime: timestamp.pointee,
                 frameCount: frames,
-                sampleRate: rate / speed
+                sampleRate: rate / speed,
+                outputRate: rate
             )
 
             isSilence.pointee = ObjCBool(!rendered)
