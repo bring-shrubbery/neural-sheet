@@ -9,7 +9,7 @@ extension AppModel {
 
     /// File → Open…: a panel titled "Open Project", the package type only.
     func openProjectFromPanel() {
-        guard canChangeProject else { return }
+        guard canChangeProject, importJob == nil else { return }
 
         let panel = NSOpenPanel()
         panel.title = "Open Project"
@@ -26,8 +26,11 @@ extension AppModel {
     /// Opens the package at `url` in place of the current project. Read and decoded *before* the
     /// current project is touched, so a bad file costs nothing; a failure is one dialog.
     /// `reviewing: false` skips the save question (Revert's case).
+    ///
+    /// Refused while a video's audio is being extracted, as a load or a record is (input formats
+    /// design §2). A close is not: it cancels the extraction instead.
     func openProject(url: URL, reviewing: Bool = true) {
-        guard canChangeProject else { return }
+        guard canChangeProject, importJob == nil else { return }
 
         let package: ProjectPackage
         var audio: SourceAudio?

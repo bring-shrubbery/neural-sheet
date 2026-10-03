@@ -57,7 +57,7 @@ extension AppModel {
 
     /// The Transcribe button. A transcription that has been edited is asked about first (§3.5).
     func launchTranscription() {
-        guard state == .audioLoaded else { return }
+        guard state == .audioLoaded, importJob == nil else { return }
 
         confirmDiscardingEdits(action: "Transcribing again") { [weak self] in
             self?.launchTranscriptionNow()

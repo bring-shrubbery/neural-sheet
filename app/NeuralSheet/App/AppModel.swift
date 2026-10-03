@@ -175,6 +175,16 @@ import UniformTypeIdentifiers
     /// while `jobActive`.
     var stemsJob: StemsJob?
 
+    /// A video's audio being extracted and decoded, or nil (`AppModel+Import.swift`, its only
+    /// writer besides ``clearNow()``, which cancels it). While it is set the state is `.empty`
+    /// but nothing may start: a load, a record, a run or an open refuse as they do during a
+    /// region job (input formats design §2).
+    var importJob: Task<Void, Never>?
+
+    /// The file a video's audio was extracted to, while it is the take. It is not a recording by
+    /// name, so the clear finds it here rather than by the recorder's prefix.
+    @ObservationIgnored var importedAudioURL: URL?
+
     /// The instrument a strip click singled out: the roll fades every other instrument while it
     /// is set. Both tabs; not part of the project file.
     private(set) var highlightedProgram: Int?
@@ -538,9 +548,9 @@ import UniformTypeIdentifiers
 
     // MARK: - Derived
 
-    var canRecord: Bool { state == .empty || state == .recording }
+    var canRecord: Bool { (state == .empty && importJob == nil) || state == .recording }
 
-    var canTranscribe: Bool { state == .audioLoaded && modelSize != nil && !jobActive }
+    var canTranscribe: Bool { state == .audioLoaded && modelSize != nil && !jobActive && importJob == nil }
 
     /// Both MIDI exits: only a finished transcription, never a half-decoded one (§6.1).
     var canExport: Bool { state == .populated }
@@ -577,6 +587,9 @@ import UniformTypeIdentifiers
     func toggleRecord() {
         switch state {
         case .empty:
+            // A video's audio is on its way in: the take it becomes would replace the recording.
+            guard importJob == nil else { return }
+
             switch Recorder.microphoneAuthorization {
             case .authorized:
                 startRecording()
@@ -585,7 +598,7 @@ import UniformTypeIdentifiers
                 // The prompt stands for as long as the user leaves it; `start()` never waits on it.
                 Recorder.requestMicrophoneAccess { [weak self] granted in
                     MainActor.assumeIsolated {
-                        guard let self, self.state == .empty else { return }
+                        guard let self, self.state == .empty, self.importJob == nil else { return }
 
                         if granted {
                             self.startRecording()
@@ -661,13 +674,14 @@ import UniformTypeIdentifiers
     /// or transcribing. Edited notes are asked about first, as any clear does (design §3.5), and
     /// the load waits on the answer.
     func loadAudio(url: URL) {
-        guard state == .empty || state == .audioLoaded || state == .populated, regionJob == nil else { return }
+        guard state == .empty || state == .audioLoaded || state == .populated, regionJob == nil, importJob == nil
+        else { return }
 
         // Before anything is cleared: the C++ drop target refuses an unknown extension ahead of
         // `onFileDrop`, so a stray .txt on a finished transcription costs nothing.
         guard AudioFileLoader.acceptedExtensions.contains(url.pathExtension.lowercased()) else {
-            let accepted = AudioFileLoader.acceptedExtensions.map { ".\($0)" }.joined(separator: ", ")
-            showError("Could not load the file.", "Check your file format (Accepted formats: \(accepted)).")
+            showError("Could not load the file.",
+                      "Check your file format (Accepted formats: \(AudioFileLoader.acceptedFormatsList)).")
             return
         }
 
@@ -679,19 +693,31 @@ import UniformTypeIdentifiers
         }
     }
 
+    /// A video goes off the main actor to have its audio extracted (`AppModel+Import.swift`);
+    /// anything else is decoded here, synchronously, as it always was.
     private func load(url: URL) {
+        if AudioFileLoader.isVideo(url) {
+            importVideo(url: url)
+            return
+        }
+
         let audio: SourceAudio
 
         do {
             audio = try AudioFileLoader.load(url: url, deviceRate: engine.sampleRate)
         } catch {
-            showError(
-                "Could not load the audio file.",
-                "Check your file format (Accepted formats: .wav, .aiff, .flac, .mp3, .ogg).")
+            presentLoadFailure()
             return
         }
 
         installSource(audio)
+    }
+
+    /// Every failure after the clear, the video path's included. The list is the loader's own
+    /// (input formats design §2); NeuralNote's message hard-coded the five formats it had.
+    func presentLoadFailure() {
+        showError("Could not load the audio file.",
+                  "Check your file format (Accepted formats: \(AudioFileLoader.acceptedFormatsList)).")
     }
 
     /// Hands a take to the engine and moves to `audioLoaded`. The pipeline's and the project's
@@ -711,7 +737,7 @@ import UniformTypeIdentifiers
     /// notes until the engine's completion lands, and cancelling is the way out of that. Edited
     /// notes are asked about first (design §3.5).
     func clear() {
-        guard !jobActive, regionJob == nil else { return }
+        guard !jobActive, regionJob == nil, importJob == nil else { return }
 
         confirmDiscardingEdits(action: "Clearing") { [weak self] in
             self?.clearNow()
@@ -725,6 +751,11 @@ import UniformTypeIdentifiers
             // The take is discarded whatever came of it; the files go below.
             _ = recorder.stop()
         }
+
+        // A video's extraction in flight is abandoned: the cancelled task installs nothing,
+        // shows nothing and removes its own file (`AppModel+Import.swift`).
+        importJob?.cancel()
+        importJob = nil
 
         resetTranscription()
         engine.setSource(nil)
@@ -806,6 +837,11 @@ import UniformTypeIdentifiers
 
         for url in candidates where isDeletableRecording(url) {
             try? FileManager.default.removeItem(at: url)
+        }
+
+        if let importedAudioURL {
+            removeImportFolder(importedAudioURL.deletingLastPathComponent())
+            self.importedAudioURL = nil
         }
     }
 
