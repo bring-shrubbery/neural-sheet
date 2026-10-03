@@ -33,14 +33,16 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
 
     /// The synth side of the graph. Its own sub-mix hangs off this, and the master fader is its
     /// output volume.
-    private let masterMixer = AVAudioMixerNode()
+    // Internal: PlaybackEngine+Mix.swift sets its volume and pan.
+    let masterMixer = AVAudioMixerNode()
 
     // Internal: the extensions reach the render thread's state through it.
     let state = RenderState()
 
     let synthBank: InstrumentSynthBank
 
-    private var sourceNode: AVAudioSourceNode?
+    // Internal: PlaybackEngine+Mix.swift pans it.
+    var sourceNode: AVAudioSourceNode?
 
     /// The device rate the graph is built for.
     private(set) var sampleRate: Double
@@ -448,29 +450,6 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
         }
 
         return nsError.localizedDescription
-    }
-
-    // MARK: - Gains
-
-    /// Re-applies the gains from outside. The mix depends on whether the scheduler has any notes
-    /// (§5.3), which changes when a decoded chunk arrives rather than when a control moves.
-    func refreshGains() {
-        updateGains()
-    }
-
-    /// The gains through ``MixLaw``, the one formula the offline renderer shares (audio export
-    /// design §2).
-    private func updateGains() {
-        let gains = MixLaw.resolve(mix: mix, masterGainDb: masterGainDb, muted: muted, stereoSplit: stereoSplit,
-                                   hasNotes: synthBank.scheduler.hasNotes)
-
-        state.sourceGainBits.store(gains.source.bitPattern, ordering: .relaxed)
-        synthBank.synthGain = gains.synth
-        masterMixer.outputVolume = gains.master
-        // The pans are the main mixer's input settings, re-applied here so a graph rebuilt for
-        // another device gets them back with its gains.
-        sourceNode?.pan = gains.stereoSplit ? -1 : 0
-        masterMixer.pan = gains.stereoSplit ? 1 : 0
     }
 
     // MARK: - Wrap notification
