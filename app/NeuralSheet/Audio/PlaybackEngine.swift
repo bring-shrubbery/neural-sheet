@@ -25,7 +25,7 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
 
     /// How long the health check waits before its first retry, how far that doubles, and how many
     /// retries it gets before it stops and leaves ``lastStartError`` for the UI to show.
-    // Internal: the health check in PlaybackEngine+Poll.swift reads them.
+    // Internal: PlaybackEngine+Lifecycle.swift and +Poll.swift use them.
     static let healBackoffSeconds = 0.25
     static let healBackoffMaxSeconds = 5.0
     static let healAttemptLimit = 8
@@ -34,7 +34,7 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
 
     /// The synth side of the graph. Its own sub-mix hangs off this, and the master fader is its
     /// output volume.
-    // Internal: PlaybackEngine+Mix.swift sets its volume and pan.
+    // Internal: PlaybackEngine+Mix.swift and +Lifecycle.swift use it.
     let masterMixer = AVAudioMixerNode()
 
     // Internal: the extensions reach the render thread's state through it.
@@ -42,11 +42,12 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
 
     let synthBank: InstrumentSynthBank
 
-    // Internal: PlaybackEngine+Mix.swift pans it.
+    // Internal: PlaybackEngine+Lifecycle.swift makes it, +Mix.swift pans it.
     var sourceNode: AVAudioSourceNode?
 
     /// The device rate the graph is built for.
-    private(set) var sampleRate: Double
+    // Internal setter: rebuildGraph in PlaybackEngine+Lifecycle.swift writes it.
+    var sampleRate: Double
 
     /// Strong reference to what the box points at.
     // Internal: PlaybackEngine+Transport.swift and +Source.swift use it.
@@ -57,36 +58,37 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
     var retiredSources: [SourceAudio] = []
 
     /// Polls ``RenderState/wrapGeneration``, so the render block never has to dispatch.
-    // Internal: PlaybackEngine+Poll.swift makes it.
+    // Internal: PlaybackEngine+Poll.swift makes it, +Lifecycle.swift cancels it.
     var wrapPoll: DispatchSourceTimer?
-    // Internal: PlaybackEngine+Source.swift supersedes a pending wrap through it.
+    // Internal: PlaybackEngine+Source.swift and +Poll.swift use it.
     var lastWrapGeneration = 0
 
-    private var meterTapInstalled = false
+    // Internal: PlaybackEngine+Lifecycle.swift installs and removes the meter tap.
+    var meterTapInstalled = false
     var inputTapInstalled = false
 
     /// Guards ``rebuildGraph(_:)`` against re-entering itself.
-    // Internal: the health check in PlaybackEngine+Poll.swift reads it.
+    // Internal: PlaybackEngine+Lifecycle.swift and +Poll.swift use it.
     var isRebuilding = false
 
     /// When the last rebuild finished, so a graph that cannot start is not rebuilt every tick.
-    // Internal: the health check in PlaybackEngine+Poll.swift reads it.
+    // Internal: PlaybackEngine+Lifecycle.swift and +Poll.swift use it.
     var lastRebuild = Date.distantPast
 
     /// True between ``start()`` and ``stopEngine()``. What the health check compares the engine's
     /// actual state against.
-    // Internal: the health check in PlaybackEngine+Poll.swift reads it.
+    // Internal: PlaybackEngine+Lifecycle.swift and +Poll.swift use it.
     var shouldRun = false
 
     /// How long the health check waits before its next attempt, and how many it has spent. Both are
     /// reset by a successful start, by Play and by the user choosing a device.
-    // Internal: the health check in PlaybackEngine+Poll.swift spends them.
+    // Internal: PlaybackEngine+Lifecycle.swift and +Poll.swift use them.
     var healDelay = PlaybackEngine.healBackoffSeconds
     var healAttempts = 0
 
     /// True once the health check has spent its budget on an engine that will not start, until a
     /// fresh budget is handed out. What ``onHealExhausted`` announces.
-    // Internal setter: the health check in PlaybackEngine+Poll.swift sets it.
+    // Internal setter: PlaybackEngine+Poll.swift sets it, +Lifecycle.swift clears it.
     var healExhausted = false
 
     /// Set while a failed device switch is being rolled back, so the rollback's `didSet` does not
@@ -110,7 +112,8 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
     var lastTapError: OSStatus?
 
     /// Why the engine last refused to start, or nil if it is running or was stopped deliberately.
-    private(set) var lastStartError: Error?
+    // Internal setter: written from PlaybackEngine+Lifecycle.swift.
+    var lastStartError: Error?
 
     /// Called on the main queue when the health check gives up: eight rebuilds, backed off to five
     /// seconds apart, and the engine is still not running. Play or a device pick starts it over.
@@ -118,7 +121,8 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
 
     /// The status of the last I/O buffer-size request, or nil if it was accepted. The size that
     /// came back is ``ioBufferFrames``, which is what the HAL settled on rather than what was asked.
-    private(set) var lastIOBufferError: OSStatus?
+    // Internal setter: written from PlaybackEngine+Lifecycle.swift.
+    var lastIOBufferError: OSStatus?
 
     /// The devices the I/O units were last pointed at successfully, so a rejected switch has
     /// something to fall back to when the unit cannot name what it is on.
@@ -234,172 +238,6 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
         engine.stop()
         // The aggregate, then the tap in it.
         aggregate?.destroy()
-    }
-
-    // MARK: - Engine lifecycle
-
-    /// Starts the engine, or throws why it would not. Either way the engine now *should* be
-    /// running: a refusal at launch -- the output device busy, or not there yet -- leaves the poll
-    /// running and the health check retrying with its backoff, so the failure is a delay rather
-    /// than a silent session. The error stays in ``lastStartError`` for the UI to show.
-    func start() throws {
-        guard !engine.isRunning, !isShutDown else { return }
-
-        shouldRun = true
-        resetHealBudget()
-
-        applyDevices()
-
-        // Before `prepare()`, not after `start()`: `prepare()` initialises the AUHAL, and an
-        // initialised unit answers kAudioUnitErr_Initialized to a buffer-size request.
-        let bufferStatus = requestIOBufferSize()
-        lastIOBufferError = bufferStatus == noErr ? nil : bufferStatus
-
-        engine.prepare()
-
-        // The poll first, whatever `start()` says: it is what carries the retries.
-        startWrapPoll()
-
-        do {
-            try engine.start()
-            lastStartError = nil
-        } catch {
-            lastStartError = error
-            throw error
-        }
-
-        readIOBufferSize()
-    }
-
-    /// A user gesture that wants the output -- Play, a device pick -- hands the health check a
-    /// fresh budget, and when the engine is not running makes one attempt now rather than at the
-    /// poll's next tick. Not from inside a rebuild, whose own attempt is under way.
-    func retryStartIfNeeded() {
-        guard !isRebuilding, !isShutDown else { return }
-
-        resetHealBudget()
-
-        guard !engine.isRunning else { return }
-
-        try? start()
-    }
-
-    func resetHealBudget() {
-        healAttempts = 0
-        healDelay = Self.healBackoffSeconds
-        healExhausted = false
-    }
-
-    func stopEngine() {
-        shouldRun = false
-        wrapPoll?.cancel()
-        wrapPoll = nil
-        engine.stop()
-    }
-
-    // MARK: - Graph
-
-    private func buildGraph() {
-        guard let format = AVAudioFormat(standardFormatWithSampleRate: sampleRate, channels: 2)
-        else { return }
-
-        state.meter = RmsMeter(sampleRate: sampleRate)
-        // Its windows are seconds, so a new rate means new buffers. The engine is stopped.
-        state.stretcher = TimeStretcher(sampleRate: sampleRate, maxBlockFrames: RenderState.maxBlockFrames)
-        state.stretching = false
-
-        let node = AVAudioSourceNode(format: format, renderBlock: makeRenderBlock())
-        sourceNode = node
-
-        engine.attach(node)
-
-        // Explicitly, and to the hardware's own format: a device change can hand the output node a
-        // different channel count, and the implicit main-mixer connection keeps the one it was made
-        // with, which leaves the engine refusing to start.
-        engine.connect(engine.mainMixerNode, to: engine.outputNode, format: nil)
-        engine.connect(node, to: engine.mainMixerNode, format: format)
-        engine.connect(masterMixer, to: engine.mainMixerNode, format: format)
-
-        engine.mainMixerNode.installTap(onBus: 0, bufferSize: 1024, format: nil) {
-            [state] buffer, _ in
-            state.pushMeter(buffer)
-        }
-        meterTapInstalled = true
-    }
-
-    private func teardownGraph() {
-        if meterTapInstalled {
-            engine.mainMixerNode.removeTap(onBus: 0)
-            meterTapInstalled = false
-        }
-
-        if let node = sourceNode {
-            engine.disconnectNodeOutput(node)
-            engine.detach(node)
-            sourceNode = nil
-        }
-
-        engine.disconnectNodeOutput(masterMixer)
-    }
-
-    /// The common path for "the hardware underneath us changed": our own device switch, and the
-    /// health check finding an engine that stopped on its own.
-    func rebuildGraph(_ beforeRebuild: () -> Void) {
-        guard !isRebuilding, !isShutDown else { return }
-        isRebuilding = true
-        defer { isRebuilding = false }
-
-        let wasRunning = engine.isRunning
-        let wasPlaying = isPlaying
-        let position = playheadSeconds
-
-        engine.stop()
-        teardownGraph()
-
-        beforeRebuild()
-
-        let rate = engine.outputNode.outputFormat(forBus: 0).sampleRate
-        if rate > 0 { sampleRate = rate }
-
-        buildGraph()
-        // The synths kept their nodes through the rebuild, but not necessarily the rate.
-        synthBank.reconnectForCurrentRate()
-        updateGains()
-
-        // The take is stored at the device rate, so new hardware means converting it again.
-        if let source = currentSource, source.deviceRate != sampleRate {
-            setSource(source)
-        }
-
-        // The loop is frames at the device rate, so a new rate means converting it again.
-        applyLoop()
-
-        refreshInputTap()
-
-        // `shouldRun` as well as `wasRunning`: the health check only calls this because the engine
-        // has already stopped on its own, and that is exactly the case that has to come back up.
-        if wasRunning || shouldRun {
-            let bufferStatus = requestIOBufferSize()
-            lastIOBufferError = bufferStatus == noErr ? nil : bufferStatus
-
-            engine.prepare()
-
-            do {
-                try engine.start()
-                lastStartError = nil
-            } catch {
-                lastStartError = error
-            }
-
-            readIOBufferSize()
-        }
-
-        // The transport survives a device change: the playhead is a position in the take, not in
-        // the hardware.
-        seek(seconds: position)
-        if wasPlaying { play() }
-
-        lastRebuild = Date()
     }
 
     // MARK: - Error text
