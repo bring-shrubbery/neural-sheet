@@ -40,7 +40,7 @@ extension AppModel {
             return
         }
 
-        commit(document.setLyric(id: id, Lyric.typed(text, after: previousLyric(before: id))))
+        commit(EditingCommands.lyric(in: document, id: id, typed: text))
 
         guard let next = self.document?.nextNote(sameProgramAs: id) else {
             closeLyricEntry()
@@ -56,7 +56,7 @@ extension AppModel {
     func setSelectedLyric(_ text: String) {
         guard canEdit, editor.selection.count == 1, let id = editor.selection.first, let document else { return }
 
-        commit(document.setLyric(id: id, Lyric.typed(text, after: previousLyric(before: id))))
+        commit(EditingCommands.lyric(in: document, id: id, typed: text))
     }
 
     // MARK: - Paste Lyrics
@@ -78,9 +78,7 @@ extension AppModel {
             return
         }
 
-        let targets = editor.selection.isEmpty
-            ? document.notes.filter { $0.note.program == editor.targetProgram }
-            : document.notes.filter { editor.selection.contains($0.id) }
+        let targets = EditingCommands.pasteLyricsTargets(in: document, editor: editor)
 
         guard !targets.isEmpty else {
             showError(Self.pasteLyricsFailedTitle, String(localized: "The instrument has no notes; select the notes the words go on.",
@@ -88,8 +86,7 @@ extension AppModel {
             return
         }
 
-        // `notes` is in start order already; the selection's order is the document's.
-        let (batch, leftOver) = document.setLyrics(targets.map(\.id), lyrics: syllables)
+        let (batch, leftOver) = document.setLyrics(targets, lyrics: syllables)
         commit(batch)
 
         if leftOver > 0 {

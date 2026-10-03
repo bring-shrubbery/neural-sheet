@@ -45,4 +45,23 @@ nonisolated enum EditingCommands {
 
         return document.snapToScale(selectionOrAll(editor.selection, in: document), key: key)
     }
+
+    // MARK: - Lyrics
+
+    /// The note's syllable from its typed form (a trailing "-" continues the word, "_" holds it),
+    /// read against the previous syllable of its instrument, as one "Lyric" batch.
+    static func lyric(in document: NoteDocument, id: NoteID, typed text: String) -> EditBatch {
+        document.setLyric(id: id, Lyric.typed(text, after: document.previousNote(sameProgramAs: id)?.note.lyric))
+    }
+
+    /// The notes Paste Lyrics hands the syllables to, in time order: the selection, or with none
+    /// selected every note of the target instrument.
+    static func pasteLyricsTargets(in document: NoteDocument, editor: EditorState) -> [NoteID] {
+        // `notes` is in start order already; the selection's order is the document's.
+        let targets = editor.selection.isEmpty
+            ? document.notes.filter { $0.note.program == editor.targetProgram }
+            : document.notes.filter { editor.selection.contains($0.id) }
+
+        return targets.map(\.id)
+    }
 }
