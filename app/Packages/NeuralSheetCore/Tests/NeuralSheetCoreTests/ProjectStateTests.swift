@@ -47,6 +47,8 @@ private func makeProjectTempDirectory() throws -> URL {
     state.exportTempo = 96.5
     state.gridOffsetSeconds = 0.25
     state.gridDivision = .eighthTriplet
+    state.gridSegments = [GridSegment(startBar: 1, bpm: 96.5),
+                          GridSegment(startBar: 9, bpm: 90, timeSignature: TimeSignature(numerator: 3, denominator: 4))]
     state.snapEnabled = false
     state.targetProgram = 128
     state.key = MusicalKey(tonic: 3, mode: .minor)
@@ -61,6 +63,22 @@ private func makeProjectTempDirectory() throws -> URL {
     try state.save(to: url)
 
     #expect(try ProjectState.read(from: url) == state)
+}
+
+@Test func aProjectFromBeforeTheTempoMapOpensAsOneCommonSegment() throws {
+    let url = FileManager.default.temporaryDirectory.appendingPathComponent("nomap-\(UUID().uuidString).json")
+    defer { try? FileManager.default.removeItem(at: url) }
+    try Data("{\"formatVersion\": 1, \"exportTempo\": 97, \"gridOffsetSeconds\": 0.5, \"gridDivision\": \"eighth\"}".utf8).write(to: url)
+
+    let loaded = try ProjectState.read(from: url)
+    #expect(loaded.gridSegments.isEmpty)
+    #expect(loaded.tempoGrid == TempoGrid(bpm: 97, offsetSeconds: 0.5, division: .eighth))
+
+    // Re-saved with the map, it reads back the same grid.
+    var resaved = loaded
+    resaved.gridSegments = loaded.tempoGrid.segments
+    try resaved.save(to: url)
+    #expect(try ProjectState.read(from: url).tempoGrid == loaded.tempoGrid)
 }
 
 @Test func aProjectWithoutAnArrangementOpensWithTheDefaults() throws {
