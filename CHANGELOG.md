@@ -32,6 +32,7 @@ Work towards v2 starts here: user-experience improvements beyond NeuralNote pari
 - Stems: turn it on in the Transcribe toolbar, download the Stems model in Settings, and Transcribe separates drums, bass, vocals and the rest before transcribing each.
 - Open `.m4a`, `.aac`, `.caf` and the audio of `.mp4`, `.m4v` and `.mov` video files.
 - See how sure the model is about each note: View → Show Confidence shades the piano roll by it, Edit → Select Doubtful Notes picks out the uncertain ones, and Settings → Model can drop notes that are too short or too unsure as they arrive.
+- Set the time signature and add tempo changes on the ruler, or let Detect follow the take's tempo through the whole recording; the grid, the score and the exports follow.
 
 ### Changed
 
