@@ -26,9 +26,10 @@ import Synchronization
 /// ``lock`` with it. The lock is never taken on the render thread, which is what makes a plain lock
 /// the right tool here.
 ///
-/// The render path, the mix, the audition, the sound bank and the click live in
-/// `InstrumentSynthBank+Render.swift`, `+Mix.swift`, `+Audition.swift`, `+SoundBank.swift` and
-/// `+Click.swift`; the members they share are internal rather than private for that reason only.
+/// The render path, the mix, the audition, the sound bank, the click and the MIDI output live in
+/// `InstrumentSynthBank+Render.swift`, `+Mix.swift`, `+Audition.swift`, `+SoundBank.swift`,
+/// `+Click.swift` and `+MidiOut.swift`; the members they share are internal rather than private
+/// for that reason only.
 nonisolated final class InstrumentSynthBank: @unchecked Sendable {
     let scheduler = NoteScheduler()
 
@@ -91,6 +92,10 @@ nonisolated final class InstrumentSynthBank: @unchecked Sendable {
     /// render thread reads.
     let click = ClickRenderState()
 
+    /// The live MIDI output (MIDI out design §2): the render thread pushes the instruments' events
+    /// into its ring beside the synths, never the click's (`+MidiOut.swift`).
+    let midiOut = MidiOutput()
+
     // MARK: - The main thread's, shared with the tap thread
 
     /// Guards ``instruments`` and everything reachable through it.
@@ -136,8 +141,16 @@ nonisolated final class InstrumentSynthBank: @unchecked Sendable {
         didSet { applySubMixVolume() }
     }
 
+    /// While the MIDI output is sending and Mute Built-in Synth While Sending is on, the sub-mix
+    /// is silent whatever the crossfade or an audition says, so the DAW's instruments are heard
+    /// instead (MIDI out design §2). The click and the original are not on the sub-mix. Main
+    /// thread (`+MidiOut.swift`).
+    var synthMutedForMidiOut = false {
+        didSet { applySubMixVolume() }
+    }
+
     private func applySubMixVolume() {
-        subMixer.outputVolume = auditionLifted ? 1 : synthGain
+        subMixer.outputVolume = synthMutedForMidiOut ? 0 : (auditionLifted ? 1 : synthGain)
     }
 
     /// How many frames the render block has asked this bank to schedule for, ever.

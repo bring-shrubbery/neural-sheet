@@ -268,6 +268,10 @@ nonisolated extension PlaybackEngine {
         }
 
         releaseAggregate()
+
+        // Everything the MIDI destination holds is released before the process goes (MIDI out
+        // design §2).
+        synthBank.midiOut.shutDown()
     }
 
     /// Puts the published choice back to the device the I/O unit is really on, so a rejected switch

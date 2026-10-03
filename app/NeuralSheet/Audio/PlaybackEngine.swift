@@ -315,6 +315,9 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
         didSet {
             let clamped = speed.isFinite ? min(max(speed, TimeStretcher.minSpeed), TimeStretcher.maxSpeed) : 1
             state.speedBits.store(Float(clamped).bitPattern, ordering: .relaxed)
+
+            // The notes the DAW holds were timed for the old speed (MIDI out design §2).
+            if speed != oldValue { synthBank.midiOut.panic() }
         }
     }
 
@@ -352,6 +355,9 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
         // A wrap the poll has not picked up yet belongs to the run that just ended: without this,
         // pressing play right after the take finished would immediately re-anchor and announce it.
         supersedePendingWrap()
+        // The MIDI output's channels get their programs and controllers ahead of the first note
+        // (MIDI out design §2).
+        synthBank.midiOut.resendControls()
         state.playing.store(true, ordering: .relaxed)
         retryStartIfNeeded()
     }
@@ -360,6 +366,8 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
         state.playing.store(false, ordering: .relaxed)
         synthBank.scheduler.requestAllNotesOff()
         synthBank.allNotesOff()
+        // The synths' CC 123 does not reach a MIDI destination (MIDI out design §2).
+        synthBank.midiOut.panic()
     }
 
     /// Pause and rewind, which is what the Back button does.
@@ -394,8 +402,11 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
         state.pendingSeek.store(frames, ordering: .relaxed)
         synthBank.scheduler.seek(toSeconds: seconds)
         // The scheduler's note-offs are not enough on their own: drums are one-shot and the synth
-        // ignores a note-off for them, so a seek has to silence the synth directly.
+        // ignores a note-off for them, so a seek has to silence the synth directly. The MIDI
+        // output the same, and its channels set up again for the notes from the new position.
         synthBank.allNotesOff()
+        synthBank.midiOut.panic()
+        synthBank.midiOut.resendControls()
     }
 
     // MARK: - Source
@@ -746,6 +757,7 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
             // have passed and a seek in that window has already moved the transport somewhere else.
             self.synthBank.scheduler.seek(toSeconds: self.playheadSeconds)
             self.synthBank.allNotesOff()
+            self.synthBank.midiOut.panic()
             self.onPlayheadWrapped?()
         }
         timer.resume()

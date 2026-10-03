@@ -33,6 +33,8 @@ nonisolated extension InstrumentSynthBank {
         // The lift before the note-on, so its first frames are not under a crossfade at zero.
         auditionLifted = true
         node.startNote(key, withVelocity: UInt8(Swift.min(Swift.max(velocity, 1), 127)), onChannel: channel)
+        // And to the MIDI output's destination, on the instrument's own channel (MIDI out design §2).
+        midiOut.sendNote(program: program, pitch: pitch, velocity: Swift.min(Swift.max(velocity, 1), 127))
 
         auditionGeneration &+= 1
         let generation = auditionGeneration
@@ -61,8 +63,15 @@ nonisolated extension InstrumentSynthBank {
         node?.stopNote(audition.pitch, onChannel: InstrumentSynthBank.melodicChannel)
     }
 
-    /// Forgets the audition and drops the lift, for the paths that have already silenced it.
+    /// Forgets the audition and drops the lift, for the paths that have already silenced it. The
+    /// MIDI output's note-off goes from here, whichever path ended the audition: the paths that
+    /// silence the synths with CC 123 do not reach the destination, and a drum hit, which the synth
+    /// takes as one-shot, is still a note on the far side that wants its off.
     func clearAudition() {
+        if let audition {
+            midiOut.sendNote(program: audition.program, pitch: Int(audition.pitch), velocity: 0)
+        }
+
         audition = nil
         auditionLifted = false
     }

@@ -36,6 +36,9 @@ nonisolated extension InstrumentSynthBank {
 
         send(events, base: base)
 
+        // The same events to the MIDI output, after the synths; the click's below never go.
+        pushMidiOut(events, renderTime: renderTime, frameCount: frameCount, outputRate: outputRate)
+
         scheduleClick(
             from: t0, to: t1, renderTime: renderTime, frameCount: frameCount, sampleRate: sampleRate,
             outputRate: outputRate, base: base)
