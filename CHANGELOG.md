@@ -44,6 +44,7 @@ Work towards v2 starts here: user-experience improvements beyond NeuralNote pari
 - Export the separated stems as audio files (File → Export Stems…) and the transcription as it sounds (File → Export Audio…): the MIDI alone, or the mix as heard.
 - Keep versions of the notes: Edit → Versions saves one by name (and one automatically before every run), restores any, and ghosts one behind the roll to compare.
 - Transcribe many files at once with File → Batch Transcribe…, from the Terminal with the `neuralsheet` tool (install it in Settings → General), or from Shortcuts with the Transcribe Audio and Separate Stems actions.
+- NeuralSheet speaks German and Spanish, and works with VoiceOver, full keyboard access and the system's contrast, transparency and motion settings.
 
 ### Changed
 
