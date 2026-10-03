@@ -31,6 +31,11 @@ nonisolated final class MidiOutput: @unchecked Sendable {
     private var client: MIDIClientRef = 0
     private var port: MIDIPortRef = 0
 
+    /// False for the offline renderer's bank (audio export design §2): no client, no port, no
+    /// sender thread, and no destination can be chosen, so ``sending`` stays false and the render
+    /// thread's push is one load that finds nothing to do.
+    let isConnected: Bool
+
     /// CoreMIDI said a device or a port came or went. Main queue.
     var onSetupChanged: (() -> Void)?
 
@@ -42,7 +47,14 @@ nonisolated final class MidiOutput: @unchecked Sendable {
     private var controls: [MidiChannelControls] = []
     private var sentControls: [MidiChannelControls] = []
 
-    init() {
+    init(connected: Bool = true) {
+        isConnected = connected
+
+        guard connected else {
+            sender = MidiOutSender(port: 0, ring: ring)
+            return
+        }
+
         // The client comes before the sender, which is handed its port, so the notification block
         // cannot capture `self` yet; it reaches the handler through this relay instead.
         let relay = SetupRelay()
@@ -102,6 +114,8 @@ nonisolated final class MidiOutput: @unchecked Sendable {
     /// thread. False when the destination could not be found, which leaves the output off.
     @discardableResult
     func setDestination(_ destination: MidiDestination?) -> Bool {
+        guard isConnected else { return destination == nil }
+
         var endpoint: MIDIEndpointRef = 0
 
         if let destination {

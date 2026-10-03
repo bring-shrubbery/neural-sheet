@@ -41,6 +41,24 @@ nonisolated extension InstrumentSynthBank {
             onChannel: InstrumentSynthBank.drumChannel)
     }
 
+    /// Bank select then program change, on the channel this instrument's notes arrive on. The
+    /// click is a percussion kit like the drums (click design §2).
+    func sendProgramChange(to node: AVAudioUnitMIDIInstrument, program: Int) {
+        if program >= NoteEvent.drumProgram {
+            node.sendProgramChange(
+                0,
+                bankMSB: InstrumentSynthBank.drumBankMSB,
+                bankLSB: 0,
+                onChannel: InstrumentSynthBank.drumChannel)
+        } else {
+            node.sendProgramChange(
+                UInt8(program),
+                bankMSB: InstrumentSynthBank.melodicBankMSB,
+                bankLSB: 0,
+                onChannel: InstrumentSynthBank.melodicChannel)
+        }
+    }
+
     // MARK: - Mix
 
     /// Pushes the fader, mute, solo and pan state onto the sub-mix inputs. Main thread.

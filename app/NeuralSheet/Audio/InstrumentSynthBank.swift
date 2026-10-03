@@ -93,8 +93,13 @@ nonisolated final class InstrumentSynthBank: @unchecked Sendable {
     let click = ClickRenderState()
 
     /// The live MIDI output (MIDI out design §2): the render thread pushes the instruments' events
-    /// into its ring beside the synths, never the click's (`+MidiOut.swift`).
-    let midiOut = MidiOutput()
+    /// into its ring beside the synths, never the click's (`+MidiOut.swift`). Unconnected in an
+    /// offline bank, so an export never plays into the DAW.
+    let midiOut: MidiOutput
+
+    /// False for the offline renderer's bank (audio export design §2): no MIDI output, no click
+    /// synth, no meter taps -- nothing of it reaches beyond its own engine.
+    let isLive: Bool
 
     // MARK: - The main thread's, shared with the tap thread
 
@@ -162,9 +167,13 @@ nonisolated final class InstrumentSynthBank: @unchecked Sendable {
     /// last level.
     var renderedFrames: UInt64 { frameCounter.load(ordering: .relaxed) }
 
-    init(engine: AVAudioEngine, mixTarget: AVAudioMixerNode) {
+    /// A bank on `engine`, its sub-mix into `mixTarget`. Any number may exist, each on its own
+    /// engine: nothing here is static but constants. `live: false` is the offline renderer's.
+    init(engine: AVAudioEngine, mixTarget: AVAudioMixerNode, live: Bool = true) {
         self.engine = engine
         self.mixTarget = mixTarget
+        isLive = live
+        midiOut = MidiOutput(connected: live)
 
         blocks = UnsafeMutableBufferPointer<AUScheduleMIDIEventBlock?>.allocate(
             capacity: InstrumentSynthBank.programCount)
@@ -181,7 +190,8 @@ nonisolated final class InstrumentSynthBank: @unchecked Sendable {
         engine.connect(subMixer, to: mixTarget, format: renderFormat)
         subMixer.outputVolume = synthGain
 
-        ensureClickInstrument()
+        // The click is never rendered offline (issue #22, out of scope).
+        if live { ensureClickInstrument() }
     }
 
     deinit {
@@ -250,9 +260,12 @@ nonisolated final class InstrumentSynthBank: @unchecked Sendable {
         node.volume = instrument.gain
         node.pan = Float(appliedMixer.pan(program: program))
 
-        node.installTap(onBus: 0, bufferSize: InstrumentSynthBank.meterTapFrames, format: nil) {
-            [weak self] buffer, _ in
-            self?.pushMeter(buffer, for: program)
+        // No meters offline: nothing shows them, and a tap is one more thing on the render path.
+        if isLive {
+            node.installTap(onBus: 0, bufferSize: InstrumentSynthBank.meterTapFrames, format: nil) {
+                [weak self] buffer, _ in
+                self?.pushMeter(buffer, for: program)
+            }
         }
 
         lock.lock()
@@ -349,24 +362,6 @@ nonisolated final class InstrumentSynthBank: @unchecked Sendable {
         retire(dropped)
     }
 
-    /// Bank select then program change, on the channel this instrument's notes arrive on. The
-    /// click is a percussion kit like the drums (click design §2).
-    func sendProgramChange(to node: AVAudioUnitMIDIInstrument, program: Int) {
-        if program >= NoteEvent.drumProgram {
-            node.sendProgramChange(
-                0,
-                bankMSB: InstrumentSynthBank.drumBankMSB,
-                bankLSB: 0,
-                onChannel: InstrumentSynthBank.drumChannel)
-        } else {
-            node.sendProgramChange(
-                UInt8(program),
-                bankMSB: InstrumentSynthBank.melodicBankMSB,
-                bankLSB: 0,
-                onChannel: InstrumentSynthBank.melodicChannel)
-        }
-    }
-
     /// Holds dropped synths — node, scheduling block and all — until any render block that saw one
     /// has long since returned, and only then takes them out of the graph.
     ///
@@ -396,7 +391,7 @@ nonisolated final class InstrumentSynthBank: @unchecked Sendable {
     /// Takes one synth out of the graph. Main thread, and only once nothing can still be scheduling
     /// into it.
     private func dispose(_ instrument: SynthInstrument) {
-        instrument.node.removeTap(onBus: 0)
+        if isLive { instrument.node.removeTap(onBus: 0) }
         engine.disconnectNodeOutput(instrument.node)
         engine.detach(instrument.node)
     }
