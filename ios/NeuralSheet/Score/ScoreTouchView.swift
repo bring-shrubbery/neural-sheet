@@ -21,8 +21,18 @@ final class ScoreTouchView: UIView, UIScrollViewDelegate {
     /// The score's scale, pinched; 1 is the Mac's staff space. Not saved.
     var scale: CGFloat = 1
 
-    /// The scale range a pinch is held to.
-    static let scaleRange: ClosedRange<CGFloat> = 0.6 ... 2.5
+    /// The smallest scale a pinch reaches, and the largest: the Mac has no score zoom, so the
+    /// bound is the width's -- 1 at an iPhone's 390 points, up to 2.5 on a wide iPad -- because a
+    /// staff space larger than the width allows squeezes a measure into its own clef.
+    static let minimumScale: CGFloat = 0.6
+    static let maximumScaleCeiling: CGFloat = 2.5
+    static let widthPerScale: CGFloat = 390
+    /// The least a part name's touch target is, either way.
+    static let minimumTarget: CGFloat = 44
+
+    var scaleRange: ClosedRange<CGFloat> {
+        Self.minimumScale ... min(Self.maximumScaleCeiling, max(1, bounds.width / Self.widthPerScale))
+    }
     /// How many viewports tall and wide the canvas may be, and how close to its edge the viewport may come
     /// before it slides to centre on it again.
     static let canvasViewports: CGFloat = 2
@@ -107,8 +117,12 @@ final class ScoreTouchView: UIView, UIScrollViewDelegate {
         super.layoutSubviews()
 
         scrollView.frame = bounds
+        // The tab bar floats over the bottom of the screen: the last system scrolls clear of it.
+        scrollView.contentInset.bottom = safeAreaInsets.bottom
+        scrollView.verticalScrollIndicatorInsets.bottom = safeAreaInsets.bottom
 
         if bounds.width != layoutWidth {
+            scale = min(max(scale, scaleRange.lowerBound), scaleRange.upperBound)
             relayout()
         } else {
             layoutCanvas()
@@ -148,7 +162,7 @@ final class ScoreTouchView: UIView, UIScrollViewDelegate {
         scrollView.backgroundColor = UIColor(cgColor: layout.mode == .pages ? ScoreLayout.surround : ScoreRenderer.Style.screen.paper)
 
         // A pinch or a rotation keeps the same part of the score in view.
-        let maxY = max(0, scrollView.contentSize.height - bounds.height)
+        let maxY = maxOffsetY
         scrollView.contentOffset = CGPoint(x: min(scrollView.contentOffset.x, max(0, contentWidth - width)),
                                            y: min(max(0, fraction * scrollView.contentSize.height), maxY))
 
@@ -188,6 +202,11 @@ final class ScoreTouchView: UIView, UIScrollViewDelegate {
         canvas.setNeedsDisplay()
     }
 
+    /// The furthest down the score scrolls, past the content by the bottom inset.
+    var maxOffsetY: CGFloat {
+        max(0, scrollView.contentSize.height + scrollView.contentInset.bottom - scrollView.bounds.height)
+    }
+
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         layoutCanvas()
     }
@@ -200,7 +219,14 @@ final class ScoreTouchView: UIView, UIScrollViewDelegate {
 
         let point = recognizer.location(in: scrollView)
 
-        if let name = canvas.painter.nameHit(at: point) {
+        // A name is a word in the margin: its target grows to a finger's size about it.
+        let name = canvas.painter.nameHits.first { hit in
+            let frame = hit.frame
+            return frame.insetBy(dx: min(0, (frame.width - Self.minimumTarget) / 2),
+                                 dy: min(0, (frame.height - Self.minimumTarget) / 2)).contains(point)
+        }
+
+        if let name {
             onPartName?(name.program)
             return
         }
@@ -219,7 +245,7 @@ final class ScoreTouchView: UIView, UIScrollViewDelegate {
             pinchStartScale = scale
             isPinching = true
         case .changed:
-            let target = min(max(pinchStartScale * recognizer.scale, Self.scaleRange.lowerBound), Self.scaleRange.upperBound)
+            let target = min(max(pinchStartScale * recognizer.scale, scaleRange.lowerBound), scaleRange.upperBound)
 
             if abs(target - scale) / scale > 0.03 {
                 scale = target
@@ -227,7 +253,7 @@ final class ScoreTouchView: UIView, UIScrollViewDelegate {
             }
         default:
             isPinching = false
-            let target = min(max(pinchStartScale * recognizer.scale, Self.scaleRange.lowerBound), Self.scaleRange.upperBound)
+            let target = min(max(pinchStartScale * recognizer.scale, scaleRange.lowerBound), scaleRange.upperBound)
 
             if target != scale {
                 scale = target

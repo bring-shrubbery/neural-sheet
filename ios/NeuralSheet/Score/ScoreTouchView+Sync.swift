@@ -105,7 +105,7 @@ extension ScoreTouchView {
         let visible = CGRect(origin: scrollView.contentOffset, size: scrollView.bounds.size)
 
         if system.frame.minY - layout.sp * 2 < visible.minY || system.frame.maxY + layout.sp * 2 > visible.maxY {
-            let target = max(0, min(system.frame.minY - layout.sp * 3, scrollView.contentSize.height - visible.height))
+            let target = max(0, min(system.frame.minY - layout.sp * 3, maxOffsetY))
             let x = min(max(0, system.frame.midX - visible.width / 2), max(0, scrollView.contentSize.width - visible.width))
             scrollView.contentOffset = CGPoint(x: layout.mode == .pages ? x : 0, y: target)
         }

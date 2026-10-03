@@ -142,8 +142,8 @@ struct PartDisplaySheet: View {
     }
 }
 
-/// The sheet's title block and the score's layout (arrangement design §6): the Mac's Sheet card
-/// and the Score toolbar's Continuous / Pages and page size, as a form. The text fields are
+/// The score's layout and the sheet's title block (arrangement design §6): the Score toolbar's
+/// Continuous / Pages and page size, first, and the Mac's Sheet card, as a form. The text fields are
 /// committed when they are submitted and when the sheet closes, so typing a title is one change;
 /// the switches and pickers go straight to the model.
 struct ScoreSheetForm: View {
@@ -158,6 +158,23 @@ struct ScoreSheetForm: View {
 
         NavigationStack {
             Form {
+                Section {
+                    Picker(String(localized: "Layout", comment: "Score sheet: continuous or pages"),
+                           selection: Binding(get: { arrangement.layout }, set: { model.setScoreLayout($0) })) {
+                        Text(String(localized: "Continuous", comment: "Score toolbar: the systems in one column")).tag(ScoreLayoutMode.continuous)
+                        Text(String(localized: "Pages", comment: "Score toolbar: the systems on printed pages")).tag(ScoreLayoutMode.pages)
+                    }
+                    .pickerStyle(.segmented)
+                    .accessibilityIdentifier("sheet.layout")
+
+                    Picker(String(localized: "Page size", comment: "Score sheet: A4 or Letter"),
+                           selection: Binding(get: { arrangement.pageSize }, set: { model.setPageSize($0) })) {
+                        ForEach(PageSize.allCases, id: \.self) { size in
+                            Text(verbatim: size.localizedName).tag(size)
+                        }
+                    }
+                }
+
                 Section {
                     // The title's placeholder is what the header prints without one: the take's
                     // name, or "Untitled".
@@ -174,23 +191,6 @@ struct ScoreSheetForm: View {
                     toggle(String(localized: "Part names"), \.showsPartNames)
                     toggle(String(localized: "Tempo mark"), \.showsTempo)
                     toggle(String(localized: "Show chords"), \.showsChords)
-                }
-
-                Section {
-                    Picker(String(localized: "Layout", comment: "Score sheet: continuous or pages"),
-                           selection: Binding(get: { arrangement.layout }, set: { model.setScoreLayout($0) })) {
-                        Text(String(localized: "Continuous", comment: "Score toolbar: the systems in one column")).tag(ScoreLayoutMode.continuous)
-                        Text(String(localized: "Pages", comment: "Score toolbar: the systems on printed pages")).tag(ScoreLayoutMode.pages)
-                    }
-                    .pickerStyle(.segmented)
-                    .accessibilityIdentifier("sheet.layout")
-
-                    Picker(String(localized: "Page size", comment: "Score sheet: A4 or Letter"),
-                           selection: Binding(get: { arrangement.pageSize }, set: { model.setPageSize($0) })) {
-                        ForEach(PageSize.allCases, id: \.self) { size in
-                            Text(verbatim: size.localizedName).tag(size)
-                        }
-                    }
                 }
             }
             .navigationTitle(Text("Sheet", comment: "Score sheet: its title"))
