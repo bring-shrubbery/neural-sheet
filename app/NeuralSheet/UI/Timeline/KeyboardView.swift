@@ -152,10 +152,12 @@ final class KeyboardView: NSView, KeyboardFocusableView, OwnsArrowKeys {
 
     override func mouseMoved(with event: NSEvent) {
         hoveredPitch = geometry.pitch(forY: convert(event.locationInWindow, from: nil).y)
+        super.mouseMoved(with: event)
     }
 
     override func mouseExited(with event: NSEvent) {
         hoveredPitch = nil
+        super.mouseExited(with: event)
     }
 
     /// An adjustable element (a11y design §2): its value the key under the pointer, or the keys
