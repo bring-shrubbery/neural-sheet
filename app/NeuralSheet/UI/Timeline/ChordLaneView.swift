@@ -9,8 +9,8 @@ import NeuralSheetCore
 ///
 /// Like the other bands it draws in document coordinates; the container slides it with them.
 final class ChordLaneView: NSView {
-    static let height: CGFloat = 20
-    static let inset: CGFloat = 4
+    static let height = ChordLanePainter.height
+    static let inset = ChordLanePainter.inset
 
     let geometry: TimelineGeometry
 
@@ -92,62 +92,23 @@ final class ChordLaneView: NSView {
 
     // MARK: - Drawing
 
-    /// Where event `index` starts on show: the drag's spot for the one being dragged.
-    private func seconds(at index: Int) -> Double {
-        if let press, press.index == index, let dragged = press.dragged { return dragged }
-
-        return chords[index].seconds
+    /// The drawing (`ChordLaneView+Drawing.swift`, shared with the iPhone and iPad app) over the
+    /// list, the labels and the press on show.
+    private var painter: ChordLanePainter {
+        ChordLanePainter(geometry: geometry, chords: chords, labels: labels, pressedIndex: press?.index,
+                         draggedSeconds: press?.dragged)
     }
 
     /// Where the label of event `index` may run to: the next event's start (in time, the drag
     /// included), or the band's end.
     private func labelEnd(at index: Int) -> CGFloat {
-        guard press?.dragged != nil else {
-            return index + 1 < chords.count ? geometry.x(forSeconds: chords[index + 1].seconds) : bounds.maxX
-        }
-
-        let start = seconds(at: index)
-        var end = bounds.maxX
-
-        for other in chords.indices where other != index {
-            let seconds = seconds(at: other)
-            if seconds > start { end = min(end, geometry.x(forSeconds: seconds)) }
-        }
-
-        return end
+        painter.labelEnd(at: index, bounds: bounds)
     }
 
     override func draw(_ rect: NSRect) {
         guard let ctx = NSGraphicsContext.current?.cgContext else { return }
 
-        let dirtyRect = rect.intersection(bounds)
-        let k = geometry.scale
-        let height = bounds.height
-        let font = TimelineFonts.chord(k)
-
-        ctx.fill(dirtyRect, TimelinePalette.bgPanel)
-        ctx.fill(CGRect(x: dirtyRect.minX, y: height - k, width: dirtyRect.width, height: k), TimelinePalette.divSoft)
-
-        for index in chords.indices where index < labels.count {
-            let x = (geometry.x(forSeconds: seconds(at: index)) / k).rounded() * k
-            let end = labelEnd(at: index)
-
-            guard end >= dirtyRect.minX, x <= dirtyRect.maxX else { continue }
-
-            let isPressed = press?.index == index
-            ctx.fill(CGRect(x: x, y: 0, width: k, height: height), isPressed ? TimelinePalette.tempoStem : TimelinePalette.divTick)
-
-            let box = CGRect(x: x + ChordLaneView.inset * k, y: 0, width: max(0, end - x - ChordLaneView.inset * k), height: height)
-
-            guard box.width > 0 else { continue }
-
-            ctx.saveGState()
-            ctx.clip(to: box)
-            TimelineText.draw(labels[index], font: font,
-                              colour: chords[index].chord == nil ? TimelinePalette.textFaint : TimelinePalette.textBright,
-                              in: box, anchor: .centredLeft, context: ctx)
-            ctx.restoreGState()
-        }
+        painter.draw(ctx, in: rect.intersection(bounds), bounds: bounds)
     }
 
     // MARK: - Hit testing
