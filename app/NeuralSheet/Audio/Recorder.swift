@@ -62,6 +62,13 @@ nonisolated final class Recorder: @unchecked Sendable {
     private let nativeFrames = Atomic<Int>(0)
     private let downsampledFrames = Atomic<Int>(0)
 
+    /// True from an aligned ``start(atDownbeat:)`` until the tap has delivered the block holding
+    /// the downbeat: until then every block is dropped, and that block is cut at it.
+    private let aligning = Atomic<Bool>(false)
+
+    /// Where the click's clock says the take starts (click design §2); the synth bank's.
+    private let downbeat: DownbeatMark
+
     // MARK: - queue's own
 
     /// Where the writing happens. Serial, so the two files and the resampler need no locking.
@@ -82,6 +89,7 @@ nonisolated final class Recorder: @unchecked Sendable {
     init(engine: PlaybackEngine, paths: AppPaths) {
         self.engine = engine
         self.paths = paths
+        downbeat = engine.synthBank.downbeat
     }
 
     var isRecording: Bool { recording.load(ordering: .relaxed) }
@@ -98,7 +106,15 @@ nonisolated final class Recorder: @unchecked Sendable {
     /// Never waits on a person: microphone access has to have been granted already, which is what
     /// ``requestMicrophoneAccess(_:)`` is for. An unanswered prompt throws
     /// ``RecordError/permissionDenied`` like a refusal does.
-    func start() throws {
+    ///
+    /// With `atDownbeat` the tap goes on and the files open now -- so the graph rebuild that a new
+    /// input tap costs happens before the count-in, not across its last beat -- but nothing is
+    /// kept until the synth bank's ``DownbeatMark`` is set, and the block that holds it is cut at
+    /// it by host time: the take's first sample is the one captured when the downbeat is heard,
+    /// to the sample, as far as the input and output timestamps share the host clock (click
+    /// design §2). Neither device's latency is compensated, as no take has been before. The caller
+    /// resets the mark first.
+    func start(atDownbeat: Bool = false) throws {
         guard !isRecording else { return }
 
         lastError = nil
@@ -115,8 +131,8 @@ nonisolated final class Recorder: @unchecked Sendable {
 
         // The tap goes on before the format is read: installing it is what points the input unit at
         // the chosen device, and until then the node still reports the format of the last one.
-        engine.inputTap = { [weak self] buffer, _ in
-            self?.receive(buffer)
+        engine.inputTap = { [weak self] buffer, time in
+            self?.receive(buffer, at: time)
         }
 
         let format = engine.inputFormat
@@ -168,7 +184,8 @@ nonisolated final class Recorder: @unchecked Sendable {
         downsampledFrames.store(0, ordering: .relaxed)
         livePeaks.clear()
 
-        recording.store(true, ordering: .relaxed)
+        aligning.store(atDownbeat, ordering: .relaxed)
+        recording.store(true, ordering: .releasing)
     }
 
     /// Stops capturing, flushes both files and reads them back as the take to play.
@@ -257,12 +274,36 @@ nonisolated final class Recorder: @unchecked Sendable {
 
     /// The input tap. A CoreAudio thread, but not the render thread -- it still does no more than
     /// copy the block out of the buffer, which AVAudioEngine reuses the moment this returns.
-    private func receive(_ buffer: AVAudioPCMBuffer) {
-        guard recording.load(ordering: .relaxed), let data = buffer.floatChannelData else { return }
+    private func receive(_ buffer: AVAudioPCMBuffer, at time: AVAudioTime) {
+        guard recording.load(ordering: .acquiring), let data = buffer.floatChannelData else { return }
 
-        let frames = Int(buffer.frameLength)
+        let total = Int(buffer.frameLength)
         let count = Int(buffer.format.channelCount)
-        guard frames > 0, count > 0 else { return }
+        guard total > 0, count > 0 else { return }
+
+        // An aligned take keeps nothing before its downbeat (``start(atDownbeat:)``).
+        var first = 0
+
+        if aligning.load(ordering: .relaxed) {
+            // The render thread publishes the downbeat before the output reaches it, and a block
+            // that holds it is only delivered after it has been captured, so no mark yet means the
+            // whole block is from the count-in.
+            guard let mark = downbeat.hostTime else { return }
+
+            if time.isHostTimeValid {
+                let late = AVAudioTime.seconds(forHostTime: mark) - AVAudioTime.seconds(forHostTime: time.hostTime)
+                let offset = (late * buffer.format.sampleRate).rounded()
+
+                // Entirely before the downbeat: the next block may hold it.
+                if offset.isFinite, offset >= Double(total) { return }
+
+                first = offset.isFinite ? Swift.max(0, Int(offset)) : 0
+            }
+
+            aligning.store(false, ordering: .relaxed)
+        }
+
+        let frames = total - first
 
         // `stride` is 1 for the deinterleaved float the engine's nodes deal in, and the channel
         // count for an interleaved format, where every channel lives in the one buffer.
@@ -270,13 +311,13 @@ nonisolated final class Recorder: @unchecked Sendable {
 
         let channels = (0..<count).map { channel -> [Float] in
             guard stride > 1 else {
-                return [Float](UnsafeBufferPointer(start: data[channel], count: frames))
+                return [Float](UnsafeBufferPointer(start: data[channel] + first, count: frames))
             }
 
             var samples = [Float](repeating: 0, count: frames)
             let base = data[0] + channel
             for frame in 0..<frames {
-                samples[frame] = base[frame * stride]
+                samples[frame] = base[(first + frame) * stride]
             }
             return samples
         }
@@ -322,90 +363,6 @@ nonisolated final class Recorder: @unchecked Sendable {
 
         downsampledFrames.add(downsampled.count, ordering: .relaxed)
         livePeaks.append(downsampled)
-    }
-
-    // MARK: - Files
-
-    /// A 16-bit little-endian PCM WAV, which the extension picks out of the settings.
-    ///
-    /// The file is written through a float `processingFormat`: `AVAudioFile` converts on the way in,
-    /// so nothing here has to think about integer scaling or clipping.
-    private static func settings(rate: Double, channels: Int) -> [String: Any] {
-        [
-            AVFormatIDKey: kAudioFormatLinearPCM,
-            AVSampleRateKey: rate,
-            AVNumberOfChannelsKey: channels,
-            AVLinearPCMBitDepthKey: 16,
-            AVLinearPCMIsFloatKey: false,
-            AVLinearPCMIsBigEndianKey: false,
-            AVLinearPCMIsNonInterleaved: false,
-        ]
-    }
-
-    /// A float buffer over `channels`, for handing to an ``AVAudioFile``.
-    private static func buffer(channels: [[Float]], format: AVAudioFormat) -> AVAudioPCMBuffer? {
-        guard !channels.isEmpty else { return nil }
-
-        let frames = channels.reduce(Int.max) { Swift.min($0, $1.count) }
-
-        guard frames > 0,
-            let buffer = AVAudioPCMBuffer(
-                pcmFormat: format, frameCapacity: AVAudioFrameCount(frames)),
-            let data = buffer.floatChannelData
-        else { return nil }
-
-        buffer.frameLength = AVAudioFrameCount(frames)
-
-        for (index, channel) in channels.enumerated() where index < Int(format.channelCount) {
-            channel.withUnsafeBufferPointer { source in
-                guard let base = source.baseAddress else { return }
-                data[index].update(from: base, count: frames)
-            }
-        }
-
-        // A buffer arrives uninitialised, so a device that lost a channel mid-take would otherwise
-        // write whatever was in that memory into the file. Clamped, because a caller may hand over
-        // more channels than the format takes, and `5..<2` is a trap rather than an empty range.
-        for index in Swift.min(channels.count, Int(format.channelCount))..<Int(format.channelCount) {
-            data[index].update(repeating: 0, count: frames)
-        }
-
-        return buffer
-    }
-
-    /// `YYYY-MM-DD_HH-MM-SS`, in the user's own time zone: these names are read by people.
-    private static func timestamp() -> String {
-        let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.dateFormat = "yyyy-MM-dd_HH-mm-ss"
-        return formatter.string(from: Date())
-    }
-
-    /// The pair of names for a new take, with `_1`, `_2`… until neither exists.
-    ///
-    /// The suffix moves both names together, so a take's two files always match -- a second take
-    /// inside the same second cannot end up sharing one of them.
-    private static func fileURLs(in directory: URL, timestamp: String)
-        -> (native: URL, downsampled: URL)
-    {
-        let manager = FileManager.default
-        var suffix = ""
-        var index = 1
-
-        while true {
-            let stem = "\(filenamePrefix)\(timestamp)\(suffix)"
-            let native = directory.appendingPathComponent("\(stem).wav")
-            let downsampled = directory.appendingPathComponent("\(stem)_downsampled.wav")
-
-            if !manager.fileExists(atPath: native.path),
-                !manager.fileExists(atPath: downsampled.path)
-            {
-                return (native, downsampled)
-            }
-
-            suffix = "_\(index)"
-            index += 1
-        }
     }
 
     // MARK: - Permission
