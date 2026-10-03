@@ -4,7 +4,8 @@ import NeuralSheetCore
 /// The 22 px time ruler (`TimeRuler`): absolute seconds only, a 1 px tick per division and an
 /// `m:ss` label 6 px to its right. In the Edit tab it reads bars and beats off the tempo grid
 /// instead (design §6.4). Nothing is drawn unless the transport can play. In both tabs a drag
-/// marks a range; a click still seeks (region design §6.2).
+/// marks a range; a click still seeks (region design §6.2); the tempo map's changes are flags
+/// (`RulerView+TempoMarkers.swift`).
 final class RulerView: NSView {
     let geometry: TimelineGeometry
 
@@ -18,6 +19,12 @@ final class RulerView: NSView {
 
     /// Bars and beats instead of seconds, in the Edit tab; nil labels seconds.
     var grid: TempoGrid?
+
+    /// The tempo map whose changes are flagged, in both tabs (tempo map design §4).
+    var tempoMap: TempoGrid?
+
+    /// A right-click, or a click on a flag: the card for a bar, at a point in the window.
+    var onTempoCard: ((CGPoint, Int) -> Void)?
 
     /// The click is a seek; the container owns the model.
     var onSeek: ((Double) -> Void)?
@@ -82,9 +89,17 @@ final class RulerView: NSView {
 
         if let grid {
             drawBarsAndBeats(ctx, grid: grid, in: dirtyRect)
-            return
+        } else {
+            drawSeconds(ctx, in: dirtyRect)
         }
 
+        drawTempoFlags(ctx, in: dirtyRect)
+    }
+
+    /// `TimeRuler`: a tick per round division of seconds and its `m:ss` label.
+    private func drawSeconds(_ ctx: CGContext, in dirtyRect: CGRect) {
+        let k = geometry.scale
+        let height = bounds.height
         let pixelsPerSecond = Double(geometry.pixelsPerSecond / k)
         let division = RulerTicks.division(pixelsPerSecond: pixelsPerSecond)
         let font = TimelineFonts.meta(k)
@@ -188,7 +203,14 @@ final class RulerView: NSView {
         // A field that had the keyboard commits and lets go, so Space is the transport's again.
         window?.makeFirstResponder(nil)
 
-        let x = convert(event.locationInWindow, from: nil).x
+        let point = convert(event.locationInWindow, from: nil)
+        let x = point.x
+
+        // A tempo change's flag is its marker: the click opens its card rather than seeking.
+        if let flag = tempoFlag(at: point), let onTempoCard {
+            onTempoCard(event.locationInWindow, flag.bar)
+            return
+        }
 
         guard onRange != nil else {
             // With nobody to mark a range for, the press is the seek, as it always was.

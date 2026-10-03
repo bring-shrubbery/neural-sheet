@@ -73,6 +73,8 @@ final class TimelineContainerView: NSView {
 
     /// Alive while the timeline is in Edit mode and in a window (`+Editing`).
     var editController: RollEditController?
+    /// The ruler's tempo card (`TimelineContainerView+TempoCard.swift`).
+    let tempoCard = PopupMenuPresenter()
 
     // MARK: - Model mirror
 
@@ -175,6 +177,7 @@ final class TimelineContainerView: NSView {
         // A drag on the ruler marks the range for Re-transcribe in both tabs (region design §6.2).
         ruler.onRange = { [weak self] range in self?.model.setRange(range) }
         ruler.snapEnabled = model.editor.snapEnabled
+        ruler.onTempoCard = { [weak self] point, bar in self?.showTempoCard(at: point, bar: bar) }
         keyboard.onWheel = { [weak self] event in
             guard let self else { return }
 
@@ -235,6 +238,10 @@ final class TimelineContainerView: NSView {
 
         // Off-window the edit controller goes too; back in one it is made again.
         syncEditController()
+
+        if window == nil {
+            tempoCard.dismiss()
+        }
 
         guard window != nil else { return }
 

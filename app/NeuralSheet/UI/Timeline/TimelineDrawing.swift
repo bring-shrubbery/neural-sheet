@@ -56,6 +56,12 @@ enum TimelinePalette {
     static let marqueeBorder = cg(Theme.accent)
     static let marqueeFill = cg(Theme.accent, alpha: 0.12)
 
+    /// Tempo map design §4: a tempo change's flag on the ruler, the accent over the panel, its
+    /// stem and its label.
+    static let tempoFlag = tween(Theme.bgPanel, toward: Theme.accent, proportion: 0.3)
+    static let tempoStem = cg(Theme.accent)
+    static let tempoLabel = cg(Theme.accentText)
+
     /// Region design §6.3: the marked range, its edges, and the fill that grows with a run.
     static let rangeFill = cg(Theme.accent, alpha: 0.10)
     static let rangeEdge = cg(Theme.accent, alpha: 0.6)

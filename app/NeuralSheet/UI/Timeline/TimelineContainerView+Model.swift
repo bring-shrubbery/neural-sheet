@@ -117,6 +117,16 @@ extension TimelineContainerView {
             roll.needsDisplay = true
         }
 
+        // Both tabs: the tempo map's flags on the ruler; its card goes with the take.
+        if first || new.grid != old.grid || stateChanged {
+            ruler.tempoMap = new.grid
+            ruler.needsDisplay = true
+
+            if !new.state.canPlay {
+                tempoCard.dismiss()
+            }
+        }
+
         // Both tabs: the key colours the lanes wherever the roll is.
         if first || new.key != old.key {
             roll.key = new.key
