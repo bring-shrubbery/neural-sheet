@@ -30,6 +30,7 @@ Work towards v2 starts here: user-experience improvements beyond NeuralNote pari
 - A Score tab: the transcription as sheet music, following the playhead.
 - Arrange the score: click a part's name in the Score tab for its clef, transposition or tab in any tuning, switch to pages with a title, and File → Export PDF… prints it.
 - Stems: turn it on in the Transcribe toolbar, download the Stems model in Settings, and Transcribe separates drums, bass, vocals and the rest before transcribing each.
+- Open `.m4a`, `.aac`, `.caf` and the audio of `.mp4`, `.m4v` and `.mov` video files.
 
 ### Changed
 
