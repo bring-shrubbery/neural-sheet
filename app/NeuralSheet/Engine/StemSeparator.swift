@@ -16,6 +16,10 @@ nonisolated final class StemSeparator: @unchecked Sendable {
         var other: [Float]
         var vocals: [Float]
 
+        /// The folder the 44.1 kHz stereo stems were kept in as 24-bit `.caf`, or nil when none
+        /// was asked for or they could not be written (audio export design §2).
+        var keptFolder: URL?
+
         /// In the order the library produces them.
         var all: [[Float]] { [drums, bass, other, vocals] }
     }
@@ -49,8 +53,14 @@ nonisolated final class StemSeparator: @unchecked Sendable {
     }
 
     /// Starts the separation of `source`. Refused, with an assertion in debug, while one runs.
+    ///
+    /// With `keepTo`, each stem's stereo 44.1 kHz buffer is also written into that folder as it is
+    /// produced (``StemNames/cacheFileName(stem:)``), for Export Stems… (audio export design §2).
+    /// The folder is the caller's once the completion is delivered; a run that is abandoned or
+    /// fails removes it itself, since nobody else will hear of it.
     func run(modelPath: URL,
              source: SourceAudio,
+             keepTo: URL? = nil,
              onProgress: @escaping @Sendable (Float) -> Void,
              completion: @escaping @Sendable (Result<Stems, Failure>) -> Void) {
         lock.lock()
@@ -66,13 +76,17 @@ nonisolated final class StemSeparator: @unchecked Sendable {
         lock.unlock()
 
         let thread = Thread { [self] in
-            let result = separate(modelPath: modelPath, source: source)
+            let result = separate(modelPath: modelPath, source: source, keepTo: keepTo)
 
             lock.lock()
             let deliver = !abandoned
             running = false
             progressHandler = nil
             lock.unlock()
+
+            if let keepTo, !deliver || (try? result.get()) == nil {
+                try? FileManager.default.removeItem(at: keepTo)
+            }
 
             if deliver {
                 completion(result)
@@ -95,7 +109,13 @@ nonisolated final class StemSeparator: @unchecked Sendable {
 
     // MARK: - The separation thread
 
-    private func separate(modelPath: URL, source: SourceAudio) -> Result<Stems, Failure> {
+    private var isAbandoned: Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        return abandoned
+    }
+
+    private func separate(modelPath: URL, source: SourceAudio, keepTo: URL?) -> Result<Stems, Failure> {
         guard let separator = nsheet_stems_load(modelPath.path) else {
             return .failure(.load)
         }
@@ -137,6 +157,8 @@ nonisolated final class StemSeparator: @unchecked Sendable {
         }
         defer { nsheet_stems_free_audio(output) }
 
+        let kept = keepTo.flatMap { keep(output, frames: frames, in: $0) }
+
         // Each stem folded to mono and taken to the transcription model's rate.
         var stems: [[Float]] = []
         for stem in 0..<Int(NSHEET_STEM_COUNT.rawValue) {
@@ -152,7 +174,30 @@ nonisolated final class StemSeparator: @unchecked Sendable {
             stems.append(mono16k)
         }
 
-        return .success(Stems(drums: stems[0], bass: stems[1], other: stems[2], vocals: stems[3]))
+        return .success(Stems(drums: stems[0], bass: stems[1], other: stems[2], vocals: stems[3], keptFolder: kept))
+    }
+
+    /// Writes the library's planar stereo stems into `folder` as 24-bit `.caf`, before the fold
+    /// to mono throws the stereo away. Nil -- and the folder gone -- when the run was abandoned
+    /// meanwhile or a file could not be written: the transcription does not need them, so a full
+    /// disk costs Export Stems… a fresh separation rather than failing the run.
+    private func keep(_ output: UnsafeMutablePointer<Float>, frames: Int, in folder: URL) -> URL? {
+        do {
+            try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+
+            for stem in 0..<Int(NSHEET_STEM_COUNT.rawValue) {
+                guard !isAbandoned else { throw CancellationError() }
+
+                try StemFiles.writeCAF(left: output + (stem * 2) * frames, right: output + (stem * 2 + 1) * frames,
+                                       frames: frames, sampleRate: Double(NSHEET_STEMS_SAMPLE_RATE),
+                                       to: folder.appendingPathComponent(StemNames.cacheFileName(stem: stem)))
+            }
+
+            return folder
+        } catch {
+            try? FileManager.default.removeItem(at: folder)
+            return nil
+        }
     }
 
     /// From the worker threads, serialised by the bridge.
