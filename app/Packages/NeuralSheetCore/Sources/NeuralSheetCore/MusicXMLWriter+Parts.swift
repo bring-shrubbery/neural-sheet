@@ -8,7 +8,7 @@ extension MusicXMLWriter {
     /// every staff of every measure, a `<backup>` of the measure's length between the staves of a
     /// grand staff. The first part written carries the tempo marks and the `chords`.
     static func notationPartXML(_ part: ScorePart, id: String, bars: [ScoreBar], writesTempo: Bool,
-                                chords: [ScoreChord] = []) -> String {
+                                chords: [ScoreChord] = [], rehearsals: [ScoreRehearsal] = []) -> String {
         let isDrums = part.program == NoteEvent.drumProgram
         let preferFlats = part.writtenFifths < 0
         let measureCount = part.staves.first?.measures.count ?? 0
@@ -43,6 +43,7 @@ extension MusicXMLWriter {
                 xml += meterChangeXML(bars[measureIndex].timeSignature)
             }
 
+            xml += rehearsalXML(rehearsals, measure: measureIndex)
             if writesTempo, bars[measureIndex].showsTempo { xml += tempoXML(bars[measureIndex]) }
 
             for (staffIndex, staff) in part.staves.enumerated() where measureIndex < staff.measures.count {
@@ -170,7 +171,7 @@ extension MusicXMLWriter {
             }
 
             xml += noteXML(piece, note: note, isChord: index > 0, pitch: pitch, voice: voice, staff: staff,
-                           notehead: notehead, technical: "")
+                           notehead: notehead, technical: "", lyric: index == piece.lyricNoteIndex ? note.lyric : nil)
         }
 
         return xml
@@ -186,9 +187,10 @@ extension MusicXMLWriter {
     }
 
     /// One `<note>` of a chord: its pitch element, value, ties, dots, head, staff, and
-    /// `<notations>` holding the ties and `technical` (the tab's string and fret) when any.
+    /// `<notations>` holding the ties and `technical` (the tab's string and fret) when any, then
+    /// the `lyric` (markers and lyrics design §2).
     static func noteXML(_ piece: ScorePiece, note: ScoreNote, isChord: Bool, pitch: String, voice: Int, staff: Int?,
-                        notehead: String?, technical: String) -> String {
+                        notehead: String?, technical: String, lyric: Lyric? = nil) -> String {
         var xml = "      <note>"
 
         if isChord { xml += "<chord/>" }
@@ -208,6 +210,8 @@ extension MusicXMLWriter {
             xml += technical
             xml += "</notations>"
         }
+
+        if let lyric { xml += lyricXML(lyric) }
 
         return xml + "</note>\n"
     }

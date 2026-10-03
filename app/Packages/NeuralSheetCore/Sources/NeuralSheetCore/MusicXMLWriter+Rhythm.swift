@@ -10,6 +10,8 @@ extension MusicXMLWriter {
         var end: Int
         var pitch: Int
         var id: NoteID? = nil
+        /// The note's syllable, carried to the score's notes (markers and lyrics design §2).
+        var lyric: Lyric? = nil
     }
 
     /// The quantization step for a grid division in a bar of `meter`, in units; a triplet
@@ -54,7 +56,7 @@ extension MusicXMLWriter {
             let end = max(quantized(note.endTime).units, start.units + start.step)
             let id = ids.flatMap { index < $0.count ? $0[index] : nil }
 
-            return UnitNote(start: start.units, end: end, pitch: note.pitch, id: id)
+            return UnitNote(start: start.units, end: end, pitch: note.pitch, id: id, lyric: note.lyric)
         }
         .sorted { ($0.start, $0.pitch, $0.end) < ($1.start, $1.pitch, $1.end) }
     }

@@ -16,6 +16,9 @@ public struct ScoreDocument: Equatable, Sendable {
     public var bars: [ScoreBar] = []
     /// The chord symbols over the measures (chord symbols design §2), in order.
     public var chords: [ScoreChord] = []
+    /// The section markers as rehearsal marks (markers and lyrics design §2), one per measure at
+    /// most, in measure order.
+    public var rehearsalMarks: [ScoreRehearsal] = []
 
     /// The empty score: no parts, no measures.
     public static let empty = ScoreDocument(parts: [], measureCount: 0, firstBar: 0, fifths: 0, bpm: TempoGrid.defaultBpm)
@@ -25,10 +28,10 @@ public struct ScoreDocument: Equatable, Sendable {
     /// a template. `ids` runs alongside `notes` (the document's) or is nil while a run streams.
     /// The grid's swing is dropped: it is a feel, not notation, so the Score tab and both score
     /// exports quantize to the straight grid (editor commands design §2). `chords` are placed on
-    /// the measures the notes span.
+    /// the measures the notes span, and `markers` on the bar lines nearest them.
     public static func build(notes: [NoteEvent], ids: [NoteID?]? = nil, grid: TempoGrid, key: MusicalKey?,
                              arrangement: ScoreArrangement = ScoreArrangement(),
-                             chords: [ChordEvent] = []) -> ScoreDocument {
+                             chords: [ChordEvent] = [], markers: [Marker] = []) -> ScoreDocument {
         let grid = grid.straight
         var notesByProgram: [Int: [(NoteEvent, NoteID?)]] = [:]
 
@@ -100,6 +103,7 @@ public struct ScoreDocument: Equatable, Sendable {
         var document = ScoreDocument(parts: parts, measureCount: span.count, firstBar: span.lowerBound,
                                      fifths: key?.fifths ?? 0, bpm: bars.first?.bpm ?? grid.bpm, bars: bars)
         document.chords = scoreChords(chords, bars: bars, grid: grid, key: key)
+        document.rehearsalMarks = rehearsalMarks(markers, bars: bars, grid: grid)
 
         return document
     }
@@ -150,7 +154,8 @@ public struct ScoreDocument: Equatable, Sendable {
                                      tiedTo: note.end > pieceEnd,
                                      head: ScoreNote.Head(notehead: display.notehead),
                                      id: note.id,
-                                     writtenPitch: note.pitch)
+                                     writtenPitch: note.pitch,
+                                     lyric: note.start == pieceStart ? note.lyric : nil)
                 }
 
                 let spelled = MusicXMLWriter.spelling(midi: note.pitch, preferFlats: fifths < 0)
@@ -161,7 +166,8 @@ public struct ScoreDocument: Equatable, Sendable {
                                  tiedTo: note.end > pieceEnd,
                                  head: .normal,
                                  id: note.id,
-                                 writtenPitch: note.pitch)
+                                 writtenPitch: note.pitch,
+                                 lyric: note.start == pieceStart ? note.lyric : nil)
             }
         }
     }
@@ -193,6 +199,12 @@ public struct ScorePart: Equatable, Sendable {
     public var tab: ScoreTabStaff? = nil
     /// The written key's signature: the project key's, transposed with the part.
     public var writtenFifths: Int = 0
+
+    /// Whether any note of the part's staves carries a syllable: what gives the part a lyric
+    /// line under its bottom staff (markers and lyrics design §2).
+    public var hasLyrics: Bool {
+        staves.contains { $0.measures.contains { $0.pieces.contains { $0.notes.contains { $0.lyric != nil } } } }
+    }
 }
 
 /// A part's tablature: the same pieces as its staves, each note placed on a string.
@@ -273,4 +285,7 @@ public struct ScoreNote: Equatable, Sendable {
     public var writtenPitch: Int = 0
     /// On a tab staff, the string and fret.
     public var placement: TabFingering.Placement? = nil
+    /// The syllable sung on the note, on the piece where it starts only (a tied continuation
+    /// carries none); never on a tab staff, whose notes the notation already names.
+    public var lyric: Lyric? = nil
 }

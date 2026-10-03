@@ -15,6 +15,8 @@ extension MidiFileWriter {
         static let noteOff = 0
         static let recentre = 1
         static let leadingBend = 2
+        /// A syllable sits just ahead of its strike, as karaoke files have it.
+        static let lyric = 2
         static let noteOn = 3
         static let bend = 4
     }

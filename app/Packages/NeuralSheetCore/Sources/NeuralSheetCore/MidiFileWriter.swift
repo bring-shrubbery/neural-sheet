@@ -105,8 +105,9 @@ public enum MidiFileWriter {
 
     /// The whole MIDI file over `grid`'s tempo map: tick 0 is the bar line
     /// ``TempoGrid/exportStartOffsetSeconds`` before the audio, and each note's tick is its
-    /// quarter beats from there × 960.
-    public static func data(notes: [NoteEvent], grid: TempoGrid, mode: MidiOverflowMode) -> Data {
+    /// quarter beats from there × 960. Each of `markers` is a marker meta event in the conductor
+    /// track at its own tick (markers and lyrics design §2), so a DAW shows the sections.
+    public static func data(notes: [NoteEvent], grid: TempoGrid, mode: MidiOverflowMode, markers: [Marker] = []) -> Data {
         let first = grid.segments[0]
         let fileStartSeconds = -grid.exportStartOffsetSeconds
         // Whole bars of the first segment from tick 0 to bar 1, so tick 0 is a bar line exactly.
@@ -140,11 +141,13 @@ public enum MidiFileWriter {
             }
         }
 
-        return data(notes: notes, mode: mode, conductor: meta) { seconds in
+        func tick(_ seconds: Double) -> Int {
             let anchor = anchors.last { $0.seconds <= seconds } ?? anchors[0]
 
             return ticks(beats: anchor.beats + (seconds - anchor.seconds) * anchor.bpm / 60.0)
         }
+
+        return data(notes: notes, mode: mode, conductor: withMarkers(meta, markers, tick: tick), tick: tick)
     }
 
     /// The whole MIDI file at one tempo in 4/4, ready to be written to disk or handed to a drag.
@@ -276,8 +279,9 @@ public enum MidiFileWriter {
         body += bends.setup
 
         // A note off sorts before a note on at the same tick, so a repeated pitch is released
-        // before it is struck again rather than being cut short by its own predecessor.
-        var events = bends.events
+        // before it is struck again rather than being cut short by its own predecessor. Each
+        // syllable is a lyric meta event just before its note's strike (`+Text`).
+        var events = bends.events + lyricEvents(for: sorted, tick: tick)
         events.reserveCapacity(events.count + sorted.count * 2)
 
         for note in sorted {
@@ -334,7 +338,7 @@ public enum MidiFileWriter {
 
     /// A MIDI variable-length quantity: seven bits per byte, high bit set on every byte but the
     /// last.
-    private static func vlq(_ value: Int) -> [UInt8] {
+    static func vlq(_ value: Int) -> [UInt8] {
         var remaining = UInt32(max(0, value))
         var bytes: [UInt8] = [UInt8(remaining & 0x7F)]
         remaining >>= 7

@@ -20,6 +20,9 @@ public struct ScoreSystemLayout: Sendable {
         public var bottomLineY: CGFloat
         /// The lines' extent above the bottom line: 4 spaces for a staff, (strings − 1) × 1.5 for a tab.
         public var height: CGFloat
+        /// The part's lyric line sits under this row: its bottom notation staff, when the part
+        /// has a syllable anywhere (markers and lyrics design §2).
+        public var lyricsBelow = false
 
         public var topLineY: CGFloat { bottomLineY - height }
     }
@@ -136,6 +139,9 @@ public struct ScoreSystemLayout: Sendable {
     /// Between a tab's lines.
     public static let tabLineGap: CGFloat = 1.5
     public static let partGap: CGFloat = 9
+    /// The lyric line under a part's bottom staff, added to the gap below it when the part has
+    /// words (markers and lyrics design §2).
+    public static let lyricLine: CGFloat = 2.5
     public static let systemGap: CGFloat = 8
     public static let clefWidth: CGFloat = 3.6
     public static let accidentalWidth: CGFloat = 1.0
@@ -232,45 +238,6 @@ public struct ScoreSystemLayout: Sendable {
         }
 
         totalHeight = y - ScoreSystemLayout.systemGap * sp + ScoreSystemLayout.bottomMargin * sp
-    }
-
-    // MARK: - Vertical stacking
-
-    /// Every part's staves then its tab, stacked from `top`, with the gaps between.
-    static func rows(for document: ScoreDocument, top: CGFloat, sp: CGFloat) -> [StaffRow] {
-        var rows: [StaffRow] = []
-        var rowY = top
-
-        for (partIndex, part) in document.parts.enumerated() {
-            var rowsOfPart = 0
-
-            for (staffIndex, staff) in part.staves.enumerated() {
-                if rowsOfPart > 0 { rowY += ScoreSystemLayout.staffGap * sp }
-                rowY += 4 * sp
-                rows.append(StaffRow(partIndex: partIndex, kind: .staff(index: staffIndex, clef: staff.clef), bottomLineY: rowY, height: 4 * sp))
-                rowsOfPart += 1
-            }
-
-            if let tab = part.tab {
-                if rowsOfPart > 0 { rowY += ScoreSystemLayout.tabGap * sp }
-                let height = CGFloat(max(1, tab.tuning.count - 1)) * ScoreSystemLayout.tabLineGap * sp
-                rowY += height
-                rows.append(StaffRow(partIndex: partIndex, kind: .tab, bottomLineY: rowY, height: height))
-                rowsOfPart += 1
-            }
-
-            rowY += ScoreSystemLayout.partGap * sp
-        }
-
-        return rows
-    }
-
-    /// The rows of every part, stacked, with the gaps between: the last row's bottom line less
-    /// the trailing part gap.
-    public static func systemHeight(for document: ScoreDocument, arrangement: ScoreArrangement, sp: CGFloat) -> CGFloat {
-        guard let last = rows(for: document, top: 0, sp: sp).last else { return 0 }
-
-        return last.bottomLineY
     }
 
     // MARK: - Horizontal spacing

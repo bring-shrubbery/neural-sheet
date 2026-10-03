@@ -4,10 +4,10 @@ import Foundation
 /// tuning, and each note's sounding pitch with its string and fret. MusicXML numbers the strings
 /// from the top (1 is the highest line); the tab staff numbers them from the bottom.
 extension MusicXMLWriter {
-    /// One `<part>` for a part's tab staff, the same measures as its notation; the `chords` when
-    /// it is the first part written.
+    /// One `<part>` for a part's tab staff, the same measures as its notation; the `chords` and
+    /// the `rehearsals` when it is the first part written.
     static func tabPartXML(_ tab: ScoreTabStaff, id: String, fifths: Int, bars: [ScoreBar], writesTempo: Bool,
-                           chords: [ScoreChord] = []) -> String {
+                           chords: [ScoreChord] = [], rehearsals: [ScoreRehearsal] = []) -> String {
         var xml = "  <part id=\"\(id)\">\n"
 
         for (measureIndex, measure) in tab.measures.enumerated() {
@@ -25,6 +25,7 @@ extension MusicXMLWriter {
                 xml += meterChangeXML(bars[measureIndex].timeSignature)
             }
 
+            xml += rehearsalXML(rehearsals, measure: measureIndex)
             if writesTempo, bars[measureIndex].showsTempo { xml += tempoXML(bars[measureIndex]) }
 
             for piece in measure.pieces {
