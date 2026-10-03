@@ -8,6 +8,8 @@ nonisolated struct EngineNote: Equatable, Sendable {
     var pitch: Int
     var program: Int
     var isDrum: Bool
+    /// How sure the model was of the tokens that opened the note, 0…1 (confidence design §2).
+    var confidence: Double
 }
 
 /// What one chunk added to the transcription.
@@ -221,7 +223,7 @@ nonisolated final class TranscriptionEngine: @unchecked Sendable {
 }
 
 private extension EngineNote {
-    /// The library's note as the app's: the same five fields.
+    /// The library's note as the app's: the same six fields.
     ///
     /// `nonisolated` because the conversion runs on the transcription thread; the target's
     /// default isolation would otherwise put an extension member on the main actor.
@@ -230,6 +232,7 @@ private extension EngineNote {
                   offset: note.offset,
                   pitch: note.pitch,
                   program: note.program,
-                  isDrum: note.isDrum)
+                  isDrum: note.isDrum,
+                  confidence: Double(note.confidence))
     }
 }

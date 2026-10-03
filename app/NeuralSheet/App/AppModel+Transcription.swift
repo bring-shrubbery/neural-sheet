@@ -226,8 +226,10 @@ extension AppModel {
             staging.reset()
             // Replaces the accumulation rather than extending it: the run's own result is
             // authoritative (the streamed one is missing any note the model never closed), and
-            // it becomes the editable document.
-            installDocument(rawNotes: final.map(NoteEvent.init(engineNote:)))
+            // it becomes the editable document. The After transcription settings apply here and
+            // not to the stream: the roll shows what the model said, the landing what is kept.
+            let landing = NoteEvent.landing(final.map(NoteEvent.init(engineNote:)), settings: settings)
+            installDocument(rawNotes: landing)
             transition(to: .populated)
 
         case .failure(.cancelled):
@@ -274,9 +276,11 @@ extension AppModel {
 }
 
 extension NoteEvent {
-    /// The engine's note as the app's: the same span, pitch and program, with the fixed amplitude
-    /// of 100/127 the model gives every note (it predicts no velocity).
+    /// The engine's note as the app's: the same span, pitch, program and confidence, with the fixed
+    /// amplitude of 100/127 the model gives every note (it predicts no velocity).
     nonisolated init(engineNote note: EngineNote) {
-        self.init(startTime: note.onset, endTime: note.offset, pitch: note.pitch, program: note.program)
+        self.init(
+            startTime: note.onset, endTime: note.offset, pitch: note.pitch, program: note.program,
+            confidence: note.confidence)
     }
 }

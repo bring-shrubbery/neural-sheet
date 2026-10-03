@@ -110,7 +110,11 @@ extension AppModel {
                 return note
             }
 
-            let batch = document.replace(range: job.range, with: mergeOverlappingNotesWithSamePitch(shifted))
+            // The After transcription settings apply to the region's notes alone, before the
+            // batch is built; the notes around the range are the document's and stay (confidence
+            // design §2).
+            let landing = NoteEvent.landing(shifted, settings: settings)
+            let batch = document.replace(range: job.range, with: mergeOverlappingNotesWithSamePitch(landing))
             replaceDocumentAndCommit(document, batch)
             // The result is the selection: audition it, nudge it, or undo it at once. The range
             // has done its job and goes; after a cancel or a failure it stays, for another go.

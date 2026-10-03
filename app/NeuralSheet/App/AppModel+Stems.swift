@@ -156,6 +156,9 @@ extension AppModel {
                 runStem(stem + 1)
             } else {
                 stemsJob = nil
+                // Lands through the main run's completion, which applies the After transcription
+                // settings (confidence design §2): the filter is per note, so once over the four
+                // stems is what once per stem would give.
                 handleFinished(.success(job.notes))
             }
 
