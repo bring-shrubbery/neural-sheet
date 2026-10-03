@@ -14,6 +14,10 @@ import Observation
 final class MobileModel {
     @ObservationIgnored let engine: PlaybackEngine
 
+    /// Why the project's take or notes could not be loaded, for the screen to say; nil when all
+    /// is well.
+    var loadProblem: String?
+
     // MARK: - The take
 
     /// The take, or nil for a project without audio.

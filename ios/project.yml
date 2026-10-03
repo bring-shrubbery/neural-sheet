@@ -64,6 +64,8 @@ targets:
           - HeadlessTranscription+Stems.swift
       # The vendored Ogg Vorbis decoder AudioFileLoader reads .ogg with, as on the Mac.
       - path: ../app/NeuralSheet/Decoders
+      # The project package's UTType, so both apps name the one type (sub-issue C).
+      - path: ../app/NeuralSheet/App/ProjectType.swift
     dependencies:
       - package: NeuralSheetCore
       - package: NeuralSheetEngine
@@ -120,6 +122,26 @@ targets:
           - UIInterfaceOrientationLandscapeLeft
           - UIInterfaceOrientationLandscapeRight
         NSMicrophoneUsageDescription: NeuralSheet records from the microphone to transcribe what you play.
+        # The project package (sub-issue C): the same declaration as app/Info.plist, so iCloud
+        # Drive and Files show one type whichever app saved the file. The document browser is the
+        # system's, and documents open in place where they are.
+        UISupportsDocumentBrowser: true
+        LSSupportsOpeningDocumentsInPlace: true
+        CFBundleDocumentTypes:
+          - CFBundleTypeName: NeuralSheet Project
+            CFBundleTypeRole: Editor
+            LSHandlerRank: Owner
+            LSTypeIsPackage: true
+            LSItemContentTypes:
+              - com.quassum.neuralsheet.project
+        UTExportedTypeDeclarations:
+          - UTTypeIdentifier: com.quassum.neuralsheet.project
+            UTTypeDescription: NeuralSheet Project
+            UTTypeConformsTo:
+              - com.apple.package
+            UTTypeTagSpecification:
+              public.filename-extension:
+                - neuralsheet
 
 schemes:
   NeuralSheet:
