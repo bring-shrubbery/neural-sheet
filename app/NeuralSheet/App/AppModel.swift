@@ -493,31 +493,12 @@ import UniformTypeIdentifiers
 
     // MARK: - Models
 
-    /// The size a run would use: the preference when installed, else Medium, else the first
-    /// installed size, else nil (nothing to transcribe with). The same rule as `ModelStore.resolve`,
-    /// read off ``installedModels`` so it is observable.
-    var modelSize: ModelSize? {
-        if installedModels.contains(settings.modelSize) {
-            return settings.modelSize
-        }
-
-        if installedModels.contains(ModelManifest.defaultSize) {
-            return ModelManifest.defaultSize
-        }
-
-        return ModelSize.transcription.first(where: installedModels.contains)
-    }
-
     /// Re-scanned at 10 Hz by ``modelPollTimer`` and whenever a download changes phase.
-    private(set) var installedModels: Set<ModelSize> = []
+    // Internal setter: written from AppModel+Models.swift.
+    var installedModels: Set<ModelSize> = []
 
-    private(set) var downloadPhases: [ModelSize: DownloadPhase] = [:]
-
-    /// No model installed and nothing else to do on the roll: the roll says so, and points at
-    /// Settings (§3.2).
-    var needsModelNotice: Bool {
-        !hasTranscriptionModel && (state == .empty || state == .audioLoaded)
-    }
+    // Internal setter: written from AppModel+Models.swift.
+    var downloadPhases: [ModelSize: DownloadPhase] = [:]
 
     /// The Settings window's tab. Set before opening the window to land on a particular one.
     var settingsTab: SettingsTab = .general
@@ -525,7 +506,8 @@ import UniformTypeIdentifiers
     /// File → Export MIDI…: the sheet that asks for the export settings before the save panel.
     var isExportDialogPresented = false
 
-    @ObservationIgnored private var modelPollTimer: Timer?
+    // Internal: written from AppModel+Models.swift.
+    @ObservationIgnored var modelPollTimer: Timer?
 
     var isInstrumentMenuOpen: Bool = false
 
@@ -676,56 +658,6 @@ import UniformTypeIdentifiers
         let highest = populated.map(\.highestPitch).max()
 
         return (mixer.entries.count, notes.count, lowest, highest)
-    }
-
-    // MARK: - Models
-
-    /// The preference; ``modelSize`` is what a run resolves it to.
-    func setModelSize(_ size: ModelSize) {
-        settings.modelSize = size
-    }
-
-    func startDownload(_ size: ModelSize) {
-        downloader.start(size)
-        refreshDownloadPhase(size)
-    }
-
-    func cancelDownload(_ size: ModelSize) {
-        downloader.cancel(size)
-    }
-
-    /// Opens the models folder in the Finder, creating it first.
-    func openModelsFolder() {
-        try? paths.ensureDirectories()
-        NSWorkspace.shared.open(paths.models)
-    }
-
-    private func refreshDownloadPhase(_ size: ModelSize) {
-        let phase = downloader.phase(of: size)
-
-        if downloadPhases[size] != phase {
-            downloadPhases[size] = phase
-        }
-
-        // Idle after downloading means installed (or given up); either way the set may have moved.
-        rescanInstalledModels()
-    }
-
-    /// 10 Hz, panel open or not (§3.2): the panel has to come back on its own when the last
-    /// checkpoint disappears, and the toolbar's Transcribe button has to go with it.
-    private func startModelPoll() {
-        modelPollTimer?.invalidate()
-        modelPollTimer = AppModel.repeatingTimer(hz: 10) { [weak self] in
-            self?.rescanInstalledModels()
-        }
-    }
-
-    private func rescanInstalledModels() {
-        let installed = modelStore.installed()
-
-        if installed != installedModels {
-            installedModels = installed
-        }
     }
 
     // MARK: - MIDI
