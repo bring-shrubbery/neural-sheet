@@ -3,7 +3,8 @@ import NeuralSheetCore
 import SwiftUI
 
 /// The five rows that set the selection (design §6.3): instrument, start, length, pitch and
-/// velocity, then a read-only sixth, confidence (confidence design §2). Every commit is one batch
+/// velocity, then two read-only rows, confidence (confidence design §2) and the largest pitch
+/// curve deviation (pitch curves design §2). Every commit is one batch
 /// over the whole selection; a field whose notes disagree shows "—". The sidebar's inspector and
 /// the roll's note card both show these.
 ///
@@ -60,6 +61,12 @@ struct SelectionFields: View {
                     .foregroundStyle(Theme.textStrong)
                     .padding(.horizontal, s(6))
             }
+            row("Pitch curve") {
+                Text(SelectionFields.pitchCurveText(notes))
+                    .font(Fonts.mono(10, weight: 500, scale: k))
+                    .foregroundStyle(Theme.textStrong)
+                    .padding(.horizontal, s(6))
+            }
         }
         .disabled(!enabled)
         .opacity(enabled ? 1 : Theme.disabledAlpha)
@@ -101,6 +108,17 @@ struct SelectionFields: View {
         let highest = percents.max() ?? 0
 
         return lowest == highest ? "\(lowest) %" : "\(lowest) – \(highest) %"
+    }
+
+    /// "±N ¢", the largest deviation in any selected note's curve, or "—" when none has one.
+    static func pitchCurveText(_ notes: [NoteEvent]) -> String {
+        let curves = notes.compactMap(\.pitchCurve).filter { !$0.isEmpty }
+
+        guard !curves.isEmpty else { return "—" }
+
+        let largest = curves.map { $0.map(abs).max() ?? 0 }.max() ?? 0
+
+        return "±\(Int(largest.rounded())) ¢"
     }
 
     private func mixed<T: Equatable>(_ values: [T]) -> Bool {

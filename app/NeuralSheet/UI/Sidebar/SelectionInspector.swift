@@ -9,9 +9,9 @@ struct SelectionInspector: View {
 
     @Environment(\.uiScale) private var k
 
-    /// The header and six rows: 150 for the design's five, one row and its gap more for the
-    /// read-only confidence (confidence design §2).
-    static let height: CGFloat = 174
+    /// The header and seven rows: 150 for the design's five, then a row and its gap more for each
+    /// read-only one, confidence (confidence design §2) and the pitch curve (pitch curves design §2).
+    static let height: CGFloat = 198
     private static let paddingSide: CGFloat = 14
     private static let paddingTop: CGFloat = 12
     private static let labelHeight: CGFloat = 12
