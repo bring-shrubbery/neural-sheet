@@ -278,10 +278,19 @@ nonisolated final class InstrumentSynthBank: @unchecked Sendable {
 
     /// A fresh DLS synth, or nil when the system has none: nothing here can conjure one, and
     /// leaving an instrument out is silence on one program rather than a crash.
+    ///
+    /// iOS has no DLS synth; its MIDI synth loads the same banks through the same property, but
+    /// has no bank of its own (`+SoundBank.swift`).
     func makeSynthNode() -> AVAudioUnitMIDIInstrument? {
+        #if os(macOS)
+        let subType = kAudioUnitSubType_DLSSynth
+        #else
+        let subType = kAudioUnitSubType_MIDISynth
+        #endif
+
         var description = AudioComponentDescription(
             componentType: kAudioUnitType_MusicDevice,
-            componentSubType: kAudioUnitSubType_DLSSynth,
+            componentSubType: subType,
             componentManufacturer: kAudioUnitManufacturer_Apple,
             componentFlags: 0,
             componentFlagsMask: 0

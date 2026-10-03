@@ -44,6 +44,29 @@ nonisolated extension InstrumentSynthBank {
     /// Bank select then program change, on the channel this instrument's notes arrive on. The
     /// click is a percussion kit like the drums (click design §2).
     func sendProgramChange(to node: AVAudioUnitMIDIInstrument, program: Int) {
+        #if !os(macOS)
+        // iOS's MIDI synth loads an instrument from its bank only for a program change it gets
+        // while preloading, and must not be left preloading for playback; the change after the
+        // preload is the one that selects it.
+        Self.setPreload(true, on: node)
+        sendBankAndProgram(to: node, program: program)
+        Self.setPreload(false, on: node)
+        #endif
+
+        sendBankAndProgram(to: node, program: program)
+    }
+
+    #if !os(macOS)
+    private static func setPreload(_ enabled: Bool, on node: AVAudioUnitMIDIInstrument) {
+        var value: UInt32 = enabled ? 1 : 0
+
+        AudioUnitSetProperty(
+            node.audioUnit, kAUMIDISynthProperty_EnablePreload, kAudioUnitScope_Global, 0, &value,
+            UInt32(MemoryLayout<UInt32>.size))
+    }
+    #endif
+
+    private func sendBankAndProgram(to node: AVAudioUnitMIDIInstrument, program: Int) {
         if program >= NoteEvent.drumProgram {
             node.sendProgramChange(
                 0,
