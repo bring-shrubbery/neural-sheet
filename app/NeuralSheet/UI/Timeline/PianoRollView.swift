@@ -73,6 +73,9 @@ final class PianoRollView: NSView {
     private(set) var preview: DragPreview?
     var previewIndices: [Int] = []
 
+    /// The compared version's notes, drawn hollow under the notes (versions design §2).
+    var ghosts = GhostNotes()
+
     private var trackingArea: NSTrackingArea?
 
     /// How far a drum hit is widened for drawing (`DRUM_MIN_DRAWN_SECONDS`).
@@ -127,19 +130,7 @@ final class PianoRollView: NSView {
     }
 
     private func rebuildBuckets() {
-        let seconds = Int((notes.map { PianoRollView.drawnEnd(of: $0) }.max() ?? 0).rounded(.up)) + 1
-        var newBuckets = [[Int]](repeating: [], count: max(1, seconds))
-
-        for (index, note) in notes.enumerated() {
-            let first = max(0, Int(note.startTime))
-            let last = max(first, Int(PianoRollView.drawnEnd(of: note)))
-
-            for bucket in first...min(last, newBuckets.count - 1) {
-                newBuckets[bucket].append(index)
-            }
-        }
-
-        buckets = newBuckets
+        buckets = PianoRollView.secondBuckets(notes)
     }
 
     var hasNotes: Bool { !notes.isEmpty }
@@ -341,6 +332,9 @@ final class PianoRollView: NSView {
     /// `PianoRoll::_drawNotes`, over the notes whose seconds cross the exposed sliver; then the
     /// notes a drag previews, wherever they land now, and the Draw tool's note in progress.
     private func drawNotes(_ ctx: CGContext, in dirtyRect: CGRect) {
+        // Under the notes, so a note the version shares covers its ghost (versions design §2).
+        drawGhosts(ctx, in: dirtyRect)
+
         let previewSet = Set(previewIndices)
 
         for index in indices(crossing: dirtyRect) where !previewSet.contains(index) {
@@ -372,33 +366,7 @@ final class PianoRollView: NSView {
 
     /// The indices of the notes whose seconds cross `dirtyRect`, in note order.
     private func indices(crossing dirtyRect: CGRect) -> [Int] {
-        guard !notes.isEmpty, !buckets.isEmpty else { return [] }
-
-        let fromSeconds = max(0, geometry.seconds(forX: dirtyRect.minX))
-        let toSeconds = geometry.seconds(forX: dirtyRect.maxX)
-        let firstBucket = min(Int(fromSeconds), buckets.count - 1)
-        let lastBucket = min(Int(toSeconds), buckets.count - 1)
-
-        guard firstBucket <= lastBucket else { return [] }
-
-        // Gathered and sorted rather than drawn bucket by bucket, so overlapping notes stack in the
-        // order the transcription lists them, wherever their buckets start.
-        var indices: [Int] = []
-
-        for bucket in firstBucket...lastBucket {
-            for index in buckets[bucket] {
-                let note = notes[index]
-                let startBucket = max(0, Int(note.startTime))
-
-                if bucket == max(startBucket, firstBucket) {
-                    indices.append(index)
-                }
-            }
-        }
-
-        indices.sort()
-
-        return indices
+        indices(crossing: dirtyRect, of: notes, buckets: buckets)
     }
 
     // MARK: - Mouse

@@ -114,6 +114,9 @@ final class TimelineContainerView: NSView {
         var lyricNote: NoteID?
         var showsConfidence = false
         var showsPitchCurves = true
+        /// The compared version (versions design §2): its notes never change under one id, so
+        /// the id says when the ghosts must be rebuilt without comparing thousands of notes.
+        var comparedVersionID: UUID?
     }
 
     var snapshot = Snapshot()

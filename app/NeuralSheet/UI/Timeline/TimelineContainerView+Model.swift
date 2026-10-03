@@ -46,6 +46,7 @@ extension TimelineContainerView {
             _ = model.showsConfidence
             _ = model.showsPitchCurves
             _ = model.regionJob
+            _ = model.comparedVersion?.id
         } onChange: { [weak self] in
             // Called before the new value lands, from whichever context wrote it: the read has to
             // wait for the next run-loop pass, which also folds a burst of writes into one sync.
@@ -92,7 +93,8 @@ extension TimelineContainerView {
                            markerToRename: model.editor.markerToRename,
                            lyricNote: model.editor.lyricNote,
                            showsConfidence: model.showsConfidence,
-                           showsPitchCurves: model.showsPitchCurves)
+                           showsPitchCurves: model.showsPitchCurves,
+                           comparedVersionID: model.comparedVersion?.id)
         let old = snapshot
         let first = !hasSynced
         // The document's identified notes, or the run's placeholders (ids nothing hit-tests).
@@ -157,6 +159,12 @@ extension TimelineContainerView {
         if first || new.showsPitchCurves != old.showsPitchCurves {
             roll.showsPitchCurves = new.showsPitchCurves
             roll.needsDisplay = true
+        }
+
+        // Both tabs: the compared version's ghosts behind the notes (versions design §2). The
+        // version's own array is handed down, not copied.
+        if first || new.comparedVersionID != old.comparedVersionID {
+            roll.setGhosts(model.comparedVersion?.notes ?? [])
         }
 
         if zoomChanged {
