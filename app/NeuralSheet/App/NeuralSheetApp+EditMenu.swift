@@ -105,6 +105,11 @@ extension NeuralSheetApp {
             Button("Detect Chords") { model.detectChords() }
                 .disabled(model.workspace != .edit || !model.canDetectChords)
 
+            // Pitch curves design §2: the bends and vibrato inside each note, from the audio.
+            Button("Track Pitch") { model.trackPitch() }
+                .keyboardShortcut("p", modifiers: [.command, .option])
+                .disabled(!model.canTrackPitch)
+
             bulkCommands(model: model)
 
             Divider()

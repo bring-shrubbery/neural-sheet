@@ -200,6 +200,10 @@ import UniformTypeIdentifiers
     /// region job (input formats design §2).
     var importJob: Task<Void, Never>?
 
+    /// Track Pitch in flight, or nil (`AppModel+PitchTracking.swift`, its only writer besides
+    /// the clears, which cancel it). Edits may go on meanwhile; a region run may not start.
+    var pitchJob: Task<Void, Never>?
+
     /// The file a video's audio was extracted to, while it is the take. It is not a recording by
     /// name, so the clear finds it here rather than by the recorder's prefix.
     @ObservationIgnored var importedAudioURL: URL?
@@ -815,6 +819,9 @@ import UniformTypeIdentifiers
         }
 
         abandonStemsRun()
+        // Track Pitch in flight lands nothing: its task finds itself cancelled when it hops back.
+        pitchJob?.cancel()
+        pitchJob = nil
         transcription = TranscriptionState()
         staging.reset()
         document = nil

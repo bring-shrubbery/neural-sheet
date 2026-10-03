@@ -23,14 +23,15 @@ extension AppModel {
 
     /// The Re-transcribe button: a range, a document, a checkpoint, and no run of either kind.
     var canRetranscribe: Bool {
-        state == .populated && document != nil && regionJob == nil && !jobActive
+        state == .populated && document != nil && regionJob == nil && pitchJob == nil && !jobActive
             && editor.range != nil && modelSize != nil
     }
 
     // MARK: - Launch
 
     func retranscribe(range: Range<Double>, groups: [InstrumentGroup]) {
-        guard state == .populated, document != nil, regionJob == nil, !jobActive, !transcriber.isRunning else { return }
+        guard state == .populated, document != nil, regionJob == nil, pitchJob == nil, !jobActive, !transcriber.isRunning
+        else { return }
         guard let size = modelSize, let modelPath = modelStore.installedPath(for: size) else { return }
         guard let source, let slice = RegionSlice(range: range, duration: duration) else { return }
 

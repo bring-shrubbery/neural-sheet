@@ -154,7 +154,7 @@ struct NeuralSheetApp: App {
     // MARK: - View menu
 
     /// The three tabs (⌘1, ⌘2, ⌘3; Edit and Score only once there is a finished transcription),
-    /// Show Confidence (⌥⌘C), and Reset Zoom, which the gear menu used to hold: horizontal back to
+    /// Show Confidence (⌥⌘C), Show Pitch Curves, and Reset Zoom, which the gear menu used to hold: horizontal back to
     /// 1, vertical back to automatic. ⌘0, as every other app has it.
     private func viewMenu(model: AppModel) -> some Commands {
         CommandMenu("View") {
@@ -176,6 +176,11 @@ struct NeuralSheetApp: App {
             Toggle("Show Confidence", isOn: Binding(get: { model.showsConfidence },
                                                     set: { model.showsConfidence = $0 }))
                 .keyboardShortcut("c", modifiers: [.command, .option])
+
+            // Pitch curves design §2: on by default, remembered in the global settings; no key,
+            // as ⌥⌘P is Track Pitch.
+            Toggle("Show Pitch Curves", isOn: Binding(get: { model.showsPitchCurves },
+                                                      set: { model.showsPitchCurves = $0 }))
 
             Divider()
 
