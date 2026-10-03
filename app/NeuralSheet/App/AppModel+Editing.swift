@@ -290,8 +290,9 @@ extension AppModel {
         editor.grid.division = division
     }
 
+    /// The toolbar's TEMPO: the tempo of the segment under the playhead (tempo map design §4).
     func setGridBpm(_ bpm: Double) {
-        editor.grid.bpm = TempoGrid.clampedBpm(bpm)
+        setTempo(bpm, atBar: playheadBar)
     }
 
     func setGridOffset(_ seconds: Double) {

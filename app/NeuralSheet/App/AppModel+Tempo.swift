@@ -9,7 +9,8 @@ extension AppModel {
 
     /// The Tap button and the `t` key: a press in time with playback. Refused while the
     /// transport stands still, since the taps are on the take's clock and a stopped clock has
-    /// no intervals. Once two taps are in, the grid's BPM follows them.
+    /// no intervals. Once two taps are in, the tempo of the segment under the playhead follows
+    /// them (tempo map design §4).
     func tap() {
         guard state.canPlay, isPlaying else { return }
 
