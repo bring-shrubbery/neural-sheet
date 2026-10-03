@@ -268,38 +268,39 @@ public enum MidiFileWriter {
 
         // Sorting the notes first makes the file a function of the transcription rather than of the
         // order the notes happened to arrive in.
-        struct Event {
-            var tick: Int
-            /// A note off sorts before a note on at the same tick, so a repeated pitch is released
-            /// before it is struck again rather than being cut short by its own predecessor.
-            var isNoteOn: Bool
-            var bytes: [UInt8]
-        }
+        let sorted = spec.notes.sorted()
 
-        var events: [Event] = []
-        events.reserveCapacity(spec.notes.count * 2)
+        // A monophonic line with pitch curves opens with the bend range and carries its bends
+        // (`MidiFileWriter+Bend.swift`); any other track is unchanged.
+        let bends = bends(for: sorted, channelBits: channelBits, tick: tick)
+        body += bends.setup
 
-        for note in spec.notes.sorted() {
+        // A note off sorts before a note on at the same tick, so a repeated pitch is released
+        // before it is struck again rather than being cut short by its own predecessor.
+        var events = bends.events
+        events.reserveCapacity(events.count + sorted.count * 2)
+
+        for note in sorted {
             let pitch = UInt8(min(max(note.pitch, 0), 127))
             let velocity = UInt8(min(max(safeInt((note.amplitude * 127).rounded()), 0), 127))
 
             events.append(
-                Event(
+                TrackEvent(
                     tick: tick(note.startTime),
-                    isNoteOn: true,
+                    order: TrackEvent.noteOn,
                     bytes: [0x90 | channelBits, pitch, velocity]))
             events.append(
-                Event(
+                TrackEvent(
                     tick: tick(note.endTime),
-                    isNoteOn: false,
+                    order: TrackEvent.noteOff,
                     bytes: [0x80 | channelBits, pitch, 0x00]))
         }
 
-        // A stable sort on (tick, note off first); `enumerated` keeps equal events in the order the
-        // sorted notes produced them, since Swift's sort is not itself stable.
+        // A stable sort on (tick, order); `enumerated` keeps equal events in the order they were
+        // produced, since Swift's sort is not itself stable.
         let ordered = events.enumerated().sorted { lhs, rhs in
-            (lhs.element.tick, lhs.element.isNoteOn ? 1 : 0, lhs.offset)
-                < (rhs.element.tick, rhs.element.isNoteOn ? 1 : 0, rhs.offset)
+            (lhs.element.tick, lhs.element.order, lhs.offset)
+                < (rhs.element.tick, rhs.element.order, rhs.offset)
         }
 
         var lastTick = 0
