@@ -141,7 +141,8 @@ struct TopBar: View {
             }
             .tooltip("Center playhead | c")
 
-            transportButton(isOn: model.state == .recording,
+            // Lit through the count-in as through the take (click design §2).
+            transportButton(isOn: model.state == .recording || model.state == .countingIn,
                             isEnabled: model.canRecord,
                             on: Theme.rec.opacity(0.14),
                             foregroundIdle: Theme.recIdle,

@@ -57,7 +57,15 @@ struct StatusBar: View {
     var segments: [String] {
         let status = model.statusLine
 
-        var segments = [
+        var segments: [String] = []
+
+        // The count-in's beats to go, first, where the eye is while waiting to play (click
+        // design §2).
+        if model.state == .countingIn, let remaining = model.countInRemaining {
+            segments.append("Count-in \(Self.separator) \(remaining)")
+        }
+
+        segments += [
             "Model: " + (model.modelSize?.displayName ?? "None"),
             "\(status.instruments) " + (status.instruments == 1 ? "instrument" : "instruments"),
             "\(status.notes) notes",

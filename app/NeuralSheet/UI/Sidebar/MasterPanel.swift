@@ -5,8 +5,8 @@ import SwiftUI
 /// The panel pinned to the bottom of the sidebar (§1.4): a "MASTER" label over the 26-segment
 /// master meter, under a `divSoft` top border, and below the meter two rows the inventory had in
 /// the top bar and now sit beside the level they act on: the ORIG / MIDI mix with the stereo
-/// split toggle beside it (`MixPill`, ours), then the output level and MUTE. 132 authored points
-/// tall.
+/// split toggle beside it (`MixPill`, ours), then the output level and MUTE, then CLICK and the
+/// click's level (click design §2). 172 authored points tall.
 struct MasterPanel: View {
     @Bindable private var model: AppModel
     /// The panel's width in authored points: the sidebar's column, less its border.
@@ -21,7 +21,7 @@ struct MasterPanel: View {
 
     // MARK: - Authored extents (`Sidebar.cpp`, `TopBar.cpp`, `nn::metrics`)
 
-    static let height: CGFloat = 132
+    static let height: CGFloat = 172
     private static let paddingSide: CGFloat = 14
     private static let paddingTop: CGFloat = 12
     private static let labelHeight: CGFloat = 12
@@ -50,6 +50,8 @@ struct MasterPanel: View {
     /// `NnFlatButton::setPadding(11, 11, 7)` on the MUTE button.
     private static let labelPadX: CGFloat = 11
     private static let iconLabelGap: CGFloat = 7
+    /// The click's fader: the volume pill's track, beside a CLICK button of MUTE's shape.
+    private static let clickTrackWidth: CGFloat = 60
 
     var body: some View {
         let s = Scaled(k: k)
@@ -87,6 +89,16 @@ struct MasterPanel: View {
                 Spacer(minLength: s(8))
 
                 muteButton
+            }
+            .frame(height: s(Self.controlHeight))
+            .padding(.top, s(Self.rowGap))
+
+            HStack(spacing: 0) {
+                clickButton
+
+                Spacer(minLength: s(8))
+
+                clickPill
             }
             .frame(height: s(Self.controlHeight))
             .padding(.top, s(Self.rowGap))
@@ -197,6 +209,61 @@ struct MasterPanel: View {
             .frame(height: s(Self.controlHeight))
         }
         .tooltip("Mute / Unmute input | m")
+    }
+
+    // MARK: - Click
+
+    /// The metronome on the grid's beats, in MUTE's shape, on the accent while it is on.
+    private var clickButton: some View {
+        let s = Scaled(k: k)
+        let labelWidth = Self.sectionLabelWidth("CLICK")
+
+        return FlatButton(isOn: model.clickEnabled,
+                          idle: Theme.bgControl,
+                          on: Theme.accentFillActive,
+                          foregroundIdle: Theme.textIcon,
+                          foregroundOn: Theme.accentText,
+                          corner: s(Self.controlCorner),
+                          action: { model.toggleClick() }) { _ in
+            Text("CLICK")
+                .font(Fonts.sectionHeader(k))
+                .kerning(Fonts.tracking(Fonts.Tracking.sectionHeaderPill,
+                                        pointSize: Fonts.Size.sectionHeader,
+                                        scale: k))
+                .fixedSize()
+                .frame(width: s(labelWidth), alignment: .leading)
+                .padding(.horizontal, s(Self.labelPadX))
+                .frame(height: s(Self.controlHeight))
+        }
+        .tooltip("Click on every beat of the grid | k")
+        .accessibilityLabel("Click")
+    }
+
+    /// The click's level, the volume pill's fader and readout without its speaker.
+    private var clickPill: some View {
+        let s = Scaled(k: k)
+
+        return HStack(spacing: s(Self.pillGap)) {
+            PillSlider(value: $model.clickGainDb,
+                       range: InstrumentMixerState.minGainDb ... InstrumentMixerState.maxGainDb,
+                       step: 0.1,
+                       width: s(Self.clickTrackWidth),
+                       fill: Theme.volumeFill,
+                       track: Theme.faderTrackTop,
+                       thumb: Theme.faderThumb,
+                       onDoubleClick: { model.clickGainDb = ProjectState.defaultClickGainDb })
+                .tooltip("Click level | double-click for -6 dB")
+
+            Text(TimeFormat.decibels(model.clickGainDb))
+                .font(Fonts.meta(k))
+                .foregroundStyle(Theme.textMuted)
+                .fixedSize()
+                .frame(width: s(Self.volumeValueWidth), alignment: .trailing)
+        }
+        .padding(.horizontal, s(Self.pillPadding))
+        .frame(height: s(Self.controlHeight))
+        .background(RoundedRectangle(cornerRadius: s(Self.controlCorner), style: .circular).fill(Theme.bgControl))
+        .opacity(model.clickEnabled ? 1 : Theme.disabledAlpha)
     }
 
     /// The rounded-up tracked width `NnFlatButton::getIdealWidth` gave a `sectionHeader` label

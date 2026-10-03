@@ -3,8 +3,9 @@ import NeuralSheetCore
 import SwiftUI
 
 /// One instrument's row in the sidebar (`InstrumentStrip`, §1.5): colour chip, name, note count
-/// and range, mute, solo, a fader and the level meter under it. 76 authored points tall, as wide
-/// as the sidebar's strip column.
+/// and range, mute, solo, a fader, the level meter under it and the pan beside the meter, under
+/// the fader's readout (click design §2). 76 authored points tall, as wide as the sidebar's strip
+/// column.
 ///
 /// The row is a function of the three values it is handed -- the entry, its mix settings and its
 /// smoothed level -- and it talks back to the model only through the mixer commands. The model
@@ -57,6 +58,10 @@ struct InstrumentStrip: View {
     private static let meterHeight: CGFloat = 3
     private static let meterSegments = 16
     private static let meterGap: CGFloat = 2
+    /// The pan slider's ends, −100 (left) … +100 (right), and the detent either side of the
+    /// centre that snaps to it (click design §2).
+    private static let panSpan = 100.0
+    private static let panDetent = 5.0
 
     /// The name row is the name font's own line height, rounded, as JUCE split the identity row.
     /// Measured from the face rather than written down so the split follows the font.
@@ -162,12 +167,31 @@ struct InstrumentStrip: View {
             .frame(height: s(Self.faderHeight))
             .padding(.top, s(Self.faderTopGap))
 
-            // The meter takes the fader's own insets, so the two line up under the name.
-            LevelMeter(db: level, segments: Self.meterSegments, gap: Self.meterGap, height: Self.meterHeight)
-                .frame(width: s(faderWidth))
-                .opacity(alpha)
-                .padding(.leading, s(Self.textInset))
-                .padding(.top, s(Self.meterTopGap))
+            // The meter takes the fader's own insets, so the two line up under the name; the pan
+            // takes the readout's column, so the strip keeps its height.
+            HStack(spacing: 0) {
+                LevelMeter(db: level, segments: Self.meterSegments, gap: Self.meterGap, height: Self.meterHeight)
+                    .frame(width: s(faderWidth))
+                    .opacity(alpha)
+
+                Spacer(minLength: 0)
+
+                PillSlider(value: pan,
+                           range: -Self.panSpan ... Self.panSpan,
+                           step: 1,
+                           width: s(Self.valueGap + Self.valueWidth),
+                           fill: Theme.faderTrack,
+                           track: Theme.faderTrack,
+                           thumb: muted ? Theme.faderThumbMuted : Theme.faderThumb,
+                           onDoubleClick: { model.setPan(program: entry.program, 0) })
+                    .disabled(entry.isPlaceholder)
+                    .opacity(alpha)
+                    .tooltip("Pan | double-click to centre")
+                    .accessibilityLabel("Pan")
+            }
+            .frame(height: s(Self.meterHeight))
+            .padding(.leading, s(Self.textInset))
+            .padding(.top, s(Self.meterTopGap))
 
             Spacer(minLength: 0)
         }
@@ -243,6 +267,16 @@ struct InstrumentStrip: View {
     private var gain: Binding<Double> {
         Binding(get: { settings.gainDb },
                 set: { model.setGain(program: entry.program, db: $0) })
+    }
+
+    /// The pan as the slider shows it, −100…100, writing −1…1 through the model; within the
+    /// detent of the centre it is the centre.
+    private var pan: Binding<Double> {
+        Binding(get: { settings.pan * Self.panSpan },
+                set: { value in
+                    let snapped = abs(value) < Self.panDetent ? 0 : value
+                    model.setPan(program: entry.program, snapped / Self.panSpan)
+                })
     }
 
     /// How wide the name and meta column is: the row less the chip and the toggles.
