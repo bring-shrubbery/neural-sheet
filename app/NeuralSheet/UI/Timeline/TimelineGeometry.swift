@@ -58,8 +58,13 @@ final class TimelineGeometry {
     var waveformAmpHalfSpan: CGFloat = TimelineMetrics.waveformAmpHalfSpan
     /// Centre of the 1 px line drawn at `waveformHeight / 2`, so amplitude 0 lands mid-pixel.
     var waveformCentreY: CGFloat { waveformHeight * 0.5 + 0.5 }
-    /// The roll's top, in authored pixels.
-    var rollY: CGFloat { waveformHeight + TimelineMetrics.rulerHeight }
+    /// The chord lane's height in authored pixels (chord symbols design §2): 20 in the Edit tab
+    /// while there are chords, 0 otherwise.
+    var chordLaneHeight: CGFloat = 0
+    /// The chord lane's top, under the ruler, in authored pixels.
+    var chordLaneY: CGFloat { waveformHeight + TimelineMetrics.rulerHeight }
+    /// The roll's top, in authored pixels: under the ruler, and under the chord lane when it shows.
+    var rollY: CGFloat { chordLaneY + chordLaneHeight }
 
     /// Real points per second.
     var pixelsPerSecond: CGFloat { CGFloat(ZoomMath.basePixelsPerSecond * zoom) * scale }

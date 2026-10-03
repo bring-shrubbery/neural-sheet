@@ -4,7 +4,8 @@ import SwiftUI
 
 /// The whole timeline block (`VisualizationPanel` less its toolbar and status bar): the 46 px
 /// gutter-and-keyboard column on the left, and to its right one horizontally scrolling viewport
-/// stacking the waveform, the ruler and the piano roll so their time axes can never drift apart.
+/// stacking the waveform, the ruler, the Edit tab's chord lane and the piano roll so their time
+/// axes can never drift apart.
 ///
 /// Owns the ``TimelineGeometry`` every view reads, watches the model with observation tracking and
 /// repaints only what a change touched, and runs a display link that slides the playhead layers
@@ -33,6 +34,7 @@ final class TimelineContainerView: NSView {
             waveform.isCompact = editing
             ruler.grid = editing ? model.editor.grid : nil
             roll.grid = editing ? model.editor.grid : nil
+            updateChordLaneHeight()
             needsLayout = true
             layoutDocument()
             configureViews()
@@ -66,6 +68,7 @@ final class TimelineContainerView: NSView {
     let document = TimelineDocumentView(frame: .zero)
     let waveform: WaveformView
     let ruler: RulerView
+    let chordLane: ChordLaneView
     let roll: PianoRollView
 
     var ctaHost: OverlayHost<TranscribeCTA>?
@@ -75,6 +78,8 @@ final class TimelineContainerView: NSView {
     var editController: RollEditController?
     /// The ruler's tempo card (`TimelineContainerView+TempoCard.swift`).
     let tempoCard = PopupMenuPresenter()
+    /// The chord lane's card (`TimelineContainerView+Chords.swift`).
+    let chordCard = PopupMenuPresenter()
 
     // MARK: - Model mirror
 
@@ -101,6 +106,7 @@ final class TimelineContainerView: NSView {
         var snapEnabled = true
         var regionProgress: Float?
         var key: MusicalKey?
+        var chords: [ChordEvent] = []
         var showsConfidence = false
     }
 
@@ -150,6 +156,7 @@ final class TimelineContainerView: NSView {
         keyboard = KeyboardView(geometry: geometry)
         waveform = WaveformView(geometry: geometry)
         ruler = RulerView(geometry: geometry)
+        chordLane = ChordLaneView(geometry: geometry)
         roll = PianoRollView(geometry: geometry)
         super.init(frame: .zero)
 
@@ -163,6 +170,7 @@ final class TimelineContainerView: NSView {
 
         document.addSubview(waveform)
         document.addSubview(ruler)
+        document.addSubview(chordLane)
         document.addSubview(roll)
         scrollView.documentView = document
         addSubview(scrollView)
@@ -178,6 +186,7 @@ final class TimelineContainerView: NSView {
         ruler.onRange = { [weak self] range in self?.model.setRange(range) }
         ruler.snapEnabled = model.editor.snapEnabled
         ruler.onTempoCard = { [weak self] point, bar in self?.showTempoCard(at: point, bar: bar) }
+        installChordLane()
         keyboard.onWheel = { [weak self] event in
             guard let self else { return }
 
@@ -241,6 +250,7 @@ final class TimelineContainerView: NSView {
 
         if window == nil {
             tempoCard.dismiss()
+            chordCard.dismiss()
         }
 
         guard window != nil else { return }
@@ -368,6 +378,8 @@ final class TimelineContainerView: NSView {
 
         setFrame(CGRect(x: window.minX, y: 0, width: window.width, height: waveformHeight), of: waveform)
         setFrame(CGRect(x: window.minX, y: waveformHeight, width: window.width, height: rulerHeight), of: ruler)
+        setFrame(CGRect(x: window.minX, y: geometry.chordLaneY * k, width: window.width, height: geometry.chordLaneHeight * k),
+                 of: chordLane)
         setFrame(CGRect(x: window.minX, y: rollY, width: window.width, height: max(0, height - rollY)), of: roll)
 
         if documentChanged || windowMoved {
@@ -433,6 +445,7 @@ final class TimelineContainerView: NSView {
     func configureViews() {
         waveform.configure()
         ruler.configure()
+        chordLane.configure()
         roll.configure()
         gutter.scale = scale
         keyboard.needsDisplay = true

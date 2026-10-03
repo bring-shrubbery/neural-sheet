@@ -237,7 +237,7 @@ extension TimelineContainerView {
         }
     }
 
-    /// Positions the three playhead copies and the washes from the transport's mirror. The roll's
+    /// Positions the playhead copies and the washes from the transport's mirror. The roll's
     /// copy stays hidden until there is a transcription to follow, so it does not sweep across the
     /// Transcribe button (`PianoRoll::updateEnablements`).
     func updatePlayhead() {
@@ -247,6 +247,7 @@ extension TimelineContainerView {
 
         waveform.setPlayhead(x: x)
         ruler.setPlayhead(x: x)
+        chordLane.setPlayhead(x: x)
         roll.setPlayhead(x: state.hasTranscription ? x : nil)
     }
 

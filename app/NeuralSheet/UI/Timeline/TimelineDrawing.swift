@@ -103,6 +103,11 @@ enum TimelineFonts {
         font(Fonts.Name.monoRegular, size: Fonts.Size.meta * scale)
     }
 
+    /// The chord lane's symbols (chord symbols design §2): the ruler's face, a size up.
+    static func chord(_ scale: CGFloat) -> CTFont {
+        font(Fonts.Name.monoRegular, size: (Fonts.Size.meta + 1) * scale)
+    }
+
     static func scaleLabel(_ scale: CGFloat) -> CTFont {
         font(Fonts.Name.monoRegular, size: Fonts.Size.scaleLabel * scale)
     }

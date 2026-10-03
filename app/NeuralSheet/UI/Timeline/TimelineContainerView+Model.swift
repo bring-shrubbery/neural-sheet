@@ -39,6 +39,7 @@ extension TimelineContainerView {
             _ = model.editor.range
             _ = model.editor.snapEnabled
             _ = model.editor.key
+            _ = model.editor.chords
             _ = model.showsConfidence
             _ = model.regionJob
         } onChange: { [weak self] in
@@ -82,6 +83,7 @@ extension TimelineContainerView {
                            snapEnabled: model.editor.snapEnabled,
                            regionProgress: model.regionJob?.progress,
                            key: model.editor.key,
+                           chords: model.editor.chords,
                            showsConfidence: model.showsConfidence)
         let old = snapshot
         let first = !hasSynced
@@ -126,6 +128,8 @@ extension TimelineContainerView {
                 tempoCard.dismiss()
             }
         }
+
+        syncChordLane(new, old: old, first: first)
 
         // Both tabs: the key colours the lanes wherever the roll is.
         if first || new.key != old.key {
