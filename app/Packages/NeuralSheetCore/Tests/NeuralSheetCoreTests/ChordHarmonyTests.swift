@@ -19,6 +19,7 @@ private let chords = [
     #expect(document.chords.map(\.measure) == [0, 1, 1])
     #expect(document.chords.map(\.units) == [0, 0, 48])
     #expect(document.chords.map(\.text) == ["Am7", "B♭/D", "N.C."])
+    #expect(document.chords.map(\.index) == [0, 1, 2])
     #expect(document.chords.inMeasure(1).map(\.text) == ["B♭/D", "N.C."])
     #expect(document.chords.inMeasure(5).isEmpty)
 }
@@ -30,6 +31,7 @@ private let chords = [
     #expect(document.firstBar == 2)
     #expect(document.chords.map(\.text) == ["N.C."])
     #expect(document.chords.first?.units == 0)
+    #expect(document.chords.first?.index == 2)
 }
 
 @Test func musicXMLWritesHarmonyWithKindBassAndOffset() throws {

@@ -13,7 +13,8 @@ import Testing
     #expect(PartDisplay().transposition == 0)
     #expect(PartDisplay().tab == nil)
     #expect(!PartDisplay().isHidden)
-    #expect(SheetMetadata().showsMeasureNumbers && SheetMetadata().showsPartNames && SheetMetadata().showsTempo)
+    #expect(SheetMetadata().showsMeasureNumbers && SheetMetadata().showsPartNames && SheetMetadata().showsTempo
+        && SheetMetadata().showsChords)
 }
 
 @Test func anArrangementRoundTripsThroughJSON() throws {
@@ -27,6 +28,7 @@ import Testing
     arrangement.parts[24] = guitar
     arrangement.sheet.title = "Take"
     arrangement.sheet.composer = "Trad."
+    arrangement.sheet.showsChords = false
     arrangement.layout = .pages
     arrangement.pageSize = .letter
 
@@ -43,6 +45,7 @@ import Testing
     #expect(decoded.display(for: 0).clef == .automatic)
     #expect(decoded.sheet.title == "Old")
     #expect(decoded.sheet.showsTempo)
+    #expect(decoded.sheet.showsChords)
     #expect(decoded.layout == .continuous)
 }
 

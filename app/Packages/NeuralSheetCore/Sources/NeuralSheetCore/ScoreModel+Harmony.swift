@@ -11,8 +11,19 @@ public struct ScoreChord: Equatable, Sendable {
     public var text: String
     /// Nil for N.C.
     public var chord: ChordSymbol?
+    /// The event's index in the time-ordered list, so a click on the score finds it again.
+    public var index: Int
     /// Whether the root and bass are spelled with flats: what the MusicXML's steps and alters say.
     public var flats: Bool
+
+    public init(measure: Int, units: Int, text: String, chord: ChordSymbol?, index: Int = 0, flats: Bool) {
+        self.measure = measure
+        self.units = units
+        self.text = text
+        self.chord = chord
+        self.index = index
+        self.flats = flats
+    }
 }
 
 extension ScoreDocument {
@@ -25,13 +36,13 @@ extension ScoreDocument {
 
         var result: [ScoreChord] = []
         var measure = 0
-        var sounding: ChordEvent?
+        var sounding: (index: Int, event: ChordEvent)?
 
-        for event in chords.sortedChords() {
+        for (index, event) in chords.sortedChords().enumerated() {
             let units = MusicXMLWriter.units(quarterBeats: grid.quarterBeats(atSeconds: event.seconds))
 
             guard units >= first.startUnits else {
-                sounding = event
+                sounding = (index, event)
                 continue
             }
 
@@ -42,23 +53,23 @@ extension ScoreDocument {
             let position = units - bars[measure].startUnits
 
             if let previous = result.last, previous.measure == measure, previous.units == position {
-                result[result.count - 1] = scoreChord(event, measure: measure, units: position, key: key)
+                result[result.count - 1] = scoreChord(event, index: index, measure: measure, units: position, key: key)
             } else {
-                result.append(scoreChord(event, measure: measure, units: position, key: key))
+                result.append(scoreChord(event, index: index, measure: measure, units: position, key: key))
             }
         }
 
         if let sounding, result.first.map({ $0.measure != 0 || $0.units != 0 }) ?? true {
-            result.insert(scoreChord(sounding, measure: 0, units: 0, key: key), at: 0)
+            result.insert(scoreChord(sounding.event, index: sounding.index, measure: 0, units: 0, key: key), at: 0)
         }
 
         return result
     }
 
-    private static func scoreChord(_ event: ChordEvent, measure: Int, units: Int, key: MusicalKey?) -> ScoreChord {
+    private static func scoreChord(_ event: ChordEvent, index: Int, measure: Int, units: Int, key: MusicalKey?) -> ScoreChord {
         let flats = event.chord.map { ChordSymbol.prefersFlats(root: $0.root, minor: $0.quality.isMinor, key: key) } ?? false
 
-        return ScoreChord(measure: measure, units: units, text: event.text(in: key), chord: event.chord, flats: flats)
+        return ScoreChord(measure: measure, units: units, text: event.text(in: key), chord: event.chord, index: index, flats: flats)
     }
 }
 

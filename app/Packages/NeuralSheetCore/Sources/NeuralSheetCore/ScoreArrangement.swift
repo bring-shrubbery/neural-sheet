@@ -147,6 +147,8 @@ public struct SheetMetadata: Equatable, Codable, Sendable {
     public var showsMeasureNumbers = true
     public var showsPartNames = true
     public var showsTempo = true
+    /// The chord symbols over the top staff (chord symbols design §2); on in a file from before.
+    public var showsChords = true
 
     public init() {}
 
@@ -163,7 +165,7 @@ public struct SheetMetadata: Equatable, Codable, Sendable {
     }
 
     private enum CodingKeys: String, CodingKey {
-        case title, subtitle, composer, arranger, copyright, showsMeasureNumbers, showsPartNames, showsTempo
+        case title, subtitle, composer, arranger, copyright, showsMeasureNumbers, showsPartNames, showsTempo, showsChords
     }
 
     public init(from decoder: Decoder) throws {
@@ -176,5 +178,6 @@ public struct SheetMetadata: Equatable, Codable, Sendable {
         showsMeasureNumbers = try container.decodeIfPresent(Bool.self, forKey: .showsMeasureNumbers) ?? true
         showsPartNames = try container.decodeIfPresent(Bool.self, forKey: .showsPartNames) ?? true
         showsTempo = try container.decodeIfPresent(Bool.self, forKey: .showsTempo) ?? true
+        showsChords = try container.decodeIfPresent(Bool.self, forKey: .showsChords) ?? true
     }
 }
