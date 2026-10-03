@@ -1,9 +1,9 @@
 import Foundation
 import NeuralSheetCore
 
-/// The chord symbols (chord symbols design §2, §4) as list edits: project state, not note edits,
-/// so nothing here makes a batch. Each works on the caller's copy of the list, which the model
-/// writes back (and marks hand-edited) when it changed.
+/// The chord symbols (chord symbols design §2, §4) and the section markers (markers and lyrics
+/// design §2, §4) as list edits: project state, not note edits, so nothing here makes a batch.
+/// Each works on the caller's copy of the list, which the model writes back when it changed.
 nonisolated extension EditingCommands {
     // MARK: - Chords
 
@@ -57,5 +57,51 @@ nonisolated extension EditingCommands {
         chords.insert(event, at: landing)
 
         return landing
+    }
+
+    // MARK: - Markers
+
+    /// A marker at `seconds` (inside the take) named "Marker N", the list kept in order. Answers
+    /// its id and whether it was added; one already at that spot is answered instead of doubled.
+    /// Nil for a time that is not finite.
+    static func addMarker(_ markers: inout [Marker], at seconds: Double, duration: Double) -> (id: UUID, inserted: Bool)? {
+        guard seconds.isFinite else { return nil }
+
+        let seconds = min(max(0, seconds), max(duration, 0))
+
+        if let existing = markers.first(where: { abs($0.seconds - seconds) < 0.001 }) {
+            return (existing.id, false)
+        }
+
+        let marker = Marker(seconds: seconds, name: markers.nextDefaultName())
+        markers = (markers + [marker]).sortedMarkers()
+
+        return (marker.id, true)
+    }
+
+    /// A drag on the ruler: the marker to `seconds` inside the take, the list kept in order.
+    /// False when nothing moved.
+    static func moveMarker(_ markers: inout [Marker], id: UUID, to seconds: Double, duration: Double) -> Bool {
+        guard seconds.isFinite, let index = markers.firstIndex(where: { $0.id == id }) else { return false }
+
+        let seconds = min(max(0, seconds), max(duration, 0))
+
+        guard markers[index].seconds != seconds else { return false }
+
+        markers[index].seconds = seconds
+        markers = markers.sortedMarkers()
+
+        return true
+    }
+
+    /// A double-click on a flag: the range from the marker to the next one, or to the end of the
+    /// take; nil for a marker that is not there.
+    static func section(from id: UUID, in markers: [Marker], duration: Double) -> Range<Double>? {
+        guard let index = markers.firstIndex(where: { $0.id == id }) else { return nil }
+
+        let start = markers[index].seconds
+        let end = markers[(index + 1)...].first { $0.seconds > start }?.seconds ?? duration
+
+        return start ..< max(start, end)
     }
 }

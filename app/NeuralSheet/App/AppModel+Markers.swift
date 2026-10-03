@@ -23,18 +23,17 @@ extension AppModel {
     /// spot is answered instead of doubled.
     @discardableResult
     func addMarker(at seconds: Double) -> UUID? {
-        guard canEditMarkers, seconds.isFinite else { return nil }
+        guard canEditMarkers else { return nil }
 
-        let seconds = min(max(0, seconds), max(duration, 0))
+        var list = editor.markers
 
-        if let existing = editor.markers.first(where: { abs($0.seconds - seconds) < 0.001 }) {
-            return existing.id
+        guard let added = EditingCommands.addMarker(&list, at: seconds, duration: duration) else { return nil }
+
+        if added.inserted {
+            editMarkers { $0 = list }
         }
 
-        let marker = Marker(seconds: seconds, name: editor.markers.nextDefaultName())
-        editMarkers { $0.append(marker) }
-
-        return marker.id
+        return added.id
     }
 
     /// Edit → Markers → Add Marker at Playhead (⌥M): a marker where the playhead is, its card
@@ -67,13 +66,11 @@ extension AppModel {
 
     /// A drag on the ruler: the marker to `seconds`, the list kept in order.
     func moveMarker(id: UUID, to seconds: Double) {
-        guard seconds.isFinite, let index = editor.markers.firstIndex(where: { $0.id == id }) else { return }
+        var list = editor.markers
 
-        let seconds = min(max(0, seconds), max(duration, 0))
+        guard EditingCommands.moveMarker(&list, id: id, to: seconds, duration: duration) else { return }
 
-        guard editor.markers[index].seconds != seconds else { return }
-
-        editMarkers { $0[index].seconds = seconds }
+        editMarkers { $0 = list }
     }
 
     /// The card's Delete.
@@ -102,12 +99,9 @@ extension AppModel {
     /// A double-click on a flag: the range from the marker to the next one, or to the end of the
     /// take, so Loop then repeats the section (issue #18, requirement 3).
     func markRange(fromMarker id: UUID) {
-        guard let index = editor.markers.firstIndex(where: { $0.id == id }) else { return }
+        guard let section = EditingCommands.section(from: id, in: editor.markers, duration: duration) else { return }
 
-        let start = editor.markers[index].seconds
-        let end = editor.markers[(index + 1)...].first { $0.seconds > start }?.seconds ?? duration
-
-        setRange(start ..< max(start, end))
+        setRange(section)
     }
 
     // MARK: - Helpers
