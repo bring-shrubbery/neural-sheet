@@ -25,6 +25,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         return .terminateLater
     }
 
+    /// The last thing before the process goes: the audio aggregate and any process tap in it are
+    /// destroyed by hand rather than left to the process's exit (system audio design §2).
+    func applicationWillTerminate(_ notification: Notification) {
+        Self.model?.shutDownAudio()
+    }
+
     /// A double-click on a `.neuralsheet` in the Finder, or a drop on the Dock icon. Opened at
     /// once when a window can show a failure; parked on the model until then (a launch by
     /// double-click), for the main view to pick up.

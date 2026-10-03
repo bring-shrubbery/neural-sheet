@@ -9,6 +9,10 @@
 	<string>xqg7Uv6Q+zw/+Is3ic5dSCOOc8Sa0WzuFVtCwpX3zWU=</string>
 	<key>SUEnableAutomaticChecks</key>
 	<true/>
+	<!-- Audio → Input → System Audio or an app: the prompt for the process tap. Here rather than a
+	     build setting, which Xcode generates only for the keys it knows. -->
+	<key>NSAudioCaptureUsageDescription</key>
+	<string>NeuralSheet records what your Mac is playing to transcribe it.</string>
 	<!-- The project package. Xcode merges this with the generated Info.plist. -->
 	<key>CFBundleDocumentTypes</key>
 	<array>

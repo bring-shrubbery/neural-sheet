@@ -1,8 +1,8 @@
 import NeuralSheetCore
 import SwiftUI
 
-/// Settings → Audio: the microphone and the output, the same choice the Audio menu offers (spec
-/// §7 deviation 7). A pick is applied to the engine at once; the engine can refuse a device and
+/// Settings → Audio: the input -- a microphone, System Audio or an app -- and the output, the
+/// same choice the Audio menu offers (spec §7 deviation 7, system audio design §2). A pick is applied to the engine at once; the engine can refuse a device and
 /// roll back, so what the pickers show is re-read off the model after every choice. Below them
 /// the sound bank the MIDI plays through, the count-in and the click while recording (click
 /// design §2).
@@ -13,10 +13,7 @@ struct AudioSettingsView: View {
     var body: some View {
         Form {
             Section {
-                devicePicker("Input", devices: devices.inputs, chosen: devices.input) { device in
-                    model.setInputDevice(device)
-                    devices.input = model.inputDevice
-                }
+                inputPicker
 
                 devicePicker("Output", devices: devices.outputs, chosen: devices.output) { device in
                     model.setOutputDevice(device)
@@ -62,6 +59,33 @@ struct AudioSettingsView: View {
         .formStyle(.grouped)
         // The hardware may have changed since the window was last looked at.
         .onAppear(perform: devices.refresh)
+    }
+
+    /// The Audio menu's input rows as a picker: "System Default", every device, then System Audio
+    /// and the apps producing audio (system audio design §2).
+    private var inputPicker: some View {
+        let selection = Binding<RecordingInput?>(
+            get: { devices.input },
+            set: { input in
+                model.setRecordingInput(input)
+                devices.input = model.recordingInput
+            })
+
+        return Picker("Input", selection: selection) {
+            Text("System Default").tag(RecordingInput?.none)
+
+            Divider()
+
+            ForEach(devices.inputs) { device in
+                Text(device.name).tag(RecordingInput?.some(.device(device)))
+            }
+
+            Divider()
+
+            ForEach(devices.tapInputs, id: \.self) { input in
+                Text(AudioMenuState.title(of: input)).tag(RecordingInput?.some(input))
+            }
+        }
     }
 
     private static func countInLabel(_ bars: Int) -> String {

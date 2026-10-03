@@ -16,7 +16,7 @@ struct NeuralSheetApp: App {
     /// What the Audio menu shows as chosen. The engine's own properties are not observable, and
     /// they can be rolled back when a device refuses; the menu re-reads them off the model after
     /// every choice.
-    @State private var audioMenu = AudioMenuState()
+    @State private var audioMenu: AudioMenuState
 
     /// What the File menu's Open Recent shows.
     @State private var recents: RecentProjects
@@ -28,6 +28,7 @@ struct NeuralSheetApp: App {
         _model = State(initialValue: model)
         _persistence = State(initialValue: Persistence(model: model))
         _recents = State(initialValue: RecentProjects(model: model))
+        _audioMenu = State(initialValue: AudioMenuState(model: model))
         AppDelegate.model = model
     }
 
@@ -196,13 +197,14 @@ struct NeuralSheetApp: App {
     /// Spec §7 deviation 7: the standalone's way of choosing the microphone and the output, in
     /// place of JUCE's Options dialog. A choice is applied to the engine at once -- an input
     /// device is what the next take records from, and the engine rebuilds its graph for it now
-    /// rather than when the Record button is pressed.
+    /// rather than when the Record button is pressed. The inputs end with System Audio and the
+    /// apps producing audio now (system audio design §2).
     private func audioMenu(model: AppModel) -> some Commands {
         CommandMenu("Audio") {
             Menu("Input") {
-                deviceRows(devices: audioMenu.inputs, chosen: audioMenu.input) { device in
-                    model.setInputDevice(device)
-                    audioMenu.input = model.inputDevice
+                inputRows { input in
+                    model.setRecordingInput(input)
+                    audioMenu.input = model.recordingInput
                 }
             }
 
@@ -212,6 +214,30 @@ struct NeuralSheetApp: App {
                     audioMenu.output = model.outputDevice
                 }
             }
+        }
+    }
+
+    /// The output's rows, below, with System Audio and one row per app after a second separator
+    /// (system audio design §2). An app is ticked by its bundle id, whichever process it is now.
+    @ViewBuilder
+    private func inputRows(choose: @escaping (RecordingInput?) -> Void) -> some View {
+        let chosen = audioMenu.input
+
+        Toggle("System Default", isOn: Binding(get: { chosen == nil }, set: { _ in choose(nil) }))
+
+        Divider()
+
+        ForEach(audioMenu.inputs) { device in
+            Toggle(device.name, isOn: Binding(get: { chosen == .device(device) },
+                                              set: { _ in choose(.device(device)) }))
+        }
+
+        Divider()
+
+        ForEach(audioMenu.tapInputs, id: \.self) { input in
+            Toggle(AudioMenuState.title(of: input),
+                   isOn: Binding(get: { chosen.map { input.isSameChoice(as: $0) } ?? false },
+                                 set: { _ in choose(input) }))
         }
     }
 
@@ -231,18 +257,28 @@ struct NeuralSheetApp: App {
     }
 }
 
-/// What the Audio menu and Settings → Audio show: the hardware lists, re-read from the HAL every
-/// time the menu bar starts being tracked (and when the Audio tab appears) so a device plugged in
-/// since the last look is offered, and the devices last put on the engine.
+/// What the Audio menu and Settings → Audio show: the hardware lists and the apps producing audio,
+/// re-read from the HAL every time the menu bar starts being tracked (and when the Audio tab
+/// appears) so a device plugged in or an app started since the last look is offered, and the
+/// input and output in effect on the engine.
 @Observable final class AudioMenuState {
     var inputs: [AudioDevice] = AudioDevices.inputs()
     var outputs: [AudioDevice] = AudioDevices.outputs()
-    var input: AudioDevice?
+    var apps: [ProcessTap.RunningApp] = ProcessTap.runningApps()
+    var input: RecordingInput?
     var output: AudioDevice?
+
+    /// Read again on every refresh: the input can change without a pick -- a refused permission
+    /// or a quit app sends it back to a device (system audio design §2).
+    @ObservationIgnored private weak var model: AppModel?
 
     @ObservationIgnored private var observer: NSObjectProtocol?
 
-    init() {
+    init(model: AppModel) {
+        self.model = model
+        input = model.recordingInput
+        output = model.outputDevice
+
         observer = NotificationCenter.default.addObserver(
             forName: NSMenu.didBeginTrackingNotification, object: nil, queue: .main
         ) { [weak self] _ in
@@ -255,8 +291,36 @@ struct NeuralSheetApp: App {
     func refresh() {
         let inputs = AudioDevices.inputs()
         let outputs = AudioDevices.outputs()
+        let apps = ProcessTap.runningApps()
 
         if inputs != self.inputs { self.inputs = inputs }
         if outputs != self.outputs { self.outputs = outputs }
+        if apps != self.apps { self.apps = apps }
+
+        if let model {
+            if model.recordingInput != input { input = model.recordingInput }
+            if model.outputDevice != output { output = model.outputDevice }
+        }
+    }
+
+    /// System Audio, then one input per app producing audio, NeuralSheet left out. The chosen app
+    /// stays on the list while it is quiet, so its tick has somewhere to be.
+    var tapInputs: [RecordingInput] {
+        var rows = apps.map { RecordingInput.app(bundleID: $0.bundleID, pid: $0.pid, name: $0.name) }
+
+        if case .app = input, let input, !rows.contains(where: { $0.isSameChoice(as: input) }) {
+            rows.append(input)
+        }
+
+        return [.systemAudio] + rows
+    }
+
+    /// A tap input's row: "System Audio", or the app's name.
+    static func title(of input: RecordingInput) -> String {
+        switch input {
+        case .device(let device): device.name
+        case .systemAudio: "System Audio"
+        case .app(_, _, let name): name
+        }
     }
 }

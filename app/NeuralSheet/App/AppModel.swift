@@ -528,6 +528,14 @@ import UniformTypeIdentifiers
     /// show it twice.
     @ObservationIgnored private var hasReportedLaunchStartFailure = false
 
+    /// The device input that was in effect before System Audio or an app was chosen, nil for the
+    /// system default: where a refused permission or a quit app sends the input back to (system
+    /// audio design §2).
+    @ObservationIgnored var lastDeviceInput: AudioDevice?
+
+    /// Which take the tap-start check belongs to, so a check from an earlier take does nothing.
+    @ObservationIgnored var tapStartGeneration = 0
+
     // MARK: - Meters
 
     /// The master meter after ballistics and the staleness rule (§2.5).
@@ -580,6 +588,14 @@ import UniformTypeIdentifiers
 
         engine.synthBank.setClickGain(db: clickGainDb)
         applySoundBankSetting()
+
+        // The app a take is tapping quit: the take ends with what it has (system audio design §2).
+        engine.onTappedProcessExited = { [weak self] in
+            self?.handleTappedAppQuit()
+        }
+
+        // Before the engine starts, so it starts on the remembered input's devices.
+        restoreRecordingInput()
 
         // Eight rebuilds, backed off, and still nothing: said so, and said again if the next
         // budget -- Play, or a device pick -- runs out the same way.
@@ -696,6 +712,9 @@ import UniformTypeIdentifiers
             engine.synthBank.resetDownbeat()
         }
 
+        refreshTappedApp()
+        let wanted = engine.recordingInput
+
         do {
             try recorder.start(atDownbeat: atDownbeat)
         } catch Recorder.RecordError.permissionDenied {
@@ -707,6 +726,9 @@ import UniformTypeIdentifiers
             return
         }
 
+        // System Audio or an app the engine could not tap (`AppModel+RecordingInput.swift`).
+        if abandonTakeOnRefusedTap(wanted: wanted) { return }
+
         duration = 0
 
         if atDownbeat {
@@ -714,6 +736,8 @@ import UniformTypeIdentifiers
         } else {
             transition(to: .recording)
         }
+
+        watchTapStart()
     }
 
     private func stopRecording() {
@@ -991,20 +1015,12 @@ import UniformTypeIdentifiers
     // MARK: - Audio devices
 
     /// What the Audio menu shows as chosen: the engine's own, which it rolls back when a device
-    /// refuses, so the menu re-reads these after every pick.
-    var inputDevice: AudioDevice? { engine.recordingInput?.device }
+    /// refuses, so the menu re-reads it after every pick. The input is ``recordingInput``
+    /// (`AppModel+RecordingInput.swift`).
     var outputDevice: AudioDevice? { engine.outputDevice }
 
-    /// The Audio menu's Input pick, applied at once (spec §7 deviation 7). A device the engine
+    /// The Audio menu's Output pick, applied at once (spec §7 deviation 7). A device the engine
     /// could not use is rolled back and said so.
-    func setInputDevice(_ device: AudioDevice?) {
-        guard device != engine.recordingInput?.device else { return }
-
-        engine.recordingInput = device.map { .device($0) }
-        reportDeviceSwitch()
-    }
-
-    /// The Audio menu's Output pick, as ``setInputDevice(_:)``.
     func setOutputDevice(_ device: AudioDevice?) {
         guard device != engine.outputDevice else { return }
 
@@ -1014,12 +1030,18 @@ import UniformTypeIdentifiers
 
     /// The pick rebuilt the graph and, when the engine was not running, was its retry: a device
     /// that refused is one dialog, an output that then would not start is the other.
-    private func reportDeviceSwitch() {
+    func reportDeviceSwitch() {
         if let status = engine.lastDeviceError {
             showError("Audio device could not be used", "CoreAudio error \(PlaybackEngine.describe(status)).")
         } else if !engine.isRunning, engine.lastStartError != nil {
             presentAudioStartFailure()
         }
+    }
+
+    /// The app is quitting: the engine stops for good, and the aggregate and any tap in it are
+    /// destroyed now (system audio design §2). From `applicationWillTerminate`.
+    func shutDownAudio() {
+        engine.shutDown()
     }
 
     /// Once, when the window can show a dialog: a launch whose output would not open -- and that
