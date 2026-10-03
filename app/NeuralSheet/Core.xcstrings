@@ -1,0 +1,638 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "A4" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a page size on the Score toolbar",
+      "extractionState" : "manual"
+    },
+    "AIFF 24-bit" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: File → Export Audio…'s What and Format choices",
+      "extractionState" : "manual"
+    },
+    "Acoustic Bass" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an instrument, in the sidebar, the menus and the score's part names",
+      "extractionState" : "manual"
+    },
+    "Acoustic Guitar" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an instrument, in the sidebar, the menus and the score's part names",
+      "extractionState" : "manual"
+    },
+    "Add Note" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an edit's title, after Undo or Redo in the Edit menu",
+      "extractionState" : "manual"
+    },
+    "Alto Sax" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an instrument, in the sidebar, the menus and the score's part names",
+      "extractionState" : "manual"
+    },
+    "Banjo (5-string)" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab instrument on the part card",
+      "extractionState" : "manual"
+    },
+    "Banjo (plectrum)" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab instrument on the part card",
+      "extractionState" : "manual"
+    },
+    "Banjo (tenor)" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab instrument on the part card",
+      "extractionState" : "manual"
+    },
+    "Baritone (D G B E)" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab tuning on the part card; the notes in brackets are the strings, bottom first",
+      "extractionState" : "manual"
+    },
+    "Baritone Sax" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an instrument, in the sidebar, the menus and the score's part names",
+      "extractionState" : "manual"
+    },
+    "Bass" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an instrument, in the sidebar, the menus and the score's part names",
+      "extractionState" : "manual"
+    },
+    "Bass (5-string)" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab instrument on the part card",
+      "extractionState" : "manual"
+    },
+    "Bass (6-string)" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab instrument on the part card",
+      "extractionState" : "manual"
+    },
+    "Bassoon" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an instrument, in the sidebar, the menus and the score's part names",
+      "extractionState" : "manual"
+    },
+    "Both" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: the part card's Display choice",
+      "extractionState" : "manual"
+    },
+    "Brass" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an instrument, in the sidebar, the menus and the score's part names",
+      "extractionState" : "manual"
+    },
+    "C6 (C E G A C E)" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab tuning on the part card; the notes in brackets are the strings, bottom first",
+      "extractionState" : "manual"
+    },
+    "Cello" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an instrument, in the sidebar, the menus and the score's part names",
+      "extractionState" : "manual"
+    },
+    "Change Instrument" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an edit's title, after Undo or Redo in the Edit menu",
+      "extractionState" : "manual"
+    },
+    "Chicago (D G B E)" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab tuning on the part card; the notes in brackets are the strings, bottom first",
+      "extractionState" : "manual"
+    },
+    "Chromatic Perc." : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an instrument, in the sidebar, the menus and the score's part names",
+      "extractionState" : "manual"
+    },
+    "Clarinet" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an instrument, in the sidebar, the menus and the score's part names",
+      "extractionState" : "manual"
+    },
+    "Contrabass" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an instrument, in the sidebar, the menus and the score's part names",
+      "extractionState" : "manual"
+    },
+    "DADGAD" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab tuning on the part card; the notes in brackets are the strings, bottom first",
+      "extractionState" : "manual"
+    },
+    "Delete Instrument" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an edit's title, after Undo or Redo in the Edit menu",
+      "extractionState" : "manual"
+    },
+    "Delete Note" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an edit's title, after Undo or Redo in the Edit menu",
+      "extractionState" : "manual"
+    },
+    "Delete Notes" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an edit's title, after Undo or Redo in the Edit menu",
+      "extractionState" : "manual"
+    },
+    "Distorted Guitar" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an instrument, in the sidebar, the menus and the score's part names",
+      "extractionState" : "manual"
+    },
+    "Double C (g C G C D)" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab tuning on the part card; the notes in brackets are the strings, bottom first",
+      "extractionState" : "manual"
+    },
+    "Drop A (A E A D G B E)" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab tuning on the part card; the notes in brackets are the strings, bottom first",
+      "extractionState" : "manual"
+    },
+    "Drop C (g C G B D)" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab tuning on the part card; the notes in brackets are the strings, bottom first",
+      "extractionState" : "manual"
+    },
+    "Drop D (D A D G B E)" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab tuning on the part card; the notes in brackets are the strings, bottom first",
+      "extractionState" : "manual"
+    },
+    "Drop D (D A D G)" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab tuning on the part card; the notes in brackets are the strings, bottom first",
+      "extractionState" : "manual"
+    },
+    "Drums" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an instrument, in the sidebar, the menus and the score's part names",
+      "extractionState" : "manual"
+    },
+    "Duplicate Note" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an edit's title, after Undo or Redo in the Edit menu",
+      "extractionState" : "manual"
+    },
+    "Duplicate Notes" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an edit's title, after Undo or Redo in the Edit menu",
+      "extractionState" : "manual"
+    },
+    "Electric Guitar" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an instrument, in the sidebar, the menus and the score's part names",
+      "extractionState" : "manual"
+    },
+    "Electric Piano" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an instrument, in the sidebar, the menus and the score's part names",
+      "extractionState" : "manual"
+    },
+    "English Horn" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an instrument, in the sidebar, the menus and the score's part names",
+      "extractionState" : "manual"
+    },
+    "Fastest" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a model size and its hint in Settings → Model",
+      "extractionState" : "manual"
+    },
+    "Flute" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an instrument, in the sidebar, the menus and the score's part names",
+      "extractionState" : "manual"
+    },
+    "French Horn" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an instrument, in the sidebar, the menus and the score's part names",
+      "extractionState" : "manual"
+    },
+    "Guitar" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab instrument on the part card",
+      "extractionState" : "manual"
+    },
+    "Guitar (7-string)" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab instrument on the part card",
+      "extractionState" : "manual"
+    },
+    "Half-step down (E♭ A♭ D♭ G♭ B♭ E♭)" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab tuning on the part card; the notes in brackets are the strings, bottom first",
+      "extractionState" : "manual"
+    },
+    "Half-step down (E♭ A♭ D♭ G♭)" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab tuning on the part card; the notes in brackets are the strings, bottom first",
+      "extractionState" : "manual"
+    },
+    "Harp" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an instrument, in the sidebar, the menus and the score's part names",
+      "extractionState" : "manual"
+    },
+    "Humanize" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an edit's title, after Undo or Redo in the Edit menu",
+      "extractionState" : "manual"
+    },
+    "Import MIDI" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an edit's title, after Undo or Redo in the Edit menu",
+      "extractionState" : "manual"
+    },
+    "Irish (G D A E)" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab tuning on the part card; the notes in brackets are the strings, bottom first",
+      "extractionState" : "manual"
+    },
+    "Join Notes" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an edit's title, after Undo or Redo in the Edit menu",
+      "extractionState" : "manual"
+    },
+    "Lap steel" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab instrument on the part card",
+      "extractionState" : "manual"
+    },
+    "Large" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a model size and its hint in Settings → Model",
+      "extractionState" : "manual"
+    },
+    "Largest, slowest" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a model size and its hint in Settings → Model",
+      "extractionState" : "manual"
+    },
+    "Legato" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an edit's title, after Undo or Redo in the Edit menu",
+      "extractionState" : "manual"
+    },
+    "Letter" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a page size on the Score toolbar",
+      "extractionState" : "manual"
+    },
+    "Low G (G C E A)" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab tuning on the part card; the notes in brackets are the strings, bottom first",
+      "extractionState" : "manual"
+    },
+    "Lyric" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an edit's title, after Undo or Redo in the Edit menu",
+      "extractionState" : "manual"
+    },
+    "M4A (AAC 256 kb/s)" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: File → Export Audio…'s What and Format choices",
+      "extractionState" : "manual"
+    },
+    "MIDI only" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: File → Export Audio…'s What and Format choices",
+      "extractionState" : "manual"
+    },
+    "Major" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: the key's mode, on the toolbar's KEY menu",
+      "extractionState" : "manual"
+    },
+    "Mandolin" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab instrument on the part card",
+      "extractionState" : "manual"
+    },
+    "Medium" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a model size and its hint in Settings → Model",
+      "extractionState" : "manual"
+    },
+    "Minor" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: the key's mode, on the toolbar's KEY menu",
+      "extractionState" : "manual"
+    },
+    "Move Note" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an edit's title, after Undo or Redo in the Edit menu",
+      "extractionState" : "manual"
+    },
+    "Move Notes" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an edit's title, after Undo or Redo in the Edit menu",
+      "extractionState" : "manual"
+    },
+    "Notation" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: the part card's Display choice",
+      "extractionState" : "manual"
+    },
+    "Oboe" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an instrument, in the sidebar, the menus and the score's part names",
+      "extractionState" : "manual"
+    },
+    "Open D (D A D F♯ A D)" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab tuning on the part card; the notes in brackets are the strings, bottom first",
+      "extractionState" : "manual"
+    },
+    "Open D (f♯ D F♯ A D)" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab tuning on the part card; the notes in brackets are the strings, bottom first",
+      "extractionState" : "manual"
+    },
+    "Open E (E B E G♯ B E)" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab tuning on the part card; the notes in brackets are the strings, bottom first",
+      "extractionState" : "manual"
+    },
+    "Open G (D G D G B D)" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab tuning on the part card; the notes in brackets are the strings, bottom first",
+      "extractionState" : "manual"
+    },
+    "Open G (g D G B D)" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab tuning on the part card; the notes in brackets are the strings, bottom first",
+      "extractionState" : "manual"
+    },
+    "Orchestra Hit" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an instrument, in the sidebar, the menus and the score's part names",
+      "extractionState" : "manual"
+    },
+    "Organ" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an instrument, in the sidebar, the menus and the score's part names",
+      "extractionState" : "manual"
+    },
+    "Original + MIDI as heard" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: File → Export Audio…'s What and Format choices",
+      "extractionState" : "manual"
+    },
+    "Original only" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: File → Export Audio…'s What and Format choices",
+      "extractionState" : "manual"
+    },
+    "Paste Lyrics" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an edit's title, after Undo or Redo in the Edit menu",
+      "extractionState" : "manual"
+    },
+    "Paste Note" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an edit's title, after Undo or Redo in the Edit menu",
+      "extractionState" : "manual"
+    },
+    "Paste Notes" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an edit's title, after Undo or Redo in the Edit menu",
+      "extractionState" : "manual"
+    },
+    "Piano" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an instrument, in the sidebar, the menus and the score's part names",
+      "extractionState" : "manual"
+    },
+    "Quantize" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an edit's title, after Undo or Redo in the Edit menu",
+      "extractionState" : "manual"
+    },
+    "Re-transcribe" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an edit's title, after Undo or Redo in the Edit menu",
+      "extractionState" : "manual"
+    },
+    "Recommended" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a model size and its hint in Settings → Model",
+      "extractionState" : "manual"
+    },
+    "Resize Note" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an edit's title, after Undo or Redo in the Edit menu",
+      "extractionState" : "manual"
+    },
+    "Resize Notes" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an edit's title, after Undo or Redo in the Edit menu",
+      "extractionState" : "manual"
+    },
+    "Sawmill (g D G C D)" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab tuning on the part card; the notes in brackets are the strings, bottom first",
+      "extractionState" : "manual"
+    },
+    "Separates drums, bass and vocals first" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a model size and its hint in Settings → Model",
+      "extractionState" : "manual"
+    },
+    "Set Length" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an edit's title, after Undo or Redo in the Edit menu",
+      "extractionState" : "manual"
+    },
+    "Set Pitch" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an edit's title, after Undo or Redo in the Edit menu",
+      "extractionState" : "manual"
+    },
+    "Set Start" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an edit's title, after Undo or Redo in the Edit menu",
+      "extractionState" : "manual"
+    },
+    "Set Velocity" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an edit's title, after Undo or Redo in the Edit menu",
+      "extractionState" : "manual"
+    },
+    "Small" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a model size and its hint in Settings → Model",
+      "extractionState" : "manual"
+    },
+    "Snap to Scale" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an edit's title, after Undo or Redo in the Edit menu",
+      "extractionState" : "manual"
+    },
+    "Split Instrument" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an edit's title, after Undo or Redo in the Edit menu",
+      "extractionState" : "manual"
+    },
+    "Split Note" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an edit's title, after Undo or Redo in the Edit menu",
+      "extractionState" : "manual"
+    },
+    "Split Notes" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an edit's title, after Undo or Redo in the Edit menu",
+      "extractionState" : "manual"
+    },
+    "Standard (B E A D G B E)" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab tuning on the part card; the notes in brackets are the strings, bottom first",
+      "extractionState" : "manual"
+    },
+    "Standard (B E A D G C)" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab tuning on the part card; the notes in brackets are the strings, bottom first",
+      "extractionState" : "manual"
+    },
+    "Standard (B E A D G)" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab tuning on the part card; the notes in brackets are the strings, bottom first",
+      "extractionState" : "manual"
+    },
+    "Standard (C G B D)" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab tuning on the part card; the notes in brackets are the strings, bottom first",
+      "extractionState" : "manual"
+    },
+    "Standard (C G D A)" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab tuning on the part card; the notes in brackets are the strings, bottom first",
+      "extractionState" : "manual"
+    },
+    "Standard (E A D G B E)" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab tuning on the part card; the notes in brackets are the strings, bottom first",
+      "extractionState" : "manual"
+    },
+    "Standard (E A D G)" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab tuning on the part card; the notes in brackets are the strings, bottom first",
+      "extractionState" : "manual"
+    },
+    "Standard (G D A E)" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab tuning on the part card; the notes in brackets are the strings, bottom first",
+      "extractionState" : "manual"
+    },
+    "Standard (g C E A, high G)" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab tuning on the part card; the notes in brackets are the strings, bottom first",
+      "extractionState" : "manual"
+    },
+    "Stems" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a model size and its hint in Settings → Model",
+      "extractionState" : "manual"
+    },
+    "Strings" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an instrument, in the sidebar, the menus and the score's part names",
+      "extractionState" : "manual"
+    },
+    "Synth Lead" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an instrument, in the sidebar, the menus and the score's part names",
+      "extractionState" : "manual"
+    },
+    "Synth Pad" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an instrument, in the sidebar, the menus and the score's part names",
+      "extractionState" : "manual"
+    },
+    "Synth Strings" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an instrument, in the sidebar, the menus and the score's part names",
+      "extractionState" : "manual"
+    },
+    "Tab" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: the part card's Display choice",
+      "extractionState" : "manual"
+    },
+    "Tenor (E A D G C)" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab tuning on the part card; the notes in brackets are the strings, bottom first",
+      "extractionState" : "manual"
+    },
+    "Tenor Sax" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an instrument, in the sidebar, the menus and the score's part names",
+      "extractionState" : "manual"
+    },
+    "The connection dropped" : {
+      "comment" : "A message NeuralSheetCore gives in English, shown through CoreNames: a failed model download in Settings → Model",
+      "extractionState" : "manual"
+    },
+    "The download was corrupted. Try again" : {
+      "comment" : "A message NeuralSheetCore gives in English, shown through CoreNames: a failed model download in Settings → Model",
+      "extractionState" : "manual"
+    },
+    "The partial download could not be resumed" : {
+      "comment" : "A message NeuralSheetCore gives in English, shown through CoreNames: a failed model download in Settings → Model",
+      "extractionState" : "manual"
+    },
+    "Timpani" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an instrument, in the sidebar, the menus and the score's part names",
+      "extractionState" : "manual"
+    },
+    "Track Pitch" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an edit's title, after Undo or Redo in the Edit menu",
+      "extractionState" : "manual"
+    },
+    "Transcription" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: the model's own output, first in Edit → Versions",
+      "extractionState" : "manual"
+    },
+    "Trombone" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an instrument, in the sidebar, the menus and the score's part names",
+      "extractionState" : "manual"
+    },
+    "Trumpet" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an instrument, in the sidebar, the menus and the score's part names",
+      "extractionState" : "manual"
+    },
+    "Tuba" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an instrument, in the sidebar, the menus and the score's part names",
+      "extractionState" : "manual"
+    },
+    "Ukulele" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab instrument on the part card",
+      "extractionState" : "manual"
+    },
+    "Untitled" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: the score's title with none set and no take name",
+      "extractionState" : "manual"
+    },
+    "Viola" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an instrument, in the sidebar, the menus and the score's part names",
+      "extractionState" : "manual"
+    },
+    "Violin" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an instrument, in the sidebar, the menus and the score's part names",
+      "extractionState" : "manual"
+    },
+    "Voice" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an instrument, in the sidebar, the menus and the score's part names",
+      "extractionState" : "manual"
+    },
+    "WAV 24-bit" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: File → Export Audio…'s What and Format choices",
+      "extractionState" : "manual"
+    },
+    "Whole-step down (D G C F A D)" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab tuning on the part card; the notes in brackets are the strings, bottom first",
+      "extractionState" : "manual"
+    },
+    "clef.alto" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a clef on the part card",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alto"
+          }
+        }
+      }
+    },
+    "clef.automatic" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a clef on the part card",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatic"
+          }
+        }
+      }
+    },
+    "clef.bass" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a clef on the part card",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bass"
+          }
+        }
+      }
+    },
+    "clef.bass8vb" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a clef on the part card",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bass 8vb"
+          }
+        }
+      }
+    },
+    "clef.grand" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a clef on the part card",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Grand staff"
+          }
+        }
+      }
+    },
+    "clef.percussion" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a clef on the part card",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Percussion"
+          }
+        }
+      }
+    },
+    "clef.tenor" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a clef on the part card",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tenor"
+          }
+        }
+      }
+    },
+    "clef.treble" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a clef on the part card",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Treble"
+          }
+        }
+      }
+    },
+    "clef.treble8vb" : {
+      "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a clef on the part card",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Treble 8vb"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

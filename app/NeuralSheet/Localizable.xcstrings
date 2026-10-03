@@ -1,0 +1,2067 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "\"%@\" could not be loaded as a SoundFont (.sf2) or DLS (.dls) file. NeuralSheet is using the system's General MIDI sounds instead." : {
+      "comment" : "Alert body: a sound bank file was refused"
+    },
+    "%@ (%lld skipped)" : {
+      "comment" : "Batch window: a done file, some of whose outputs existed already"
+    },
+    "%@ GB" : {
+      "comment" : "A file size in gigabytes, e.g. \"2.7 GB\""
+    },
+    "%@ beats" : {
+      "comment" : "VoiceOver: a note's length in beats, to a tenth, e.g. \"1.5 beats\""
+    },
+    "%@ dB" : {
+      "comment" : "Accessibility value: a level in decibels, e.g. \"-6.0 dB\""
+    },
+    "%@ is for another version of NeuralSheet. Delete it from the models folder, then download it again" : {
+      "comment" : "The reason in a failed transcription's alert: the model file is from another release"
+    },
+    "%@ of %@" : {
+      "comment" : "Accessibility value: the playhead's time of the take's length, e.g. \"0:12.34 of 3:05.00\" / Settings → Model: a download's progress, e.g. \"618 MB of 2.7 GB\""
+    },
+    "%@ rest, %@, bar %lld" : {
+      "comment" : "VoiceOver: a rest in the score, e.g. \"quarter rest, Piano, bar 5\"; the first value is a note value such as \"quarter\""
+    },
+    "%@ s" : {
+      "comment" : "Status bar: the take's length in seconds"
+    },
+    "%@ to %@" : {
+      "comment" : "VoiceOver: the keys on show, lowest to highest, e.g. \"C2 to C6\""
+    },
+    "%@ — %lld notes" : {
+      "comment" : "Edit → Versions: a version and its note count, e.g. \"Version 2 — 412 notes\"",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ — %#@notes@"
+          },
+          "substitutions" : {
+            "notes" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg note"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg notes"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%@%@" : {
+      "comment" : "Shown in Recorder+Files, the Transcribe toolbar"
+    },
+    "%@, %@ note, %@, bar %lld" : {
+      "comment" : "VoiceOver: a note or chord in the score, e.g. \"E4 G4, quarter note, Piano, bar 5\"; the second value is a note value such as \"quarter\""
+    },
+    "%@, %@, bar %lld beat %lld, %@" : {
+      "comment" : "VoiceOver: a note on the piano roll; pitch, instrument, where it starts, how long it is, e.g. \"C4, Piano, bar 3 beat 2, half a beat\""
+    },
+    "%@, bar %lld beat %lld" : {
+      "comment" : "VoiceOver: a chord symbol in the chord lane, e.g. \"Am7, bar 3 beat 1\" / VoiceOver: the ruler's value, the playhead's time then its bar and beat"
+    },
+    "%@, marker at bar %lld" : {
+      "comment" : "VoiceOver: a section marker's flag on the ruler, e.g. \"Verse, marker at bar 5\""
+    },
+    "%lld MB" : {
+      "comment" : "A file size in megabytes, e.g. \"618 MB\""
+    },
+    "%lld added, %lld missing vs %@" : {
+      "comment" : "Status bar: notes the transcription has that the compared version lacks, and the reverse"
+    },
+    "%lld bars" : {
+      "comment" : "Settings → Audio: a count-in of so many bars",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld bar"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld bars"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld beats" : {
+      "comment" : "VoiceOver: a note's length in whole beats",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld beat"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld beats"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld hits" : {
+      "comment" : "Instrument strip: how many drum hits",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld hit"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld hits"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld instruments" : {
+      "comment" : "Accessibility label: the sidebar header's instrument count / Batch window: the instruments menu, how many are chosen / Status bar: how many instruments the transcription has",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld instrument"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld instruments"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld ms" : {
+      "comment" : "Shown in Settings → Model"
+    },
+    "%lld notes" : {
+      "comment" : "Instrument strip: how many notes / Status bar: how many notes the transcription has / The selection panel and the note card: how many notes are selected",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld note"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld notes"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld percent" : {
+      "comment" : "Accessibility value: a percentage, e.g. a speed or a progress"
+    },
+    "%lld percent MIDI" : {
+      "comment" : "Accessibility value: how much of the mix is the MIDI rather than the source audio"
+    },
+    "%lld syllables did not fit; select more notes." : {
+      "comment" : "Alert body: how many syllables were left over",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld syllable did not fit; select more notes."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld syllables did not fit; select more notes."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "A MIDI file has 16 channels, one of which is reserved for drums." : {
+      "comment" : "Shown in File → Export MIDI…'s sheet"
+    },
+    "A SoundFont (.sf2) or DLS (.dls) file the MIDI and the click play through." : {
+      "comment" : "Shown in Settings → Audio"
+    },
+    "A file with the same name already exists in “%@”. Replacing it will overwrite its current contents." : {
+      "comment" : "Alert body: Export Stems… would overwrite a file"
+    },
+    "A separation is still finishing. Try again in a moment." : {
+      "comment" : "Alert body: Export Stems… while a separation ends"
+    },
+    "ADD INSTRUMENT" : {
+      "comment" : "The sidebar's instrument picker: its header"
+    },
+    "ALL INSTRUMENTS" : {
+      "comment" : "Shown in the instrument menu, the Re-transcribe popup"
+    },
+    "Above" : {
+      "comment" : "Shown in an instrument strip's card"
+    },
+    "Acoustic Bass" : {
+      "comment" : "Shown in Shortcuts: an action's choices"
+    },
+    "Acoustic Guitar" : {
+      "comment" : "Shown in Shortcuts: an action's choices, ScoreRenderer"
+    },
+    "Add Files" : {
+      "comment" : "Batch window: the open panel's title"
+    },
+    "Add Files…" : {
+      "comment" : "Shown in the Batch Transcribe window"
+    },
+    "Add Marker Here" : {
+      "comment" : "Shown in the ruler card's marker section"
+    },
+    "Add Marker at Playhead" : {
+      "comment" : "Shown in the Edit menu"
+    },
+    "Add Tempo Change at Bar %lld" : {
+      "comment" : "Shown in the ruler card"
+    },
+    "Add instrument" : {
+      "comment" : "Accessibility label: the sidebar's + button"
+    },
+    "Add to the notes" : {
+      "comment" : "Alert button: the MIDI file's notes join the transcription's"
+    },
+    "After transcription" : {
+      "comment" : "Shown in Settings → Model"
+    },
+    "All Instruments" : {
+      "comment" : "Shown in Shortcuts: an action's choices"
+    },
+    "Allow it in System Settings › Privacy & Security › Screen & System Audio Recording, then choose the input again." : {
+      "comment" : "Alert body: System Audio refused"
+    },
+    "Alto Sax" : {
+      "comment" : "Shown in Shortcuts: an action's choices"
+    },
+    "Arranger" : {
+      "comment" : "Shown in the Score toolbar's Sheet… card"
+    },
+    "Audio" : {
+      "comment" : "Settings: the Audio tab"
+    },
+    "Audio could not start" : {
+      "comment" : "Alert title: the audio output would not start"
+    },
+    "Audio device could not be used" : {
+      "comment" : "Alert title: CoreAudio refused an input or output device"
+    },
+    "Augmented" : {
+      "comment" : "Chord card: a chord quality"
+    },
+    "Automatic" : {
+      "comment" : "Batch window: the instruments menu with nothing chosen, the model picks / String card: let the tab choose the string"
+    },
+    "Automatic (any instrument)" : {
+      "comment" : "Instrument menu row: let the model choose the instruments"
+    },
+    "BEAT 1 AT" : {
+      "comment" : "Shown in the Edit and Score toolbars' grid and key controls"
+    },
+    "BPM" : {
+      "comment" : "Shown in File → Export MIDI…'s sheet"
+    },
+    "Balance between the source audio and the synthesised transcription | [ ]" : {
+      "comment" : "Shown in the master panel's ORIG / MIDI mix"
+    },
+    "Baritone Sax" : {
+      "comment" : "Shown in Shortcuts: an action's choices"
+    },
+    "Bass" : {
+      "comment" : "Accessibility label: the chord card's slash bass button"
+    },
+    "Bassoon" : {
+      "comment" : "Shown in Shortcuts: an action's choices"
+    },
+    "Batch Transcribe" : {
+      "comment" : "Shown in the menu bar"
+    },
+    "Batch Transcribe…" : {
+      "comment" : "Shown in the menu bar"
+    },
+    "Beat 1 at" : {
+      "comment" : "Accessibility label: the toolbar field for where bar 1 starts, in seconds"
+    },
+    "Beat unit" : {
+      "comment" : "Accessibility label: the time signature's denominator button"
+    },
+    "Beats in a bar" : {
+      "comment" : "Accessibility label: the time signature's numerator button"
+    },
+    "Before %@ — %@" : {
+      "comment" : "A version saved before a run, e.g. \"Before Transcribe — 14:02\""
+    },
+    "Below" : {
+      "comment" : "Shown in an instrument strip's card"
+    },
+    "Both sides" : {
+      "comment" : "Accessibility value: ORIG or MIDI not held"
+    },
+    "Brass" : {
+      "comment" : "Shown in Shortcuts: an action's choices"
+    },
+    "By Interval…" : {
+      "comment" : "Shown in the Edit menu"
+    },
+    "B♭ tenor (+14)" : {
+      "comment" : "Part card: a transposition, as a tenor saxophone reads"
+    },
+    "CLICK" : {
+      "comment" : "Master panel: the metronome button"
+    },
+    "Cancel" : {
+      "comment" : "Alert button"
+    },
+    "Cancel export" : {
+      "comment" : "Shown in the status bar's progress"
+    },
+    "Cancel re-transcription" : {
+      "comment" : "Shown in the Re-transcribe popup"
+    },
+    "Cancel transcription" : {
+      "comment" : "Shown in the status bar's progress"
+    },
+    "Cancelled." : {
+      "comment" : "A batch or Shortcuts run stopped by the user"
+    },
+    "Cello" : {
+      "comment" : "Shown in Shortcuts: an action's choices"
+    },
+    "Center" : {
+      "comment" : "Accessibility value: a pan slider in the middle"
+    },
+    "Center playhead" : {
+      "comment" : "Accessibility label: the top bar's button that keeps the playhead in view"
+    },
+    "Center playhead | c" : {
+      "comment" : "Shown in the top bar"
+    },
+    "Change to" : {
+      "comment" : "Accessibility label: the strip card's instrument to move every note to"
+    },
+    "Check for Updates…" : {
+      "comment" : "Shown in Settings → General, the menu bar"
+    },
+    "Check your file format (Accepted formats: %@)." : {
+      "comment" : "Alert body: a file that would not load; the formats are extensions, e.g. \"mp3, wav, …\""
+    },
+    "Choose a Sound Bank" : {
+      "comment" : "Settings → Audio → Sound bank → Choose…: the open panel's title"
+    },
+    "Choose a SoundFont (.sf2) or DLS (.dls) file to play the MIDI through." : {
+      "comment" : "Settings → Audio → Sound bank → Choose…: the open panel's message"
+    },
+    "Choose audio files or folders to transcribe" : {
+      "comment" : "Batch window: the open panel's message"
+    },
+    "Choose where the files are written" : {
+      "comment" : "Batch window: the folder panel's message"
+    },
+    "Choose…" : {
+      "comment" : "Shown in Settings → Audio, the Batch Transcribe window"
+    },
+    "Chord at %@" : {
+      "comment" : "Chord card: its header, where the chord starts, e.g. \"Chord at 3.1\""
+    },
+    "Chords" : {
+      "comment" : "VoiceOver: the chord lane above the piano roll"
+    },
+    "Chromatic Perc." : {
+      "comment" : "Shown in Shortcuts: an action's choices"
+    },
+    "Clarinet" : {
+      "comment" : "Shown in Shortcuts: an action's choices"
+    },
+    "Clear" : {
+      "comment" : "Accessibility label: the Transcribe toolbar's bin button"
+    },
+    "Clear Menu" : {
+      "comment" : "Shown in the menu bar"
+    },
+    "Clear audio and transcription" : {
+      "comment" : "The bin's right-click menu"
+    },
+    "Clear audio and transcription | Shift + Backspace\nRight-click to clear the transcription only" : {
+      "comment" : "Shown in the Transcribe toolbar: the bin's tooltip, on two lines; Shift + Backspace is the key"
+    },
+    "Clear transcription only" : {
+      "comment" : "Accessibility action on the bin button: the right-click menu's second choice / The bin's right-click menu"
+    },
+    "Clef" : {
+      "comment" : "Accessibility label: the part card's clef button"
+    },
+    "Click" : {
+      "comment" : "Accessibility label: the master panel's metronome button"
+    },
+    "Click level" : {
+      "comment" : "Accessibility label: the metronome's volume slider"
+    },
+    "Click level | double-click for -6 dB" : {
+      "comment" : "Shown in the sidebar's master panel"
+    },
+    "Click on every beat of the grid | k" : {
+      "comment" : "Shown in the sidebar's master panel"
+    },
+    "Click while recording" : {
+      "comment" : "Shown in Settings → Audio"
+    },
+    "Close" : {
+      "comment" : "Shown in the menu bar"
+    },
+    "Command-line tool" : {
+      "comment" : "Shown in Settings → General"
+    },
+    "Compare With" : {
+      "comment" : "Shown in Edit → Versions"
+    },
+    "Composer" : {
+      "comment" : "Shown in the Score toolbar's Sheet… card"
+    },
+    "Confidence" : {
+      "comment" : "Accessibility label: how sure the model was of the selected notes"
+    },
+    "Continuous" : {
+      "comment" : "Score toolbar: the systems in one column"
+    },
+    "Contrabass" : {
+      "comment" : "Shown in Shortcuts: an action's choices"
+    },
+    "Copy" : {
+      "comment" : "Shown in Settings → General, the Edit menu"
+    },
+    "Copyright" : {
+      "comment" : "Shown in the Score toolbar's Sheet… card"
+    },
+    "CoreAudio error %@." : {
+      "comment" : "Alert body: what CoreAudio said, e.g. \"CoreAudio error 'nope' (1852797029).\""
+    },
+    "Could not detect a tempo." : {
+      "comment" : "Alert title: Detect found no tempo"
+    },
+    "Could not detect chords." : {
+      "comment" : "Alert title: Edit → Detect Chords failed"
+    },
+    "Could not import the MIDI file." : {
+      "comment" : "Alert title: File → Import MIDI… failed"
+    },
+    "Could not load the audio file." : {
+      "comment" : "Alert title: an audio file could not be decoded"
+    },
+    "Could not load the file." : {
+      "comment" : "Alert title: a dropped or opened file could not be read"
+    },
+    "Could not load the file. Check your file format (Accepted formats: %@)." : {
+      "comment" : "A batch or Shortcuts failure: the file would not decode"
+    },
+    "Could not load the project's transcription." : {
+      "comment" : "Alert title: a project's notes could not be read"
+    },
+    "Could not load the recorded audio sample." : {
+      "comment" : "Alert title: a finished take could not be read back"
+    },
+    "Could not load the sound bank." : {
+      "comment" : "Alert title: a sound bank file was refused"
+    },
+    "Could not open the project." : {
+      "comment" : "Alert title: File → Open… failed"
+    },
+    "Could not paste lyrics." : {
+      "comment" : "Alert title: Edit → Paste Lyrics… failed"
+    },
+    "Could not save the project." : {
+      "comment" : "Alert title: File → Save or Save As… failed"
+    },
+    "Could not write the MIDI file." : {
+      "comment" : "Alert body: File → Export MIDI… failed"
+    },
+    "Could not write the MusicXML file." : {
+      "comment" : "Alert body: File → Export MusicXML… failed"
+    },
+    "Could not write the PDF file." : {
+      "comment" : "Alert body: File → Export PDF… failed"
+    },
+    "Could not write the audio file." : {
+      "comment" : "Alert title: File → Export Audio… or Export Stems… failed"
+    },
+    "Could not write the file: %@" : {
+      "comment" : "A batch or Shortcuts failure; the reason is the system's"
+    },
+    "Count-in" : {
+      "comment" : "Shown in Settings → Audio"
+    },
+    "Count-in %@ %lld" : {
+      "comment" : "Status bar: the count-in's beats still to go"
+    },
+    "Counting in" : {
+      "comment" : "Accessibility value: the record button while the count-in plays"
+    },
+    "Create New Project" : {
+      "comment" : "Shown in the welcome window"
+    },
+    "Custom" : {
+      "comment" : "Part card: a transposition or tuning that is none of the presets"
+    },
+    "Cut" : {
+      "comment" : "Shown in the Edit menu"
+    },
+    "Cut Note" : {
+      "comment" : "Undo title: one note cut"
+    },
+    "Cut Notes" : {
+      "comment" : "Undo title: several notes cut"
+    },
+    "Date" : {
+      "comment" : "Shown in Edit → Versions → Manage Versions…"
+    },
+    "Delete" : {
+      "comment" : "Chord card: remove the chord / VoiceOver action on a note: delete it"
+    },
+    "Delete Marker" : {
+      "comment" : "Shown in the ruler card's marker section"
+    },
+    "Delete instrument" : {
+      "comment" : "Shown in an instrument strip's card"
+    },
+    "Delete “%@”?" : {
+      "comment" : "Shown in Edit → Versions → Manage Versions…"
+    },
+    "Deselect All" : {
+      "comment" : "Shown in the Edit menu"
+    },
+    "Detect" : {
+      "comment" : "Shown in the Edit and Score toolbars' grid and key controls"
+    },
+    "Detect Chords" : {
+      "comment" : "Shown in the Edit menu"
+    },
+    "Detect Tempo and Key" : {
+      "comment" : "Shown in Shortcuts: Transcribe Audio"
+    },
+    "Detect replaces the chord symbols you have edited with what it finds in the notes." : {
+      "comment" : "Alert body: Detect Chords over edited chords"
+    },
+    "Detect replaces the tempo changes and the time signature with what it finds in the take." : {
+      "comment" : "Alert body: Detect over an edited tempo map"
+    },
+    "Detect tempo and key" : {
+      "comment" : "Shown in the Batch Transcribe window"
+    },
+    "Diminished" : {
+      "comment" : "Chord card: a chord quality"
+    },
+    "Discard" : {
+      "comment" : "Alert button: go ahead and lose the edits"
+    },
+    "Discard your edits?" : {
+      "comment" : "Alert title: an action would lose the edits to the transcription"
+    },
+    "Display" : {
+      "comment" : "Shown in the Score tab's part card"
+    },
+    "Distorted Guitar" : {
+      "comment" : "Shown in Shortcuts: an action's choices"
+    },
+    "Do you want to revert to the most recently saved version of “%@”?" : {
+      "comment" : "Alert title: File → Revert to Saved…, AppKit's own wording"
+    },
+    "Do you want to save the changes made to the document “%@”?" : {
+      "comment" : "Alert title: closing or quitting with unsaved changes, AppKit's own wording"
+    },
+    "Don't Save" : {
+      "comment" : "Alert button: close without saving"
+    },
+    "Done" : {
+      "comment" : "Shown in the Batch Transcribe window, Edit → Versions → Manage Versions…"
+    },
+    "Done, %lld notes" : {
+      "comment" : "Batch window: a file transcribed, with its note count",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Done, %lld note"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Done, %lld notes"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Down a Semitone" : {
+      "comment" : "Shown in the Edit menu"
+    },
+    "Down an Octave" : {
+      "comment" : "Shown in the Edit menu"
+    },
+    "Download" : {
+      "comment" : "Settings → Model: download a model"
+    },
+    "Download a model to start transcribing." : {
+      "comment" : "Shown in Settings → Model"
+    },
+    "Download a model…" : {
+      "comment" : "Shown in the piano roll with no model installed"
+    },
+    "Download progress" : {
+      "comment" : "Accessibility label: a model download's progress bar"
+    },
+    "Download the Stems model in Settings › Model" : {
+      "comment" : "Shown in the Transcribe toolbar"
+    },
+    "Download the Stems model in Settings → Model." : {
+      "comment" : "Shown in the Batch Transcribe window"
+    },
+    "Download to separate the take into drums, bass, vocals and the rest before transcribing." : {
+      "comment" : "Shown in Settings → Model"
+    },
+    "Drag the MIDI into a DAW or the Finder | ⌥ for MusicXML · click to export" : {
+      "comment" : "Shown in the toolbars' MIDI chip"
+    },
+    "Draw (D)" : {
+      "comment" : "Shown in the Edit toolbar"
+    },
+    "Draw tool" : {
+      "comment" : "Accessibility label: the Edit toolbar's pencil tool"
+    },
+    "Drop audio files or folders here" : {
+      "comment" : "Shown in the Batch Transcribe window"
+    },
+    "Drop notes less sure than" : {
+      "comment" : "Shown in Settings → Model"
+    },
+    "Drop notes shorter than" : {
+      "comment" : "Shown in Settings → Model"
+    },
+    "Drop the extra instruments" : {
+      "comment" : "Shown in File → Export MIDI…'s sheet"
+    },
+    "Dropped notes are gone; lower the setting and transcribe again to get them back." : {
+      "comment" : "Shown in Settings → Model"
+    },
+    "Drums" : {
+      "comment" : "Shown in Shortcuts: an action's choices"
+    },
+    "EDIT" : {
+      "comment" : "Shown in the tab strip under the top bar"
+    },
+    "EXPORTING" : {
+      "comment" : "Status bar: the caption while Export Stems… writes the files"
+    },
+    "Edit" : {
+      "comment" : "Shown in the menu bar"
+    },
+    "Electric Guitar" : {
+      "comment" : "Shown in Shortcuts: an action's choices"
+    },
+    "Electric Piano" : {
+      "comment" : "Shown in Shortcuts: an action's choices"
+    },
+    "End with - to carry the word on, _ to hold the syllable." : {
+      "comment" : "Shown in the lyric card"
+    },
+    "English Horn" : {
+      "comment" : "Shown in Shortcuts: an action's choices"
+    },
+    "Erase (E)" : {
+      "comment" : "Shown in the Edit toolbar"
+    },
+    "Erase tool" : {
+      "comment" : "Accessibility label: the Edit toolbar's eraser tool"
+    },
+    "Error" : {
+      "comment" : "Alert title: a plain failure, e.g. a file that could not be written"
+    },
+    "Export" : {
+      "comment" : "File → Export Stems…'s folder panel: the button"
+    },
+    "Export Audio" : {
+      "comment" : "File → Export Audio…'s save panel"
+    },
+    "Export Audio…" : {
+      "comment" : "Shown in the menu bar"
+    },
+    "Export MIDI" : {
+      "comment" : "Accessibility label: the toolbar's MIDI chip, which exports the MIDI file when pressed / File → Export MIDI…'s save panel"
+    },
+    "Export MIDI…" : {
+      "comment" : "Shown in the menu bar"
+    },
+    "Export MusicXML" : {
+      "comment" : "File → Export MusicXML…'s save panel"
+    },
+    "Export MusicXML…" : {
+      "comment" : "Shown in the menu bar"
+    },
+    "Export PDF" : {
+      "comment" : "File → Export PDF…'s save panel"
+    },
+    "Export PDF…" : {
+      "comment" : "Shown in the menu bar"
+    },
+    "Export Stems" : {
+      "comment" : "File → Export Stems…'s folder panel"
+    },
+    "Export Stems…" : {
+      "comment" : "Shown in the menu bar"
+    },
+    "Exporting Audio" : {
+      "comment" : "Shown in Export Audio's progress sheet"
+    },
+    "Export…" : {
+      "comment" : "Shown in File → Export MIDI…'s sheet"
+    },
+    "E♭ alto (+9)" : {
+      "comment" : "Part card: a transposition, as an alto saxophone reads"
+    },
+    "E♭ baritone (+21)" : {
+      "comment" : "Part card: a transposition, as a baritone saxophone reads"
+    },
+    "File" : {
+      "comment" : "Shown in the Batch Transcribe window, Shortcuts: Separate Stems"
+    },
+    "File creation for recording failed." : {
+      "comment" : "Alert body: the recording file could not be made"
+    },
+    "Files" : {
+      "comment" : "Shown in Shortcuts: Transcribe Audio"
+    },
+    "Find the tempo and its changes, the downbeat, the meter and the key" : {
+      "comment" : "Shown in the Edit and Score toolbars' grid and key controls"
+    },
+    "Flute" : {
+      "comment" : "Shown in Shortcuts: an action's choices"
+    },
+    "Format" : {
+      "comment" : "Shown in File → Export Audio…'s panel"
+    },
+    "Format:" : {
+      "comment" : "Shown in File → Export Audio…'s panel"
+    },
+    "French Horn" : {
+      "comment" : "Shown in Shortcuts: an action's choices"
+    },
+    "Frets" : {
+      "comment" : "Accessibility label: the part card's fret count field"
+    },
+    "From Audio" : {
+      "comment" : "Shown in the Edit menu"
+    },
+    "General" : {
+      "comment" : "Settings: the General tab"
+    },
+    "Go to start" : {
+      "comment" : "Accessibility label: the top bar's button that moves the playhead to the start"
+    },
+    "Go to start | Enter" : {
+      "comment" : "Shown in the top bar"
+    },
+    "Grid division" : {
+      "comment" : "Accessibility label: the Edit toolbar's division button, e.g. 1/16"
+    },
+    "Harp" : {
+      "comment" : "Shown in Shortcuts: an action's choices"
+    },
+    "Hidden" : {
+      "comment" : "Accessibility label: the part card's hide switch / Part card: the part is left off the score"
+    },
+    "Hold to hear only the MIDI" : {
+      "comment" : "Shown in the master panel's ORIG / MIDI mix"
+    },
+    "Hold to hear only the MIDI, in the right ear" : {
+      "comment" : "Shown in the master panel's ORIG / MIDI mix"
+    },
+    "Hold to hear only the source audio" : {
+      "comment" : "Shown in the master panel's ORIG / MIDI mix"
+    },
+    "Hold to hear only the source audio, in the left ear" : {
+      "comment" : "Shown in the master panel's ORIG / MIDI mix"
+    },
+    "Hugging Face" : {
+      "comment" : "Shown in Settings → Model"
+    },
+    "Humanize" : {
+      "comment" : "Shown in the Edit menu"
+    },
+    "IN THE MIX" : {
+      "comment" : "Shown in the instrument menu, the Re-transcribe popup"
+    },
+    "INSTRUMENTS" : {
+      "comment" : "Shown in the sidebar"
+    },
+    "INSTRUMENTS THE MODEL MAY USE" : {
+      "comment" : "Shown in the Re-transcribe popup"
+    },
+    "Import MIDI" : {
+      "comment" : "A version's name: \"Before Import MIDI — 14:02\" / File → Import MIDI…'s open panel"
+    },
+    "Import MIDI…" : {
+      "comment" : "Shown in the menu bar"
+    },
+    "Import “%@”?" : {
+      "comment" : "Alert title: File → Import MIDI… over a transcription"
+    },
+    "Input" : {
+      "comment" : "Shown in Settings → Audio, the menu bar"
+    },
+    "Install creates a link in /usr/local/bin so you can run neuralsheet in the Terminal. You will be asked for an administrator password." : {
+      "comment" : "Settings → General: the command-line tool's footer before it is installed"
+    },
+    "Installed" : {
+      "comment" : "Accessibility label: a model row's radio, installed but not in use"
+    },
+    "Installed. Run neuralsheet --help in the Terminal to get started." : {
+      "comment" : "Settings → General: the command-line tool's footer once installed"
+    },
+    "Install…" : {
+      "comment" : "Shown in Settings → General"
+    },
+    "Instrument" : {
+      "comment" : "Accessibility label: the selection's instrument button"
+    },
+    "Instrument commands" : {
+      "comment" : "Accessibility label: the button VoiceOver offers in place of a right-click on an instrument strip"
+    },
+    "Instruments" : {
+      "comment" : "Shown in the Batch Transcribe window, Shortcuts: Transcribe Audio"
+    },
+    "Join Notes" : {
+      "comment" : "Shown in the Edit menu"
+    },
+    "KEY" : {
+      "comment" : "Shown in the Edit and Score toolbars' grid and key controls"
+    },
+    "Key" : {
+      "comment" : "Accessibility label: the toolbar's key tonic button, e.g. C or none"
+    },
+    "Keyboard" : {
+      "comment" : "VoiceOver: the piano keys left of the piano roll"
+    },
+    "Large" : {
+      "comment" : "Shown in Shortcuts: an action's choices"
+    },
+    "Left %lld" : {
+      "comment" : "Accessibility value: a pan slider to the left, out of 100"
+    },
+    "Legato" : {
+      "comment" : "Shown in the Edit menu"
+    },
+    "Length" : {
+      "comment" : "Accessibility label: the selection's length field, in seconds"
+    },
+    "Level" : {
+      "comment" : "Accessibility label: an instrument strip's fader"
+    },
+    "Level for this instrument" : {
+      "comment" : "Shown in an instrument strip"
+    },
+    "Load an audio file" : {
+      "comment" : "Shown in the empty timeline"
+    },
+    "Load an audio file, or drop one here" : {
+      "comment" : "VoiceOver: the empty waveform's help, which is where a file can be dropped"
+    },
+    "Load audio file" : {
+      "comment" : "Shown in the empty timeline"
+    },
+    "Load or record audio first, then import a MIDI file over it." : {
+      "comment" : "Alert body: a MIDI file dropped with no take"
+    },
+    "Loading…" : {
+      "comment" : "Shown in the Batch Transcribe window"
+    },
+    "Loop" : {
+      "comment" : "Accessibility label: the top bar's loop button"
+    },
+    "Loop | l" : {
+      "comment" : "Shown in the top bar"
+    },
+    "Lyric" : {
+      "comment" : "Accessibility label: the syllable field for a note / Lyric card: its header with no note"
+    },
+    "Lyric · %@ at %@" : {
+      "comment" : "Lyric card: its header, the note's pitch and bar.beat, e.g. \"Lyric · E4 at 3.2\""
+    },
+    "Lyric…" : {
+      "comment" : "Shown in the Edit menu"
+    },
+    "M" : {
+      "comment" : "Instrument strip: the mute toggle's letter"
+    },
+    "MASTER" : {
+      "comment" : "Shown in the sidebar's master panel"
+    },
+    "MIDI" : {
+      "comment" : "Master panel: the mix slider's MIDI end; held, only the MIDI plays"
+    },
+    "MIDI Output" : {
+      "comment" : "Shown in the menu bar"
+    },
+    "MIX WAVEFORM" : {
+      "comment" : "The waveform's corner label"
+    },
+    "MUTE" : {
+      "comment" : "Master panel: the input mute button"
+    },
+    "Major" : {
+      "comment" : "Chord card: a chord quality"
+    },
+    "Major or minor" : {
+      "comment" : "Shown in the Edit and Score toolbars' grid and key controls"
+    },
+    "Major, minor, a seventh…" : {
+      "comment" : "Shown in the chord card"
+    },
+    "Manage Versions…" : {
+      "comment" : "Shown in Edit → Versions"
+    },
+    "Marked range" : {
+      "comment" : "Shown in File → Export Audio…'s panel"
+    },
+    "Marker" : {
+      "comment" : "Ruler card: the marker section's header with no marker / VoiceOver: a marker flag with no name"
+    },
+    "Marker at %@" : {
+      "comment" : "Ruler card: the marker section's header, e.g. \"Marker at 5.1\""
+    },
+    "Marker name" : {
+      "comment" : "Accessibility label: the ruler card's marker name field"
+    },
+    "Markers" : {
+      "comment" : "Shown in the Edit menu"
+    },
+    "Measure numbers" : {
+      "comment" : "Shown in the Score toolbar's Sheet… card"
+    },
+    "Medium" : {
+      "comment" : "Shown in Shortcuts: an action's choices"
+    },
+    "Microphone access has not been granted. Allow NeuralSheet to use the microphone in System Settings › Privacy & Security › Microphone." : {
+      "comment" : "Alert body: recording without the microphone permission"
+    },
+    "Minor" : {
+      "comment" : "Chord card: a chord quality"
+    },
+    "Missing" : {
+      "comment" : "Accessibility value: a recent project whose file is no longer where it was"
+    },
+    "Mix" : {
+      "comment" : "Accessibility label: the slider between the source audio (ORIG) and the MIDI"
+    },
+    "Mode" : {
+      "comment" : "Accessibility label: the toolbar's major / minor button"
+    },
+    "Model" : {
+      "comment" : "Settings: the Model tab, the transcription models"
+    },
+    "Model weights: CC BY-NC 4.0 (non-commercial)" : {
+      "comment" : "Settings → Model: the transcription weights' licence"
+    },
+    "Model: %@" : {
+      "comment" : "Status bar: the transcription model in use"
+    },
+    "Models folder" : {
+      "comment" : "Shown in Settings → Model"
+    },
+    "Move Down" : {
+      "comment" : "VoiceOver action on a note: a semitone lower"
+    },
+    "Move Left" : {
+      "comment" : "VoiceOver action on a note: a grid step earlier"
+    },
+    "Move Right" : {
+      "comment" : "VoiceOver action on a note: a grid step later"
+    },
+    "Move Up" : {
+      "comment" : "VoiceOver action on a note: a semitone higher"
+    },
+    "MusicXML" : {
+      "comment" : "Shown in the Batch Transcribe window, Shortcuts: an action's choices"
+    },
+    "Mute" : {
+      "comment" : "Accessibility label: an instrument strip's M button"
+    },
+    "Mute / Unmute input | m" : {
+      "comment" : "Shown in the sidebar's master panel"
+    },
+    "Mute Built-in Synth While Sending" : {
+      "comment" : "Shown in the menu bar"
+    },
+    "Mute input" : {
+      "comment" : "Accessibility label: the master panel's MUTE button"
+    },
+    "Mute this instrument" : {
+      "comment" : "Shown in an instrument strip"
+    },
+    "Name" : {
+      "comment" : "Shown in Edit → Versions → Manage Versions…, the ruler card's marker section"
+    },
+    "NeuralSheet" : {
+      "comment" : "Shown in AppModel+MidiDrag, MidiOutput, the menu bar, the welcome window"
+    },
+    "NeuralSheet Project" : {
+      "comment" : "Shown in Shortcuts: an action's choices"
+    },
+    "NeuralSheet needs permission to record system audio." : {
+      "comment" : "Alert title: System Audio refused"
+    },
+    "New Project" : {
+      "comment" : "Shown in the menu bar"
+    },
+    "Next Marker" : {
+      "comment" : "Shown in the Edit menu"
+    },
+    "Next to each file" : {
+      "comment" : "Shown in the Batch Transcribe window"
+    },
+    "No Recent Projects" : {
+      "comment" : "Shown in the welcome window's recent projects"
+    },
+    "No selection" : {
+      "comment" : "The selection panel and the note card: nothing selected"
+    },
+    "No transcription model installed" : {
+      "comment" : "Shown in Settings → Model, the piano roll with no model installed"
+    },
+    "No transcription model is installed. Download one in NeuralSheet › Settings › Model." : {
+      "comment" : "A batch or Shortcuts failure: no model at all"
+    },
+    "None" : {
+      "comment" : "Chord card: no slash bass / Menu row: no key, or no chord bass / Part card: no tab / Part card: no transposition / Status bar: no transcription model installed"
+    },
+    "None chosen lets the model choose." : {
+      "comment" : "Shown in Shortcuts: Transcribe Audio"
+    },
+    "None chosen uses the model chosen in NeuralSheet's Settings." : {
+      "comment" : "Shown in Shortcuts: Transcribe Audio"
+    },
+    "None installed" : {
+      "comment" : "Shown in the Batch Transcribe window"
+    },
+    "Not installed" : {
+      "comment" : "Accessibility label: a model row's radio, not downloaded"
+    },
+    "Not recording" : {
+      "comment" : "Accessibility value: the record button while idle"
+    },
+    "Notes" : {
+      "comment" : "Shown in Edit → Versions → Manage Versions…"
+    },
+    "Nothing to balance while the split is on: each side plays at full in its own ear" : {
+      "comment" : "Shown in the master panel's ORIG / MIDI mix"
+    },
+    "OK" : {
+      "comment" : "Alert button"
+    },
+    "OR DROP A FILE HERE" : {
+      "comment" : "The empty waveform, under the Load audio file button"
+    },
+    "ORIG" : {
+      "comment" : "Master panel: the mix slider's source-audio end; held, only the source plays"
+    },
+    "Oboe" : {
+      "comment" : "Shown in Shortcuts: an action's choices"
+    },
+    "Octave down (−12)" : {
+      "comment" : "Part card: written an octave below the sound"
+    },
+    "Octave up (+12)" : {
+      "comment" : "Part card: written an octave above the sound"
+    },
+    "Off" : {
+      "comment" : "Accessibility value: a toggle button that is off / Settings → Audio: no count-in"
+    },
+    "On" : {
+      "comment" : "Accessibility value: a toggle button that is on"
+    },
+    "Only this side" : {
+      "comment" : "Accessibility value: ORIG or MIDI held, so only that side plays"
+    },
+    "Open Existing Project…" : {
+      "comment" : "Shown in the welcome window"
+    },
+    "Open Note Card" : {
+      "comment" : "VoiceOver action on a note: open the card with its fields"
+    },
+    "Open Project" : {
+      "comment" : "File → Open…'s open panel"
+    },
+    "Open Recent" : {
+      "comment" : "Shown in the menu bar"
+    },
+    "Open Settings → Model" : {
+      "comment" : "Shown in the piano roll with no model installed"
+    },
+    "Open in Finder" : {
+      "comment" : "Shown in Settings → Model"
+    },
+    "Open…" : {
+      "comment" : "Shown in the menu bar"
+    },
+    "Orchestra Hit" : {
+      "comment" : "Shown in Shortcuts: an action's choices"
+    },
+    "Organ" : {
+      "comment" : "Shown in Shortcuts: an action's choices"
+    },
+    "Output" : {
+      "comment" : "Shown in Settings → Audio, Shortcuts: an action's choices, the menu bar"
+    },
+    "Output Folder" : {
+      "comment" : "Batch window: the folder panel's title"
+    },
+    "Output folder" : {
+      "comment" : "Shown in the Batch Transcribe window"
+    },
+    "Output level" : {
+      "comment" : "Accessibility label: the master panel's volume slider"
+    },
+    "Outputs" : {
+      "comment" : "Shown in the Batch Transcribe window, Shortcuts: Transcribe Audio"
+    },
+    "Pages" : {
+      "comment" : "Score toolbar: the systems on printed pages"
+    },
+    "Pan" : {
+      "comment" : "Accessibility label: an instrument strip's pan slider"
+    },
+    "Pan | double-click to centre" : {
+      "comment" : "Shown in an instrument strip"
+    },
+    "Part names" : {
+      "comment" : "Shown in the Score toolbar's Sheet… card"
+    },
+    "Parts" : {
+      "comment" : "Shown in the Score toolbar"
+    },
+    "Paste" : {
+      "comment" : "Shown in the Edit menu"
+    },
+    "Paste Lyrics" : {
+      "comment" : "Alert title: Paste Lyrics… left words over"
+    },
+    "Paste Lyrics…" : {
+      "comment" : "Shown in the Edit menu"
+    },
+    "Path" : {
+      "comment" : "Shown in Settings → General"
+    },
+    "Pause" : {
+      "comment" : "Accessibility label: the top bar's play button while playing"
+    },
+    "Percentage to scale each velocity by:" : {
+      "comment" : "Edit → Velocity → Scale…: the alert's question"
+    },
+    "Piano" : {
+      "comment" : "Shown in Shortcuts: an action's choices"
+    },
+    "Piano roll" : {
+      "comment" : "VoiceOver: the piano roll, which holds the notes"
+    },
+    "Piano roll vertical zoom" : {
+      "comment" : "Accessibility label: the status bar's zoom slider"
+    },
+    "Piano roll vertical zoom | ⌥ + scroll or ⌥ + pinch on the roll" : {
+      "comment" : "Shown in the status bar"
+    },
+    "Pitch" : {
+      "comment" : "Accessibility label: the selection's pitch field, e.g. C4"
+    },
+    "Pitch curve" : {
+      "comment" : "Accessibility label: the selected notes' largest pitch deviation, in cents"
+    },
+    "Play" : {
+      "comment" : "Accessibility label: the top bar's play button while stopped"
+    },
+    "Play / Pause | Space" : {
+      "comment" : "Shown in the top bar"
+    },
+    "Playback speed" : {
+      "comment" : "Accessibility label: the top bar's SPEED slider"
+    },
+    "Playback speed, pitch unchanged | - =" : {
+      "comment" : "Shown in the top bar's SPEED pill"
+    },
+    "Playing" : {
+      "comment" : "Accessibility value: the transport is playing"
+    },
+    "Position" : {
+      "comment" : "Accessibility label: the top bar's time readout"
+    },
+    "Previous Marker" : {
+      "comment" : "Shown in the Edit menu"
+    },
+    "Project" : {
+      "comment" : "Shown in the Batch Transcribe window"
+    },
+    "Quality" : {
+      "comment" : "Accessibility label: the chord card's quality button, e.g. major"
+    },
+    "Quantize" : {
+      "comment" : "Shown in AccessibilityText, the Edit toolbar, the Edit menu"
+    },
+    "Quantize selection (⌘U)" : {
+      "comment" : "Shown in the Edit toolbar"
+    },
+    "Quarter notes a minute" : {
+      "comment" : "Shown in the ruler card"
+    },
+    "RE-TRANSCRIBING" : {
+      "comment" : "Edit toolbar: the caption beside a region run's progress bar"
+    },
+    "Range" : {
+      "comment" : "Shown in File → Export Audio…'s panel"
+    },
+    "Range:" : {
+      "comment" : "Shown in File → Export Audio…'s panel"
+    },
+    "Re-transcribe" : {
+      "comment" : "Shown in AccessibilityText, AppModel+RegionTranscription, the Re-transcribe popup"
+    },
+    "Re-transcribe the marked range" : {
+      "comment" : "Shown in the Re-transcribe popup"
+    },
+    "Record" : {
+      "comment" : "Accessibility label: the top bar's record button"
+    },
+    "Record | r" : {
+      "comment" : "Shown in the top bar"
+    },
+    "Recording" : {
+      "comment" : "Accessibility value: the record button while a take is recorded"
+    },
+    "Redo" : {
+      "comment" : "Accessibility label: the Edit toolbar's redo button / Edit menu: redo with nothing to redo"
+    },
+    "Redo %@" : {
+      "comment" : "Edit menu: redo the named edit, e.g. \"Redo Move Note\""
+    },
+    "Reinstall…" : {
+      "comment" : "Shown in Settings → General"
+    },
+    "Remove" : {
+      "comment" : "Shown in the Batch Transcribe window, Settings → General"
+    },
+    "Remove Tempo Change" : {
+      "comment" : "Shown in the ruler card"
+    },
+    "Remove from Recents" : {
+      "comment" : "Shown in the welcome window's recent projects"
+    },
+    "Replace" : {
+      "comment" : "Alert button: overwrite the file / Alert button: replace the edited chords / Alert button: replace the edited tempo map"
+    },
+    "Replace All" : {
+      "comment" : "Alert button: overwrite this file and the rest of the set"
+    },
+    "Replace existing" : {
+      "comment" : "Shown in the Batch Transcribe window"
+    },
+    "Replace the chord symbols?" : {
+      "comment" : "Alert title: Detect Chords over edited chords"
+    },
+    "Replace the notes" : {
+      "comment" : "Alert button: the MIDI file's notes replace the transcription's"
+    },
+    "Replace the tempo map?" : {
+      "comment" : "Alert title: Detect over an edited tempo map"
+    },
+    "Reset" : {
+      "comment" : "Shown in Settings → Audio, the Batch Transcribe window"
+    },
+    "Reset Zoom" : {
+      "comment" : "Shown in the menu bar"
+    },
+    "Restore %@" : {
+      "comment" : "Undo title: a version restored"
+    },
+    "Restrict the transcription to chosen instruments" : {
+      "comment" : "Shown in the sidebar"
+    },
+    "Resume" : {
+      "comment" : "Settings → Model: carry on a stopped download"
+    },
+    "Retry" : {
+      "comment" : "Settings → Model: try a failed download again"
+    },
+    "Reuse the last channels" : {
+      "comment" : "Shown in File → Export MIDI…'s sheet"
+    },
+    "Revert" : {
+      "comment" : "Alert button: revert to the saved project"
+    },
+    "Revert to Saved…" : {
+      "comment" : "Shown in the menu bar"
+    },
+    "Revert to Transcription…" : {
+      "comment" : "Shown in the Edit menu"
+    },
+    "Right %lld" : {
+      "comment" : "Accessibility value: a pan slider to the right, out of 100"
+    },
+    "Root" : {
+      "comment" : "Accessibility label: the chord card's root button"
+    },
+    "Ruler" : {
+      "comment" : "VoiceOver: the time ruler above the piano roll; its value is the playhead"
+    },
+    "S" : {
+      "comment" : "Instrument strip: the solo toggle's letter"
+    },
+    "SCORE" : {
+      "comment" : "Shown in the tab strip under the top bar"
+    },
+    "SELECTION" : {
+      "comment" : "Shown in the sidebar's SELECTION panel"
+    },
+    "SEPARATING" : {
+      "comment" : "Status bar: the caption while the stems are separated"
+    },
+    "SHEET" : {
+      "comment" : "Shown in the Score toolbar's Sheet… card"
+    },
+    "SPEED" : {
+      "comment" : "Shown in the top bar's SPEED pill"
+    },
+    "SWING" : {
+      "comment" : "Shown in the Edit toolbar"
+    },
+    "Save" : {
+      "comment" : "Alert button: save the project"
+    },
+    "Save As…" : {
+      "comment" : "Shown in the menu bar"
+    },
+    "Save Project" : {
+      "comment" : "File → Save As…'s save panel"
+    },
+    "Save Version" : {
+      "comment" : "Edit → Versions → Save Version…: the alert's title"
+    },
+    "Save Version…" : {
+      "comment" : "Shown in Edit → Versions"
+    },
+    "Save the current %lld notes as a version named:" : {
+      "comment" : "Edit → Versions → Save Version…: the alert's question",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Save the current %lld note as a version named:"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Save the current %lld notes as a version named:"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Scale Velocity" : {
+      "comment" : "Edit → Velocity → Scale…: the alert's title / Undo title: velocities scaled"
+    },
+    "Scale…" : {
+      "comment" : "Shown in the Edit menu"
+    },
+    "Score" : {
+      "comment" : "VoiceOver: the Score tab's sheet music"
+    },
+    "Select" : {
+      "comment" : "VoiceOver action on a note: select it"
+    },
+    "Select (V)" : {
+      "comment" : "Shown in the Edit toolbar"
+    },
+    "Select All" : {
+      "comment" : "Shown in the Edit menu"
+    },
+    "Select Audio File" : {
+      "comment" : "The Load audio file button's open panel"
+    },
+    "Select Doubtful Notes" : {
+      "comment" : "Shown in the Edit menu"
+    },
+    "Select the model to transcribe with." : {
+      "comment" : "Shown in Settings → Model"
+    },
+    "Select tool" : {
+      "comment" : "Accessibility label: the Edit toolbar's arrow tool"
+    },
+    "Selected" : {
+      "comment" : "Accessibility label: a model row's radio, the model in use"
+    },
+    "Semitones to move the notes by:" : {
+      "comment" : "Edit → Transpose → By Interval…: the alert's question"
+    },
+    "Send to" : {
+      "comment" : "Accessibility label: the strip card's instrument the split notes go to"
+    },
+    "Separate Stems" : {
+      "comment" : "Shown in Shortcuts and Spotlight, Shortcuts: Separate Stems, Shortcuts: Transcribe Audio"
+    },
+    "Separate drums, bass and vocals first." : {
+      "comment" : "Shown in the Batch Transcribe window"
+    },
+    "Separate the stems of ${file}" : {
+      "comment" : "Shortcuts: Separate Stems's summary; ${file} is the file the user picks"
+    },
+    "Separate the take into drums, bass, vocals and the rest before transcribing, each with its own instruments" : {
+      "comment" : "Shown in the Transcribe toolbar"
+    },
+    "Separates an audio or video file into drums, bass, vocals and the rest with NeuralSheet." : {
+      "comment" : "Shown in Shortcuts: Separate Stems"
+    },
+    "Separating" : {
+      "comment" : "Batch window: a file whose stems are being separated"
+    },
+    "Set beat 1 from playhead" : {
+      "comment" : "Accessibility label: the toolbar's target button beside BEAT 1 AT"
+    },
+    "Set from playhead" : {
+      "comment" : "Shown in the Edit and Score toolbars' grid and key controls"
+    },
+    "Sheet…" : {
+      "comment" : "Shown in the Score toolbar"
+    },
+    "Show Confidence" : {
+      "comment" : "Shown in the menu bar"
+    },
+    "Show Differences" : {
+      "comment" : "Shown in Edit → Versions"
+    },
+    "Show Pitch Curves" : {
+      "comment" : "Shown in the menu bar"
+    },
+    "Show chords" : {
+      "comment" : "Shown in the Score toolbar's Sheet… card"
+    },
+    "Show in Finder" : {
+      "comment" : "Shown in the welcome window's recent projects"
+    },
+    "Show or hide a part" : {
+      "comment" : "Shown in the Score toolbar"
+    },
+    "Show tooltips" : {
+      "comment" : "Shown in Settings → General"
+    },
+    "Shown" : {
+      "comment" : "Part card: the part is on the score"
+    },
+    "Shows the files written." : {
+      "comment" : "Shown in the Batch Transcribe window"
+    },
+    "Silent" : {
+      "comment" : "VoiceOver: the waveform's level while nothing plays"
+    },
+    "Skip" : {
+      "comment" : "Alert button: leave this file and go on"
+    },
+    "Skipped: already there" : {
+      "comment" : "Batch window: every output of a file existed already"
+    },
+    "Small" : {
+      "comment" : "Shown in Shortcuts: an action's choices"
+    },
+    "Snap to Scale" : {
+      "comment" : "Shown in the Edit menu"
+    },
+    "Snap to grid" : {
+      "comment" : "Accessibility label: the Edit toolbar's magnet button"
+    },
+    "Solo" : {
+      "comment" : "Accessibility label: an instrument strip's S button"
+    },
+    "Solo this instrument" : {
+      "comment" : "Shown in an instrument strip"
+    },
+    "Sound bank" : {
+      "comment" : "Shown in Settings → Audio"
+    },
+    "Split" : {
+      "comment" : "Shown in an instrument strip's card"
+    },
+    "Split at" : {
+      "comment" : "Accessibility label: the strip card's split pitch field"
+    },
+    "Split at Playhead" : {
+      "comment" : "Shown in the Edit menu"
+    },
+    "Split: the source audio in the left ear, the MIDI in the right, nothing mixed" : {
+      "comment" : "Shown in the sidebar's master panel"
+    },
+    "Start" : {
+      "comment" : "Accessibility label: the selection's start field, in seconds"
+    },
+    "Status" : {
+      "comment" : "Shown in the Batch Transcribe window"
+    },
+    "Stem separation" : {
+      "comment" : "Shown in Settings → Model"
+    },
+    "Stems" : {
+      "comment" : "A version's name: \"Before Stems — 14:02\", saved before a stems run"
+    },
+    "Stereo split" : {
+      "comment" : "Accessibility label: the master panel's headphones button"
+    },
+    "Stop download" : {
+      "comment" : "Accessibility label: a model download's stop button"
+    },
+    "Stop the download. Starting it again resumes where it stopped" : {
+      "comment" : "Shown in Settings → Model"
+    },
+    "Stopped" : {
+      "comment" : "Accessibility value: the transport is not playing"
+    },
+    "Stops after the file being transcribed." : {
+      "comment" : "Shown in the Batch Transcribe window"
+    },
+    "String %lld (%@): fret %lld" : {
+      "comment" : "String card: a string, its open note and the fret the note takes on it, e.g. \"String 1 (E): fret 5\""
+    },
+    "String %lld tuning" : {
+      "comment" : "Accessibility label: one string's pitch field on the part card, numbered from the top tab line"
+    },
+    "Strings" : {
+      "comment" : "Shown in Shortcuts: an action's choices"
+    },
+    "Subtitle" : {
+      "comment" : "Shown in the Score toolbar's Sheet… card"
+    },
+    "Swing" : {
+      "comment" : "Accessibility label: the Edit toolbar's swing percentage field"
+    },
+    "Swing: how late the second of each pair of eighths or sixteenths falls; 50 % is straight" : {
+      "comment" : "Shown in the Edit toolbar"
+    },
+    "Synth Lead" : {
+      "comment" : "Shown in Gallery, Shortcuts: an action's choices"
+    },
+    "Synth Pad" : {
+      "comment" : "Shown in Shortcuts: an action's choices"
+    },
+    "Synth Strings" : {
+      "comment" : "Shown in Shortcuts: an action's choices"
+    },
+    "System %lld, bars %lld to %lld" : {
+      "comment" : "VoiceOver: one line of the score, e.g. \"System 2, bars 5 to 8\""
+    },
+    "System (General MIDI)" : {
+      "comment" : "Shown in Settings → Audio"
+    },
+    "System Audio" : {
+      "comment" : "Audio menu and Settings → Audio: record what the Mac plays"
+    },
+    "System Default" : {
+      "comment" : "Shown in Settings → Audio, the menu bar"
+    },
+    "System Default follows whatever macOS has selected in Sound settings." : {
+      "comment" : "Shown in Settings → Audio"
+    },
+    "TEMPO" : {
+      "comment" : "Shown in the Edit and Score toolbars' grid and key controls"
+    },
+    "TICK TO INCLUDE IN TRANSCRIPTION" : {
+      "comment" : "The sidebar's instrument picker: its footer"
+    },
+    "TIME" : {
+      "comment" : "Shown in the Edit and Score toolbars' grid and key controls"
+    },
+    "TRANSCRIBE" : {
+      "comment" : "Shown in the tab strip under the top bar"
+    },
+    "TRANSCRIBING" : {
+      "comment" : "Status bar: the caption beside a run's progress bar"
+    },
+    "Tab" : {
+      "comment" : "Accessibility label: the part card's tablature instrument button"
+    },
+    "Tap" : {
+      "comment" : "Shown in the Edit and Score toolbars' grid and key controls"
+    },
+    "Tap in time with playback to set the tempo | t" : {
+      "comment" : "Shown in the Edit and Score toolbars' grid and key controls"
+    },
+    "Tempo" : {
+      "comment" : "Accessibility label: a tempo field, in quarter notes a minute"
+    },
+    "Tempo at the playhead, in quarter notes a minute" : {
+      "comment" : "Shown in the Edit and Score toolbars' grid and key controls"
+    },
+    "Tempo change at bar %lld, %@" : {
+      "comment" : "VoiceOver: a tempo flag on the ruler, e.g. \"Tempo change at bar 9, 90 · 3/4\""
+    },
+    "Tempo from bar %lld" : {
+      "comment" : "Ruler card: its header, the bar the tempo segment starts at"
+    },
+    "Tempo mark" : {
+      "comment" : "Shown in the Score toolbar's Sheet… card"
+    },
+    "Tenor Sax" : {
+      "comment" : "Shown in Shortcuts: an action's choices"
+    },
+    "The %@ model is not installed. Download it in NeuralSheet › Settings › Model." : {
+      "comment" : "A batch or Shortcuts failure: the chosen model size is missing"
+    },
+    "The audio could not be converted." : {
+      "comment" : "Alert body: Export Stems… could not convert"
+    },
+    "The audio format is not available." : {
+      "comment" : "Alert body: Export Audio… could not set up the format / Alert body: Export Stems… could not set up the format"
+    },
+    "The audio has no file to copy." : {
+      "comment" : "Alert body: saving a project whose take has no file"
+    },
+    "The audio is shorter than a second." : {
+      "comment" : "A batch or Shortcuts failure"
+    },
+    "The audio output did not start." : {
+      "comment" : "Alert body: the output device would not start, with no error to say why"
+    },
+    "The chord's root, or no chord" : {
+      "comment" : "Shown in the chord card"
+    },
+    "The clipboard holds no text." : {
+      "comment" : "Alert body: Paste Lyrics… with no text"
+    },
+    "The command failed." : {
+      "comment" : "Settings → General: installing the command-line tool failed"
+    },
+    "The count-in plays a click at the project's tempo and meter, then starts the take on the next downbeat." : {
+      "comment" : "Shown in Settings → Audio"
+    },
+    "The file could not be found." : {
+      "comment" : "A batch or Shortcuts failure"
+    },
+    "The file has no notes." : {
+      "comment" : "Alert body: a MIDI file without notes"
+    },
+    "The file is a format %lld MIDI file. NeuralSheet reads formats 0 and 1." : {
+      "comment" : "Alert body: a type 2 MIDI file"
+    },
+    "The file is not a MIDI file, or it is damaged." : {
+      "comment" : "Alert body: an unreadable MIDI file"
+    },
+    "The file is not a NeuralSheet project." : {
+      "comment" : "Alert body: opening a project"
+    },
+    "The instrument has no notes; select the notes the words go on." : {
+      "comment" : "Alert body: Paste Lyrics… with nowhere to put them"
+    },
+    "The link points at another copy of NeuralSheet (%@). Install points it at this one." : {
+      "comment" : "Settings → General: the command-line tool's link points at another copy of the app"
+    },
+    "The note that counts as a beat" : {
+      "comment" : "Shown in the TIME menus"
+    },
+    "The note under the chord, written after a slash" : {
+      "comment" : "Shown in the chord card"
+    },
+    "The notes in the file do not match its audio, or could not be read, and were left out. Saving the project will remove them from the file." : {
+      "comment" : "Alert body: a project's notes could not be read"
+    },
+    "The offline render failed." : {
+      "comment" : "Alert body: Export Audio… failed while rendering"
+    },
+    "The project file could not be found." : {
+      "comment" : "Alert body: opening a project"
+    },
+    "The project file could not be read: %@" : {
+      "comment" : "Alert body: opening a project; the reason is the system's"
+    },
+    "The project was saved by a newer version of NeuralSheet." : {
+      "comment" : "Alert body: opening a project"
+    },
+    "The project's audio file could not be decoded." : {
+      "comment" : "Alert body: opening a project"
+    },
+    "The project's audio file is missing." : {
+      "comment" : "Alert body: opening a project"
+    },
+    "The project's audio file is no longer where it was saved." : {
+      "comment" : "Alert body: saving a project whose audio moved"
+    },
+    "The project's key, or none" : {
+      "comment" : "Shown in the Edit and Score toolbars' grid and key controls"
+    },
+    "The separated stems could not be written to disk." : {
+      "comment" : "Alert body: Export Stems… failed to write"
+    },
+    "The stems could not be separated: %@." : {
+      "comment" : "Alert body: Export Stems… could not separate; the reason follows"
+    },
+    "The take already has a transcription. The file's notes can replace its notes or be added to them." : {
+      "comment" : "Alert body: File → Import MIDI… over a transcription"
+    },
+    "The take is too short or has no clear beat." : {
+      "comment" : "Alert body: Detect found no tempo"
+    },
+    "The tempo the MIDI file is written at; the notes keep their timing in seconds." : {
+      "comment" : "Shown in File → Export MIDI…'s sheet"
+    },
+    "The transcription has been edited. Clearing will throw the edits away." : {
+      "comment" : "Alert body: clearing an edited transcription"
+    },
+    "The transcription has been edited. Loading another file will throw the edits away." : {
+      "comment" : "Alert body: loading a file over an edited transcription"
+    },
+    "The transcription has been edited. Reverting to the transcription will throw the edits away." : {
+      "comment" : "Alert body: Edit → Revert to Transcription… over edits"
+    },
+    "The transcription has been edited. Transcribing again will throw the edits away." : {
+      "comment" : "Alert body: transcribing over an edited transcription"
+    },
+    "The transcription has no melodic notes." : {
+      "comment" : "Alert body: only drums, so no chords"
+    },
+    "The transcription model could not be loaded or run." : {
+      "comment" : "Alert body: a run failed without a reason"
+    },
+    "The transcription model could not be loaded or run: %@." : {
+      "comment" : "Alert body: a run failed; the reason is the engine's, or a sentence from this catalog"
+    },
+    "The version's notes will be lost. This cannot be undone." : {
+      "comment" : "Shown in Edit → Versions → Manage Versions…"
+    },
+    "Time" : {
+      "comment" : "Shown in the ruler card"
+    },
+    "Timeline" : {
+      "comment" : "VoiceOver: the block holding the waveform, the ruler, the keyboard and the piano roll"
+    },
+    "Timpani" : {
+      "comment" : "Shown in Shortcuts: an action's choices"
+    },
+    "Title" : {
+      "comment" : "Shown in the Score toolbar's Sheet… card"
+    },
+    "Title, subtitle, composer, arranger, copyright" : {
+      "comment" : "Shown in the Score toolbar"
+    },
+    "Track Pitch" : {
+      "comment" : "Shown in the Edit menu"
+    },
+    "Transcribe" : {
+      "comment" : "A version's name: \"Before Transcribe — 14:02\", saved before a run / The roll's call to action with no instruments chosen"
+    },
+    "Transcribe ${files} to ${outputs}" : {
+      "comment" : "Shortcuts: Transcribe Audio's summary; ${files} and ${outputs} are the user's picks"
+    },
+    "Transcribe %lld instruments" : {
+      "comment" : "The roll's call to action, with how many instruments are chosen",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Transcribe %lld instrument"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Transcribe %lld instruments"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Transcribe Audio" : {
+      "comment" : "Shown in Shortcuts and Spotlight, Shortcuts: Transcribe Audio"
+    },
+    "Transcribe the audio first" : {
+      "comment" : "Shown in the tab strip under the top bar"
+    },
+    "Transcribe the loaded audio" : {
+      "comment" : "Shown in the empty timeline"
+    },
+    "Transcribes audio or video files with NeuralSheet into MIDI, MusicXML or NeuralSheet projects." : {
+      "comment" : "Shown in Shortcuts: Transcribe Audio"
+    },
+    "Transcribing" : {
+      "comment" : "Batch window: a file being transcribed"
+    },
+    "Transcription failed." : {
+      "comment" : "Alert title: a run failed"
+    },
+    "Transcription failed. The stems could not be separated: %@." : {
+      "comment" : "A batch or Shortcuts failure; the reason is the separator's"
+    },
+    "Transcription failed. The transcription model could not be loaded or run." : {
+      "comment" : "A batch or Shortcuts failure"
+    },
+    "Transcription failed. The transcription model could not be loaded or run: %@." : {
+      "comment" : "A batch or Shortcuts failure; the reason is the engine's"
+    },
+    "Transcription model" : {
+      "comment" : "Shown in Settings → Model"
+    },
+    "Transpose" : {
+      "comment" : "Undo title: notes moved up or down"
+    },
+    "Transpose by Interval" : {
+      "comment" : "Edit → Transpose → By Interval…: the alert's title"
+    },
+    "Transposition" : {
+      "comment" : "Accessibility label: the part card's transposition preset button"
+    },
+    "Transposition in semitones" : {
+      "comment" : "Accessibility label: the part card's transposition field"
+    },
+    "Trombone" : {
+      "comment" : "Shown in Shortcuts: an action's choices"
+    },
+    "Trumpet" : {
+      "comment" : "Shown in Shortcuts: an action's choices"
+    },
+    "Tuba" : {
+      "comment" : "Shown in Shortcuts: an action's choices"
+    },
+    "Tuning" : {
+      "comment" : "Accessibility label: the part card's tuning preset button"
+    },
+    "Undo" : {
+      "comment" : "Accessibility label: the Edit toolbar's undo button / Edit menu: undo with nothing to undo"
+    },
+    "Undo %@" : {
+      "comment" : "Edit menu: undo the named edit, e.g. \"Undo Move Note\""
+    },
+    "Untitled" : {
+      "comment" : "The window title and the save panel's name for a project not saved yet"
+    },
+    "Up a Semitone" : {
+      "comment" : "Shown in the Edit menu"
+    },
+    "Up an Octave" : {
+      "comment" : "Shown in the Edit menu"
+    },
+    "Updates" : {
+      "comment" : "Shown in Settings → General"
+    },
+    "Velocity" : {
+      "comment" : "Accessibility label: the selection's velocity slider and field"
+    },
+    "Velocity from Audio" : {
+      "comment" : "Undo title: velocities set from the audio's loudness"
+    },
+    "Verifying…" : {
+      "comment" : "Shown in Settings → Model"
+    },
+    "Version %@" : {
+      "comment" : "Shown in AppModel+Versions, the welcome window"
+    },
+    "Version %lld — %@" : {
+      "comment" : "A version's default name, its number and when it was saved"
+    },
+    "Versions" : {
+      "comment" : "Shown in Edit → Versions → Manage Versions…, Edit → Versions"
+    },
+    "View" : {
+      "comment" : "Shown in the menu bar"
+    },
+    "Viola" : {
+      "comment" : "Shown in Shortcuts: an action's choices"
+    },
+    "Violin" : {
+      "comment" : "Shown in Shortcuts: an action's choices"
+    },
+    "Voice" : {
+      "comment" : "Shown in Shortcuts: an action's choices"
+    },
+    "Waiting" : {
+      "comment" : "Shown in the Batch Transcribe window"
+    },
+    "Waveform" : {
+      "comment" : "VoiceOver: the take's waveform strip above the ruler"
+    },
+    "Weights: MIT" : {
+      "comment" : "Shown in Settings → Model"
+    },
+    "Welcome to NeuralSheet" : {
+      "comment" : "Shown in the menu bar"
+    },
+    "What" : {
+      "comment" : "Shown in File → Export Audio…'s panel"
+    },
+    "What:" : {
+      "comment" : "Shown in File → Export Audio…'s panel"
+    },
+    "When there are too many instruments:" : {
+      "comment" : "Shown in File → Export MIDI…'s sheet"
+    },
+    "Where bar 1 starts, in seconds" : {
+      "comment" : "Shown in the Edit and Score toolbars' grid and key controls"
+    },
+    "Whole take" : {
+      "comment" : "Shown in File → Export Audio…'s panel"
+    },
+    "With Stems on, the take is separated into drums, bass, vocals and the rest before it is transcribed." : {
+      "comment" : "Shown in Settings → Model"
+    },
+    "Write the pages as a PDF (⌥⇧⌘P)" : {
+      "comment" : "Shown in the Score toolbar"
+    },
+    "Writing…" : {
+      "comment" : "Shown in the Batch Transcribe window"
+    },
+    "Your changes will be lost if you don't save them." : {
+      "comment" : "Alert body: closing or quitting with unsaved changes"
+    },
+    "Your current changes will be lost." : {
+      "comment" : "Alert body: File → Revert to Saved…"
+    },
+    "a quarter of a beat" : {
+      "comment" : "VoiceOver: a note's length"
+    },
+    "a separation is already running" : {
+      "comment" : "The reason after \"The stems could not be separated:\""
+    },
+    "arr. %@" : {
+      "comment" : "The score's title block: the arranger's credit"
+    },
+    "dotted %@" : {
+      "comment" : "VoiceOver: a dotted note value, e.g. \"dotted quarter\""
+    },
+    "eighth" : {
+      "comment" : "VoiceOver: a note value, as in \"eighth note\""
+    },
+    "half" : {
+      "comment" : "VoiceOver: a note value, as in \"half note\""
+    },
+    "half a beat" : {
+      "comment" : "VoiceOver: a note's length"
+    },
+    "kit map" : {
+      "comment" : "Instrument strip: the drums' notes name kit pieces, not pitches"
+    },
+    "not transcribed yet" : {
+      "comment" : "Instrument strip: no notes for it yet"
+    },
+    "note" : {
+      "comment" : "VoiceOver: what a note in the score is / VoiceOver: what a note on the piano roll is, said after its name"
+    },
+    "quarter" : {
+      "comment" : "VoiceOver: a note value, as in \"quarter note\""
+    },
+    "rest" : {
+      "comment" : "VoiceOver: what a rest in the score is"
+    },
+    "selected" : {
+      "comment" : "Instrument strip: an instrument chosen for the next run"
+    },
+    "semitones" : {
+      "comment" : "Edit → Transpose → By Interval…: the unit after the field"
+    },
+    "sixteenth" : {
+      "comment" : "VoiceOver: a note value, as in \"sixteenth note\""
+    },
+    "the stems could not be kept" : {
+      "comment" : "The reason after \"Could not write the file:\""
+    },
+    "the stems could not be separated: %@" : {
+      "comment" : "The reason in a failed transcription's alert, after \"could not be loaded or run:\""
+    },
+    "the stems model could not be loaded" : {
+      "comment" : "The reason after \"The stems could not be separated:\""
+    },
+    "the take is empty" : {
+      "comment" : "The reason after \"The stems could not be separated:\""
+    },
+    "thirty-second" : {
+      "comment" : "VoiceOver: a note value, as in \"thirty-second note\""
+    },
+    "three quarters of a beat" : {
+      "comment" : "VoiceOver: a note's length"
+    },
+    "ticked" : {
+      "comment" : "Accessibility value: a menu row or switch whose box is ticked"
+    },
+    "unticked" : {
+      "comment" : "Accessibility value: a menu row or switch whose box is empty"
+    },
+    "whole" : {
+      "comment" : "VoiceOver: a note value, as in \"whole note\""
+    },
+    "“%@” already exists. Do you want to replace it?" : {
+      "comment" : "Alert title: Export Stems… would overwrite a file, AppKit's own wording"
+    }
+  },
+  "version" : "1.0"
+}

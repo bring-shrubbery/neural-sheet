@@ -15,6 +15,12 @@ nonisolated enum CoreNames {
     static func localized(_ english: String) -> String {
         Bundle.main.localizedString(forKey: english, value: english, table: table)
     }
+
+    /// For a name whose English means something else elsewhere in the table -- the bass clef
+    /// is "Bass", as the instrument is -- looked up under its own key.
+    static func localized(_ english: String, key: String) -> String {
+        Bundle.main.localizedString(forKey: key, value: english, table: table)
+    }
 }
 
 extension InstrumentInfo {
@@ -32,7 +38,7 @@ extension PageSize {
 }
 
 extension ClefChoice {
-    nonisolated var localizedName: String { CoreNames.localized(name) }
+    nonisolated var localizedName: String { CoreNames.localized(name, key: "clef.\(rawValue)") }
 }
 
 extension PartDisplay.Mode {
