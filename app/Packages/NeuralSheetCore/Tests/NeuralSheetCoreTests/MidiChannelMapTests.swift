@@ -45,3 +45,12 @@ import Testing
     #expect(MidiChannelMap.programChange(for: NoteEvent.drumProgram) == 0)
     #expect(MidiChannelMap.programChange(for: 33) == 33)
 }
+
+@Test func midiChannelMapVolumeIsTheFaderAsCC7() {
+    #expect(MidiChannelMap.volume(gainDb: 0) == 100)
+    #expect(MidiChannelMap.volume(gainDb: InstrumentMixerState.minGainDb) == 0)
+    #expect(MidiChannelMap.volume(gainDb: -40) == 0)
+    #expect(MidiChannelMap.volume(gainDb: 6) == 127)
+    #expect(MidiChannelMap.volume(gainDb: -6) == 71)
+    #expect(MidiChannelMap.volume(gainDb: .nan) == 0)
+}

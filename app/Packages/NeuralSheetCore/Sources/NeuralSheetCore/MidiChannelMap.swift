@@ -26,6 +26,16 @@ public enum MidiChannelMap {
         program == NoteEvent.drumProgram ? drumKitProgram : min(max(program, 0), 127)
     }
 
+    /// An instrument's fader as CC 7 (MIDI out design §2): 100 at 0 dB, the value a GM device
+    /// starts a channel at, so an untouched fader changes nothing on the far side. GM reads CC 7
+    /// as `40 · log10(cc / 127)` dB, so `100 · 10^(dB / 40)` moves the far side by the fader's own
+    /// dB; the fader's silent end is 0, and +6 dB is clamped at 127.
+    public static func volume(gainDb: Double) -> Int {
+        guard gainDb.isFinite, gainDb > InstrumentMixerState.minGainDb else { return 0 }
+
+        return min(max(Int((100 * pow(10, gainDb / 40)).rounded()), 0), 127)
+    }
+
     /// Assigns a MIDI channel to every instrument in the transcription.
     ///
     /// Melodic instruments take ``melodicChannels`` in ascending program order, which is the order
