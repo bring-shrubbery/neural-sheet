@@ -9,7 +9,7 @@ struct ManageVersionsSheet: View {
     let model: AppModel
 
     /// The row whose Delete was clicked, while its question is up.
-    @State private var pendingDelete: AppModel.VersionRow?
+    @State private var pendingDelete: VersionRow?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -69,7 +69,7 @@ struct ManageVersionsSheet: View {
 /// back when left blank.
 private struct VersionNameField: View {
     let model: AppModel
-    let row: AppModel.VersionRow
+    let row: VersionRow
 
     @State private var text = ""
     @FocusState private var focused: Bool

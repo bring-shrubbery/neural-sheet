@@ -1,13 +1,6 @@
 import Foundation
 import NeuralSheetCore
 
-/// What the status bar says while a version is compared (versions design §2, Differences).
-struct VersionComparisonSummary: Equatable {
-    var added: Int
-    var missing: Int
-    var name: String
-}
-
 /// Edit → Versions (versions design §2, §4): named snapshots of the notes, saved by hand or
 /// before a run replaces them, restored as one undoable edit, and ghosted behind the roll.
 ///
@@ -32,30 +25,12 @@ extension AppModel {
     /// the Transcription, whose run time is not kept) and a note count. Cheap: no notes are
     /// copied or merged.
     var versionRows: [VersionRow] {
-        [VersionRow(id: NoteVersion.transcriptionID, name: CoreNames.localized(NoteVersion.transcriptionName), date: nil,
-                    noteCount: transcription.rawNotes.count)]
-            + versions.map { VersionRow(id: $0.id, name: $0.name, date: $0.date, noteCount: $0.notes.count) }
-    }
-
-    struct VersionRow: Identifiable, Equatable {
-        let id: UUID
-        let name: String
-        let date: Date?
-        let noteCount: Int
-
-        var isTranscription: Bool { id == NoteVersion.transcriptionID }
-
-        /// "small — 412 notes", the menu item's title (versions design §2).
-        var menuTitle: String {
-            String(localized: "\(name) — \(noteCount) notes", comment: "Edit → Versions: a version and its note count, e.g. \"Version 2 — 412 notes\"")
-        }
+        EditingCommands.versionRows(rawNotes: transcription.rawNotes, versions: versions)
     }
 
     /// The version with `id`, the Transcription made on demand.
     private func version(id: UUID) -> NoteVersion? {
-        id == NoteVersion.transcriptionID
-            ? NoteVersion.transcription(rawNotes: transcription.rawNotes)
-            : versions.first { $0.id == id }
+        EditingCommands.version(id: id, rawNotes: transcription.rawNotes, versions: versions)
     }
 
     // MARK: - Saving
@@ -75,18 +50,14 @@ extension AppModel {
 
     /// "Version 3 — 3 Oct 2026 at 14:02": the next number after the versions there are, and now.
     func defaultVersionName(date: Date = Date()) -> String {
-        let number = versions.count + 1
-        let when = DateFormatter.localizedString(from: date, dateStyle: .medium, timeStyle: .short)
-
-        return String(localized: "Version \(number) — \(when)", comment: "A version's default name, its number and when it was saved")
+        EditingCommands.defaultVersionName(existing: versions.count, date: date)
     }
 
     /// The document's notes as a new version, last in the list. A blank name takes the default.
     func saveVersion(named name: String) {
         guard canUseVersions, let document else { return }
 
-        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
-        versions.append(NoteVersion(name: trimmed.isEmpty ? defaultVersionName() : trimmed, notes: document.events))
+        versions.append(EditingCommands.newVersion(named: name, document: document, existing: versions.count))
     }
 
     /// Before a full or a stems run's notes land (versions design §2): the document's notes, or
@@ -97,11 +68,9 @@ extension AppModel {
         let notes = document?.events ?? notesBeforeRun
         notesBeforeRun = nil
 
-        guard let notes, !notes.isEmpty else { return }
+        guard let version = EditingCommands.versionBeforeRun(run, notes: notes) else { return }
 
-        let time = DateFormatter.localizedString(from: Date(), dateStyle: .none, timeStyle: .short)
-        versions.append(NoteVersion(name: String(localized: "Before \(run) — \(time)", comment: "A version saved before a run, e.g. \"Before Transcribe — 14:02\""),
-                                    notes: notes))
+        versions.append(version)
     }
 
     /// The toolbar's clear, over a document: its notes are kept aside for the run that follows.
@@ -163,7 +132,7 @@ extension AppModel {
 
         _ = dragCanceller?()
 
-        let batch = document.replaceAll(with: version.notes, title: String(localized: "Restore \(version.name)", comment: "Undo title: a version restored"))
+        let batch = EditingCommands.restore(version, in: &document)
         replaceDocumentAndCommit(document, batch)
     }
 
@@ -189,18 +158,12 @@ extension AppModel {
         guard canShowDifferences, let document, let comparedVersion else { return }
 
         _ = dragCanceller?()
-        setSelection(NoteMatcher.unmatched(current: document.notes, against: comparedVersion.notes).added)
+        setSelection(EditingCommands.differences(in: document, against: comparedVersion))
     }
 
     /// The status bar's counts, matched again when the document or the comparison changes.
     func refreshComparison() {
-        var summary: VersionComparisonSummary?
-
-        if let comparedVersion, let document {
-            let result = NoteMatcher.unmatched(current: document.notes, against: comparedVersion.notes)
-            summary = VersionComparisonSummary(added: result.added.count, missing: result.missing.count,
-                                               name: CoreNames.localized(comparedVersion.name))
-        }
+        let summary = EditingCommands.comparisonSummary(document: document, comparedVersion: comparedVersion)
 
         if summary != comparisonSummary {
             comparisonSummary = summary
