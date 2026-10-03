@@ -27,6 +27,8 @@ struct ExportDialog: View {
                         HStack(spacing: 6) {
                             TextField(Self.format(Self.defaultTempo), text: $tempoText)
                                 .textFieldStyle(.roundedBorder)
+                                // Named by its row, not by the placeholder (a11y design §2).
+                                .accessibilityLabel(Text("Tempo"))
                                 .multilineTextAlignment(.trailing)
                                 .frame(width: 72)
                                 .onSubmit(export)
