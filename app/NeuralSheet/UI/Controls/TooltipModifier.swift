@@ -116,8 +116,10 @@ struct TooltipModifier: ViewModifier {
                                backing: .buffered,
                                defer: false)
         tip.contentView = hosting
-        tip.isOpaque = false
-        tip.backgroundColor = .clear
+        // Reduce Transparency: opaque, as the menus are (a11y design §2).
+        let opaque = Accommodations.shared.reduceTransparency
+        tip.isOpaque = opaque
+        tip.backgroundColor = opaque ? NSColor(Theme.popupBg) : .clear
         // The window's own shadow rather than one drawn inside it: a shadow in the view tree would
         // be clipped by the panel it is drawn in.
         tip.hasShadow = true

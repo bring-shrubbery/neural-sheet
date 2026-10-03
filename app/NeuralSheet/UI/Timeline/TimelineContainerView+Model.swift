@@ -145,6 +145,8 @@ extension TimelineContainerView {
         // Both tabs: the key colours the lanes wherever the roll is.
         if first || new.key != old.key {
             roll.key = new.key
+            keyboard.key = new.key
+            keyboard.needsDisplay = true
             roll.needsDisplay = true
         }
 

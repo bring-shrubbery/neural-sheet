@@ -156,6 +156,8 @@ final class TimelineContainerView: NSView {
 
     var clipObserver: NSObjectProtocol?
     var scrollObserver: NSObjectProtocol?
+    /// The display accommodations changing (`+Accessibility`): everything repaints.
+    var accommodationsObserver: NSObjectProtocol?
 
     // MARK: - Init
 
@@ -237,6 +239,10 @@ final class TimelineContainerView: NSView {
 
         if let scrollObserver {
             NotificationCenter.default.removeObserver(scrollObserver)
+        }
+
+        if let accommodationsObserver {
+            NotificationCenter.default.removeObserver(accommodationsObserver)
         }
     }
 

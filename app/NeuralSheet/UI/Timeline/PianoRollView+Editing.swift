@@ -238,6 +238,11 @@ extension PianoRollView {
             ctx.fill(CGRect(x: rect.minX, y: rect.minY, width: edgeWidth, height: rect.height), TimelinePalette.noteOnsetEdge)
         }
 
+        // Differentiate Without Colour: a muted note is hatched as well as faded (a11y design §2).
+        if !audible[program], Accommodations.shared.differentiateWithoutColour {
+            drawHatch(in: rect, ctx: ctx)
+        }
+
         // The curve at full strength over a velocity- or confidence-faded fill, but still behind
         // a highlight and as faint as a muted note (pitch curves design §2). Under 6 px a lane
         // is too thin for a line through it to read as anything but noise.
@@ -316,6 +321,29 @@ extension PianoRollView {
         ctx.setLineWidth(geometry.scale)
         ctx.setLineJoin(.round)
         ctx.strokePath()
+    }
+
+    /// Diagonal lines across a muted note, at full strength over its faded fill.
+    private func drawHatch(in rect: CGRect, ctx: CGContext) {
+        let k = geometry.scale
+        let spacing = 4 * k
+
+        ctx.saveGState()
+        ctx.setAlpha(1)
+        ctx.clip(to: rect)
+        ctx.setStrokeColor(TimelinePalette.textScale)
+        ctx.setLineWidth(k)
+
+        var x = rect.minX - rect.height
+
+        while x < rect.maxX {
+            ctx.move(to: CGPoint(x: x, y: rect.maxY))
+            ctx.addLine(to: CGPoint(x: x + rect.height, y: rect.minY))
+            x += spacing
+        }
+
+        ctx.strokePath()
+        ctx.restoreGState()
     }
 
     // MARK: - Range

@@ -16,6 +16,11 @@ final class KeyboardView: NSView, KeyboardFocusableView, OwnsArrowKeys {
         }
     }
 
+    /// The project's key; under Differentiate Without Colour its scale is marked on the keys,
+    /// since the roll's lanes show it by shade alone (a11y design §2). Whole-view repaint: the
+    /// caller decides.
+    var key: MusicalKey?
+
     /// A wheel gesture over the keys scrolls pitch; the container applies it to the geometry and
     /// repaints the roll with it.
     var onWheel: ((NSEvent) -> Void)?
@@ -88,6 +93,40 @@ final class KeyboardView: NSView, KeyboardFocusableView, OwnsArrowKeys {
             ctx.fill(CGRect(x: area.minX, y: area.minY, width: area.width, height: area.height - k), blackColour)
         }
 
+        if let key, Accommodations.shared.differentiateWithoutColour {
+            drawScaleDots(key, range: range, in: dirtyRect)
+        }
+    }
+
+    /// A dot in each lane of the scale, in the gutter beside the key names -- on the white key
+    /// past the black keys' ends, inside a black key near its tip -- and a ring round the
+    /// tonic's (a11y design §2).
+    private func drawScaleDots(_ key: MusicalKey, range: PitchRange, in dirtyRect: CGRect) {
+        guard let ctx = NSGraphicsContext.current?.cgContext else { return }
+
+        let k = geometry.scale
+        let radius = 2 * k
+
+        for note in range.low...range.high where key.contains(pitch: note) {
+            let lane = geometry.lane(forPitch: note)
+            let black = KeyboardLayout.isBlack(note)
+            let x = black ? (geometry.blackNoteLength - 6) * k : (geometry.blackNoteLength + 5) * k
+            let centre = CGPoint(x: x, y: lane.y + lane.height / 2)
+            let dot = CGRect(x: centre.x - radius, y: centre.y - radius, width: 2 * radius, height: 2 * radius)
+
+            guard dot.intersects(dirtyRect) else { continue }
+
+            let colour = black ? TimelinePalette.keyWhite : TimelinePalette.keyBlack
+
+            if key.isTonic(pitch: note) {
+                ctx.setStrokeColor(colour)
+                ctx.setLineWidth(k)
+                ctx.strokeEllipse(in: dot.insetBy(dx: -k, dy: -k))
+            }
+
+            ctx.setFillColor(colour)
+            ctx.fillEllipse(in: dot)
+        }
     }
 
     override func scrollWheel(with event: NSEvent) {

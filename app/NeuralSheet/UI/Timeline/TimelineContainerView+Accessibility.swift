@@ -19,6 +19,23 @@ extension TimelineContainerView: RollAccessibilityHandler {
         ruler.accessibilityPlayhead = { [weak self] in self?.model.playheadSeconds ?? 0 }
         waveform.accessibilityLevel = { [weak self] in self?.model.masterLevelDb ?? MeterScale.minDb }
         keyboard.onAccessibilityScroll = { [weak self] semitones in self?.scrollPitch(bySemitones: semitones) }
+
+        // Contrast, hatching and the scale's dots are drawn by every band: one repaint of all.
+        accommodationsObserver = NotificationCenter.default.addObserver(
+            forName: Accommodations.didChange, object: nil, queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated {
+                self?.accommodationsDidChange()
+            }
+        }
+    }
+
+    private func accommodationsDidChange() {
+        for view in [gutter, keyboard, waveform, ruler, chordLane, roll] as [NSView] {
+            view.needsDisplay = true
+        }
+
+        configureViews()
     }
 
     // MARK: - RollAccessibilityHandler

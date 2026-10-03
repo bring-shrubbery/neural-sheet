@@ -17,6 +17,9 @@ struct PopupSurface: ViewModifier {
 
     func body(content: Content) -> some View {
         let shape = RoundedRectangle(cornerRadius: corner ?? MenuMetrics.corner * k, style: .circular)
+        // Reduce Transparency: no translucent veil around the panel (a11y design §2); the window
+        // behind it is made opaque by its presenter.
+        let shadow = shadow && !Accommodations.shared.reduceTransparency
 
         return content
             .background(shape.fill(Theme.popupBg))

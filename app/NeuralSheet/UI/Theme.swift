@@ -109,29 +109,18 @@ enum Theme {
 
     // MARK: - Dividers
 
-    static let divStrong = Color(hex: 0x24262C)
-    static let divSoft = Color(hex: 0x202227)
-    static let divRow = Color(hex: 0x1E2024)
-    static let divTick = Color(hex: 0x22242A)
-    static let divOctave = Color(hex: 0x232529)
+    // divStrong, divSoft, divRow, divTick, divOctave: `Theme+Accommodations.swift`, where
+    // Increase Contrast strengthens them (a11y design §2).
 
     // MARK: - Text
+
+    // textButton, textIcon, textIconSoft, textLabel, textMuted, textDim, textFaint, textFainter,
+    // textFaintest, textScale and textSeparator are in `Theme+Accommodations.swift` too.
 
     static let textBright = Color(hex: 0xF2F4F7)
     static let textPrimary = Color(hex: 0xE7E9EC)
     static let textStrong = Color(hex: 0xDCDFE4)
     static let textFile = Color(hex: 0xD7DADE)
-    static let textButton = Color(hex: 0xC2C6CC)
-    static let textIcon = Color(hex: 0x9BA1AB)
-    static let textIconSoft = Color(hex: 0x8E939C)
-    static let textLabel = Color(hex: 0x7A808A)
-    static let textMuted = Color(hex: 0x797F88)
-    static let textDim = Color(hex: 0x6B7078)
-    static let textFaint = Color(hex: 0x5D626B)
-    static let textFainter = Color(hex: 0x585D65)
-    static let textFaintest = Color(hex: 0x565B63)
-    static let textScale = Color(hex: 0x4E535B)
-    static let textSeparator = Color(hex: 0x33363C)
 
     // MARK: - Accent
 
@@ -167,7 +156,6 @@ enum Theme {
 
     static let keyWhite = Color(hex: 0xE2E4E8)
     static let keyBlack = Color(hex: 0x0E0F11)
-    static let keyLabel = Color(hex: 0x7C818A)
     static let laneBlack = Color(hex: 0x141519)
     static let laneWhite = Color(hex: 0x191A1E)
     static let noteOnsetEdge = Color.white.opacity(0.35)
@@ -184,13 +172,9 @@ enum Theme {
     // MARK: - Popups
 
     static let popupBg = Color(hex: 0x1B1D21)
-    static let popupBorder = Color(hex: 0x2E3138)
     static let popupFooterBg = Color(hex: 0x191A1E)
     static let popupRowHover = Color(hex: 0x22242A)
-    static let popupTitle = Color(hex: 0x6B7078)
-    static let popupItem = Color(hex: 0xA8ADB5)
     static let popupItemTicked = Color(hex: 0xE7E9EC)
-    static let checkboxBorder = Color(hex: 0x3A3D44)
     static let checkboxTick = Color(hex: 0x12131A)
     static let popupShadow = Color.black.opacity(0.55)
 
@@ -198,7 +182,6 @@ enum Theme {
 
     static let ctaBorder = accent
     static let ctaText = accentText
-    static let dropZoneBorder = Color(hex: 0x2B2E35)
     static let ctaFill = Color(hex: 0x6E9BFF, alpha: 0.11)
     static let dropZoneFill = Color(hex: 0x6E9BFF, alpha: 0.015)
 
@@ -210,7 +193,6 @@ enum Theme {
 
     // MARK: - Vertical zoom slider
 
-    static let zoomIcon = Color(hex: 0x585D65)
     static let zoomTrack = Color(hex: 0x26282E)
     static let zoomFill = Color(hex: 0x6B7078)
     static let zoomThumb = Color(hex: 0xC2C6CC)
@@ -222,9 +204,10 @@ enum Theme {
         colour.opacity(0.13)
     }
 
-    /// Sidebar chip border, derived from the instrument colour.
+    /// Sidebar chip border, derived from the instrument colour; at full alpha under Increase
+    /// Contrast (a11y design §2).
     static func chipBorder(_ colour: Color) -> Color {
-        colour.opacity(0.25)
+        colour.opacity(Accommodations.shared.increaseContrast ? 1 : 0.25)
     }
 
     static let soloRowTint = Color(hex: 0xFF6B8A, alpha: 0.05)

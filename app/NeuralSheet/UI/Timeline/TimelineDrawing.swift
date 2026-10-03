@@ -9,13 +9,13 @@ enum TimelinePalette {
     static let bgRoot = cg(Theme.bgRoot)
     static let bgPanel = cg(Theme.bgPanel)
     static let bgGutter = cg(Theme.bgGutter)
-    static let divStrong = cg(Theme.divStrong)
-    static let divSoft = cg(Theme.divSoft)
-    static let divTick = cg(Theme.divTick)
-    static let divOctave = cg(Theme.divOctave)
+    static var divStrong: CGColor { contrasted(\.divStrong) }
+    static var divSoft: CGColor { contrasted(\.divSoft) }
+    static var divTick: CGColor { contrasted(\.divTick) }
+    static var divOctave: CGColor { contrasted(\.divOctave) }
     static let textBright = cg(Theme.textBright)
-    static let textFaint = cg(Theme.textFaint)
-    static let textScale = cg(Theme.textScale)
+    static var textFaint: CGColor { contrasted(\.textFaint) }
+    static var textScale: CGColor { contrasted(\.textScale) }
     static let accentWashWave = cg(Theme.accentWashWave)
     static let accentWashRoll = cg(Theme.accentWashRoll)
     static let accentWashEdge = cg(Theme.accentWashEdge)
@@ -23,33 +23,33 @@ enum TimelinePalette {
     static let waveCentreLine = cg(Theme.waveCentreLine)
     static let keyWhite = cg(Theme.keyWhite)
     static let keyBlack = cg(Theme.keyBlack)
-    static let keyLabel = cg(Theme.keyLabel)
+    static var keyLabel: CGColor { contrasted(\.keyLabel) }
     static let laneBlack = cg(Theme.laneBlack)
     static let laneWhite = cg(Theme.laneWhite)
     static let noteOnsetEdge = cg(Theme.noteOnsetEdge)
     static let faderTrack = cg(Theme.faderTrack)
     static let ctaBorder = cg(Theme.ctaBorder)
     static let ctaFill = cg(Theme.ctaFill)
-    static let dropZoneBorder = cg(Theme.dropZoneBorder)
+    static var dropZoneBorder: CGColor { contrasted(\.dropZoneBorder) }
     static let dropZoneFill = cg(Theme.dropZoneFill)
 
     /// `Keyboard::_keyColour` while dimmed: the key colour blended 40 % over `bgGutter`.
     static let keyWhiteDimmed = tween(Theme.bgGutter, toward: Theme.keyWhite, proportion: 0.4)
     static let keyBlackDimmed = tween(Theme.bgGutter, toward: Theme.keyBlack, proportion: 0.4)
-    static let keyLabelDimmed = tween(Theme.bgGutter, toward: Theme.keyLabel, proportion: 0.4)
+    static var keyLabelDimmed: CGColor { contrasted(\.keyLabelDimmed) }
 
     /// `PianoRoll::_drawLanes` while there are no notes: the lanes at 55 %.
     static let laneWhiteEmpty = cg(Theme.laneWhite, alpha: 0.55)
     /// Key design §5: the tonic's lanes, a wash over the light lane.
     static let laneTonic = cg(Theme.accent, alpha: 0.10)
     static let laneBlackEmpty = cg(Theme.laneBlack, alpha: 0.55)
-    static let divOctaveEmpty = cg(Theme.divOctave, alpha: 0.55)
+    static var divOctaveEmpty: CGColor { contrasted(\.divOctaveEmpty) }
 
     /// `nn::colours::bgRoot.withAlpha(0.75f)`, the unfinished stretch of a running transcription.
     static let frontierShade = cg(Theme.bgRoot, alpha: 0.75)
 
     /// The Edit tab's finest grid line (design §6.5): `divSoft` at half strength, under the beats.
-    static let gridDivision = cg(Theme.divSoft, alpha: 0.5)
+    static var gridDivision: CGColor { contrasted(\.gridDivision) }
 
     /// Design §6.5: a selected note's outline, and the marquee in the accent.
     static let textPrimary = cg(Theme.textPrimary)
@@ -72,6 +72,37 @@ enum TimelinePalette {
     static let rangeFill = cg(Theme.accent, alpha: 0.10)
     static let rangeEdge = cg(Theme.accent, alpha: 0.6)
     static let rangeProgress = cg(Theme.accent, alpha: 0.22)
+
+    /// The colours Increase Contrast changes (a11y design §2), made once in each palette so a
+    /// draw loop picks one rather than converting a `Color` per lane.
+    struct Contrasted {
+        let divStrong, divSoft, divTick, divOctave, textFaint, textScale, keyLabel, dropZoneBorder: CGColor
+        let keyLabelDimmed, divOctaveEmpty, gridDivision: CGColor
+
+        init(standard: Bool) {
+            typealias Standard = Theme.Standard
+            typealias High = Theme.HighContrast
+
+            divStrong = cg(standard ? Standard.divStrong : High.divStrong)
+            divSoft = cg(standard ? Standard.divSoft : High.divSoft)
+            divTick = cg(standard ? Standard.divTick : High.divTick)
+            divOctave = cg(standard ? Standard.divOctave : High.divOctave)
+            textFaint = cg(standard ? Standard.textFaint : High.textFaint)
+            textScale = cg(standard ? Standard.textScale : High.textScale)
+            keyLabel = cg(standard ? Standard.keyLabel : High.keyLabel)
+            dropZoneBorder = cg(standard ? Standard.dropZoneBorder : High.dropZoneBorder)
+            keyLabelDimmed = tween(Theme.bgGutter, toward: standard ? Standard.keyLabel : High.keyLabel, proportion: 0.4)
+            divOctaveEmpty = cg(standard ? Standard.divOctave : High.divOctave, alpha: 0.55)
+            gridDivision = cg(standard ? Standard.divSoft : High.divSoft, alpha: 0.5)
+        }
+    }
+
+    private static let standard = Contrasted(standard: true)
+    private static let highContrast = Contrasted(standard: false)
+
+    private static func contrasted(_ colour: KeyPath<Contrasted, CGColor>) -> CGColor {
+        (Accommodations.shared.increaseContrast ? highContrast : standard)[keyPath: colour]
+    }
 
     static func cg(_ colour: Color, alpha: Double? = nil) -> CGColor {
         let rgba = colour.rgba

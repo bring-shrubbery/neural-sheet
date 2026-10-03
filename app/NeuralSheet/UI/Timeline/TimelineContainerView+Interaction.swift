@@ -216,7 +216,13 @@ extension TimelineContainerView {
 
         // Not under a drag: the follow and the auto-scroll would fight over the viewport.
         if model.followPlayhead, model.state.canPlay, model.isPlaying, editController?.session == nil {
-            centreViewOnPlayhead()
+            // Reduce Motion: no scroll every frame; the view turns a page when the playhead
+            // reaches its edge (a11y design §2).
+            if Accommodations.shared.reduceMotion {
+                pageViewToPlayhead()
+            } else {
+                centreViewOnPlayhead()
+            }
         }
 
         // A drag held past an edge of the viewport scrolls it a step a frame.
@@ -261,6 +267,19 @@ extension TimelineContainerView {
         let offset = max(0, min(playhead, fullWidth) - halfVisible).rounded()
 
         scroll(toX: CGFloat(offset) * k)
+    }
+
+    /// Reduce Motion's follow (a11y design §2): the viewport stays put while the playhead crosses
+    /// it, and jumps once it nears the right edge -- or is off screen after a seek -- to put the
+    /// playhead a tenth of the way in, a page turn rather than a scroll.
+    private func pageViewToPlayhead() {
+        let playhead = geometry.playheadX(seconds: model.playheadSeconds)
+        let visible = scrollView.contentView.bounds
+        let margin = visible.width * 0.1
+
+        guard playhead < visible.minX || playhead > visible.maxX - margin else { return }
+
+        scroll(toX: max(0, (playhead - margin).rounded()))
     }
 
     /// While recording the take grows every tick: the content widens with it, the view stays on

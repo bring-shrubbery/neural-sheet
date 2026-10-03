@@ -150,8 +150,11 @@ import SwiftUI
                               defer: false)
         menu.takesKey = becomesKey
         menu.contentView = hosting
-        menu.isOpaque = false
-        menu.backgroundColor = .clear
+        // Reduce Transparency: an opaque panel, its corners filled with its own surface (a11y
+        // design §2); otherwise clear around the rounded surface, as authored.
+        let opaque = Accommodations.shared.reduceTransparency
+        menu.isOpaque = opaque
+        menu.backgroundColor = opaque ? NSColor(Theme.popupBg) : .clear
         menu.hasShadow = true
         menu.level = .popUpMenu
         menu.hidesOnDeactivate = true
