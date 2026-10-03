@@ -45,6 +45,10 @@ private func makeContent() -> ProjectContent {
     var notes = makeContent()
     notes.transcription = nil
     #expect(notes != makeContent())
+
+    var chords = makeContent()
+    chords.chords = [ChordEvent(seconds: 0, chord: ChordSymbol(root: 0, quality: .major))]
+    #expect(chords != makeContent())
 }
 
 /// The dirty rule's whole point: an edit and an undo leave the project as it was saved. The undo

@@ -81,6 +81,24 @@ private func makeProjectTempDirectory() throws -> URL {
     #expect(try ProjectState.read(from: url).tempoGrid == loaded.tempoGrid)
 }
 
+@Test func chordsRoundTripThroughAFileAndAnOlderFileHasNone() throws {
+    let url = FileManager.default.temporaryDirectory.appendingPathComponent("chords-\(UUID().uuidString).json")
+    defer { try? FileManager.default.removeItem(at: url) }
+
+    var state = ProjectState()
+    state.chords = [ChordEvent(seconds: 0, chord: ChordSymbol(root: 9, quality: .minorSeventh)),
+                    ChordEvent(seconds: 2.5, chord: nil),
+                    ChordEvent(seconds: 4, chord: ChordSymbol(root: 7, quality: .major, bass: 11))]
+    state.chordsEdited = true
+    try state.save(to: url)
+    #expect(try ProjectState.read(from: url) == state)
+
+    try Data("{\"formatVersion\": 1}".utf8).write(to: url)
+    let older = try ProjectState.read(from: url)
+    #expect(older.chords.isEmpty)
+    #expect(!older.chordsEdited)
+}
+
 @Test func aProjectWithoutAnArrangementOpensWithTheDefaults() throws {
     let url = FileManager.default.temporaryDirectory.appendingPathComponent("noarr-\(UUID().uuidString).json")
     defer { try? FileManager.default.removeItem(at: url) }

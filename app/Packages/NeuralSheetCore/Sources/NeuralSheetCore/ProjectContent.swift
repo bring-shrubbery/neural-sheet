@@ -21,6 +21,9 @@ public struct ProjectContent: Equatable, Sendable {
     public var targetProgram: Int?
     public var key: MusicalKey?
     public var arrangement: ScoreArrangement
+    /// The chord symbols: a correction is a project-state edit like the key (chord symbols
+    /// design §2), not a note edit.
+    public var chords: [ChordEvent]
 
     public init(
         transcription: ProjectTranscription?,
@@ -34,7 +37,8 @@ public struct ProjectContent: Equatable, Sendable {
         snapEnabled: Bool,
         targetProgram: Int?,
         key: MusicalKey? = nil,
-        arrangement: ScoreArrangement = ScoreArrangement()
+        arrangement: ScoreArrangement = ScoreArrangement(),
+        chords: [ChordEvent] = []
     ) {
         self.transcription = transcription
         self.selectedGroups = selectedGroups
@@ -48,5 +52,6 @@ public struct ProjectContent: Equatable, Sendable {
         self.targetProgram = targetProgram
         self.key = key
         self.arrangement = arrangement
+        self.chords = chords
     }
 }
