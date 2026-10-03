@@ -37,6 +37,7 @@ Work towards v2 starts here: user-experience improvements beyond NeuralNote pari
 - Bring a MIDI file in over the take: File → Import MIDI…, or drop a `.mid` on the window, as the transcription or added to it.
 - Chord symbols: Detect names the harmony from the notes, a lane above the piano roll and the score show it, click a symbol to correct it, and the MusicXML export carries it.
 - Edit → Track Pitch follows slides, bends and vibrato inside each note from the audio, draws them on the piano roll, and exports them as pitch bend on monophonic MIDI tracks.
+- Name the sections and write the words: markers on the ruler (⌥M) become rehearsal marks in the score and the exports, and Edit → Lyric… or Paste Lyrics… puts syllables under the voice line.
 
 ### Changed
 
