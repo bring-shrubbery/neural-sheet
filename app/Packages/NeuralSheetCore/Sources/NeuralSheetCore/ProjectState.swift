@@ -45,6 +45,8 @@ public struct ProjectState: Codable, Equatable, Sendable {
     /// The tempo map (tempo map design §2); empty in a file from before it, which reads as one
     /// 4/4 segment at `exportTempo`.
     public var gridSegments: [GridSegment] = []
+    /// The grid's swing (editor commands design §2); 0.5, straight, in a file from before it.
+    public var gridSwing: Double = TempoGrid.straightSwing
     public var snapEnabled = true
     /// The instrument new and reassigned notes go to; nil means the first strip.
     public var targetProgram: Int? = nil
@@ -65,11 +67,14 @@ public struct ProjectState: Codable, Equatable, Sendable {
     public init() {}
 
     /// The grid the file describes: its segments, or one 4/4 segment at the tempo of a file
-    /// written before the map.
+    /// written before the map, with its swing.
     public var tempoGrid: TempoGrid {
         let segments = gridSegments.isEmpty ? [GridSegment(startBar: 1, bpm: exportTempo)] : gridSegments
 
-        return TempoGrid(segments: segments, offsetSeconds: gridOffsetSeconds, division: gridDivision)
+        var grid = TempoGrid(segments: segments, offsetSeconds: gridOffsetSeconds, division: gridDivision)
+        grid.swing = gridSwing
+
+        return grid
     }
 
     // MARK: - Files
@@ -126,7 +131,7 @@ public struct ProjectState: Codable, Equatable, Sendable {
 
     private enum CodingKeys: String, CodingKey {
         case formatVersion, audioFileName, audioDisplayName, selectedGroups, mixer
-        case exportTempo, gridOffsetSeconds, gridDivision, gridSegments, snapEnabled, targetProgram, key, arrangement
+        case exportTempo, gridOffsetSeconds, gridDivision, gridSegments, gridSwing, snapEnabled, targetProgram, key, arrangement
         case workspace, playheadSeconds, playheadCentered, zoomLevel, verticalZoom
     }
 
@@ -149,6 +154,7 @@ public struct ProjectState: Codable, Equatable, Sendable {
             try container.decodeIfPresent(Double.self, forKey: .gridOffsetSeconds) ?? defaults.gridOffsetSeconds
         gridDivision = try container.decodeIfPresent(GridDivision.self, forKey: .gridDivision) ?? defaults.gridDivision
         gridSegments = try container.decodeIfPresent([GridSegment].self, forKey: .gridSegments) ?? defaults.gridSegments
+        gridSwing = try container.decodeIfPresent(Double.self, forKey: .gridSwing) ?? defaults.gridSwing
         snapEnabled = try container.decodeIfPresent(Bool.self, forKey: .snapEnabled) ?? defaults.snapEnabled
         targetProgram = try container.decodeIfPresent(Int.self, forKey: .targetProgram)
         key = try container.decodeIfPresent(MusicalKey.self, forKey: .key)

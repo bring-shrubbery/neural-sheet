@@ -62,6 +62,16 @@ public struct TempoGrid: Equatable, Codable, Sendable {
     public var offsetSeconds: Double
     public var division: GridDivision
 
+    /// Where the second of each pair of divisions falls, as a fraction of the pair: 0.5 is
+    /// straight, 2/3 a triplet feel, up to 0.75 (editor commands design §2). Lines, snap and
+    /// Quantize follow it (`TempoGrid+Swing.swift`); the score reads ``straight``.
+    public var swing: Double {
+        get { swingRatio }
+        set { swingRatio = TempoGrid.clampedSwing(newValue) }
+    }
+
+    private var swingRatio = TempoGrid.straightSwing
+
     /// Sorted by `startBar`, strictly increasing, the first at bar 1; kept so by the mutators.
     public internal(set) var segments: [GridSegment] {
         didSet { boundaries = TempoGrid.boundaries(of: segments) }
@@ -91,6 +101,7 @@ public struct TempoGrid: Equatable, Codable, Sendable {
 
     public static func == (lhs: TempoGrid, rhs: TempoGrid) -> Bool {
         lhs.offsetSeconds == rhs.offsetSeconds && lhs.division == rhs.division && lhs.segments == rhs.segments
+            && lhs.swingRatio == rhs.swingRatio
     }
 
     /// The rule the export tempo field had: nothing sensible is 120, everything else is clamped.
@@ -138,10 +149,10 @@ public struct TempoGrid: Equatable, Codable, Sendable {
 
     // MARK: - Codable
 
-    private enum CodingKeys: String, CodingKey { case offsetSeconds, division, segments, bpm }
+    private enum CodingKeys: String, CodingKey { case offsetSeconds, division, segments, bpm, swing }
 
     /// A payload without `segments` is a one-tempo grid from before the map: its `bpm` becomes
-    /// one 4/4 segment (tempo map design §2).
+    /// one 4/4 segment (tempo map design §2). One without `swing` is straight.
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let offset = try container.decodeIfPresent(Double.self, forKey: .offsetSeconds) ?? 0
@@ -153,6 +164,8 @@ public struct TempoGrid: Equatable, Codable, Sendable {
             let bpm = try container.decodeIfPresent(Double.self, forKey: .bpm) ?? TempoGrid.defaultBpm
             self.init(bpm: bpm, offsetSeconds: offset, division: division)
         }
+
+        swing = try container.decodeIfPresent(Double.self, forKey: .swing) ?? TempoGrid.straightSwing
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -160,6 +173,7 @@ public struct TempoGrid: Equatable, Codable, Sendable {
         try container.encode(offsetSeconds, forKey: .offsetSeconds)
         try container.encode(division, forKey: .division)
         try container.encode(segments, forKey: .segments)
+        try container.encode(swing, forKey: .swing)
     }
 
     // MARK: - Invariants

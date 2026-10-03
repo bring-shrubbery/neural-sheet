@@ -21,8 +21,11 @@ public struct ScoreDocument: Equatable, Sendable {
     /// The score for `notes` on `grid` in `key`, shown as `arrangement` says: hidden parts left
     /// out, each part at its written transposition, in its clefs, with a tab staff when it has
     /// a template. `ids` runs alongside `notes` (the document's) or is nil while a run streams.
+    /// The grid's swing is dropped: it is a feel, not notation, so the Score tab and both score
+    /// exports quantize to the straight grid (editor commands design §2).
     public static func build(notes: [NoteEvent], ids: [NoteID?]? = nil, grid: TempoGrid, key: MusicalKey?,
                              arrangement: ScoreArrangement = ScoreArrangement()) -> ScoreDocument {
+        let grid = grid.straight
         var notesByProgram: [Int: [(NoteEvent, NoteID?)]] = [:]
 
         for (index, note) in notes.enumerated() {

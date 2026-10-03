@@ -134,7 +134,8 @@ extension TempoGrid {
     // MARK: - Snapping
 
     /// The nearest grid line, never before 0. The division counts from each bar line, so a bar
-    /// it does not divide evenly ends in a shorter step (tempo map design §2).
+    /// it does not divide evenly ends in a shorter step (tempo map design §2); a swung grid's
+    /// off-beats sit where ``lines(from:to:division:)`` draws them (editor commands design §2).
     public func snap(_ seconds: Double) -> Double {
         snapped(seconds, down: false)
     }
@@ -155,7 +156,11 @@ extension TempoGrid {
         let into = beats - start
         var position: Double
 
-        if down {
+        if swings {
+            // Swing moves the off-beats (editor commands design §2), so the lines are no longer
+            // a whole number of steps apart.
+            position = swungSnap(into: into, in: segment(atBar: bar).timeSignature, down: down)
+        } else if down {
             position = (into / step + TempoGrid.tolerance).rounded(.down) * step
         } else {
             position = min((into / step).rounded() * step, length)
@@ -173,15 +178,20 @@ extension TempoGrid {
     public func lines(from: Double, to: Double, division: GridDivision? = nil) -> [GridLine] {
         let division = division ?? self.division
 
-        return lines(from: from, to: to) { stepBeats(in: $0, division: division) }
+        return lines(from: from, to: to, step: { stepBeats(in: $0, division: division) }) { index, meter in
+            divisionOffset(index, division: division, in: meter)
+        }
     }
 
     /// The bar lines and the meter's beats in `from...to`: six to a bar of 6/8, three of 3/4.
     public func beatLines(from: Double, to: Double) -> [GridLine] {
-        lines(from: from, to: to) { $0.beatLength }
+        lines(from: from, to: to, step: { $0.beatLength }) { index, meter in Double(index) * meter.beatLength }
     }
 
-    private func lines(from: Double, to: Double, step: (TimeSignature) -> Double) -> [GridLine] {
+    /// `offset` places line `index` of a bar in quarter beats from its bar line: evenly for the
+    /// beats, swung for a swung division.
+    private func lines(from: Double, to: Double, step: (TimeSignature) -> Double,
+                       offset: (Int, TimeSignature) -> Double) -> [GridLine] {
         guard from.isFinite, to.isFinite, to >= max(from, 0) else { return [] }
 
         let slack = 1e-9
@@ -196,12 +206,12 @@ extension TempoGrid {
             let count = max(1, Int((meter.quarterBeatsPerBar / stepBeats - TempoGrid.tolerance).rounded(.up)))
 
             for index in 0..<count {
-                let offset = Double(index) * stepBeats
-                let seconds = self.seconds(atQuarterBeats: start + offset)
+                let position = offset(index, meter)
+                let seconds = self.seconds(atQuarterBeats: start + position)
 
                 guard seconds >= from - slack, seconds <= to + slack, seconds >= -slack else { continue }
 
-                let beats = offset / meter.beatLength
+                let beats = position / meter.beatLength
                 let kind: GridLine.Kind = index == 0 ? .bar
                     : abs(beats - beats.rounded()) < TempoGrid.tolerance ? .beat : .division
 

@@ -15,6 +15,8 @@ public struct ProjectContent: Equatable, Sendable {
     public var gridDivision: GridDivision
     /// The tempo map: a tempo change or a meter is an edit like the BPM.
     public var gridSegments: [GridSegment]
+    /// The grid's swing: changing it is an edit like the division.
+    public var gridSwing: Double
     public var snapEnabled: Bool
     public var targetProgram: Int?
     public var key: MusicalKey?
@@ -28,6 +30,7 @@ public struct ProjectContent: Equatable, Sendable {
         gridOffsetSeconds: Double,
         gridDivision: GridDivision,
         gridSegments: [GridSegment] = [],
+        gridSwing: Double = TempoGrid.straightSwing,
         snapEnabled: Bool,
         targetProgram: Int?,
         key: MusicalKey? = nil,
@@ -40,6 +43,7 @@ public struct ProjectContent: Equatable, Sendable {
         self.gridOffsetSeconds = gridOffsetSeconds
         self.gridDivision = gridDivision
         self.gridSegments = gridSegments
+        self.gridSwing = gridSwing
         self.snapEnabled = snapEnabled
         self.targetProgram = targetProgram
         self.key = key
