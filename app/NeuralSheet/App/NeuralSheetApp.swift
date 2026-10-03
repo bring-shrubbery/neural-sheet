@@ -195,7 +195,7 @@ struct NeuralSheetApp: App {
     // MARK: - Audio menu
 
     /// Spec §7 deviation 7: the standalone's way of choosing the microphone and the output, in
-    /// place of JUCE's Options dialog. A choice is applied to the engine at once -- an input
+    /// place of JUCE's Options dialog, and the MIDI output beside them (MIDI out design §2). A choice is applied to the engine at once -- an input
     /// device is what the next take records from, and the engine rebuilds its graph for it now
     /// rather than when the Record button is pressed. The inputs end with System Audio and the
     /// apps producing audio now (system audio design §2).
@@ -214,7 +214,33 @@ struct NeuralSheetApp: App {
                     audioMenu.output = model.outputDevice
                 }
             }
+
+            Menu("MIDI Output") {
+                midiOutputRows(model: model)
+            }
         }
+    }
+
+    /// "None", a separator, every CoreMIDI destination (the chosen one ticked), a separator, then
+    /// the synth mute (MIDI out design §2). The list is the model's, re-read as the menu bar
+    /// starts tracking and on CoreMIDI's setup changes.
+    @ViewBuilder
+    private func midiOutputRows(model: AppModel) -> some View {
+        let chosen = model.midiOutDestination
+
+        Toggle("None", isOn: Binding(get: { chosen == nil }, set: { _ in model.setMidiDestination(nil) }))
+
+        Divider()
+
+        ForEach(model.midiDestinations) { destination in
+            Toggle(destination.name, isOn: Binding(get: { chosen == destination },
+                                                   set: { _ in model.setMidiDestination(destination) }))
+        }
+
+        Divider()
+
+        Toggle("Mute Built-in Synth While Sending", isOn: Binding(get: { model.midiOutMutesSynth },
+                                                                set: { model.midiOutMutesSynth = $0 }))
     }
 
     /// The output's rows, below, with System Audio and one row per app after a second separator
@@ -298,6 +324,9 @@ struct NeuralSheetApp: App {
         if apps != self.apps { self.apps = apps }
 
         if let model {
+            // The MIDI destinations are the model's own list; CoreMIDI is asked again here too.
+            model.refreshMidiDestinations()
+
             if model.recordingInput != input { input = model.recordingInput }
             if model.outputDevice != output { output = model.outputDevice }
         }

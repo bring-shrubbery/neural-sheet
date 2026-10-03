@@ -449,7 +449,17 @@ import UniformTypeIdentifiers
         set { editor.grid.bpm = TempoGrid.clampedBpm(newValue) }
     }
 
-    var settings: GlobalSettings
+    var settings: GlobalSettings {
+        didSet {
+            // The MIDI output's channels follow the export's overflow mode (MIDI out design §2).
+            if settings.midiOverflowMode != oldValue.midiOverflowMode { refreshMidiRoutes() }
+        }
+    }
+
+    /// Audio → MIDI Output's list, re-read when the menu opens and when CoreMIDI's setup changes,
+    /// and the destination the notes are going to, nil for None (`AppModel+MidiOut.swift`).
+    var midiDestinations: [MidiDestination] = []
+    var midiOutDestination: MidiDestination?
 
     // MARK: - Project
 
@@ -588,6 +598,9 @@ import UniformTypeIdentifiers
 
         engine.synthBank.setClickGain(db: clickGainDb)
         applySoundBankSetting()
+
+        // The remembered MIDI destination, if it is there (MIDI out design §2).
+        startMidiOut()
 
         // The app a take is tapping quit: the take ends with what it has (system audio design §2).
         engine.onTappedProcessExited = { [weak self] in
@@ -1118,31 +1131,31 @@ import UniformTypeIdentifiers
     /// Re-derives the sidebar's rows from the notes and the selection, and pushes the faders.
     func refreshMixerEntries() {
         mixer.update(notes: notes, selectedPrograms: selectedPrograms)
-        engine.synthBank.apply(mixer: mixer)
+        applyMixer()
     }
 
     // MARK: - Mixer
 
     func setGain(program: Int, db: Double) {
         mixer.setGain(program: program, db: db)
-        engine.synthBank.apply(mixer: mixer)
+        applyMixer()
     }
 
     func setMuted(program: Int, _ muted: Bool) {
         mixer.setMuted(program: program, muted: muted)
-        engine.synthBank.apply(mixer: mixer)
+        applyMixer()
     }
 
     func setSoloed(program: Int, _ soloed: Bool) {
         mixer.setSoloed(program: program, soloed: soloed)
-        engine.synthBank.apply(mixer: mixer)
+        applyMixer()
     }
 
     /// The strip's pan, −1…1 (click design §2): a mixing setting like the fader, so not on the
     /// undo stack, but in the project, so it marks it edited.
     func setPan(program: Int, _ pan: Double) {
         mixer.setPan(program: program, pan: pan)
-        engine.synthBank.apply(mixer: mixer)
+        applyMixer()
     }
 
     // MARK: - Models
