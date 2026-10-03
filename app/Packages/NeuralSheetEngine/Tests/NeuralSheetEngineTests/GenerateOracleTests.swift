@@ -49,7 +49,7 @@ import Testing
 
         for chunk in chunks.indices {
             let cond = try conditioning(frontEnd, audio, chunk: chunk)
-            let tokens = try model.generate(
+            let (tokens, _) = try model.generate(
                 conditioning: cond, frameCount: GenerateOracleTests.chunkFrames,
                 maxTokens: GenerateOracleTests.maxTokens, eosID: GenerateOracleTests.eosID)
 
@@ -72,7 +72,7 @@ import Testing
         model.setForbiddenTokens(InstrumentGroups.forbiddenTokenIDs(band))
 
         let cond = try conditioning(frontEnd, audio, chunk: 0)
-        let tokens = try model.generate(
+        let (tokens, _) = try model.generate(
             conditioning: cond, frameCount: GenerateOracleTests.chunkFrames,
             maxTokens: GenerateOracleTests.maxTokens, eosID: GenerateOracleTests.eosID)
 
@@ -88,13 +88,19 @@ import Testing
         // it to leave the tie prologue.
         let prompt: [Int32] = [1135, 1064, 1134]
         let cond = try conditioning(frontEnd, audio, chunk: 0)
-        let tokens = try model.generate(
+        let (tokens, probabilities) = try model.generate(
             conditioning: cond, frameCount: GenerateOracleTests.chunkFrames,
             maxTokens: GenerateOracleTests.maxTokens, eosID: GenerateOracleTests.eosID, prompt: prompt)
 
         #expect(Array(tokens.prefix(prompt.count)) == prompt)
         #expect(tokens.count > prompt.count)
         #expect(tokens.count <= GenerateOracleTests.maxTokens)
+
+        // One probability per token; the prompt's are 1 because the model did not choose
+        // them, the rest are real probabilities (confidence design §3).
+        #expect(probabilities.count == tokens.count)
+        #expect(probabilities.prefix(prompt.count).allSatisfy { $0 == 1 })
+        #expect(probabilities.dropFirst(prompt.count).allSatisfy { $0 > 0 && $0 <= 1 })
     }
 
     /// The index the two streams first disagree at, for a failure message that names the

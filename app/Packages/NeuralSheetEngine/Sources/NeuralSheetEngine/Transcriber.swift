@@ -159,17 +159,17 @@ public final class Transcriber {
                 throw TranscriberError.contextOverflow
             }
 
-            let tokens = try model.generate(
+            let (tokens, probabilities) = try model.generate(
                 conditioning: conditioning, frameCount: melFrames,
                 maxTokens: min(Transcriber.maxTokensPerChunk, budget), eosID: Vocabulary.eosID,
                 prompt: prompt)
 
-            for token in tokens {
+            for (token, probability) in zip(tokens, probabilities) {
                 if token == Vocabulary.eosID {
                     break
                 }
 
-                try assembler.apply(tracker.feed(token: token), chunkIndex: chunk)
+                try assembler.apply(tracker.feed(token: token, probability: probability), chunkIndex: chunk)
             }
 
             if let onUpdate {

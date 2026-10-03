@@ -2,6 +2,8 @@
 // cpp/src/open_note_tracker.cpp. The rules are spec'd in that repo's
 // docs/TOKENIZER.md section 3.
 
+import Foundation
+
 /// Marks the start of a chunk in the token stream.
 struct ChunkBoundary: Equatable {
     /// Where this chunk starts in the signal, in seconds.
@@ -26,6 +28,10 @@ struct NoteAction: Equatable {
     var program: Int = 0
     var pitch: Int = 0
     var time: Double = 0
+
+    /// How sure the model was of the tokens that made a `.start` or a `.drumHit`, 0…1; 1
+    /// on an `.end`, which asserts nothing new. @see OpenNoteTracker.onsetConfidence
+    var confidence: Float = 1
 }
 
 /// The decode state machine for the model's token stream.
@@ -63,6 +69,12 @@ struct OpenNoteTracker {
     private var tickState = 0
     private var program: Int?
     private var velocity: Int32?
+
+    // The probabilities of the tokens that last set the two registers (confidence design
+    // §2). The program's is nil once a shift has passed: a program token belongs to the
+    // event it was emitted in, while the velocity register is a flag that stays set.
+    private var programProbability: Float?
+    private var velocityProbability: Float = 1
     private var inPrologue = true
     private var skipRest = false
     private var chunkStarted = false
@@ -99,6 +111,8 @@ struct OpenNoteTracker {
         tickState = startTick
         program = nil
         velocity = nil
+        programProbability = nil
+        velocityProbability = 1
         inPrologue = true
         skipRest = false
         chunkStarted = true
@@ -107,12 +121,31 @@ struct OpenNoteTracker {
         return actions
     }
 
-    /// Consume one model token.
+    /// Consume one model token the model was sure of, or one it was handed.
     mutating func feed(token tokenID: Int32) -> [NoteAction] {
+        feed(token: tokenID, probability: 1)
+    }
+
+    /// Consume one model token, with the probability `generate` gave it (1 for a prompt
+    /// token). Only the body reads the probability; the prologue opens nothing.
+    mutating func feed(token tokenID: Int32, probability: Float) -> [NoteAction] {
         guard !skipRest else { return [] }
 
         let event = Vocabulary.event(for: tokenID)
-        return inPrologue ? feedPrologue(event) : feedBody(event)
+        return inPrologue ? feedPrologue(event) : feedBody(event, probability: probability)
+    }
+
+    /// A melodic onset's confidence: the geometric mean of its pitch token, the velocity
+    /// token that set the on register, and the program token if one came since the last
+    /// shift (confidence design §2). Shifts are left out: they time an event, they do not
+    /// assert it. The geometric mean rather than the product, so that a note named by
+    /// three tokens is not marked down against one named by two.
+    private func onsetConfidence(pitchProbability: Float) -> Float {
+        if let programProbability {
+            return Float(pow(Double(programProbability * velocityProbability * pitchProbability), 1.0 / 3))
+        }
+
+        return (velocityProbability * pitchProbability).squareRoot()
     }
 
     /// End of stream: close whatever is still sounding.
@@ -189,9 +222,11 @@ struct OpenNoteTracker {
         }
     }
 
-    private mutating func feedBody(_ event: TokenEvent) -> [NoteAction] {
+    private mutating func feedBody(_ event: TokenEvent, probability: Float) -> [NoteAction] {
         switch event.type {
         case .shift:
+            programProbability = nil
+
             // Absolute within the chunk, and 0 is a no-op rather than a rewind. Reading
             // it as a delta produces plausible, progressively-wrong timing that nothing
             // else catches.
@@ -203,10 +238,12 @@ struct OpenNoteTracker {
 
         case .program:
             program = Int(event.value)
+            programProbability = probability
             return []
 
         case .velocity:
             velocity = event.value
+            velocityProbability = probability
             return []
 
         case .drum:
@@ -217,7 +254,8 @@ struct OpenNoteTracker {
             }
 
             // Instantaneous, never enters the open set, and reads neither register.
-            return [NoteAction(kind: .drumHit, program: 0, pitch: Int(event.value), time: time)]
+            return [NoteAction(
+                kind: .drumHit, program: 0, pitch: Int(event.value), time: time, confidence: probability)]
 
         case .pitch:
             guard let program, let velocity else { return [] }
@@ -243,7 +281,9 @@ struct OpenNoteTracker {
             // the same instant.
             if velocity > 0 {
                 open.append(OpenNote(key: key, onset: time))
-                actions.append(NoteAction(kind: .start, program: key.program, pitch: key.pitch, time: time))
+                actions.append(NoteAction(
+                    kind: .start, program: key.program, pitch: key.pitch, time: time,
+                    confidence: onsetConfidence(pitchProbability: probability)))
             }
 
             return actions

@@ -20,12 +20,19 @@ public struct Note: Equatable, Hashable, Sendable {
     /// and keeps its decoded offset.
     public var isDrum: Bool
 
-    public init(onset: Double, offset: Double, pitch: Int, program: Int, isDrum: Bool) {
+    /// How sure the model was of the tokens that opened the note, 0…1: the geometric mean
+    /// of their probabilities for a melodic note, the drum token's for a hit (confidence
+    /// design §2). Not the reference's -- muscriptor.cpp decodes by argmax and keeps no
+    /// probabilities -- so nothing compared against it reads this.
+    public var confidence: Float
+
+    public init(onset: Double, offset: Double, pitch: Int, program: Int, isDrum: Bool, confidence: Float = 1) {
         self.onset = onset
         self.offset = offset
         self.pitch = pitch
         self.program = program
         self.isDrum = isDrum
+        self.confidence = confidence
     }
 
     /// The program the reference assigns to drum hits.

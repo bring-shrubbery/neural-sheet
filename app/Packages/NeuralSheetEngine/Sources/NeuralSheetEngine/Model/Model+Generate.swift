@@ -2,6 +2,8 @@
 // cpp/src/model.cpp, with the prefix assembly of `buildEvalGraph` folded into `prefill`:
 // without a compute graph there is nothing to build, only a buffer to fill.
 
+import Foundation
+
 extension Model {
     /// One chunk's opening pass: the conditioning frames, the dataset row, the instrument
     /// rows and `tokens`, all at once, over a square causal mask.
@@ -73,9 +75,15 @@ extension Model {
     /// prompt fits. A prompt longer than the budget decodes nothing and is returned whole,
     /// which is what the C++ does; `Transcriber` never asks for one, its prompt is three tokens
     /// against a budget of two thousand.
+    ///
+    /// `probabilities` runs beside `tokens`, one per token: the softmax of the logits the
+    /// token was picked from, at the token argmax chose. The prompt's entries are 1 -- the
+    /// model did not choose them -- which is what lets a note carried over a boundary keep
+    /// the confidence it opened with (confidence design §2). One pass over the logits the
+    /// CPU already holds, against a forward pass over every weight; it does not show.
     func generate(
         conditioning: [Float], frameCount: Int, maxTokens: Int, eosID: Int32, prompt: [Int32] = []
-    ) throws -> [Int32] {
+    ) throws -> (tokens: [Int32], probabilities: [Float]) {
         reset()
 
         var logits = try prefill(
@@ -85,11 +93,15 @@ extension Model {
         var out = prompt
         out.reserveCapacity(max(maxTokens, prompt.count))
 
+        var probabilities = [Float](repeating: 1, count: prompt.count)
+        probabilities.reserveCapacity(max(maxTokens, prompt.count))
+
         var step = prompt.count
 
         while step < maxTokens {
             let next = Model.argmax(logits)
             out.append(next)
+            probabilities.append(Model.probability(of: next, in: logits))
 
             if next == eosID {
                 break
@@ -104,7 +116,7 @@ extension Model {
             step += 1
         }
 
-        return out
+        return (out, probabilities)
     }
 
     /// The largest logit's id, first one winning, which is what `std::max_element` and
@@ -120,5 +132,39 @@ extension Model {
         }
 
         return Int32(best)
+    }
+
+    /// `softmax(logits)[token]`, as `exp(logit − logsumexp)` so no exponential is taken of
+    /// a raw logit. A masked row's -infinity entries contribute nothing, as they would to
+    /// the softmax. 0 for an out-of-range token or a fully masked row rather than a NaN that
+    /// would travel into a project file.
+    static func probability(of token: Int32, in logits: [Float]) -> Float {
+        let index = Int(token)
+        guard logits.indices.contains(index) else { return 0 }
+
+        let normaliser = logSumExp(logits)
+        guard normaliser.isFinite else { return 0 }
+
+        return exp(logits[index] - normaliser)
+    }
+
+    /// `log(sum(exp(logits)))`, over a running maximum so that neither a large logit
+    /// overflows nor a row of very negative ones underflows to log(0). -infinity for an
+    /// empty or fully masked row.
+    static func logSumExp(_ logits: [Float]) -> Float {
+        var maximum = -Float.infinity
+        var sum: Float = 0
+
+        for value in logits where value > -Float.infinity {
+            if value > maximum {
+                // Rescale what has been summed so far to the new maximum.
+                sum = sum * exp(maximum - value) + 1
+                maximum = value
+            } else {
+                sum += exp(value - maximum)
+            }
+        }
+
+        return maximum == -Float.infinity ? -Float.infinity : maximum + log(sum)
     }
 }

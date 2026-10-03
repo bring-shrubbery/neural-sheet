@@ -73,7 +73,7 @@ import Testing
 
         for chunk in chunks.indices {
             let cond = try frontEnd.encodeAudio(Fixtures.chunk(audio, chunk))
-            let tokens = try model.generate(
+            let (tokens, _) = try model.generate(
                 conditioning: cond, frameCount: MediumOracleTests.chunkFrames,
                 maxTokens: Transcriber.maxTokensPerChunk, eosID: MediumOracleTests.eosID)
 

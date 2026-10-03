@@ -241,7 +241,7 @@ import Testing
 
         for chunk in chunks.indices {
             let cond = try conditioning(frontEnd, audio, chunk: chunk)
-            let tokens = try model.generate(
+            let (tokens, _) = try model.generate(
                 conditioning: cond, frameCount: MetalOracleTests.chunkFrames,
                 maxTokens: MetalOracleTests.maxTokens, eosID: MetalOracleTests.eosID)
 
@@ -264,7 +264,7 @@ import Testing
         model.setForbiddenTokens(InstrumentGroups.forbiddenTokenIDs(band))
 
         let cond = try conditioning(frontEnd, audio, chunk: 0)
-        let tokens = try model.generate(
+        let (tokens, _) = try model.generate(
             conditioning: cond, frameCount: MetalOracleTests.chunkFrames,
             maxTokens: MetalOracleTests.maxTokens, eosID: MetalOracleTests.eosID)
 
@@ -277,7 +277,7 @@ import Testing
 
         let prompt: [Int32] = [1135, 1064, 1134]
         let cond = try conditioning(frontEnd, audio, chunk: 0)
-        let tokens = try model.generate(
+        let (tokens, _) = try model.generate(
             conditioning: cond, frameCount: MetalOracleTests.chunkFrames,
             maxTokens: MetalOracleTests.maxTokens, eosID: MetalOracleTests.eosID, prompt: prompt)
 

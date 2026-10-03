@@ -55,7 +55,8 @@ struct NoteAssembler {
                     offset: action.time,
                     pitch: action.pitch,
                     program: isDrum ? Note.drumProgram : action.program,
-                    isDrum: isDrum)
+                    isDrum: isDrum,
+                    confidence: action.confidence)
 
                 opened.append(TrackedNote(
                     note: note, chunkIndex: chunkIndex,
@@ -80,7 +81,8 @@ struct NoteAssembler {
                     offset: action.time + Note.minimumDuration,
                     pitch: action.pitch,
                     program: Note.drumProgram,
-                    isDrum: true)
+                    isDrum: true,
+                    confidence: action.confidence)
 
                 closed.append(TrackedNote(
                     note: note, chunkIndex: chunkIndex,
