@@ -86,6 +86,9 @@ jobs:
             echo "::error::warnings in NeuralSheet sources"; exit 1
           fi
           echo "no warnings in NeuralSheet sources"
+      - name: Every string translated
+        working-directory: app
+        run: Scripts/check-localizations.sh CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
 
   web:
     name: Website
