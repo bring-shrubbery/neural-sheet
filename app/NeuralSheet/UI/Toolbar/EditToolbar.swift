@@ -28,11 +28,13 @@ struct EditToolbar: View {
 
                 HStack(spacing: s(4)) {
                     ToolbarControls.iconButton(k: k, isOn: editor.snapEnabled, tooltip: "Snap to grid",
+                                               label: Text(AccessibilityText.snapToGrid),
                                                action: { model.setSnapEnabled(!editor.snapEnabled) }) {
                         Icons.MagnetStroked()
                     }
 
-                    ToolbarControls.labelButton(k: k, editor.grid.division.label, tooltip: "Grid division") {
+                    ToolbarControls.labelButton(k: k, editor.grid.division.label, tooltip: "Grid division",
+                                                label: Text(AccessibilityText.gridDivision)) {
                         showDivisionMenu()
                     }
                     .background(AnchorCatcher { divisionAnchor = $0 })
@@ -49,10 +51,12 @@ struct EditToolbar: View {
                 Spacer(minLength: 0)
 
                 HStack(spacing: s(4)) {
-                    ToolbarControls.iconButton(k: k, isOn: false, isEnabled: model.canUndo, tooltip: model.undoMenuTitle, action: model.undo) {
+                    ToolbarControls.iconButton(k: k, isOn: false, isEnabled: model.canUndo, tooltip: model.undoMenuTitle,
+                                               label: Text(AccessibilityText.undo), action: model.undo) {
                         Icons.UndoStroked()
                     }
-                    ToolbarControls.iconButton(k: k, isOn: false, isEnabled: model.canRedo, tooltip: model.redoMenuTitle, action: model.redo) {
+                    ToolbarControls.iconButton(k: k, isOn: false, isEnabled: model.canRedo, tooltip: model.redoMenuTitle,
+                                               label: Text(AccessibilityText.redo), action: model.redo) {
                         Icons.RedoStroked()
                     }
                 }
@@ -83,9 +87,9 @@ struct EditToolbar: View {
         let s = Scaled(k: k)
 
         return HStack(spacing: s(2)) {
-            ToolbarControls.iconButton(k: k, isOn: tool == .select, tooltip: "Select (V)", action: { model.setTool(.select) }) { Icons.ArrowStroked() }
-            ToolbarControls.iconButton(k: k, isOn: tool == .draw, tooltip: "Draw (D)", action: { model.setTool(.draw) }) { Icons.PencilStroked() }
-            ToolbarControls.iconButton(k: k, isOn: tool == .erase, tooltip: "Erase (E)", action: { model.setTool(.erase) }) { Icons.EraserStroked() }
+            ToolbarControls.iconButton(k: k, isOn: tool == .select, tooltip: "Select (V)", label: Text(AccessibilityText.selectTool), action: { model.setTool(.select) }) { Icons.ArrowStroked() }
+            ToolbarControls.iconButton(k: k, isOn: tool == .draw, tooltip: "Draw (D)", label: Text(AccessibilityText.drawTool), action: { model.setTool(.draw) }) { Icons.PencilStroked() }
+            ToolbarControls.iconButton(k: k, isOn: tool == .erase, tooltip: "Erase (E)", label: Text(AccessibilityText.eraseTool), action: { model.setTool(.erase) }) { Icons.EraserStroked() }
         }
         .padding(s(2))
         .background(RoundedRectangle(cornerRadius: s(Metrics.corner), style: .circular).fill(Theme.bgControlAlt))
@@ -107,6 +111,7 @@ struct EditToolbar: View {
                 NumberField(value: (grid.swing * 100).rounded(), range: 50 ... 75, decimals: 0, width: 34) {
                     model.setSwing($0 / 100)
                 }
+                .accessibilityLabel(Text(AccessibilityText.swing))
 
                 ToolbarControls.pillLabel(k: k, "%")
             }

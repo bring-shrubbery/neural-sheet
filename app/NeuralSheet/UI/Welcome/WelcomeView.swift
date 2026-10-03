@@ -45,6 +45,7 @@ struct WelcomeView: View {
             Image(nsImage: NSApp.applicationIconImage)
                 .resizable()
                 .frame(width: 128, height: 128)
+                .accessibilityHidden(true)
 
             Text("NeuralSheet")
                 .font(Fonts.sans(28, weight: 600))
@@ -143,6 +144,7 @@ private struct WelcomeAction: View {
                     .font(.system(size: 22, weight: .regular))
                     .foregroundStyle(Theme.accent)
                     .frame(width: 28)
+                    .accessibilityHidden(true)
 
                 Text(title)
                     .font(Fonts.sans(14, weight: 500))

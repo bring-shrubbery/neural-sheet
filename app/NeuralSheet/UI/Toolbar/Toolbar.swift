@@ -95,6 +95,7 @@ struct Toolbar: View {
         .tooltip(installed
             ? "Separate the take into drums, bass, vocals and the rest before transcribing, each with its own instruments"
             : "Download the Stems model in Settings › Model")
+        .accessibilityValue(Text(AccessibilityText.onOff(model.separateStems && installed)))
     }
 
     private func clearButton(canClear: Bool) -> some View {
@@ -116,7 +117,14 @@ struct Toolbar: View {
             showClearMenu(from: anchor)
         })
         .tooltip("Clear audio and transcription | Shift + Backspace\nRight-click to clear the transcription only")
-        .accessibilityLabel("Clear")
+        .accessibilityLabel(Text(AccessibilityText.clear))
+        // The right-click menu's second choice, offered to VoiceOver as a named action, since
+        // VoiceOver has no right-click of its own on a SwiftUI control (a11y design §2).
+        .accessibilityAction(named: Text(AccessibilityText.clearTranscriptionOnly)) {
+            if model.state == .populated {
+                model.clearTranscription()
+            }
+        }
     }
 
     /// The bin's right-click menu: everything, or the transcription only.

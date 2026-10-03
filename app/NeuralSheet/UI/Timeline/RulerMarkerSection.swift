@@ -45,11 +45,13 @@ struct RulerMarkerSection: View {
                 .foregroundStyle(Theme.popupTitle)
                 .lineLimit(1)
                 .frame(height: s(Self.labelHeight), alignment: .leading)
+                .accessibilityAddTraits(.isHeader)
 
             HStack(spacing: 0) {
                 Text("Name")
                     .font(Fonts.meta(k))
                     .foregroundStyle(Theme.textMuted)
+                    .accessibilityHidden(true)
 
                 Spacer(minLength: s(8))
 
@@ -95,6 +97,7 @@ struct RulerMarkerSection: View {
             .overlay(RoundedRectangle(cornerRadius: s(NumberField.corner), style: .circular)
                 .strokeBorder(nameFocused ? Theme.accent : Theme.divStrong, lineWidth: k))
             .onSubmit { host.dismiss() }
+            .accessibilityLabel(Text(AccessibilityText.markerName))
     }
 
     private func button(_ title: String, foreground: Color, action: @escaping () -> Void) -> some View {

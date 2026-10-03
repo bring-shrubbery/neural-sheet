@@ -44,7 +44,9 @@ struct MixPill: View {
                        width: s(trackWidth),
                        fill: Theme.accent.opacity(0.8),
                        track: Theme.faderTrackTop,
-                       thumb: Theme.faderThumb)
+                       thumb: Theme.faderThumb,
+                       valueText: String(localized: AccessibilityText.mixValue(model.effectiveMix)))
+                .accessibilityLabel(Text(AccessibilityText.mix))
                 .disabled(split)
                 .opacity(split ? Theme.disabledAlpha : 1)
                 .tooltip(split
@@ -123,7 +125,15 @@ private struct MixHoldLabel: View {
                         end()
                     })
             .pointerStyle(.link)
-            .accessibilityAddTraits(.isButton)
-            .accessibilityLabel("\(text): hold to hear only this side")
+            // A hold is not a press VoiceOver or the keyboard can make: for them the label
+            // latches -- one press starts the solo, the next ends it (a11y design §2).
+            .accessibleButton(Text(verbatim: text), isSelected: isHeld) {
+                if isHeld {
+                    end()
+                } else {
+                    begin()
+                }
+            }
+            .accessibilityValue(Text(isHeld ? AccessibilityText.soloing : AccessibilityText.notSoloing))
     }
 }

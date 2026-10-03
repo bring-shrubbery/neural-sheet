@@ -25,14 +25,17 @@ struct TimeSignatureMenus: View {
         let s = Scaled(k: k)
 
         HStack(spacing: s(2)) {
-            ToolbarControls.labelButton(k: k, "\(meter.numerator)", tooltip: "Beats in a bar") { showNumeratorMenu() }
+            ToolbarControls.labelButton(k: k, "\(meter.numerator)", tooltip: "Beats in a bar",
+                                        label: Text(AccessibilityText.beatsInBar)) { showNumeratorMenu() }
                 .background(AnchorCatcher { numeratorAnchor = $0 })
 
             Text("/")
                 .font(Fonts.buttonLabel(k))
                 .foregroundStyle(Theme.textLabel)
+                .accessibilityHidden(true)
 
-            ToolbarControls.labelButton(k: k, "\(meter.denominator)", tooltip: "The note that counts as a beat") { showDenominatorMenu() }
+            ToolbarControls.labelButton(k: k, "\(meter.denominator)", tooltip: "The note that counts as a beat",
+                                        label: Text(AccessibilityText.beatUnit)) { showDenominatorMenu() }
                 .background(AnchorCatcher { denominatorAnchor = $0 })
         }
         // A menu left up would outlive the button it hangs from, with its monitors and observers.

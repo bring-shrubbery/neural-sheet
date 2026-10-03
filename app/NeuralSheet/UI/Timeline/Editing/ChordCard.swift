@@ -37,23 +37,27 @@ struct ChordCard: View {
                     .foregroundStyle(Theme.popupTitle)
                     .lineLimit(1)
                     .frame(height: s(Self.labelHeight), alignment: .leading)
+                    .accessibilityAddTraits(.isHeader)
 
                 VStack(spacing: s(SelectionFields.rowGap)) {
                     row("Root") {
                         ToolbarControls.labelButton(k: k, event.chord.map { MusicalKey.tonicMenuName($0.root) } ?? ChordEvent.noChordText,
-                                                    tooltip: "The chord's root, or no chord") { showRootMenu(event) }
+                                                    tooltip: "The chord's root, or no chord",
+                                                    label: Text(AccessibilityText.chordRoot)) { showRootMenu(event) }
                             .background(AnchorCatcher { rootAnchor = $0 })
                     }
 
                     row("Quality") {
                         ToolbarControls.labelButton(k: k, event.chord.map { Self.name(of: $0.quality) } ?? "—",
-                                                    tooltip: "Major, minor, a seventh…", isEnabled: event.chord != nil) { showQualityMenu(event) }
+                                                    tooltip: "Major, minor, a seventh…", label: Text(AccessibilityText.chordQuality),
+                                                    isEnabled: event.chord != nil) { showQualityMenu(event) }
                             .background(AnchorCatcher { qualityAnchor = $0 })
                     }
 
                     row("Bass") {
                         ToolbarControls.labelButton(k: k, event.chord?.slashBass.map(MusicalKey.tonicMenuName) ?? "None",
                                                     tooltip: "The note under the chord, written after a slash",
+                                                    label: Text(AccessibilityText.chordBass),
                                                     isEnabled: event.chord != nil) { showBassMenu(event) }
                             .background(AnchorCatcher { bassAnchor = $0 })
                     }
@@ -180,6 +184,7 @@ struct ChordCard: View {
             Text(label)
                 .font(Fonts.meta(k))
                 .foregroundStyle(Theme.textMuted)
+                .accessibilityHidden(true)
 
             Spacer(minLength: 0)
 

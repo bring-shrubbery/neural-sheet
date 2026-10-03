@@ -225,6 +225,14 @@ private struct ModelRowView: View {
             }
         }
         .accessibilityElement(children: .combine)
+        // The row's tap, for VoiceOver and the keyboard: an installed size is chosen by pressing
+        // it (a11y design §2).
+        .accessibilityAddTraits(row.isInUse ? .isSelected : [])
+        .accessibilityAction {
+            if row.isInstalled, !row.isInUse {
+                select()
+            }
+        }
     }
 
     private var radio: some View {
@@ -232,7 +240,8 @@ private struct ModelRowView: View {
             .font(.title3)
             .foregroundStyle(row.isInUse ? AnyShapeStyle(.tint) : AnyShapeStyle(.tertiary))
             .opacity(row.isInstalled ? 1 : 0.4)
-            .accessibilityLabel(row.isInUse ? "Selected" : row.isInstalled ? "Installed" : "Not installed")
+            .accessibilityLabel(Text(row.isInUse ? AccessibilityText.modelSelected
+                                     : row.isInstalled ? AccessibilityText.modelInstalled : AccessibilityText.modelNotInstalled))
     }
 
     private var isFailed: Bool {
@@ -268,6 +277,7 @@ private struct ModelRowView: View {
             HStack(spacing: 8) {
                 ProgressView(value: row.progress)
                     .frame(width: 90)
+                    .accessibilityLabel(Text(AccessibilityText.downloadProgress))
 
                 Text("\(Int((100 * row.progress).rounded()))%")
                     .font(.caption)
@@ -280,13 +290,14 @@ private struct ModelRowView: View {
                 }
                 .buttonStyle(.borderless)
                 .help("Stop the download. Starting it again resumes where it stopped")
-                .accessibilityLabel("Stop download")
+                .accessibilityLabel(Text(AccessibilityText.stopDownload))
             }
 
         case .verifying:
             HStack(spacing: 8) {
                 ProgressView()
                     .controlSize(.small)
+                    .accessibilityHidden(true)
 
                 Text("Verifying…")
                     .font(.caption)

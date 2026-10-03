@@ -137,11 +137,13 @@ struct Sidebar: View {
                                         scale: k))
                 .foregroundStyle(Theme.textLabel)
                 .lineLimit(1)
+                .accessibilityAddTraits(.isHeader)
 
             Text("\(model.mixer.entries.count)")
                 .font(Fonts.mono(10, weight: 400, scale: k))
                 .foregroundStyle(Theme.textFaintest)
                 .lineLimit(1)
+                .accessibilityLabel(Text(AccessibilityText.instrumentCount(model.mixer.entries.count)))
                 .frame(maxWidth: .infinity, alignment: .trailing)
                 .padding(.trailing, s(countTrailing))
 
@@ -177,7 +179,7 @@ struct Sidebar: View {
                 .frame(width: s(Self.addButtonSize), height: s(Self.addButtonSize))
         }
         .tooltip("Restrict the transcription to chosen instruments")
-        .accessibilityLabel("Add instrument")
+        .accessibilityLabel(Text(AccessibilityText.addInstrument))
     }
 }
 

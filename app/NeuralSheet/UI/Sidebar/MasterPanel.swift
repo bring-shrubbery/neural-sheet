@@ -64,6 +64,7 @@ struct MasterPanel: View {
                                         scale: k))
                 .foregroundStyle(Theme.textLabel)
                 .lineLimit(1)
+                .accessibilityAddTraits(.isHeader)
                 .frame(height: s(Self.labelHeight), alignment: .leading)
 
             LevelMeter(db: model.masterLevelDb,
@@ -126,6 +127,7 @@ struct MasterPanel: View {
             Icons.Speaker()
                 .fill(Theme.textIcon)
                 .frame(width: s(Self.speakerIconSize), height: s(Self.speakerIconSize))
+                .accessibilityHidden(true)
 
             PillSlider(value: $model.masterGainDb,
                        range: InstrumentMixerState.minGainDb ... InstrumentMixerState.maxGainDb,
@@ -133,14 +135,17 @@ struct MasterPanel: View {
                        width: s(Self.volumeTrackWidth),
                        fill: Theme.volumeFill,
                        track: Theme.faderTrackTop,
-                       thumb: Theme.faderThumb)
+                       thumb: Theme.faderThumb,
+                       valueText: String(localized: AccessibilityText.decibels(model.masterGainDb)))
                 .tooltip("Output level")
+                .accessibilityLabel(Text(AccessibilityText.outputLevel))
 
             Text(TimeFormat.decibels(model.masterGainDb))
                 .font(Fonts.meta(k))
                 .foregroundStyle(Theme.textMuted)
                 .fixedSize()
                 .frame(width: s(Self.volumeValueWidth), alignment: .trailing)
+                .accessibilityHidden(true)
         }
         .padding(.horizontal, s(Self.pillPadding))
         .frame(height: s(Self.controlHeight))
@@ -170,7 +175,8 @@ struct MasterPanel: View {
         }
         .opacity(alpha)
         .tooltip("Split: the source audio in the left ear, the MIDI in the right, nothing mixed")
-        .accessibilityLabel("Stereo split")
+        .accessibilityLabel(Text(AccessibilityText.stereoSplit))
+        .accessibilityValue(Text(AccessibilityText.onOff(model.stereoSplit)))
     }
 
     // MARK: - Mute
@@ -209,6 +215,8 @@ struct MasterPanel: View {
             .frame(height: s(Self.controlHeight))
         }
         .tooltip("Mute / Unmute input | m")
+        .accessibilityLabel(Text(AccessibilityText.muteInput))
+        .accessibilityValue(Text(AccessibilityText.onOff(model.inputMuted)))
     }
 
     // MARK: - Click
@@ -236,7 +244,8 @@ struct MasterPanel: View {
                 .frame(height: s(Self.controlHeight))
         }
         .tooltip("Click on every beat of the grid | k")
-        .accessibilityLabel("Click")
+        .accessibilityLabel(Text(AccessibilityText.click))
+        .accessibilityValue(Text(AccessibilityText.onOff(model.clickEnabled)))
     }
 
     /// The click's level, the volume pill's fader and readout without its speaker.
@@ -251,14 +260,17 @@ struct MasterPanel: View {
                        fill: Theme.volumeFill,
                        track: Theme.faderTrackTop,
                        thumb: Theme.faderThumb,
-                       onDoubleClick: { model.clickGainDb = ProjectState.defaultClickGainDb })
+                       onDoubleClick: { model.clickGainDb = ProjectState.defaultClickGainDb },
+                       valueText: String(localized: AccessibilityText.decibels(model.clickGainDb)))
                 .tooltip("Click level | double-click for -6 dB")
+                .accessibilityLabel(Text(AccessibilityText.clickLevel))
 
             Text(TimeFormat.decibels(model.clickGainDb))
                 .font(Fonts.meta(k))
                 .foregroundStyle(Theme.textMuted)
                 .fixedSize()
                 .frame(width: s(Self.volumeValueWidth), alignment: .trailing)
+                .accessibilityHidden(true)
         }
         .padding(.horizontal, s(Self.pillPadding))
         .frame(height: s(Self.controlHeight))

@@ -31,6 +31,7 @@ struct BatchStatusCell: View {
         HStack(spacing: 8) {
             ProgressView(value: fraction)
                 .frame(width: 80)
+                .accessibilityHidden(true)
             Text("\(title) \(Int(fraction * 100)) %")
                 .monospacedDigit()
         }

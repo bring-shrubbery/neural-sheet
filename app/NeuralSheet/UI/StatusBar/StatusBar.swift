@@ -96,6 +96,7 @@ struct StatusBar: View {
                 if index > 0 {
                     Text(Self.separator)
                         .foregroundStyle(Theme.textSeparator)
+                        .accessibilityHidden(true)
                 }
 
                 Text(segment)
@@ -126,6 +127,7 @@ struct StatusBar: View {
             Icons.VerticalZoomStroked()
                 .stroke(Theme.zoomIcon, style: Icons.strokeStyle(scale: k))
                 .frame(width: s(Metrics.zoomIconSize), height: s(Metrics.zoomIconSize))
+                .accessibilityHidden(true)
 
             Spacer().frame(width: s(Metrics.zoomGap))
 
@@ -134,9 +136,10 @@ struct StatusBar: View {
                        width: s(Metrics.zoomTrackWidth),
                        fill: Theme.zoomFill,
                        track: Theme.zoomTrack,
-                       thumb: Theme.zoomThumb)
+                       thumb: Theme.zoomThumb,
+                       valueText: String(localized: AccessibilityText.percent(Int((zoom.wrappedValue * 100).rounded()))))
                 .tooltip("Piano roll vertical zoom | ⌥ + scroll or ⌥ + pinch on the roll")
-                .accessibilityLabel("Piano roll vertical zoom")
+                .accessibilityLabel(Text(AccessibilityText.verticalZoom))
         }
     }
 

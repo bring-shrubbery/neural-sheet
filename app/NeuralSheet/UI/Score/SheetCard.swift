@@ -31,6 +31,7 @@ struct SheetCard: View {
                 .kerning(Fonts.tracking(Fonts.Tracking.sectionHeader, pointSize: Fonts.Size.sectionHeader, scale: k))
                 .foregroundStyle(Theme.popupTitle)
                 .frame(height: s(Self.headerHeight), alignment: .leading)
+                .accessibilityAddTraits(.isHeader)
 
             // The title's placeholder is what the header prints without one: the take's name,
             // or "Untitled".
@@ -87,7 +88,10 @@ struct SheetCard: View {
                          font: Fonts.pillLabel(k), scale: k)
                 .foregroundStyle(Theme.textLabel)
                 .frame(width: s(Self.labelWidth), alignment: .leading)
+                .accessibilityHidden(true)
+            // The field is named by its row (a11y design §2).
             control()
+                .accessibilityLabel(Text(verbatim: label))
         }
     }
 
@@ -110,7 +114,8 @@ struct SheetCard: View {
         .contentShape(Rectangle())
         .onTapGesture(perform: action)
         .pointerStyle(.link)
-        .accessibilityAddTraits(.isButton)
+        .accessibleButton(Text(verbatim: label), isSelected: isOn, action: action)
+        .accessibilityValue(Text(isOn ? AccessibilityText.ticked : AccessibilityText.unticked))
     }
 }
 

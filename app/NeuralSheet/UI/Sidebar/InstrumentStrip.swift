@@ -118,6 +118,12 @@ struct InstrumentStrip: View {
                 .contentShape(Rectangle())
                 .onTapGesture { onSelect?() }
                 .allowsHitTesting(onSelect != nil)
+                // The name as a button that singles the instrument out, its counts as the value
+                // (a11y design §2).
+                .accessibleButton(Text(verbatim: entry.info.name), isEnabled: onSelect != nil, isSelected: isHighlighted) {
+                    onSelect?()
+                }
+                .accessibilityValue(Text(verbatim: meta))
 
                 Spacer(minLength: 0)
 
@@ -127,6 +133,7 @@ struct InstrumentStrip: View {
                            onBackground: Theme.bgMuteActive,
                            onText: Theme.warn,
                            tooltip: "Mute this instrument",
+                           accessibilityName: Text(AccessibilityText.mute),
                            s: s) { model.setMuted(program: entry.program, !muted) }
 
                     toggle("S",
@@ -134,6 +141,7 @@ struct InstrumentStrip: View {
                            onBackground: Theme.soloButtonBg,
                            onText: Theme.rec,
                            tooltip: "Solo this instrument",
+                           accessibilityName: Text(AccessibilityText.solo),
                            s: s) { model.setSoloed(program: entry.program, !settings.soloed) }
                 }
                 .opacity(alpha)
@@ -150,10 +158,12 @@ struct InstrumentStrip: View {
                            fill: muted ? Theme.faderFillMuted : colour.opacity(0.85),
                            track: Theme.faderTrack,
                            thumb: muted ? Theme.faderThumbMuted : Theme.faderThumb,
-                           onDoubleClick: { model.setGain(program: entry.program, db: 0) })
+                           onDoubleClick: { model.setGain(program: entry.program, db: 0) },
+                           valueText: String(localized: AccessibilityText.decibels(settings.gainDb)))
                     .disabled(entry.isPlaceholder)
                     .opacity(alpha)
                     .tooltip("Level for this instrument")
+                    .accessibilityLabel(Text(AccessibilityText.level))
                     .padding(.leading, s(Self.textInset))
 
                 Spacer(minLength: 0)
@@ -163,6 +173,8 @@ struct InstrumentStrip: View {
                     .foregroundStyle(Theme.textDim.opacity(alpha))
                     .lineLimit(1)
                     .frame(width: s(Self.valueWidth), height: s(Self.faderHeight), alignment: .trailing)
+                    // The fader reads its own value.
+                    .accessibilityHidden(true)
             }
             .frame(height: s(Self.faderHeight))
             .padding(.top, s(Self.faderTopGap))
@@ -183,11 +195,12 @@ struct InstrumentStrip: View {
                            fill: Theme.faderTrack,
                            track: Theme.faderTrack,
                            thumb: muted ? Theme.faderThumbMuted : Theme.faderThumb,
-                           onDoubleClick: { model.setPan(program: entry.program, 0) })
+                           onDoubleClick: { model.setPan(program: entry.program, 0) },
+                           valueText: String(localized: AccessibilityText.pan(settings.pan)))
                     .disabled(entry.isPlaceholder)
                     .opacity(alpha)
                     .tooltip("Pan | double-click to centre")
-                    .accessibilityLabel("Pan")
+                    .accessibilityLabel(Text(AccessibilityText.panLabel))
             }
             .frame(height: s(Self.meterHeight))
             .padding(.leading, s(Self.textInset))
@@ -201,7 +214,8 @@ struct InstrumentStrip: View {
         .background(settings.soloed ? Theme.soloRowTint : Color.clear)
         .overlay {
             if let onSecondaryClick {
-                RightClickCatcher(onRightClick: onSecondaryClick)
+                RightClickCatcher(onRightClick: onSecondaryClick,
+                                  accessibilityTitle: String(localized: AccessibilityText.instrumentCommands))
             }
         }
         .overlay(alignment: .leading) {
@@ -217,7 +231,7 @@ struct InstrumentStrip: View {
                 .frame(height: k)
         }
         .accessibilityElement(children: .contain)
-        .accessibilityLabel(entry.info.name)
+        .accessibilityLabel(Text(verbatim: entry.info.name))
     }
 
     // MARK: - Pieces
@@ -236,6 +250,7 @@ struct InstrumentStrip: View {
                 .lineLimit(1)
         }
         .frame(width: s(Self.chipSize), height: s(Self.chipSize))
+        .accessibilityHidden(true)
     }
 
     private func toggle(_ label: String,
@@ -243,6 +258,7 @@ struct InstrumentStrip: View {
                         onBackground: Color,
                         onText: Color,
                         tooltip: String,
+                        accessibilityName: Text,
                         s: Scaled,
                         action: @escaping () -> Void) -> some View {
         FlatButton(isOn: isOn,
@@ -258,6 +274,9 @@ struct InstrumentStrip: View {
                 .frame(width: s(Self.toggleWidth), height: s(Self.toggleHeight))
         }
         .tooltip(tooltip)
+        // "M" and "S" say nothing read aloud: the toggle is named, its state the value.
+        .accessibilityLabel(accessibilityName)
+        .accessibilityValue(Text(AccessibilityText.onOff(isOn)))
     }
 
     // MARK: - Derived

@@ -19,6 +19,8 @@ nonisolated struct ButtonVisualState: Hashable, Sendable {
 /// Hover, pressed and disabled are never separate colours; they are derived from the idle and "on"
 /// colours by `Theme.surface` / `Theme.foreground`, so every button in the window reacts alike. The
 /// label closure is handed the live state so a label that needs more than a tint can read it.
+///
+/// To VoiceOver and Full Keyboard Access it is a system button (a11y design §2): see `body`.
 struct FlatButton<Label: View>: View {
     private let isOn: Bool
     private let isEnabled: Bool
@@ -117,7 +119,16 @@ struct FlatButton<Label: View>: View {
             }
             .gesture(press, including: isEnabled ? .all : .subviews)
             .pointerStyle(isEnabled ? .link : nil)
-            .accessibilityAddTraits(.isButton)
+            // A drag gesture is not a press VoiceOver or the keyboard can make: a system button
+            // stands in for it in the accessibility tree, dimmed when disabled and selected while
+            // on, and Full Keyboard Access can focus and press it (a11y design §2). A caller's
+            // `accessibilityLabel` names an icon-only button; a label's own text names the rest.
+            .keyboardActivation(isEnabled: isEnabled, action: action)
+            .accessibilityRepresentation {
+                Button(action: { if isEnabled { action() } }) { label(state) }
+                    .disabled(!isEnabled)
+                    .accessibilityAddTraits(isOn ? .isSelected : [])
+            }
     }
 
     /// A drag of zero distance rather than a tap, so the pressed surface appears on mouse-down and

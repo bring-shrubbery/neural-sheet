@@ -41,6 +41,9 @@ struct MidiDragChip: View {
                            click: { model.requestExport() })
         )
         .tooltip("Drag the MIDI into a DAW or the Finder | ⌥ for MusicXML · click to export")
+        // A file promise needs a mouse; to VoiceOver and the keyboard the chip is the click,
+        // Export MIDI…, which writes the same file (a11y design §2).
+        .accessibleButton(Text(AccessibilityText.exportMIDI), isEnabled: enabled) { model.requestExport() }
     }
 }
 

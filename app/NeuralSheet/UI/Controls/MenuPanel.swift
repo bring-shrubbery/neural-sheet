@@ -63,6 +63,7 @@ struct MenuPanel<Content: View>: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal, s(MenuMetrics.padX))
                     .frame(height: s(MenuMetrics.headerHeight))
+                    .accessibilityAddTraits(.isHeader)
             }
 
             ScrollView(.vertical) {
@@ -153,7 +154,9 @@ struct MenuRow: View {
         .onHover { isHovered = $0 }
         .onTapGesture { if isEnabled { action() } }
         .pointerStyle(isEnabled ? .link : nil)
-        .accessibilityAddTraits(.isButton)
+        // A row is a button to VoiceOver, selected while ticked and dimmed while disabled, and
+        // the keyboard can press it (a11y design §2).
+        .accessibleButton(Text(verbatim: title), isEnabled: isEnabled, isSelected: isTicked, action: action)
     }
 }
 
@@ -177,6 +180,7 @@ struct MenuSectionLabel: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, s(MenuMetrics.padX))
             .frame(height: s(Self.height))
+            .accessibilityAddTraits(.isHeader)
     }
 }
 
@@ -192,6 +196,7 @@ struct MenuSeparator: View {
             .frame(height: k)
             .frame(maxWidth: .infinity)
             .frame(height: s(MenuMetrics.separatorHeight))
+            .accessibilityHidden(true)
     }
 }
 
@@ -219,5 +224,7 @@ struct MenuCheckbox: View {
             }
         }
         .frame(width: side, height: side)
+        // The row it is in says ticked or not.
+        .accessibilityHidden(true)
     }
 }

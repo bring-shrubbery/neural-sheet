@@ -31,8 +31,11 @@ struct GridControls: View {
                     model.setGridOffset($0)
                 }
                 .tooltip("Where bar 1 starts, in seconds")
+                .accessibilityLabel(Text(AccessibilityText.beatOneAt))
 
-                ToolbarControls.iconButton(k: k, isOn: false, tooltip: "Set from playhead", action: model.setGridOffsetFromPlayhead) {
+                ToolbarControls.iconButton(k: k, isOn: false, tooltip: "Set from playhead",
+                                           label: Text(AccessibilityText.setBeatOneFromPlayhead),
+                                           action: model.setGridOffsetFromPlayhead) {
                     Icons.PlayheadTargetStroked()
                 }
 
@@ -46,13 +49,14 @@ struct GridControls: View {
             HStack(spacing: s(6)) {
                 ToolbarControls.pillLabel(k: k, "KEY")
 
-                ToolbarControls.labelButton(k: k, editor.key?.tonicName ?? "—", tooltip: "The project's key, or none") {
+                ToolbarControls.labelButton(k: k, editor.key?.tonicName ?? "—", tooltip: "The project's key, or none",
+                                            label: Text(AccessibilityText.keyTonic)) {
                     showTonicMenu()
                 }
                 .background(AnchorCatcher { tonicAnchor = $0 })
 
                 ToolbarControls.labelButton(k: k, editor.key?.mode.name.capitalized ?? "Major", tooltip: "Major or minor",
-                                            isEnabled: editor.key != nil) {
+                                            label: Text(AccessibilityText.keyMode), isEnabled: editor.key != nil) {
                     showModeMenu()
                 }
                 .background(AnchorCatcher { modeAnchor = $0 })
@@ -131,6 +135,7 @@ private struct SegmentControls: View {
                 model.setGridBpm($0)
             }
             .tooltip("Tempo at the playhead, in quarter notes a minute")
+            .accessibilityLabel(Text(AccessibilityText.tempo))
 
             ToolbarControls.pillLabel(k: k, "TIME")
             TimeSignatureMenus(meter: segment.timeSignature) { model.setTimeSignature($0) }
@@ -148,7 +153,8 @@ enum ToolbarControls {
 
     /// A square icon button, 4 short of the row's button height so three of them fit inside the
     /// tool tray's padding at the same height as the label buttons beside it.
-    static func iconButton<Icon: Shape>(k: CGFloat, isOn: Bool, isEnabled: Bool = true, tooltip: String,
+    /// `label` names it for VoiceOver: the icon says nothing to it (a11y design §2).
+    static func iconButton<Icon: Shape>(k: CGFloat, isOn: Bool, isEnabled: Bool = true, tooltip: String, label: Text,
                                         action: @escaping () -> Void, icon: () -> Icon) -> some View {
         let s = Scaled(k: k)
         let icon = icon()
@@ -166,9 +172,13 @@ enum ToolbarControls {
                 .frame(width: s(Metrics.buttonHeight - 4), height: s(Metrics.buttonHeight - 4))
         }
         .tooltip(tooltip)
+        .accessibilityLabel(label)
     }
 
-    static func labelButton(k: CGFloat, _ title: String, tooltip: String, isEnabled: Bool = true,
+    /// A button showing its value -- a division, a key, a numerator -- takes a `label` saying what
+    /// the value is of, and VoiceOver reads the title as its value; a button whose title is an
+    /// action is named by the title (a11y design §2).
+    static func labelButton(k: CGFloat, _ title: String, tooltip: String, label: Text? = nil, isEnabled: Bool = true,
                             action: @escaping () -> Void) -> some View {
         let s = Scaled(k: k)
 
@@ -186,6 +196,8 @@ enum ToolbarControls {
                 .frame(height: s(Metrics.buttonHeight))
         }
         .tooltip(tooltip)
+        .accessibilityLabel(label ?? Text(verbatim: title))
+        .accessibilityValue(label == nil ? Text(verbatim: "") : Text(verbatim: title))
     }
 
     /// The tracked caps label the sidebar's pills use, in front of each field.

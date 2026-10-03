@@ -48,6 +48,7 @@ struct NoteCard: View {
                 .foregroundStyle(Theme.popupTitle)
                 .lineLimit(1)
                 .frame(height: s(Self.labelHeight), alignment: .leading)
+                .accessibilityAddTraits(.isHeader)
 
             SelectionFields(model: model, host: host)
                 .padding(.top, s(8))

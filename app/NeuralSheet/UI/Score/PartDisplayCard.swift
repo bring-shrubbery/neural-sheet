@@ -47,6 +47,8 @@ struct PartDisplayCard: View {
                 .kerning(Fonts.tracking(Fonts.Tracking.sectionHeader, pointSize: Fonts.Size.sectionHeader, scale: k))
                 .foregroundStyle(Theme.popupTitle)
                 .lineLimit(1)
+                .accessibilityLabel(Text(verbatim: info.name))
+                .accessibilityAddTraits(.isHeader)
 
             if !isDrums {
                 row("Display") {
@@ -63,15 +65,20 @@ struct PartDisplayCard: View {
             row("Clef") {
                 menuButton(display.clef.name) { showClefMenu() }
                     .background(AnchorCatcher { clefAnchor = $0 })
+                    .accessibilityLabel(Text(AccessibilityText.clef))
+                    .accessibilityValue(Text(verbatim: display.clef.name))
             }
 
             row("Transposition") {
                 HStack(spacing: s(6)) {
                     menuButton(Self.transpositionPresets.first { $0.1 == display.transposition }?.0 ?? "Custom") { showTranspositionMenu() }
                         .background(AnchorCatcher { transpositionAnchor = $0 })
+                        .accessibilityLabel(Text(AccessibilityText.transposition))
+                        .accessibilityValue(Text(verbatim: Self.transpositionPresets.first { $0.1 == display.transposition }?.0 ?? "Custom"))
                     NumberField(value: Double(display.transposition), range: -36 ... 36, decimals: 0, width: 40) {
                         model.setPartTransposition(Int($0), program: program)
                     }
+                    .accessibilityLabel(Text(AccessibilityText.transpositionSemitones))
                 }
             }
 
@@ -79,12 +86,14 @@ struct PartDisplayCard: View {
                 row("Tab") {
                     menuButton(display.tab.flatMap { TabTemplate.template(id: $0.template)?.name } ?? "None") { showTemplateMenu() }
                         .background(AnchorCatcher { templateAnchor = $0 })
+                        .accessibilityLabel(Text(AccessibilityText.tab))
                 }
 
                 if let tab = display.tab {
                     row("Tuning") {
                         menuButton(tab.presetName ?? "Custom") { showTuningMenu(tab) }
                             .background(AnchorCatcher { tuningAnchor = $0 })
+                            .accessibilityLabel(Text(AccessibilityText.tuning))
                     }
 
                     // One pitch field per string, bottom tab line first.
@@ -93,6 +102,7 @@ struct PartDisplayCard: View {
                             PitchField(text: TimeFormat.pitchName(pitch), width: s(34), scale: k) {
                                 model.setPartTuning(string: string, pitch: $0, program: program)
                             }
+                            .accessibilityLabel(Text(AccessibilityText.stringTuning(tab.tuning.count - string)))
                         }
                     }
 
@@ -100,6 +110,7 @@ struct PartDisplayCard: View {
                         NumberField(value: Double(tab.frets), range: 1 ... 36, decimals: 0, width: 40) {
                             model.setPartFrets(Int($0), program: program)
                         }
+                        .accessibilityLabel(Text(AccessibilityText.frets))
                     }
                 }
             }
@@ -108,6 +119,8 @@ struct PartDisplayCard: View {
                 segment(display.isHidden ? "Hidden" : "Shown", isOn: display.isHidden, isEnabled: true) {
                     model.setPartHidden(!display.isHidden, program: program)
                 }
+                .accessibilityLabel(Text(AccessibilityText.hidden))
+                .accessibilityValue(Text(verbatim: display.isHidden ? "Hidden" : "Shown"))
             }
         }
         .padding(s(Self.padding))
@@ -125,6 +138,8 @@ struct PartDisplayCard: View {
                          font: Fonts.pillLabel(k), scale: k)
                 .foregroundStyle(Theme.textLabel)
                 .frame(width: s(Self.labelWidth), alignment: .leading)
+                // The controls carry the row's name (a11y design §2).
+                .accessibilityHidden(true)
             control()
             Spacer(minLength: 0)
         }

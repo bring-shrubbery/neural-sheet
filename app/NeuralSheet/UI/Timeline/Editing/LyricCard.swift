@@ -28,6 +28,7 @@ struct LyricCard: View {
                 .foregroundStyle(Theme.popupTitle)
                 .lineLimit(1)
                 .frame(height: s(Self.labelHeight), alignment: .leading)
+                .accessibilityAddTraits(.isHeader)
 
             TextField("", text: $draft)
                 .textFieldStyle(.plain)
@@ -40,6 +41,7 @@ struct LyricCard: View {
                 .overlay(RoundedRectangle(cornerRadius: s(NumberField.corner), style: .circular)
                     .strokeBorder(isFocused ? Theme.accent : Theme.divStrong, lineWidth: k))
                 .padding(.top, s(8))
+                .accessibilityLabel(Text(AccessibilityText.lyric))
                 .onSubmit(advance)
                 .onKeyPress(.tab, phases: .down) { _ in
                     advance()

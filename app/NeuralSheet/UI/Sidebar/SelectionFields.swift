@@ -46,12 +46,14 @@ struct SelectionFields: View {
                             decimals: 3, step: 0.01, width: 72) { value in
                     commit { $0.setStart(model.editor.selection, seconds: value) }
                 }
+                .accessibilityLabel(Text(AccessibilityText.noteStart))
             }
             row("Length") {
                 NumberField(value: shared(notes.map { $0.endTime - $0.startTime }) ?? (notes.isEmpty ? 0 : nil),
                             range: NoteDocument.minimumLength ... 3_600, decimals: 3, step: 0.01, width: 72) { value in
                     commit { $0.setLength(model.editor.selection, seconds: value) }
                 }
+                .accessibilityLabel(Text(AccessibilityText.noteLength))
             }
             row("Pitch") { pitchControl(notes: notes) }
             row("Velocity") { velocityControl(notes: notes) }
@@ -61,18 +63,23 @@ struct SelectionFields: View {
                 LyricField(text: notes.count == 1 ? notes[0].lyric?.typed ?? "" : (notes.isEmpty ? "" : "—"),
                            width: s(120), scale: k) { model.setSelectedLyric($0) }
                     .disabled(notes.count != 1)
+                    .accessibilityLabel(Text(AccessibilityText.lyric))
             }
             row("Confidence") {
                 Text(SelectionFields.confidenceText(notes))
                     .font(Fonts.mono(10, weight: 500, scale: k))
                     .foregroundStyle(Theme.textStrong)
                     .padding(.horizontal, s(6))
+                    .accessibilityLabel(Text(AccessibilityText.confidence))
+                    .accessibilityValue(Text(verbatim: SelectionFields.confidenceText(notes)))
             }
             row("Pitch curve") {
                 Text(SelectionFields.pitchCurveText(notes))
                     .font(Fonts.mono(10, weight: 500, scale: k))
                     .foregroundStyle(Theme.textStrong)
                     .padding(.horizontal, s(6))
+                    .accessibilityLabel(Text(AccessibilityText.pitchCurve))
+                    .accessibilityValue(Text(verbatim: SelectionFields.pitchCurveText(notes)))
             }
         }
         .disabled(!enabled)
@@ -81,6 +88,7 @@ struct SelectionFields: View {
 
     // MARK: - Rows
 
+    /// The label is spoken by the control beside it, so VoiceOver reads it once (a11y design §2).
     private func row<Control: View>(_ label: String, @ViewBuilder control: () -> Control) -> some View {
         let s = Scaled(k: k)
 
@@ -88,6 +96,7 @@ struct SelectionFields: View {
             Text(label)
                 .font(Fonts.meta(k))
                 .foregroundStyle(Theme.textMuted)
+                .accessibilityHidden(true)
 
             Spacer(minLength: 0)
 
@@ -167,6 +176,8 @@ struct SelectionFields: View {
                 .padding(.horizontal, s(6))
         }
         .background(AnchorCatcher { instrumentAnchor = $0 })
+        .accessibilityLabel(Text(AccessibilityText.instrument))
+        .accessibilityValue(Text(verbatim: title))
     }
 
     private func showInstrumentMenu() {
@@ -205,11 +216,14 @@ struct SelectionFields: View {
 
                            draftVelocity = nil
                            commit(audible: true) { $0.setVelocity(model.editor.selection, velocity: velocity) }
-                       })
+                       },
+                       valueText: (draftVelocity ?? shown).map(String.init) ?? "—")
+                .accessibilityLabel(Text(AccessibilityText.velocity))
 
             NumberField(value: (draftVelocity ?? shown).map(Double.init), range: 1 ... 127, decimals: 0, width: 40) { value in
                 commit(audible: true) { $0.setVelocity(model.editor.selection, velocity: Int(value)) }
             }
+            .accessibilityLabel(Text(AccessibilityText.velocity))
         }
         // A drag the system cancelled never ends; the next selection must not inherit its draft.
         .onChange(of: model.editor.selection) { _, _ in draftVelocity = nil }
@@ -224,6 +238,7 @@ struct SelectionFields: View {
         return PitchField(text: pitches.isEmpty || mixed(pitches) ? "—" : TimeFormat.pitchName(pitches[0]), width: s(72), scale: k) { pitch in
             commit(audible: true) { $0.setPitch(model.editor.selection, pitch: pitch) }
         }
+        .accessibilityLabel(Text(AccessibilityText.pitch))
     }
 }
 

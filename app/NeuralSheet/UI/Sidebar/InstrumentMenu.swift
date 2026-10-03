@@ -33,12 +33,15 @@ struct InstrumentMenuOverlay: View {
             Color.clear
                 .contentShape(Rectangle())
                 .onTapGesture { close() }
+                .accessibilityHidden(true)
 
             InstrumentMenu(model: model)
                 .padding(.leading, s(anchorX - MenuMetrics.width))
                 .padding(.top, s(anchorY))
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        // VoiceOver's escape gesture closes it as Escape and the scrim do (a11y design §2).
+        .accessibilityAction(.escape) { close() }
         .onAppear(perform: installKeyMonitor)
         .onDisappear(perform: removeKeyMonitor)
     }
@@ -115,6 +118,7 @@ struct InstrumentMenu: View {
                 .overlay(alignment: .bottom) {
                     Rectangle().fill(Theme.divStrong).frame(height: k)
                 }
+                .accessibilityAddTraits(.isHeader)
 
             ScrollView(.vertical) {
                 InstrumentMenuRows(model: model, selected: selected)
@@ -210,8 +214,10 @@ private struct InstrumentMenuRow: View {
         .contentShape(Rectangle())
         .onHover { isHovered = $0 }
         .onTapGesture(perform: action)
-        .accessibilityAddTraits(.isButton)
-        .accessibilityValue(isTicked ? "ticked" : "unticked")
+        // A ticked row is a selected button to VoiceOver, and the keyboard can tick it (a11y
+        // design §2).
+        .accessibleButton(Text(verbatim: title), isSelected: isTicked, action: action)
+        .accessibilityValue(Text(isTicked ? AccessibilityText.ticked : AccessibilityText.unticked))
     }
 }
 

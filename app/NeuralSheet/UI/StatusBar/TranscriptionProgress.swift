@@ -60,6 +60,7 @@ struct ProgressGroup: View {
             }
 
             bar(percent: percent, dim: dim)
+                .accessibilityHidden(true)
 
             Text("\(percent)%")
                 .font(Fonts.statusBar(k))
@@ -72,6 +73,11 @@ struct ProgressGroup: View {
             cancelButton
         }
         .fixedSize()
+        // The caption and the percentage as one reading, the cross beside it (a11y design §2).
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel(Text(verbatim: caption))
+        .accessibilityValue(Text(AccessibilityText.percent(percent)))
+        .accessibilityAddTraits(.updatesFrequently)
     }
 
     private var captionLabel: some View {
@@ -116,7 +122,7 @@ struct ProgressGroup: View {
                 .frame(width: s(Metrics.cancelHitSize), height: s(Metrics.cancelHitSize))
         }
         .tooltip(cancelTooltip)
-        .accessibilityLabel(cancelTooltip)
+        .accessibilityLabel(Text(verbatim: cancelTooltip))
     }
 }
 

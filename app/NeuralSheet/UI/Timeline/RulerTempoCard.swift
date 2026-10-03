@@ -35,6 +35,7 @@ struct RulerTempoCard: View {
                 .foregroundStyle(Theme.popupTitle)
                 .lineLimit(1)
                 .frame(height: s(Self.labelHeight), alignment: .leading)
+                .accessibilityAddTraits(.isHeader)
 
             VStack(spacing: s(SelectionFields.rowGap)) {
                 row("Tempo") {
@@ -42,6 +43,7 @@ struct RulerTempoCard: View {
                         model.setTempo($0, atBar: bar)
                     }
                     .tooltip("Quarter notes a minute")
+                    .accessibilityLabel(Text(AccessibilityText.tempo))
                 }
 
                 row("Time") {
@@ -79,6 +81,7 @@ struct RulerTempoCard: View {
             Text(label)
                 .font(Fonts.meta(k))
                 .foregroundStyle(Theme.textMuted)
+                .accessibilityHidden(true)
 
             Spacer(minLength: 0)
 

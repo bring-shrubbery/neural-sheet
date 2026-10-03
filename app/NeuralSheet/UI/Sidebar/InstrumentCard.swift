@@ -49,18 +49,21 @@ struct InstrumentCard: View {
                     shape.strokeBorder(Theme.chipBorder(colour), lineWidth: k)
                 }
                 .frame(width: s(Self.chipSize), height: s(Self.chipSize))
+                .accessibilityHidden(true)
 
                 Text(entry.info.name.uppercased())
                     .font(Fonts.sectionHeader(k))
                     .kerning(Fonts.tracking(Fonts.Tracking.sectionHeader, pointSize: Fonts.Size.sectionHeader, scale: k))
                     .foregroundStyle(Theme.popupTitle)
                     .lineLimit(1)
+                    .accessibilityLabel(Text(verbatim: entry.info.name))
+                    .accessibilityAddTraits(.isHeader)
             }
             .frame(height: s(Self.labelHeight), alignment: .leading)
 
             VStack(spacing: s(SelectionFields.rowGap)) {
                 row("Change to") {
-                    popupButton(title: "—") { changeAnchor = $0 } action: {
+                    popupButton(title: "—", label: Text(AccessibilityText.changeTo)) { changeAnchor = $0 } action: {
                         guard let changeAnchor else { return }
 
                         InstrumentPicker.show(changeMenu, from: changeAnchor, host: host, model: model, current: [],
@@ -74,12 +77,14 @@ struct InstrumentCard: View {
                 row("Split at") {
                     HStack(spacing: s(6)) {
                         PitchField(text: TimeFormat.pitchName(splitPitch), width: s(48), scale: k) { splitPitch = $0 }
+                            .accessibilityLabel(Text(AccessibilityText.splitAt))
                         sideToggle
                     }
                 }
 
                 row("Send to") {
-                    popupButton(title: destination.map { Instruments.info(forProgram: $0).name } ?? "—") { sendAnchor = $0 } action: {
+                    popupButton(title: destination.map { Instruments.info(forProgram: $0).name } ?? "—",
+                                label: Text(AccessibilityText.sendTo)) { sendAnchor = $0 } action: {
                         guard let sendAnchor else { return }
 
                         InstrumentPicker.show(sendMenu, from: sendAnchor, host: host, model: model,
@@ -121,6 +126,7 @@ struct InstrumentCard: View {
             Text(label)
                 .font(Fonts.meta(k))
                 .foregroundStyle(Theme.textMuted)
+                .accessibilityHidden(true)
 
             Spacer(minLength: 0)
 
@@ -130,7 +136,8 @@ struct InstrumentCard: View {
     }
 
     /// The inspector's instrument button: a flat button whose anchor the menu opens from.
-    private func popupButton(title: String, anchor: @escaping (NSView) -> Void, action: @escaping () -> Void) -> some View {
+    /// `label` is the row's, which VoiceOver reads with the title as the value (a11y design §2).
+    private func popupButton(title: String, label: Text, anchor: @escaping (NSView) -> Void, action: @escaping () -> Void) -> some View {
         let s = Scaled(k: k)
 
         return FlatButton(idle: Theme.bgControlAlt, on: Theme.bgControlActive,
@@ -143,6 +150,8 @@ struct InstrumentCard: View {
                 .padding(.horizontal, s(6))
         }
         .background(AnchorCatcher(found: anchor))
+        .accessibilityLabel(label)
+        .accessibilityValue(Text(verbatim: title))
     }
 
     /// Above / Below as a two-segment pair, the live side on the accent fill.

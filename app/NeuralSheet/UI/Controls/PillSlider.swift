@@ -21,6 +21,9 @@ struct PillSlider: View {
     /// Called once the drag gesture ends, after the last value write, for a caller that stages the
     /// value while dragging and commits it as one step. The strips do not need it.
     let onDragEnded: (() -> Void)?
+    /// What VoiceOver reads for the value -- "-6.0 dB", "75 percent" -- in the caller's words; nil
+    /// reads the number (a11y design §2).
+    let valueText: String?
 
     @Environment(\.uiScale) private var k
     @Environment(\.isEnabled) private var isEnabled
@@ -40,7 +43,8 @@ struct PillSlider: View {
          track: Color,
          thumb: Color? = nil,
          onDoubleClick: (() -> Void)? = nil,
-         onDragEnded: (() -> Void)? = nil) {
+         onDragEnded: (() -> Void)? = nil,
+         valueText: String? = nil) {
         self._value = value
         self.range = range
         self.step = step
@@ -50,6 +54,7 @@ struct PillSlider: View {
         self.thumb = thumb
         self.onDoubleClick = onDoubleClick
         self.onDragEnded = onDragEnded
+        self.valueText = valueText
     }
 
     var body: some View {
@@ -89,7 +94,32 @@ struct PillSlider: View {
             },
             including: isEnabled ? .all : .subviews)
         .pointerStyle(isEnabled ? .link : nil)
-        .accessibilityValue(Text(String(format: "%.2f", value)))
+        // A system slider stands in for the drawing in the accessibility tree, so VoiceOver
+        // adjusts it with its increment and decrement and reads it as a slider; each step lands
+        // as a drag would, on the step and inside the range, and ends as a drag ends (a11y
+        // design §2).
+        .accessibilityRepresentation {
+            Slider(value: Binding(get: { value }, set: { setAccessibleValue($0) }), in: range)
+                .disabled(!isEnabled)
+        }
+        .accessibilityValue(Text(verbatim: valueText ?? value.formatted(.number.precision(.fractionLength(0...2)))))
+    }
+
+    /// A VoiceOver step, snapped and clamped as the drag snaps and clamps, then committed.
+    private func setAccessibleValue(_ proposed: Double) {
+        var next = proposed
+
+        if step > 0 {
+            next = range.lowerBound + (next - range.lowerBound).rounded(toNearestMultipleOf: step)
+        }
+
+        let clamped = min(range.upperBound, max(range.lowerBound, next))
+
+        if clamped != value {
+            value = clamped
+        }
+
+        onDragEnded?()
     }
 
     private var proportion: Double {

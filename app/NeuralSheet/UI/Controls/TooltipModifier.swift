@@ -53,6 +53,9 @@ struct TooltipModifier: ViewModifier {
             }
             .onChange(of: text) { _, _ in dismiss() }
             .onDisappear { dismiss() }
+            // The tip is the control's help, as AppKit makes a `toolTip` its AXHelp: what a
+            // sighted user reads on hover, VoiceOver reads after the label (a11y design §2).
+            .accessibilityHint(Text(verbatim: text))
     }
 
     // MARK: - Scheduling

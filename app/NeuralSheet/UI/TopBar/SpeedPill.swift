@@ -37,8 +37,10 @@ struct SpeedPill: View {
                        fill: Theme.volumeFill,
                        track: Theme.faderTrackTop,
                        thumb: Theme.faderThumb,
-                       onDoubleClick: model.resetSpeed)
+                       onDoubleClick: model.resetSpeed,
+                       valueText: String(localized: AccessibilityText.percent(percent)))
                 .tooltip("Playback speed, pitch unchanged | - =")
+                .accessibilityLabel(Text(AccessibilityText.playbackSpeed))
 
             Text("\(percent)%")
                 .font(Fonts.meta(k))
@@ -51,7 +53,7 @@ struct SpeedPill: View {
         .background(RoundedRectangle(cornerRadius: s(Self.corner), style: .circular).fill(Theme.bgControl))
         .opacity(alpha)
         .accessibilityElement(children: .contain)
-        .accessibilityLabel("Playback speed \(percent) percent")
+        .accessibilityLabel(Text(AccessibilityText.playbackSpeed))
     }
 }
 

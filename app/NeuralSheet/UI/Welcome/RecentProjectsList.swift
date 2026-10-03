@@ -46,6 +46,7 @@ struct RecentProjectsList: View {
             Image(nsImage: NSWorkspace.shared.icon(for: .package))
                 .resizable()
                 .frame(width: 32, height: 32)
+                .accessibilityHidden(true)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(url.deletingPathExtension().lastPathComponent)
@@ -62,6 +63,10 @@ struct RecentProjectsList: View {
         }
         .padding(.vertical, 4)
         .opacity(exists ? 1 : 0.5)
+        // The name and the folder as one row; a project that has moved says so, as its dimming
+        // does (a11y design §2).
+        .accessibilityElement(children: .combine)
+        .accessibilityValue(exists ? Text(verbatim: "") : Text(AccessibilityText.projectMissing))
     }
 
     /// `/Users/me/Music` → `~/Music`.

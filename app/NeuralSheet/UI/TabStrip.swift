@@ -85,8 +85,9 @@ struct TabStrip: View {
             .onTapGesture { if isEnabled { action() } }
             .pointerStyle(isEnabled ? .link : nil)
             .tooltip(tooltip ?? "")
-            .accessibilityAddTraits(.isButton)
-            .accessibilityLabel(title)
+            // A tab VoiceOver and the keyboard can choose, selected while it is the one on show
+            // (a11y design §2).
+            .accessibleButton(Text(title), isEnabled: isEnabled, isSelected: isActive, action: action)
         }
     }
 }

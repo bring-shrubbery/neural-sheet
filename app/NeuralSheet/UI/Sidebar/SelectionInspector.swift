@@ -27,6 +27,7 @@ struct SelectionInspector: View {
                     .font(Fonts.sectionHeader(k))
                     .kerning(Fonts.tracking(Fonts.Tracking.sectionHeader, pointSize: Fonts.Size.sectionHeader, scale: k))
                     .foregroundStyle(Theme.textLabel)
+                    .accessibilityAddTraits(.isHeader)
 
                 Spacer(minLength: 0)
 

@@ -59,7 +59,9 @@ private struct TimeDisplayBody: View, Equatable {
         .overlay(alignment: .leading) { rule }
         .overlay(alignment: .trailing) { rule }
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Position \(position) of \(total)")
+        .accessibilityLabel(Text(AccessibilityText.position))
+        .accessibilityValue(Text(AccessibilityText.positionValue(position, of: total)))
+        .accessibilityAddTraits(.updatesFrequently)
     }
 
     private var rule: some View {

@@ -89,6 +89,7 @@ struct TopBar: View {
                     .frame(width: s(15), height: s(15))
             }
             .tooltip("Go to start | Enter")
+            .accessibilityLabel(Text(AccessibilityText.goToStart))
 
             // One button showing whichever icon is the action available now: pause while it plays.
             transportButton(isOn: model.isPlaying,
@@ -108,6 +109,8 @@ struct TopBar: View {
                 }
             }
             .tooltip("Play / Pause | Space")
+            .accessibilityLabel(Text(model.isPlaying ? AccessibilityText.pause : AccessibilityText.play))
+            .accessibilityValue(Text(model.isPlaying ? AccessibilityText.playing : AccessibilityText.stopped))
 
             // Inventory §1.3 had this permanently disabled ("Loop (not implemented yet)"); it
             // loops the marked range, or the whole take, since the loop design.
@@ -125,6 +128,8 @@ struct TopBar: View {
                 .frame(width: s(16), height: s(16))
             }
             .tooltip("Loop | l")
+            .accessibilityLabel(Text(AccessibilityText.loop))
+            .accessibilityValue(Text(AccessibilityText.onOff(model.loopEnabled)))
 
             transportButton(isOn: model.followPlayhead,
                             isEnabled: canPlay,
@@ -140,6 +145,8 @@ struct TopBar: View {
                 .frame(width: s(16), height: s(16))
             }
             .tooltip("Center playhead | c")
+            .accessibilityLabel(Text(AccessibilityText.centrePlayhead))
+            .accessibilityValue(Text(AccessibilityText.onOff(model.followPlayhead)))
 
             // Lit through the count-in as through the take (click design §2).
             transportButton(isOn: model.state == .recording || model.state == .countingIn,
@@ -153,10 +160,13 @@ struct TopBar: View {
                     .frame(width: s(16), height: s(16))
             }
             .tooltip("Record | r")
+            .accessibilityLabel(Text(AccessibilityText.record))
+            .accessibilityValue(Text(AccessibilityText.recordState(model.state)))
         }
     }
 
-    /// A 34 x 30 transparent button; hover lifts it onto the shared hover surface.
+    /// A 34 x 30 transparent button; icon-only, so each is named for VoiceOver where it is made,
+    /// with its state as the value (a11y design §2). hover lifts it onto the shared hover surface.
     private func transportButton<Icon: View>(isOn: Bool = false,
                                              isEnabled: Bool,
                                              on: Color = Theme.bgControlActive,
