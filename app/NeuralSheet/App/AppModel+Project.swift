@@ -290,6 +290,8 @@ extension AppModel {
 
         reviewProject { [weak self] in
             self?.replaceWithEmpty()
+            // A drag the receiver never asked for leaves its file behind (MIDI out design §2).
+            self?.removeDragScratch()
             proceed()
         }
     }

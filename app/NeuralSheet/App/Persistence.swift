@@ -43,6 +43,7 @@ extension AppModel {
     /// asynchronous, and the app is about to stop running the loop it is queued on.
     private func terminate() {
         model.saveGlobalSettings()
+        model.removeDragScratch()
     }
 
     /// Every setter of `NnGlobalSettings` rewrote the file; here the file follows the struct.

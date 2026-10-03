@@ -3,8 +3,8 @@ import NeuralSheetCore
 import SwiftUI
 
 /// The Score tab's row above the score (arrangement design §6): Continuous / Pages, A4 / Letter
-/// (live in Pages), Parts, the grid and the key shared with the Edit toolbar, then `Sheet…` and
-/// Export PDF on the right.
+/// (live in Pages), Parts, the grid and the key shared with the Edit toolbar, then `Sheet…`,
+/// Export PDF and the MIDI chip (MIDI out design §2) on the right.
 ///
 /// Same frame as `Toolbar` and `EditToolbar`, so the three tabs' rows sit on the same divider.
 struct ScoreToolbar: View {
@@ -59,6 +59,9 @@ struct ScoreToolbar: View {
 
                 ToolbarControls.labelButton(k: k, "Export PDF", tooltip: "Write the pages as a PDF (⌥⇧⌘P)",
                                             isEnabled: model.canExport, action: model.exportPDF)
+
+                // The drag-out, at the trailing end (MIDI out design §2).
+                MidiDragChip(model: model)
             }
             .frame(height: s(Metrics.buttonHeight))
             .padding(.top, s(7))

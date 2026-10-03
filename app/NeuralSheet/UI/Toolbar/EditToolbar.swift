@@ -4,7 +4,7 @@ import SwiftUI
 
 /// The Edit tab's row above the timeline (design §6.1): tools, snap, division and swing
 /// (editor commands design §2), tempo and downbeat with Tap and Detect (tempo design §5) and the
-/// key, Quantize, Re-transcribe, Undo/Redo.
+/// key, Quantize, Re-transcribe, Undo/Redo, and the MIDI chip (MIDI out design §2).
 ///
 /// Same frame as `Toolbar` -- height, side padding, button height, corner -- so the two tabs'
 /// rows sit on the same divider. The grid and the key are ``GridControls``, shared with the
@@ -56,6 +56,9 @@ struct EditToolbar: View {
                         Icons.RedoStroked()
                     }
                 }
+
+                // The drag-out, at the trailing end (MIDI out design §2).
+                MidiDragChip(model: model)
             }
             .frame(height: s(Metrics.buttonHeight))
             .padding(.top, s(7))
