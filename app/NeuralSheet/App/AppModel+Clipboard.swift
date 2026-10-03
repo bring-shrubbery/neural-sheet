@@ -11,9 +11,9 @@ extension AppModel {
 
     /// The selected notes, in document order, or nothing.
     private var selectedNotes: [NoteEvent] {
-        guard let document, !editor.selection.isEmpty else { return [] }
+        guard let document else { return [] }
 
-        return document.notes.filter { editor.selection.contains($0.id) }.map(\.note)
+        return EditingCommands.selectedNotes(in: document, selection: editor.selection)
     }
 
     /// True when the selection went on the pasteboard.
@@ -34,11 +34,7 @@ extension AppModel {
     func cutSelection() {
         guard copySelection(), let document else { return }
 
-        var batch = document.delete(editor.selection)
-        batch.title = editor.selection.count == 1
-            ? String(localized: "Cut Note", comment: "Undo title: one note cut")
-            : String(localized: "Cut Notes", comment: "Undo title: several notes cut")
-        commit(batch)
+        commit(EditingCommands.cut(in: document, selection: editor.selection))
     }
 
     /// What the pasteboard holds for us, if anything.

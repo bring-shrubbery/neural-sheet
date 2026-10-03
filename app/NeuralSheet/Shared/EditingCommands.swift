@@ -64,4 +64,24 @@ nonisolated enum EditingCommands {
 
         return targets.map(\.id)
     }
+
+    // MARK: - Clipboard
+
+    /// The selected notes in document order, what Copy puts on the pasteboard; empty with
+    /// nothing selected.
+    static func selectedNotes(in document: NoteDocument, selection: Set<NoteID>) -> [NoteEvent] {
+        guard !selection.isEmpty else { return [] }
+
+        return document.notes.filter { selection.contains($0.id) }.map(\.note)
+    }
+
+    /// Cut's delete, titled as a cut.
+    static func cut(in document: NoteDocument, selection: Set<NoteID>) -> EditBatch {
+        var batch = document.delete(selection)
+        batch.title = selection.count == 1
+            ? String(localized: "Cut Note", comment: "Undo title: one note cut")
+            : String(localized: "Cut Notes", comment: "Undo title: several notes cut")
+
+        return batch
+    }
 }
