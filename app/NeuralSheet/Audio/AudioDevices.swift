@@ -2,7 +2,7 @@ import CoreAudio
 import Foundation
 
 /// One CoreAudio device, as the device pickers show it.
-nonisolated struct AudioDevice: Identifiable, Equatable, Sendable {
+nonisolated struct AudioDevice: Identifiable, Hashable, Sendable {
     let id: AudioDeviceID
     let name: String
 }

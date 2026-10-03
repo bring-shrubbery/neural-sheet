@@ -992,15 +992,15 @@ import UniformTypeIdentifiers
 
     /// What the Audio menu shows as chosen: the engine's own, which it rolls back when a device
     /// refuses, so the menu re-reads these after every pick.
-    var inputDevice: AudioDevice? { engine.inputDevice }
+    var inputDevice: AudioDevice? { engine.recordingInput?.device }
     var outputDevice: AudioDevice? { engine.outputDevice }
 
     /// The Audio menu's Input pick, applied at once (spec §7 deviation 7). A device the engine
     /// could not use is rolled back and said so.
     func setInputDevice(_ device: AudioDevice?) {
-        guard device != engine.inputDevice else { return }
+        guard device != engine.recordingInput?.device else { return }
 
-        engine.inputDevice = device
+        engine.recordingInput = device.map { .device($0) }
         reportDeviceSwitch()
     }
 

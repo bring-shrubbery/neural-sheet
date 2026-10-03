@@ -62,6 +62,11 @@ nonisolated final class Recorder: @unchecked Sendable {
     private let nativeFrames = Atomic<Int>(0)
     private let downsampledFrames = Atomic<Int>(0)
 
+    /// Blocks the input tap has delivered since ``start(atDownbeat:)``, kept or not -- a count-in
+    /// drops its blocks but they still count. What tells a tap that never ran from one that is
+    /// recording silence (system audio design §2).
+    private let deliveredBlocks = Atomic<Int>(0)
+
     /// True from an aligned ``start(atDownbeat:)`` until the tap has delivered the block holding
     /// the downbeat: until then every block is dropped, and that block is cut at it.
     private let aligning = Atomic<Bool>(false)
@@ -93,6 +98,9 @@ nonisolated final class Recorder: @unchecked Sendable {
     }
 
     var isRecording: Bool { recording.load(ordering: .relaxed) }
+
+    /// Whether the input has delivered anything at all since the take was armed.
+    var hasReceivedInput: Bool { deliveredBlocks.load(ordering: .relaxed) > 0 }
 
     /// Seconds captured, measured on the downsampled stream so it does not move with the device.
     var durationSeconds: Double {
@@ -128,6 +136,8 @@ nonisolated final class Recorder: @unchecked Sendable {
         } catch {
             throw RecordError.fileCreation
         }
+
+        deliveredBlocks.store(0, ordering: .relaxed)
 
         // The tap goes on before the format is read: installing it is what points the input unit at
         // the chosen device, and until then the node still reports the format of the last one.
@@ -275,6 +285,8 @@ nonisolated final class Recorder: @unchecked Sendable {
     /// The input tap. A CoreAudio thread, but not the render thread -- it still does no more than
     /// copy the block out of the buffer, which AVAudioEngine reuses the moment this returns.
     private func receive(_ buffer: AVAudioPCMBuffer, at time: AVAudioTime) {
+        deliveredBlocks.add(1, ordering: .relaxed)
+
         guard recording.load(ordering: .acquiring), let data = buffer.floatChannelData else { return }
 
         let total = Int(buffer.frameLength)

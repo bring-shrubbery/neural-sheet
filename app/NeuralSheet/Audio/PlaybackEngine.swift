@@ -203,9 +203,15 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
     var ioBufferFrames = 0
 
     /// The last failure from pointing the I/O unit at a device, or nil if the last switch took. The
-    /// published ``outputDevice``/``inputDevice`` is rolled back to what is really in use when this
+    /// published ``outputDevice``/``recordingInput`` is rolled back to what is really in use when this
     /// is set, so the two never disagree.
     var lastDeviceError: OSStatus?
+
+    /// Why the last attempt to make a process tap failed, or nil: set beside ``lastDeviceError``
+    /// when the input that could not be used was System Audio or an app, so the model can tell a
+    /// refused permission (`kAudioHardwareIllegalOperationError`) from a device that refused
+    /// (system audio design §2).
+    var lastTapError: OSStatus?
 
     /// Why the engine last refused to start, or nil if it is running or was stopped deliberately.
     private(set) var lastStartError: Error?
@@ -221,13 +227,20 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
     /// The devices the I/O units were last pointed at successfully, so a rejected switch has
     /// something to fall back to when the unit cannot name what it is on.
     var lastAppliedOutputDevice: AudioDevice?
-    var lastAppliedInputDevice: AudioDevice?
+    var lastAppliedRecordingInput: RecordingInput?
 
-    typealias Aggregate = (device: AudioDeviceID, input: AudioDeviceID, output: AudioDeviceID)
-
-    /// The private aggregate the I/O unit is on, when the chosen devices needed one, and the pair it
-    /// stands for. Ours to destroy, and reused for as long as that pair does not change.
+    /// The private aggregate the I/O unit is on, when the chosen devices needed one, the pair it
+    /// stands for and the process tap inside it, if any. Ours to destroy -- the aggregate, then
+    /// its tap -- and reused for as long as that pair does not change.
     var aggregate: Aggregate?
+
+    /// Set once by ``shutDown()``: from then on nothing starts the engine or makes an aggregate
+    /// or a tap again.
+    var isShutDown = false
+
+    /// Called on the main queue when the app a take is tapping has quit (system audio design §2),
+    /// outside the HAL's listener callback. The take is the model's to end.
+    var onTappedProcessExited: (() -> Void)?
 
     /// Called on the main queue when the playhead reaches the end. The transport has already been
     /// stopped and rewound by then.
@@ -246,7 +259,7 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
     /// What the input tap delivers: the rate and channel count a recording is written at.
     ///
     /// Read it after ``inputTap`` has been set, never before. Setting the tap is what points the
-    /// input unit at ``inputDevice``, and until then the node answers for the device it was on.
+    /// input unit at ``recordingInput``, and until then the node answers for the device it was on.
     /// Reading it also instantiates the input node, which is what asks for microphone access.
     var inputFormat: AVAudioFormat { engine.inputNode.outputFormat(forBus: 0) }
 
@@ -257,9 +270,12 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
         }
     }
 
-    var inputDevice: AudioDevice? {
+    /// What the next take records from: a device, System Audio or one app (system audio design
+    /// §2); nil is the system's default input. A tap is only made while the input is pulled --
+    /// from Record to stop -- as a microphone's aggregate is.
+    var recordingInput: RecordingInput? {
         didSet {
-            guard !isRevertingDevice, inputDevice != oldValue else { return }
+            guard !isRevertingDevice, recordingInput != oldValue else { return }
             reconfigureDevices()
         }
     }
@@ -317,7 +333,8 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
         if meterTapInstalled { engine.mainMixerNode.removeTap(onBus: 0) }
         if inputTapInstalled { engine.inputNode.removeTap(onBus: 0) }
         engine.stop()
-        InputAggregate.destroy(aggregate?.device)
+        // The aggregate, then the tap in it.
+        aggregate?.destroy()
     }
 
     // MARK: - Transport
@@ -450,7 +467,7 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
     /// running and the health check retrying with its backoff, so the failure is a delay rather
     /// than a silent session. The error stays in ``lastStartError`` for the UI to show.
     func start() throws {
-        guard !engine.isRunning else { return }
+        guard !engine.isRunning, !isShutDown else { return }
 
         shouldRun = true
         resetHealBudget()
@@ -482,7 +499,7 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
     /// fresh budget, and when the engine is not running makes one attempt now rather than at the
     /// poll's next tick. Not from inside a rebuild, whose own attempt is under way.
     func retryStartIfNeeded() {
-        guard !isRebuilding else { return }
+        guard !isRebuilding, !isShutDown else { return }
 
         resetHealBudget()
 
@@ -581,7 +598,7 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
     /// The common path for "the hardware underneath us changed": our own device switch, and the
     /// health check finding an engine that stopped on its own.
     func rebuildGraph(_ beforeRebuild: () -> Void) {
-        guard !isRebuilding else { return }
+        guard !isRebuilding, !isShutDown else { return }
         isRebuilding = true
         defer { isRebuilding = false }
 
