@@ -175,6 +175,8 @@ final class TimelineContainerView: NSView {
         geometry.scale = scale
         wantsLayer = true
         clipsToBounds = true
+        // Time runs left to right in every language (localization design §2).
+        userInterfaceLayoutDirection = .leftToRight
 
         addSubview(gutter)
         addSubview(keyboard)

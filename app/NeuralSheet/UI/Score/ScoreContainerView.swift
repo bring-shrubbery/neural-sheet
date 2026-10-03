@@ -46,6 +46,8 @@ final class ScoreContainerView: NSView {
         super.init(frame: .zero)
 
         wantsLayer = true
+        // The staves run left to right in every language (localization design §2).
+        userInterfaceLayoutDirection = .leftToRight
 
         scrollView.hasVerticalScroller = true
         scrollView.hasHorizontalScroller = false

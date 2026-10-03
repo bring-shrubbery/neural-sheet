@@ -90,14 +90,19 @@ struct MainView: View {
 
                     // The timeline stays in the hierarchy under the score, so its zoom, scroll
                     // and pitch range survive a visit to the Score tab.
+                    // Time runs left to right whatever the language: the timeline and the score
+                    // keep their direction under a right-to-left system language (localization
+                    // design §2); the menus and Settings follow the system.
                     ZStack {
                         TimelineView(model: model)
                             .opacity(model.workspace == .score ? 0 : 1)
                             .allowsHitTesting(model.workspace != .score)
                             .accessibilityHidden(model.workspace == .score)
+                            .environment(\.layoutDirection, .leftToRight)
 
                         if model.workspace == .score {
                             ScoreTabView(model: model)
+                                .environment(\.layoutDirection, .leftToRight)
                         }
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
