@@ -2,49 +2,64 @@
   "sourceLanguage" : "en",
   "strings" : {
     "Separate stems with ${applicationName}" : {
+      "comment" : "Shortcuts and Siri: the phrases that run the action; ${applicationName} is the app's name, and each language lists its own phrases",
+      "extractionState" : "extracted_with_value",
       "localizations" : {
         "de" : {
-          "stringUnit" : {
+          "stringSet" : {
             "state" : "translated",
-            "value" : "Stems mit ${applicationName} trennen"
+            "values" : [
+              "Stems mit ${applicationName} trennen"
+            ]
+          }
+        },
+        "en" : {
+          "stringSet" : {
+            "state" : "new",
+            "values" : [
+              "Separate stems with ${applicationName}"
+            ]
           }
         },
         "es" : {
-          "stringUnit" : {
+          "stringSet" : {
             "state" : "translated",
-            "value" : "Separar stems con ${applicationName}"
+            "values" : [
+              "Separar stems con ${applicationName}"
+            ]
           }
         }
       }
     },
     "Transcribe audio with ${applicationName}" : {
+      "comment" : "Shortcuts and Siri: the phrases that run the action; ${applicationName} is the app's name, and each language lists its own phrases",
+      "extractionState" : "extracted_with_value",
       "localizations" : {
         "de" : {
-          "stringUnit" : {
+          "stringSet" : {
             "state" : "translated",
-            "value" : "Audio mit ${applicationName} transkribieren"
+            "values" : [
+              "Audio mit ${applicationName} transkribieren",
+              "Mit ${applicationName} transkribieren"
+            ]
+          }
+        },
+        "en" : {
+          "stringSet" : {
+            "state" : "new",
+            "values" : [
+              "Transcribe audio with ${applicationName}",
+              "Transcribe with ${applicationName}"
+            ]
           }
         },
         "es" : {
-          "stringUnit" : {
+          "stringSet" : {
             "state" : "translated",
-            "value" : "Transcribir audio con ${applicationName}"
-          }
-        }
-      }
-    },
-    "Transcribe with ${applicationName}" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mit ${applicationName} transkribieren"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Transcribir con ${applicationName}"
+            "values" : [
+              "Transcribir audio con ${applicationName}",
+              "Transcribir con ${applicationName}"
+            ]
           }
         }
       }

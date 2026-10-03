@@ -1,6 +1,23 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "“%@” already exists. Do you want to replace it?" : {
+      "comment" : "Alert title: Export Stems… would overwrite a file, AppKit's own wording",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "„%@“ ist bereits vorhanden. Möchtest du die Datei ersetzen?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” ya existe. ¿Quieres reemplazarlo?"
+          }
+        }
+      }
+    },
     "\"%@\" could not be loaded as a SoundFont (.sf2) or DLS (.dls) file. NeuralSheet is using the system's General MIDI sounds instead." : {
       "comment" : "Alert body: a sound bank file was refused",
       "localizations" : {
@@ -14,159 +31,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No se ha podido cargar “%@” como archivo SoundFont (.sf2) o DLS (.dls). NeuralSheet usa en su lugar los sonidos General MIDI del sistema."
-          }
-        }
-      }
-    },
-    "%@ (%lld skipped)" : {
-      "comment" : "Batch window: a done file, some of whose outputs existed already",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@ (%2$lld übersprungen)"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@ (%2$lld omitidos)"
-          }
-        }
-      }
-    },
-    "%@ GB" : {
-      "comment" : "A file size in gigabytes, e.g. \"2.7 GB\"",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ GB"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ GB"
-          }
-        }
-      }
-    },
-    "%@ beats" : {
-      "comment" : "VoiceOver: a note's length in beats, to a tenth, e.g. \"1.5 beats\"",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ Schläge"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ pulsos"
-          }
-        }
-      }
-    },
-    "%@ dB" : {
-      "comment" : "Accessibility value: a level in decibels, e.g. \"-6.0 dB\"",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ dB"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ dB"
-          }
-        }
-      }
-    },
-    "%@ is for another version of NeuralSheet. Delete it from the models folder, then download it again" : {
-      "comment" : "The reason in a failed transcription's alert: the model file is from another release",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ gehört zu einer anderen Version von NeuralSheet. Lösche die Datei aus dem Modellordner und lade sie erneut herunter"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ es de otra versión de NeuralSheet. Elimínalo de la carpeta de modelos y vuelve a descargarlo"
-          }
-        }
-      }
-    },
-    "%@ of %@" : {
-      "comment" : "Accessibility value: the playhead's time of the take's length, e.g. \"0:12.34 of 3:05.00\" / Settings → Model: a download's progress, e.g. \"618 MB of 2.7 GB\"",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@ von %2$@"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@ de %2$@"
-          }
-        }
-      }
-    },
-    "%@ rest, %@, bar %lld" : {
-      "comment" : "VoiceOver: a rest in the score, e.g. \"quarter rest, Piano, bar 5\"; the first value is a note value such as \"quarter\"",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pause (%1$@), %2$@, Takt %3$lld"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "silencio de %1$@, %2$@, compás %3$lld"
-          }
-        }
-      }
-    },
-    "%@ s" : {
-      "comment" : "Status bar: the take's length in seconds",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ s"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ s"
-          }
-        }
-      }
-    },
-    "%@ to %@" : {
-      "comment" : "VoiceOver: the keys on show, lowest to highest, e.g. \"C2 to C6\"",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@ bis %2$@"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@ a %2$@"
           }
         }
       }
@@ -266,19 +130,155 @@
         }
       }
     },
-    "%@%@" : {
-      "comment" : "Shown in Recorder+Files, the Transcribe toolbar",
+    "%@ (%lld skipped)" : {
+      "comment" : "Batch window: a done file, some of whose outputs existed already",
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@%2$@"
+            "value" : "%1$@ (%2$lld übersprungen)"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@%2$@"
+            "value" : "%1$@ (%2$lld omitidos)"
+          }
+        }
+      }
+    },
+    "%@ beats" : {
+      "comment" : "VoiceOver: a note's length in beats, to a tenth, e.g. \"1.5 beats\"",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ Schläge"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ pulsos"
+          }
+        }
+      }
+    },
+    "%@ dB" : {
+      "comment" : "Accessibility value: a level in decibels, e.g. \"-6.0 dB\"",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ dB"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ dB"
+          }
+        }
+      }
+    },
+    "%@ GB" : {
+      "comment" : "A file size in gigabytes, e.g. \"2.7 GB\"",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ GB"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ GB"
+          }
+        }
+      }
+    },
+    "%@ is for another version of NeuralSheet. Delete it from the models folder, then download it again" : {
+      "comment" : "The reason in a failed transcription's alert: the model file is from another release",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ gehört zu einer anderen Version von NeuralSheet. Lösche die Datei aus dem Modellordner und lade sie erneut herunter"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ es de otra versión de NeuralSheet. Elimínalo de la carpeta de modelos y vuelve a descargarlo"
+          }
+        }
+      }
+    },
+    "%@ of %@" : {
+      "comment" : "Accessibility value: the playhead's time of the take's length, e.g. \"0:12.34 of 3:05.00\"\nSettings → Model: a download's progress, e.g. \"618 MB of 2.7 GB\"",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ von %2$@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ de %2$@"
+          }
+        }
+      }
+    },
+    "%@ rest, %@, bar %lld" : {
+      "comment" : "VoiceOver: a rest in the score, e.g. \"quarter rest, Piano, bar 5\"; the first value is a note value such as \"quarter\"",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pause (%1$@), %2$@, Takt %3$lld"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "silencio de %1$@, %2$@, compás %3$lld"
+          }
+        }
+      }
+    },
+    "%@ s" : {
+      "comment" : "Status bar: the take's length in seconds",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ s"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ s"
+          }
+        }
+      }
+    },
+    "%@ to %@" : {
+      "comment" : "VoiceOver: the keys on show, lowest to highest, e.g. \"C2 to C6\"",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ bis %2$@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ a %2$@"
           }
         }
       }
@@ -318,7 +318,7 @@
       }
     },
     "%@, bar %lld beat %lld" : {
-      "comment" : "VoiceOver: a chord symbol in the chord lane, e.g. \"Am7, bar 3 beat 1\" / VoiceOver: the ruler's value, the playhead's time then its bar and beat",
+      "comment" : "VoiceOver: a chord symbol in the chord lane, e.g. \"Am7, bar 3 beat 1\"\nVoiceOver: the ruler's value, the playhead's time then its bar and beat",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -351,19 +351,19 @@
         }
       }
     },
-    "%lld MB" : {
-      "comment" : "A file size in megabytes, e.g. \"618 MB\"",
+    "%@%@" : {
+      "comment" : "Shown in Recorder+Files, the Transcribe toolbar",
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%lld MB"
+            "value" : "%1$@%2$@"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%lld MB"
+            "value" : "%1$@%2$@"
           }
         }
       }
@@ -581,7 +581,7 @@
       }
     },
     "%lld instruments" : {
-      "comment" : "Accessibility label: the sidebar header's instrument count / Batch window: the instruments menu, how many are chosen / Status bar: how many instruments the transcription has",
+      "comment" : "Accessibility label: the sidebar header's instrument count\nBatch window: the instruments menu, how many are chosen\nStatus bar: how many instruments the transcription has",
       "localizations" : {
         "de" : {
           "variations" : {
@@ -645,6 +645,23 @@
         }
       }
     },
+    "%lld MB" : {
+      "comment" : "A file size in megabytes, e.g. \"618 MB\"",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld MB"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld MB"
+          }
+        }
+      }
+    },
     "%lld ms" : {
       "comment" : "Shown in Settings → Model",
       "localizations" : {
@@ -663,7 +680,7 @@
       }
     },
     "%lld notes" : {
-      "comment" : "Instrument strip: how many notes / Status bar: how many notes the transcription has / The selection panel and the note card: how many notes are selected",
+      "comment" : "Instrument strip: how many notes\nStatus bar: how many notes the transcription has\nThe selection panel and the note card: how many notes are selected",
       "localizations" : {
         "de" : {
           "variations" : {
@@ -826,6 +843,23 @@
         }
       }
     },
+    "A file with the same name already exists in “%@”. Replacing it will overwrite its current contents." : {
+      "comment" : "Alert body: Export Stems… would overwrite a file",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Im Ordner „%@“ ist bereits eine Datei mit diesem Namen vorhanden. Beim Ersetzen wird ihr aktueller Inhalt überschrieben."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ya existe un archivo con el mismo nombre en “%@”. Si lo reemplazas, se sobrescribirá su contenido actual."
+          }
+        }
+      }
+    },
     "A MIDI file has 16 channels, one of which is reserved for drums." : {
       "comment" : "Shown in File → Export MIDI…'s sheet",
       "localizations" : {
@@ -843,36 +877,36 @@
         }
       }
     },
-    "A SoundFont (.sf2) or DLS (.dls) file the MIDI and the click play through." : {
-      "comment" : "Shown in Settings → Audio",
+    "a quarter of a beat" : {
+      "comment" : "VoiceOver: a note's length",
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Eine SoundFont- (.sf2) oder DLS-Datei (.dls), über die MIDI und Klick wiedergegeben werden."
+            "value" : "ein Viertelschlag"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Un archivo SoundFont (.sf2) o DLS (.dls) con el que suenan el MIDI y el clic."
+            "value" : "un cuarto de pulso"
           }
         }
       }
     },
-    "A file with the same name already exists in “%@”. Replacing it will overwrite its current contents." : {
-      "comment" : "Alert body: Export Stems… would overwrite a file",
+    "a separation is already running" : {
+      "comment" : "The reason after \"The stems could not be separated:\"",
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Im Ordner „%@“ ist bereits eine Datei mit diesem Namen vorhanden. Beim Ersetzen wird ihr aktueller Inhalt überschrieben."
+            "value" : "eine Trennung läuft bereits"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ya existe un archivo con el mismo nombre en “%@”. Si lo reemplazas, se sobrescribirá su contenido actual."
+            "value" : "ya hay una separación en curso"
           }
         }
       }
@@ -894,36 +928,19 @@
         }
       }
     },
-    "ADD INSTRUMENT" : {
-      "comment" : "The sidebar's instrument picker: its header",
+    "A SoundFont (.sf2) or DLS (.dls) file the MIDI and the click play through." : {
+      "comment" : "Shown in Settings → Audio",
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "INSTRUMENT HINZUFÜGEN"
+            "value" : "Eine SoundFont- (.sf2) oder DLS-Datei (.dls), über die MIDI und Klick wiedergegeben werden."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "AÑADIR INSTRUMENTO"
-          }
-        }
-      }
-    },
-    "ALL INSTRUMENTS" : {
-      "comment" : "Shown in the instrument menu, the Re-transcribe popup",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ALLE INSTRUMENTE"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "TODOS LOS INSTRUMENTOS"
+            "value" : "Un archivo SoundFont (.sf2) o DLS (.dls) con el que suenan el MIDI y el clic."
           }
         }
       }
@@ -1013,19 +1030,36 @@
         }
       }
     },
-    "Add Marker Here" : {
-      "comment" : "Shown in the ruler card's marker section",
+    "Add instrument" : {
+      "comment" : "Accessibility label: the sidebar's + button",
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Marker hier hinzufügen"
+            "value" : "Instrument hinzufügen"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Añadir marcador aquí"
+            "value" : "Añadir instrumento"
+          }
+        }
+      }
+    },
+    "ADD INSTRUMENT" : {
+      "comment" : "The sidebar's instrument picker: its header",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "INSTRUMENT HINZUFÜGEN"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AÑADIR INSTRUMENTO"
           }
         }
       }
@@ -1047,6 +1081,23 @@
         }
       }
     },
+    "Add Marker Here" : {
+      "comment" : "Shown in the ruler card's marker section",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Marker hier hinzufügen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadir marcador aquí"
+          }
+        }
+      }
+    },
     "Add Tempo Change at Bar %lld" : {
       "comment" : "Shown in the ruler card",
       "localizations" : {
@@ -1060,23 +1111,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Añadir cambio de tempo en el compás %lld"
-          }
-        }
-      }
-    },
-    "Add instrument" : {
-      "comment" : "Accessibility label: the sidebar's + button",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Instrument hinzufügen"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Añadir instrumento"
           }
         }
       }
@@ -1132,6 +1166,23 @@
         }
       }
     },
+    "ALL INSTRUMENTS" : {
+      "comment" : "Shown in the instrument menu, the Re-transcribe popup",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ALLE INSTRUMENTE"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TODOS LOS INSTRUMENTOS"
+          }
+        }
+      }
+    },
     "Allow it in System Settings › Privacy & Security › Screen & System Audio Recording, then choose the input again." : {
       "comment" : "Alert body: System Audio refused",
       "localizations" : {
@@ -1162,6 +1213,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Saxo alto"
+          }
+        }
+      }
+    },
+    "arr. %@" : {
+      "comment" : "The score's title block: the arranger's credit",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bearb.: %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "arr. %@"
           }
         }
       }
@@ -1252,7 +1320,7 @@
       }
     },
     "Automatic" : {
-      "comment" : "Batch window: the instruments menu with nothing chosen, the model picks / String card: let the tab choose the string",
+      "comment" : "Batch window: the instruments menu with nothing chosen, the model picks\nString card: let the tab choose the string",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1285,36 +1353,19 @@
         }
       }
     },
-    "BEAT 1 AT" : {
-      "comment" : "Shown in the Edit and Score toolbars' grid and key controls",
+    "B♭ tenor (+14)" : {
+      "comment" : "Part card: a transposition, as a tenor saxophone reads",
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "SCHLAG 1 BEI"
+            "value" : "B Tenor (+14)"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "PULSO 1 EN"
-          }
-        }
-      }
-    },
-    "BPM" : {
-      "comment" : "Shown in File → Export MIDI…'s sheet",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "BPM"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "BPM"
+            "value" : "Si♭ tenor (+14)"
           }
         }
       }
@@ -1438,6 +1489,23 @@
         }
       }
     },
+    "BEAT 1 AT" : {
+      "comment" : "Shown in the Edit and Score toolbars' grid and key controls",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SCHLAG 1 BEI"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PULSO 1 EN"
+          }
+        }
+      }
+    },
     "Beat unit" : {
       "comment" : "Accessibility label: the time signature's denominator button",
       "localizations" : {
@@ -1523,6 +1591,23 @@
         }
       }
     },
+    "BPM" : {
+      "comment" : "Shown in File → Export MIDI…'s sheet",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "BPM"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "BPM"
+          }
+        }
+      }
+    },
     "Brass" : {
       "comment" : "Shown in Shortcuts: an action's choices",
       "localizations" : {
@@ -1553,40 +1638,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Por intervalo…"
-          }
-        }
-      }
-    },
-    "B♭ tenor (+14)" : {
-      "comment" : "Part card: a transposition, as a tenor saxophone reads",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "B Tenor (+14)"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Si♭ tenor (+14)"
-          }
-        }
-      }
-    },
-    "CLICK" : {
-      "comment" : "Master panel: the metronome button",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "KLICK"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "CLIC"
           }
         }
       }
@@ -1965,23 +2016,6 @@
         }
       }
     },
-    "Clear Menu" : {
-      "comment" : "Shown in the menu bar",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Menü löschen"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Borrar menú"
-          }
-        }
-      }
-    },
     "Clear audio and transcription" : {
       "comment" : "The bin's right-click menu",
       "localizations" : {
@@ -2016,8 +2050,25 @@
         }
       }
     },
+    "Clear Menu" : {
+      "comment" : "Shown in the menu bar",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Menü löschen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Borrar menú"
+          }
+        }
+      }
+    },
     "Clear transcription only" : {
-      "comment" : "Accessibility action on the bin button: the right-click menu's second choice / The bin's right-click menu",
+      "comment" : "Accessibility action on the bin button: the right-click menu's second choice\nThe bin's right-click menu",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2063,6 +2114,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Clic"
+          }
+        }
+      }
+    },
+    "CLICK" : {
+      "comment" : "Master panel: the metronome button",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "KLICK"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CLIC"
           }
         }
       }
@@ -2509,6 +2577,40 @@
         }
       }
     },
+    "Could not write the audio file." : {
+      "comment" : "Alert title: File → Export Audio… or Export Stems… failed",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Audiodatei konnte nicht geschrieben werden."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se ha podido escribir el archivo de audio."
+          }
+        }
+      }
+    },
+    "Could not write the file: %@" : {
+      "comment" : "A batch or Shortcuts failure; the reason is the system's",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Datei konnte nicht geschrieben werden: %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se ha podido escribir el archivo: %@"
+          }
+        }
+      }
+    },
     "Could not write the MIDI file." : {
       "comment" : "Alert body: File → Export MIDI… failed",
       "localizations" : {
@@ -2556,40 +2658,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No se ha podido escribir el archivo PDF."
-          }
-        }
-      }
-    },
-    "Could not write the audio file." : {
-      "comment" : "Alert title: File → Export Audio… or Export Stems… failed",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Die Audiodatei konnte nicht geschrieben werden."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No se ha podido escribir el archivo de audio."
-          }
-        }
-      }
-    },
-    "Could not write the file: %@" : {
-      "comment" : "A batch or Shortcuts failure; the reason is the system's",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Die Datei konnte nicht geschrieben werden: %@"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No se ha podido escribir el archivo: %@"
           }
         }
       }
@@ -2748,7 +2816,7 @@
       }
     },
     "Delete" : {
-      "comment" : "Chord card: remove the chord / VoiceOver action on a note: delete it",
+      "comment" : "Chord card: remove the chord\nVoiceOver action on a note: delete it",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2764,19 +2832,19 @@
         }
       }
     },
-    "Delete Marker" : {
-      "comment" : "Shown in the ruler card's marker section",
+    "Delete “%@”?" : {
+      "comment" : "Shown in Edit → Versions → Manage Versions…",
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Marker löschen"
+            "value" : "„%@“ löschen?"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Eliminar marcador"
+            "value" : "¿Eliminar “%@”?"
           }
         }
       }
@@ -2798,19 +2866,19 @@
         }
       }
     },
-    "Delete “%@”?" : {
-      "comment" : "Shown in Edit → Versions → Manage Versions…",
+    "Delete Marker" : {
+      "comment" : "Shown in the ruler card's marker section",
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "„%@“ löschen?"
+            "value" : "Marker löschen"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "¿Eliminar “%@”?"
+            "value" : "Eliminar marcador"
           }
         }
       }
@@ -2866,23 +2934,6 @@
         }
       }
     },
-    "Detect Tempo and Key" : {
-      "comment" : "Shown in Shortcuts: Transcribe Audio",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tempo und Tonart erkennen"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Detectar tempo y tonalidad"
-          }
-        }
-      }
-    },
     "Detect replaces the chord symbols you have edited with what it finds in the notes." : {
       "comment" : "Alert body: Detect Chords over edited chords",
       "localizations" : {
@@ -2919,6 +2970,23 @@
     },
     "Detect tempo and key" : {
       "comment" : "Shown in the Batch Transcribe window",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tempo und Tonart erkennen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Detectar tempo y tonalidad"
+          }
+        }
+      }
+    },
+    "Detect Tempo and Key" : {
+      "comment" : "Shown in Shortcuts: Transcribe Audio",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3148,6 +3216,23 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "dotted %@" : {
+      "comment" : "VoiceOver: a dotted note value, e.g. \"dotted quarter\"",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "punktierte %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ con puntillo"
           }
         }
       }
@@ -3458,36 +3543,36 @@
         }
       }
     },
-    "EDIT" : {
-      "comment" : "Shown in the tab strip under the top bar",
+    "E♭ alto (+9)" : {
+      "comment" : "Part card: a transposition, as an alto saxophone reads",
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "BEARBEITEN"
+            "value" : "Es Alt (+9)"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "EDITAR"
+            "value" : "Mi♭ alto (+9)"
           }
         }
       }
     },
-    "EXPORTING" : {
-      "comment" : "Status bar: the caption while Export Stems… writes the files",
+    "E♭ baritone (+21)" : {
+      "comment" : "Part card: a transposition, as a baritone saxophone reads",
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "EXPORTIEREN"
+            "value" : "Es Bariton (+21)"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "EXPORTANDO"
+            "value" : "Mi♭ barítono (+21)"
           }
         }
       }
@@ -3505,6 +3590,40 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Edición"
+          }
+        }
+      }
+    },
+    "EDIT" : {
+      "comment" : "Shown in the tab strip under the top bar",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "BEARBEITEN"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "EDITAR"
+          }
+        }
+      }
+    },
+    "eighth" : {
+      "comment" : "VoiceOver: a note value, as in \"eighth note\"",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Achtel"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "corchea"
           }
         }
       }
@@ -3680,7 +3799,7 @@
       }
     },
     "Export MIDI" : {
-      "comment" : "Accessibility label: the toolbar's MIDI chip, which exports the MIDI file when pressed / File → Export MIDI…'s save panel",
+      "comment" : "Accessibility label: the toolbar's MIDI chip, which exports the MIDI file when pressed\nFile → Export MIDI…'s save panel",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3815,23 +3934,6 @@
         }
       }
     },
-    "Exporting Audio" : {
-      "comment" : "Shown in Export Audio's progress sheet",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Audio wird exportiert"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Exportando audio"
-          }
-        }
-      }
-    },
     "Export…" : {
       "comment" : "Shown in File → Export MIDI…'s sheet",
       "localizations" : {
@@ -3849,36 +3951,36 @@
         }
       }
     },
-    "E♭ alto (+9)" : {
-      "comment" : "Part card: a transposition, as an alto saxophone reads",
+    "EXPORTING" : {
+      "comment" : "Status bar: the caption while Export Stems… writes the files",
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Es Alt (+9)"
+            "value" : "EXPORTIEREN"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mi♭ alto (+9)"
+            "value" : "EXPORTANDO"
           }
         }
       }
     },
-    "E♭ baritone (+21)" : {
-      "comment" : "Part card: a transposition, as a baritone saxophone reads",
+    "Exporting Audio" : {
+      "comment" : "Shown in Export Audio's progress sheet",
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Es Bariton (+21)"
+            "value" : "Audio wird exportiert"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mi♭ barítono (+21)"
+            "value" : "Exportando audio"
           }
         }
       }
@@ -4121,6 +4223,40 @@
         }
       }
     },
+    "half" : {
+      "comment" : "VoiceOver: a note value, as in \"half note\"",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Halbe"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "blanca"
+          }
+        }
+      }
+    },
+    "half a beat" : {
+      "comment" : "VoiceOver: a note's length",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ein halber Schlag"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "medio pulso"
+          }
+        }
+      }
+    },
     "Harp" : {
       "comment" : "Shown in Shortcuts: an action's choices",
       "localizations" : {
@@ -4139,7 +4275,7 @@
       }
     },
     "Hidden" : {
-      "comment" : "Accessibility label: the part card's hide switch / Part card: the part is left off the score",
+      "comment" : "Accessibility label: the part card's hide switch\nPart card: the part is left off the score",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4257,59 +4393,25 @@
         }
       }
     },
-    "IN THE MIX" : {
-      "comment" : "Shown in the instrument menu, the Re-transcribe popup",
+    "Import “%@”?" : {
+      "comment" : "Alert title: File → Import MIDI… over a transcription",
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "IM MIX"
+            "value" : "„%@“ importieren?"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "EN LA MEZCLA"
-          }
-        }
-      }
-    },
-    "INSTRUMENTS" : {
-      "comment" : "Shown in the sidebar",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "INSTRUMENTE"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "INSTRUMENTOS"
-          }
-        }
-      }
-    },
-    "INSTRUMENTS THE MODEL MAY USE" : {
-      "comment" : "Shown in the Re-transcribe popup",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "INSTRUMENTE, DIE DAS MODELL VERWENDEN DARF"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "INSTRUMENTOS QUE PUEDE USAR EL MODELO"
+            "value" : "¿Importar “%@”?"
           }
         }
       }
     },
     "Import MIDI" : {
-      "comment" : "A version's name: \"Before Import MIDI — 14:02\" / File → Import MIDI…'s open panel",
+      "comment" : "A version's name: \"Before Import MIDI — 14:02\"\nFile → Import MIDI…'s open panel",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4342,19 +4444,19 @@
         }
       }
     },
-    "Import “%@”?" : {
-      "comment" : "Alert title: File → Import MIDI… over a transcription",
+    "IN THE MIX" : {
+      "comment" : "Shown in the instrument menu, the Re-transcribe popup",
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "„%@“ importieren?"
+            "value" : "IM MIX"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "¿Importar “%@”?"
+            "value" : "EN LA MEZCLA"
           }
         }
       }
@@ -4393,6 +4495,23 @@
         }
       }
     },
+    "Install…" : {
+      "comment" : "Shown in Settings → General",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Installieren …"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Instalar…"
+          }
+        }
+      }
+    },
     "Installed" : {
       "comment" : "Accessibility label: a model row's radio, installed but not in use",
       "localizations" : {
@@ -4423,23 +4542,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Instalada. Ejecuta neuralsheet --help en el Terminal para empezar."
-          }
-        }
-      }
-    },
-    "Install…" : {
-      "comment" : "Shown in Settings → General",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Installieren …"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Instalar…"
           }
         }
       }
@@ -4495,6 +4597,40 @@
         }
       }
     },
+    "INSTRUMENTS" : {
+      "comment" : "Shown in the sidebar",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "INSTRUMENTE"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "INSTRUMENTOS"
+          }
+        }
+      }
+    },
+    "INSTRUMENTS THE MODEL MAY USE" : {
+      "comment" : "Shown in the Re-transcribe popup",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "INSTRUMENTE, DIE DAS MODELL VERWENDEN DARF"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "INSTRUMENTOS QUE PUEDE USAR EL MODELO"
+          }
+        }
+      }
+    },
     "Join Notes" : {
       "comment" : "Shown in the Edit menu",
       "localizations" : {
@@ -4508,23 +4644,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Unir notas"
-          }
-        }
-      }
-    },
-    "KEY" : {
-      "comment" : "Shown in the Edit and Score toolbars' grid and key controls",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "TONART"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "TONALIDAD"
           }
         }
       }
@@ -4546,6 +4665,23 @@
         }
       }
     },
+    "KEY" : {
+      "comment" : "Shown in the Edit and Score toolbars' grid and key controls",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TONART"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TONALIDAD"
+          }
+        }
+      }
+    },
     "Keyboard" : {
       "comment" : "VoiceOver: the piano keys left of the piano roll",
       "localizations" : {
@@ -4559,6 +4695,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Teclado"
+          }
+        }
+      }
+    },
+    "kit map" : {
+      "comment" : "Instrument strip: the drums' notes name kit pieces, not pitches",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kit-Belegung"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "mapa de batería"
           }
         }
       }
@@ -4785,7 +4938,7 @@
       }
     },
     "Lyric" : {
-      "comment" : "Accessibility label: the syllable field for a note / Lyric card: its header with no note",
+      "comment" : "Accessibility label: the syllable field for a note\nLyric card: its header with no note",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4848,91 +5001,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "M"
-          }
-        }
-      }
-    },
-    "MASTER" : {
-      "comment" : "Shown in the sidebar's master panel",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "MASTER"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "MÁSTER"
-          }
-        }
-      }
-    },
-    "MIDI" : {
-      "comment" : "Master panel: the mix slider's MIDI end; held, only the MIDI plays",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "MIDI"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "MIDI"
-          }
-        }
-      }
-    },
-    "MIDI Output" : {
-      "comment" : "Shown in the menu bar",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "MIDI-Ausgang"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Salida MIDI"
-          }
-        }
-      }
-    },
-    "MIX WAVEFORM" : {
-      "comment" : "The waveform's corner label",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "MIX-WELLENFORM"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "FORMA DE ONDA DE LA MEZCLA"
-          }
-        }
-      }
-    },
-    "MUTE" : {
-      "comment" : "Master panel: the input mute button",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "STUMM"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "SILENCIO"
           }
         }
       }
@@ -5023,7 +5091,7 @@
       }
     },
     "Marker" : {
-      "comment" : "Ruler card: the marker section's header with no marker / VoiceOver: a marker flag with no name",
+      "comment" : "Ruler card: the marker section's header with no marker\nVoiceOver: a marker flag with no name",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5090,6 +5158,23 @@
         }
       }
     },
+    "MASTER" : {
+      "comment" : "Shown in the sidebar's master panel",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MASTER"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MÁSTER"
+          }
+        }
+      }
+    },
     "Measure numbers" : {
       "comment" : "Shown in the Score toolbar's Sheet… card",
       "localizations" : {
@@ -5141,6 +5226,40 @@
         }
       }
     },
+    "MIDI" : {
+      "comment" : "Master panel: the mix slider's MIDI end; held, only the MIDI plays",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MIDI"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MIDI"
+          }
+        }
+      }
+    },
+    "MIDI Output" : {
+      "comment" : "Shown in the menu bar",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MIDI-Ausgang"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Salida MIDI"
+          }
+        }
+      }
+    },
     "Minor" : {
       "comment" : "Chord card: a chord quality",
       "localizations" : {
@@ -5188,6 +5307,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mezcla"
+          }
+        }
+      }
+    },
+    "MIX WAVEFORM" : {
+      "comment" : "The waveform's corner label",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MIX-WELLENFORM"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "FORMA DE ONDA DE LA MEZCLA"
           }
         }
       }
@@ -5379,6 +5515,23 @@
         }
       }
     },
+    "MUTE" : {
+      "comment" : "Master panel: the input mute button",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "STUMM"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SILENCIO"
+          }
+        }
+      }
+    },
     "Mute / Unmute input | m" : {
       "comment" : "Shown in the sidebar's master panel",
       "localizations" : {
@@ -5481,23 +5634,6 @@
         }
       }
     },
-    "NeuralSheet Project" : {
-      "comment" : "Shown in Shortcuts: an action's choices",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "NeuralSheet-Projekt"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Proyecto de NeuralSheet"
-          }
-        }
-      }
-    },
     "NeuralSheet needs permission to record system audio." : {
       "comment" : "Alert title: System Audio refused",
       "localizations" : {
@@ -5511,6 +5647,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "NeuralSheet necesita permiso para grabar el audio del sistema."
+          }
+        }
+      }
+    },
+    "NeuralSheet Project" : {
+      "comment" : "Shown in Shortcuts: an action's choices",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "NeuralSheet-Projekt"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Proyecto de NeuralSheet"
           }
         }
       }
@@ -5635,7 +5788,7 @@
       }
     },
     "None" : {
-      "comment" : "Chord card: no slash bass / Menu row: no key, or no chord bass / Part card: no tab / Part card: no transposition / Status bar: no transcription model installed",
+      "comment" : "Chord card: no slash bass\nMenu row: no key, or no chord bass\nPart card: no tab\nPart card: no transposition\nStatus bar: no transcription model installed",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5736,6 +5889,40 @@
         }
       }
     },
+    "not transcribed yet" : {
+      "comment" : "Instrument strip: no notes for it yet",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "noch nicht transkribiert"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "aún sin transcribir"
+          }
+        }
+      }
+    },
+    "note" : {
+      "comment" : "VoiceOver: what a note in the score is\nVoiceOver: what a note on the piano roll is, said after its name",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Note"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "nota"
+          }
+        }
+      }
+    },
     "Notes" : {
       "comment" : "Shown in Edit → Versions → Manage Versions…",
       "localizations" : {
@@ -5766,57 +5953,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No hay nada que equilibrar con la división activada: cada lado suena al máximo en su propio oído"
-          }
-        }
-      }
-    },
-    "OK" : {
-      "comment" : "Alert button",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "OK"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Aceptar"
-          }
-        }
-      }
-    },
-    "OR DROP A FILE HERE" : {
-      "comment" : "The empty waveform, under the Load audio file button",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ODER EINE DATEI HIERHER ZIEHEN"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "O SUELTA UN ARCHIVO AQUÍ"
-          }
-        }
-      }
-    },
-    "ORIG" : {
-      "comment" : "Master panel: the mix slider's source-audio end; held, only the source plays",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ORIG"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ORIG"
           }
         }
       }
@@ -5873,7 +6009,7 @@
       }
     },
     "Off" : {
-      "comment" : "Accessibility value: a toggle button that is off / Settings → Audio: no count-in",
+      "comment" : "Accessibility value: a toggle button that is off\nSettings → Audio: no count-in",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5885,6 +6021,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Desactivado"
+          }
+        }
+      }
+    },
+    "OK" : {
+      "comment" : "Alert button",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aceptar"
           }
         }
       }
@@ -5936,6 +6089,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Abrir proyecto existente…"
+          }
+        }
+      }
+    },
+    "Open in Finder" : {
+      "comment" : "Shown in Settings → Model",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Im Finder öffnen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrir en el Finder"
           }
         }
       }
@@ -6008,23 +6178,6 @@
         }
       }
     },
-    "Open in Finder" : {
-      "comment" : "Shown in Settings → Model",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Im Finder öffnen"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Abrir en el Finder"
-          }
-        }
-      }
-    },
     "Open…" : {
       "comment" : "Shown in the menu bar",
       "localizations" : {
@@ -6038,6 +6191,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Abrir…"
+          }
+        }
+      }
+    },
+    "OR DROP A FILE HERE" : {
+      "comment" : "The empty waveform, under the Load audio file button",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ODER EINE DATEI HIERHER ZIEHEN"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O SUELTA UN ARCHIVO AQUÍ"
           }
         }
       }
@@ -6076,6 +6246,23 @@
         }
       }
     },
+    "ORIG" : {
+      "comment" : "Master panel: the mix slider's source-audio end; held, only the source plays",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ORIG"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ORIG"
+          }
+        }
+      }
+    },
     "Output" : {
       "comment" : "Shown in Settings → Audio, Shortcuts: an action's choices, the menu bar",
       "localizations" : {
@@ -6093,8 +6280,8 @@
         }
       }
     },
-    "Output Folder" : {
-      "comment" : "Batch window: the folder panel's title",
+    "Output folder" : {
+      "comment" : "Shown in the Batch Transcribe window",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6110,8 +6297,8 @@
         }
       }
     },
-    "Output folder" : {
-      "comment" : "Shown in the Batch Transcribe window",
+    "Output Folder" : {
+      "comment" : "Batch window: the folder panel's title",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6637,6 +6824,23 @@
         }
       }
     },
+    "quarter" : {
+      "comment" : "VoiceOver: a note value, as in \"quarter note\"",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Viertel"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "negra"
+          }
+        }
+      }
+    },
     "Quarter notes a minute" : {
       "comment" : "Shown in the ruler card",
       "localizations" : {
@@ -6650,23 +6854,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Negras por minuto"
-          }
-        }
-      }
-    },
-    "RE-TRANSCRIBING" : {
-      "comment" : "Edit toolbar: the caption beside a region run's progress bar",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "NEUTRANSKRIPTION"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "RETRANSCRIBIENDO"
           }
         }
       }
@@ -6739,6 +6926,23 @@
         }
       }
     },
+    "RE-TRANSCRIBING" : {
+      "comment" : "Edit toolbar: the caption beside a region run's progress bar",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "NEUTRANSKRIPTION"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "RETRANSCRIBIENDO"
+          }
+        }
+      }
+    },
     "Record" : {
       "comment" : "Accessibility label: the top bar's record button",
       "localizations" : {
@@ -6791,7 +6995,7 @@
       }
     },
     "Redo" : {
-      "comment" : "Accessibility label: the Edit toolbar's redo button / Edit menu: redo with nothing to redo",
+      "comment" : "Accessibility label: the Edit toolbar's redo button\nEdit menu: redo with nothing to redo",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6858,23 +7062,6 @@
         }
       }
     },
-    "Remove Tempo Change" : {
-      "comment" : "Shown in the ruler card",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tempowechsel entfernen"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Eliminar cambio de tempo"
-          }
-        }
-      }
-    },
     "Remove from Recents" : {
       "comment" : "Shown in the welcome window's recent projects",
       "localizations" : {
@@ -6892,8 +7079,25 @@
         }
       }
     },
+    "Remove Tempo Change" : {
+      "comment" : "Shown in the ruler card",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tempowechsel entfernen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar cambio de tempo"
+          }
+        }
+      }
+    },
     "Replace" : {
-      "comment" : "Alert button: overwrite the file / Alert button: replace the edited chords / Alert button: replace the edited tempo map",
+      "comment" : "Alert button: overwrite the file\nAlert button: replace the edited chords\nAlert button: replace the edited tempo map",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7024,6 +7228,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Restablecer zoom"
+          }
+        }
+      }
+    },
+    "rest" : {
+      "comment" : "VoiceOver: what a rest in the score is",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pause"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "silencio"
           }
         }
       }
@@ -7232,108 +7453,6 @@
         }
       }
     },
-    "SCORE" : {
-      "comment" : "Shown in the tab strip under the top bar",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "PARTITUR"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "PARTITURA"
-          }
-        }
-      }
-    },
-    "SELECTION" : {
-      "comment" : "Shown in the sidebar's SELECTION panel",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AUSWAHL"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "SELECCIÓN"
-          }
-        }
-      }
-    },
-    "SEPARATING" : {
-      "comment" : "Status bar: the caption while the stems are separated",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "TRENNEN"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "SEPARANDO"
-          }
-        }
-      }
-    },
-    "SHEET" : {
-      "comment" : "Shown in the Score toolbar's Sheet… card",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "NOTENBLATT"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "HOJA"
-          }
-        }
-      }
-    },
-    "SPEED" : {
-      "comment" : "Shown in the top bar's SPEED pill",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "GESCHW."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "VELOCIDAD"
-          }
-        }
-      }
-    },
-    "SWING" : {
-      "comment" : "Shown in the Edit toolbar",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "SWING"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "SWING"
-          }
-        }
-      }
-    },
     "Save" : {
       "comment" : "Alert button: save the project",
       "localizations" : {
@@ -7381,40 +7500,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Guardar proyecto"
-          }
-        }
-      }
-    },
-    "Save Version" : {
-      "comment" : "Edit → Versions → Save Version…: the alert's title",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Version sichern"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Guardar versión"
-          }
-        }
-      }
-    },
-    "Save Version…" : {
-      "comment" : "Shown in Edit → Versions",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Version sichern …"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Guardar versión…"
           }
         }
       }
@@ -7484,8 +7569,42 @@
         }
       }
     },
+    "Save Version" : {
+      "comment" : "Edit → Versions → Save Version…: the alert's title",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Version sichern"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guardar versión"
+          }
+        }
+      }
+    },
+    "Save Version…" : {
+      "comment" : "Shown in Edit → Versions",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Version sichern …"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guardar versión…"
+          }
+        }
+      }
+    },
     "Scale Velocity" : {
-      "comment" : "Edit → Velocity → Scale…: the alert's title / Undo title: velocities scaled",
+      "comment" : "Edit → Velocity → Scale…: the alert's title\nUndo title: velocities scaled",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7531,6 +7650,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Partitura"
+          }
+        }
+      }
+    },
+    "SCORE" : {
+      "comment" : "Shown in the tab strip under the top bar",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PARTITUR"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PARTITURA"
           }
         }
       }
@@ -7654,6 +7790,23 @@
         }
       }
     },
+    "selected" : {
+      "comment" : "Instrument strip: an instrument chosen for the next run",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ausgewählt"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "seleccionado"
+          }
+        }
+      }
+    },
     "Selected" : {
       "comment" : "Accessibility label: a model row's radio, the model in use",
       "localizations" : {
@@ -7667,6 +7820,40 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Seleccionado"
+          }
+        }
+      }
+    },
+    "SELECTION" : {
+      "comment" : "Shown in the sidebar's SELECTION panel",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AUSWAHL"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SELECCIÓN"
+          }
+        }
+      }
+    },
+    "semitones" : {
+      "comment" : "Edit → Transpose → By Interval…: the unit after the field",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Halbtöne"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "semitonos"
           }
         }
       }
@@ -7705,23 +7892,6 @@
         }
       }
     },
-    "Separate Stems" : {
-      "comment" : "Shown in Shortcuts and Spotlight, Shortcuts: Separate Stems, Shortcuts: Transcribe Audio",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Stems trennen"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Separar stems"
-          }
-        }
-      }
-    },
     "Separate drums, bass and vocals first." : {
       "comment" : "Shown in the Batch Transcribe window",
       "localizations" : {
@@ -7735,6 +7905,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Separa primero la batería, el bajo y las voces."
+          }
+        }
+      }
+    },
+    "Separate Stems" : {
+      "comment" : "Shown in Shortcuts and Spotlight, Shortcuts: Separate Stems, Shortcuts: Transcribe Audio",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stems trennen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Separar stems"
           }
         }
       }
@@ -7807,6 +7994,23 @@
         }
       }
     },
+    "SEPARATING" : {
+      "comment" : "Status bar: the caption while the stems are separated",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TRENNEN"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SEPARANDO"
+          }
+        }
+      }
+    },
     "Set beat 1 from playhead" : {
       "comment" : "Accessibility label: the toolbar's target button beside BEAT 1 AT",
       "localizations" : {
@@ -7841,6 +8045,23 @@
         }
       }
     },
+    "SHEET" : {
+      "comment" : "Shown in the Score toolbar's Sheet… card",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "NOTENBLATT"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "HOJA"
+          }
+        }
+      }
+    },
     "Sheet…" : {
       "comment" : "Shown in the Score toolbar",
       "localizations" : {
@@ -7854,6 +8075,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Hoja…"
+          }
+        }
+      }
+    },
+    "Show chords" : {
+      "comment" : "Shown in the Score toolbar's Sheet… card",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Akkorde anzeigen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar acordes"
           }
         }
       }
@@ -7892,40 +8130,6 @@
         }
       }
     },
-    "Show Pitch Curves" : {
-      "comment" : "Shown in the menu bar",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tonhöhenkurven anzeigen"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mostrar curvas de altura"
-          }
-        }
-      }
-    },
-    "Show chords" : {
-      "comment" : "Shown in the Score toolbar's Sheet… card",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Akkorde anzeigen"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mostrar acordes"
-          }
-        }
-      }
-    },
     "Show in Finder" : {
       "comment" : "Shown in the welcome window's recent projects",
       "localizations" : {
@@ -7956,6 +8160,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mostrar u ocultar una parte"
+          }
+        }
+      }
+    },
+    "Show Pitch Curves" : {
+      "comment" : "Shown in the menu bar",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tonhöhenkurven anzeigen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar curvas de altura"
           }
         }
       }
@@ -8028,6 +8249,23 @@
         }
       }
     },
+    "sixteenth" : {
+      "comment" : "VoiceOver: a note value, as in \"sixteenth note\"",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sechzehntel"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "semicorchea"
+          }
+        }
+      }
+    },
     "Skip" : {
       "comment" : "Alert button: leave this file and go on",
       "localizations" : {
@@ -8079,23 +8317,6 @@
         }
       }
     },
-    "Snap to Scale" : {
-      "comment" : "Shown in the Edit menu",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "An Tonleiter ausrichten"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ajustar a la escala"
-          }
-        }
-      }
-    },
     "Snap to grid" : {
       "comment" : "Accessibility label: the Edit toolbar's magnet button",
       "localizations" : {
@@ -8109,6 +8330,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ajustar a la cuadrícula"
+          }
+        }
+      }
+    },
+    "Snap to Scale" : {
+      "comment" : "Shown in the Edit menu",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "An Tonleiter ausrichten"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajustar a la escala"
           }
         }
       }
@@ -8160,6 +8398,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Banco de sonidos"
+          }
+        }
+      }
+    },
+    "SPEED" : {
+      "comment" : "Shown in the top bar's SPEED pill",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GESCHW."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "VELOCIDAD"
           }
         }
       }
@@ -8470,6 +8725,23 @@
         }
       }
     },
+    "SWING" : {
+      "comment" : "Shown in the Edit toolbar",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SWING"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SWING"
+          }
+        }
+      }
+    },
     "Swing: how late the second of each pair of eighths or sixteenths falls; 50 % is straight" : {
       "comment" : "Shown in the Edit toolbar",
       "localizations" : {
@@ -8538,23 +8810,6 @@
         }
       }
     },
-    "System %lld, bars %lld to %lld" : {
-      "comment" : "VoiceOver: one line of the score, e.g. \"System 2, bars 5 to 8\"",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Akkolade %1$lld, Takte %2$lld bis %3$lld"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sistema %1$lld, compases %2$lld a %3$lld"
-          }
-        }
-      }
-    },
     "System (General MIDI)" : {
       "comment" : "Shown in Settings → Audio",
       "localizations" : {
@@ -8568,6 +8823,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sistema (General MIDI)"
+          }
+        }
+      }
+    },
+    "System %lld, bars %lld to %lld" : {
+      "comment" : "VoiceOver: one line of the score, e.g. \"System 2, bars 5 to 8\"",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Akkolade %1$lld, Takte %2$lld bis %3$lld"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sistema %1$lld, compases %2$lld a %3$lld"
           }
         }
       }
@@ -8619,91 +8891,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Predeterminado del sistema sigue lo que macOS tenga seleccionado en los ajustes de Sonido."
-          }
-        }
-      }
-    },
-    "TEMPO" : {
-      "comment" : "Shown in the Edit and Score toolbars' grid and key controls",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "TEMPO"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "TEMPO"
-          }
-        }
-      }
-    },
-    "TICK TO INCLUDE IN TRANSCRIPTION" : {
-      "comment" : "The sidebar's instrument picker: its footer",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ANHAKEN, UM ES ZU TRANSKRIBIEREN"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "MARCA PARA INCLUIR EN LA TRANSCRIPCIÓN"
-          }
-        }
-      }
-    },
-    "TIME" : {
-      "comment" : "Shown in the Edit and Score toolbars' grid and key controls",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "TAKTART"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "COMPÁS"
-          }
-        }
-      }
-    },
-    "TRANSCRIBE" : {
-      "comment" : "Shown in the tab strip under the top bar",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "TRANSKRIBIEREN"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "TRANSCRIBIR"
-          }
-        }
-      }
-    },
-    "TRANSCRIBING" : {
-      "comment" : "Status bar: the caption beside a run's progress bar",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "TRANSKRIBIEREN"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "TRANSCRIBIENDO"
           }
         }
       }
@@ -8772,6 +8959,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tempo"
+          }
+        }
+      }
+    },
+    "TEMPO" : {
+      "comment" : "Shown in the Edit and Score toolbars' grid and key controls",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TEMPO"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TEMPO"
           }
         }
       }
@@ -8896,7 +9100,7 @@
       }
     },
     "The audio format is not available." : {
-      "comment" : "Alert body: Export Audio… could not set up the format / Alert body: Export Stems… could not set up the format",
+      "comment" : "Alert body: Export Audio… could not set up the format\nAlert body: Export Stems… could not set up the format",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9354,6 +9558,40 @@
         }
       }
     },
+    "the stems could not be kept" : {
+      "comment" : "The reason after \"Could not write the file:\"",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "die Stems konnten nicht behalten werden"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "no se han podido conservar los stems"
+          }
+        }
+      }
+    },
+    "the stems could not be separated: %@" : {
+      "comment" : "The reason in a failed transcription's alert, after \"could not be loaded or run:\"",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "die Stems konnten nicht getrennt werden: %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "no se han podido separar los stems: %@"
+          }
+        }
+      }
+    },
     "The stems could not be separated: %@." : {
       "comment" : "Alert body: Export Stems… could not separate; the reason follows",
       "localizations" : {
@@ -9371,6 +9609,23 @@
         }
       }
     },
+    "the stems model could not be loaded" : {
+      "comment" : "The reason after \"The stems could not be separated:\"",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "das Stems-Modell konnte nicht geladen werden"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "no se ha podido cargar el modelo Stems"
+          }
+        }
+      }
+    },
     "The take already has a transcription. The file's notes can replace its notes or be added to them." : {
       "comment" : "Alert body: File → Import MIDI… over a transcription",
       "localizations" : {
@@ -9384,6 +9639,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "La toma ya tiene una transcripción. Las notas del archivo pueden reemplazar sus notas o añadirse a ellas."
+          }
+        }
+      }
+    },
+    "the take is empty" : {
+      "comment" : "The reason after \"The stems could not be separated:\"",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "die Aufnahme ist leer"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "la toma está vacía"
           }
         }
       }
@@ -9507,23 +9779,6 @@
         }
       }
     },
-    "The transcription model could not be loaded or run." : {
-      "comment" : "Alert body: a run failed without a reason",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Das Transkriptionsmodell konnte nicht geladen oder ausgeführt werden."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No se ha podido cargar o ejecutar el modelo de transcripción."
-          }
-        }
-      }
-    },
     "The transcription model could not be loaded or run: %@." : {
       "comment" : "Alert body: a run failed; the reason is the engine's, or a sentence from this catalog",
       "localizations" : {
@@ -9537,6 +9792,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No se ha podido cargar o ejecutar el modelo de transcripción: %@."
+          }
+        }
+      }
+    },
+    "The transcription model could not be loaded or run." : {
+      "comment" : "Alert body: a run failed without a reason",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Das Transkriptionsmodell konnte nicht geladen oder ausgeführt werden."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se ha podido cargar o ejecutar el modelo de transcripción."
           }
         }
       }
@@ -9558,6 +9830,74 @@
         }
       }
     },
+    "thirty-second" : {
+      "comment" : "VoiceOver: a note value, as in \"thirty-second note\"",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zweiunddreißigstel"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "fusa"
+          }
+        }
+      }
+    },
+    "three quarters of a beat" : {
+      "comment" : "VoiceOver: a note's length",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "drei Viertel eines Schlags"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "tres cuartos de pulso"
+          }
+        }
+      }
+    },
+    "TICK TO INCLUDE IN TRANSCRIPTION" : {
+      "comment" : "The sidebar's instrument picker: its footer",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ANHAKEN, UM ES ZU TRANSKRIBIEREN"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MARCA PARA INCLUIR EN LA TRANSCRIPCIÓN"
+          }
+        }
+      }
+    },
+    "ticked" : {
+      "comment" : "Accessibility value: a menu row or switch whose box is ticked",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "angehakt"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "marcado"
+          }
+        }
+      }
+    },
     "Time" : {
       "comment" : "Shown in the ruler card",
       "localizations" : {
@@ -9571,6 +9911,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Compás"
+          }
+        }
+      }
+    },
+    "TIME" : {
+      "comment" : "Shown in the Edit and Score toolbars' grid and key controls",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TAKTART"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "COMPÁS"
           }
         }
       }
@@ -9661,7 +10018,7 @@
       }
     },
     "Transcribe" : {
-      "comment" : "A version's name: \"Before Transcribe — 14:02\", saved before a run / The roll's call to action with no instruments chosen",
+      "comment" : "A version's name: \"Before Transcribe — 14:02\", saved before a run\nThe roll's call to action with no instruments chosen",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9677,19 +10034,19 @@
         }
       }
     },
-    "Transcribe ${files} to ${outputs}" : {
-      "comment" : "Shortcuts: Transcribe Audio's summary; ${files} and ${outputs} are the user's picks",
+    "TRANSCRIBE" : {
+      "comment" : "Shown in the tab strip under the top bar",
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "${files} in ${outputs} transkribieren"
+            "value" : "TRANSKRIBIEREN"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Transcribir ${files} a ${outputs}"
+            "value" : "TRANSCRIBIR"
           }
         }
       }
@@ -9755,6 +10112,23 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "Transcribe ${files} to ${outputs}" : {
+      "comment" : "Shortcuts: Transcribe Audio's summary; ${files} and ${outputs} are the user's picks",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "${files} in ${outputs} transkribieren"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transcribir ${files} a ${outputs}"
           }
         }
       }
@@ -9844,6 +10218,23 @@
         }
       }
     },
+    "TRANSCRIBING" : {
+      "comment" : "Status bar: the caption beside a run's progress bar",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TRANSKRIBIEREN"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TRANSCRIBIENDO"
+          }
+        }
+      }
+    },
     "Transcription failed." : {
       "comment" : "Alert title: a run failed",
       "localizations" : {
@@ -9878,23 +10269,6 @@
         }
       }
     },
-    "Transcription failed. The transcription model could not be loaded or run." : {
-      "comment" : "A batch or Shortcuts failure",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Transkription fehlgeschlagen. Das Transkriptionsmodell konnte nicht geladen oder ausgeführt werden."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ha fallado la transcripción. No se ha podido cargar o ejecutar el modelo de transcripción."
-          }
-        }
-      }
-    },
     "Transcription failed. The transcription model could not be loaded or run: %@." : {
       "comment" : "A batch or Shortcuts failure; the reason is the engine's",
       "localizations" : {
@@ -9908,6 +10282,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ha fallado la transcripción. No se ha podido cargar o ejecutar el modelo de transcripción: %@."
+          }
+        }
+      }
+    },
+    "Transcription failed. The transcription model could not be loaded or run." : {
+      "comment" : "A batch or Shortcuts failure",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transkription fehlgeschlagen. Das Transkriptionsmodell konnte nicht geladen oder ausgeführt werden."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ha fallado la transcripción. No se ha podido cargar o ejecutar el modelo de transcripción."
           }
         }
       }
@@ -10066,7 +10457,7 @@
       }
     },
     "Undo" : {
-      "comment" : "Accessibility label: the Edit toolbar's undo button / Edit menu: undo with nothing to undo",
+      "comment" : "Accessibility label: the Edit toolbar's undo button\nEdit menu: undo with nothing to undo",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -10095,6 +10486,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Deshacer %@"
+          }
+        }
+      }
+    },
+    "unticked" : {
+      "comment" : "Accessibility value: a menu row or switch whose box is empty",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "nicht angehakt"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "sin marcar"
           }
         }
       }
@@ -10473,6 +10881,23 @@
         }
       }
     },
+    "whole" : {
+      "comment" : "VoiceOver: a note value, as in \"whole note\"",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ganze"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "redonda"
+          }
+        }
+      }
+    },
     "Whole take" : {
       "comment" : "Shown in File → Export Audio…'s panel",
       "localizations" : {
@@ -10571,431 +10996,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Se perderán los cambios actuales."
-          }
-        }
-      }
-    },
-    "a quarter of a beat" : {
-      "comment" : "VoiceOver: a note's length",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ein Viertelschlag"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "un cuarto de pulso"
-          }
-        }
-      }
-    },
-    "a separation is already running" : {
-      "comment" : "The reason after \"The stems could not be separated:\"",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "eine Trennung läuft bereits"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ya hay una separación en curso"
-          }
-        }
-      }
-    },
-    "arr. %@" : {
-      "comment" : "The score's title block: the arranger's credit",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bearb.: %@"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "arr. %@"
-          }
-        }
-      }
-    },
-    "dotted %@" : {
-      "comment" : "VoiceOver: a dotted note value, e.g. \"dotted quarter\"",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "punktierte %@"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ con puntillo"
-          }
-        }
-      }
-    },
-    "eighth" : {
-      "comment" : "VoiceOver: a note value, as in \"eighth note\"",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Achtel"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "corchea"
-          }
-        }
-      }
-    },
-    "half" : {
-      "comment" : "VoiceOver: a note value, as in \"half note\"",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Halbe"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "blanca"
-          }
-        }
-      }
-    },
-    "half a beat" : {
-      "comment" : "VoiceOver: a note's length",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ein halber Schlag"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "medio pulso"
-          }
-        }
-      }
-    },
-    "kit map" : {
-      "comment" : "Instrument strip: the drums' notes name kit pieces, not pitches",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kit-Belegung"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "mapa de batería"
-          }
-        }
-      }
-    },
-    "not transcribed yet" : {
-      "comment" : "Instrument strip: no notes for it yet",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "noch nicht transkribiert"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "aún sin transcribir"
-          }
-        }
-      }
-    },
-    "note" : {
-      "comment" : "VoiceOver: what a note in the score is / VoiceOver: what a note on the piano roll is, said after its name",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Note"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "nota"
-          }
-        }
-      }
-    },
-    "quarter" : {
-      "comment" : "VoiceOver: a note value, as in \"quarter note\"",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Viertel"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "negra"
-          }
-        }
-      }
-    },
-    "rest" : {
-      "comment" : "VoiceOver: what a rest in the score is",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pause"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "silencio"
-          }
-        }
-      }
-    },
-    "selected" : {
-      "comment" : "Instrument strip: an instrument chosen for the next run",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ausgewählt"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "seleccionado"
-          }
-        }
-      }
-    },
-    "semitones" : {
-      "comment" : "Edit → Transpose → By Interval…: the unit after the field",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Halbtöne"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "semitonos"
-          }
-        }
-      }
-    },
-    "sixteenth" : {
-      "comment" : "VoiceOver: a note value, as in \"sixteenth note\"",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sechzehntel"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "semicorchea"
-          }
-        }
-      }
-    },
-    "the stems could not be kept" : {
-      "comment" : "The reason after \"Could not write the file:\"",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "die Stems konnten nicht behalten werden"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "no se han podido conservar los stems"
-          }
-        }
-      }
-    },
-    "the stems could not be separated: %@" : {
-      "comment" : "The reason in a failed transcription's alert, after \"could not be loaded or run:\"",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "die Stems konnten nicht getrennt werden: %@"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "no se han podido separar los stems: %@"
-          }
-        }
-      }
-    },
-    "the stems model could not be loaded" : {
-      "comment" : "The reason after \"The stems could not be separated:\"",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "das Stems-Modell konnte nicht geladen werden"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "no se ha podido cargar el modelo Stems"
-          }
-        }
-      }
-    },
-    "the take is empty" : {
-      "comment" : "The reason after \"The stems could not be separated:\"",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "die Aufnahme ist leer"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "la toma está vacía"
-          }
-        }
-      }
-    },
-    "thirty-second" : {
-      "comment" : "VoiceOver: a note value, as in \"thirty-second note\"",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Zweiunddreißigstel"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "fusa"
-          }
-        }
-      }
-    },
-    "three quarters of a beat" : {
-      "comment" : "VoiceOver: a note's length",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "drei Viertel eines Schlags"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "tres cuartos de pulso"
-          }
-        }
-      }
-    },
-    "ticked" : {
-      "comment" : "Accessibility value: a menu row or switch whose box is ticked",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "angehakt"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "marcado"
-          }
-        }
-      }
-    },
-    "unticked" : {
-      "comment" : "Accessibility value: a menu row or switch whose box is empty",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "nicht angehakt"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "sin marcar"
-          }
-        }
-      }
-    },
-    "whole" : {
-      "comment" : "VoiceOver: a note value, as in \"whole note\"",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ganze"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "redonda"
-          }
-        }
-      }
-    },
-    "“%@” already exists. Do you want to replace it?" : {
-      "comment" : "Alert title: Export Stems… would overwrite a file, AppKit's own wording",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "„%@“ ist bereits vorhanden. Möchtest du die Datei ersetzen?"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "“%@” ya existe. ¿Quieres reemplazarlo?"
           }
         }
       }

@@ -3,7 +3,6 @@
   "strings" : {
     "CFBundleName" : {
       "comment" : "Bundle name",
-      "extractionState" : "extracted_with_value",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -21,6 +20,29 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "NeuralSheet"
+          }
+        }
+      }
+    },
+    "NeuralSheet Project" : {
+      "comment" : "The project document type, as the Finder names it",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "NeuralSheet-Projekt"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "NeuralSheet Project"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Proyecto de NeuralSheet"
           }
         }
       }
@@ -51,7 +73,6 @@
     },
     "NSMicrophoneUsageDescription" : {
       "comment" : "Privacy - Microphone Usage Description: why the app asks for the microphone",
-      "extractionState" : "extracted_with_value",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -69,30 +90,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "NeuralSheet graba desde el micrófono para transcribir lo que tocas."
-          }
-        }
-      }
-    },
-    "NeuralSheet Project" : {
-      "comment" : "The project document type, as the Finder names it",
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "NeuralSheet-Projekt"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "NeuralSheet Project"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Proyecto de NeuralSheet"
           }
         }
       }
