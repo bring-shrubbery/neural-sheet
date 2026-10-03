@@ -74,6 +74,48 @@ import AppKit
         }
     }
 
+    /// Points `model.presentNumber` at the window.
+    static func installNumber(on model: AppModel, window: @escaping () -> NSWindow?) {
+        model.presentNumber = { title, label, range, initial, suffix, completion in
+            presentNumber(title: title, label: label, range: range, initial: initial, suffix: suffix,
+                          on: window(), completion: completion)
+        }
+    }
+
+    /// A number to enter (editor commands design §2): the label as the body, a field and a stepper
+    /// that keep each other in step, the unit after them, OK (Return) and Cancel. An alert rather
+    /// than a SwiftUI sheet, as the other questions are, so it needs no window plumbing. The
+    /// completion runs only on OK, with the value clamped into `range`.
+    static func presentNumber(title: String, label: String, range: ClosedRange<Int>, initial: Int, suffix: String,
+                              on window: NSWindow?, completion: @escaping (Int) -> Void) {
+        let alert = NSAlert()
+        alert.messageText = title
+        alert.informativeText = label
+        alert.alertStyle = .informational
+        alert.addButton(withTitle: "OK")
+        alert.addButton(withTitle: "Cancel")
+
+        let entry = NumberEntry(range: range, initial: initial, suffix: suffix)
+        alert.accessoryView = entry.view
+        alert.window.initialFirstResponder = entry.field
+
+        // The entry is held by the completion until the alert is answered: it is the field's and
+        // the stepper's target.
+        let finish: (NSApplication.ModalResponse) -> Void = { response in
+            guard response == .alertFirstButtonReturn else { return }
+
+            completion(entry.value)
+        }
+
+        if let window, window.isVisible {
+            alert.beginSheetModal(for: window, completionHandler: finish)
+        } else {
+            DispatchQueue.main.async {
+                finish(alert.runModal())
+            }
+        }
+    }
+
     /// Points `model.presentSaveReview` and `model.presentRevert` at the window.
     static func installProjectDialogs(on model: AppModel, window: @escaping () -> NSWindow?) {
         model.presentSaveReview = { title, completion in
@@ -142,5 +184,66 @@ import AppKit
                 completion(alert.runModal() == .alertFirstButtonReturn)
             }
         }
+    }
+}
+
+/// The number alert's accessory: a whole-number field, a stepper and the unit, kept in step.
+@MainActor private final class NumberEntry: NSObject {
+    let view: NSStackView
+    let field: NSTextField
+    private let stepper: NSStepper
+    private let range: ClosedRange<Int>
+
+    init(range: ClosedRange<Int>, initial: Int, suffix: String) {
+        self.range = range
+
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .none
+        formatter.allowsFloats = false
+        formatter.minimum = NSNumber(value: range.lowerBound)
+        formatter.maximum = NSNumber(value: range.upperBound)
+        formatter.positivePrefix = range.lowerBound < 0 ? "+" : ""
+
+        field = NSTextField()
+        field.formatter = formatter
+        field.alignment = .right
+        field.translatesAutoresizingMaskIntoConstraints = false
+        field.widthAnchor.constraint(equalToConstant: 64).isActive = true
+
+        stepper = NSStepper()
+        stepper.minValue = Double(range.lowerBound)
+        stepper.maxValue = Double(range.upperBound)
+        stepper.increment = 1
+        stepper.valueWraps = false
+
+        let unit = NSTextField(labelWithString: suffix)
+        view = NSStackView(views: [field, stepper, unit])
+        view.orientation = .horizontal
+        view.spacing = 6
+
+        super.init()
+
+        let start = min(max(initial, range.lowerBound), range.upperBound)
+        field.integerValue = start
+        stepper.integerValue = start
+        field.target = self
+        field.action = #selector(fieldChanged)
+        stepper.target = self
+        stepper.action = #selector(stepperChanged)
+        view.setFrameSize(view.fittingSize)
+    }
+
+    /// What the field holds, clamped; the field wins over the stepper, since a typed number that
+    /// has not been committed with Tab is still what the user meant.
+    var value: Int {
+        min(max(field.integerValue, range.lowerBound), range.upperBound)
+    }
+
+    @objc private func fieldChanged() {
+        stepper.integerValue = value
+    }
+
+    @objc private func stepperChanged() {
+        field.integerValue = stepper.integerValue
     }
 }

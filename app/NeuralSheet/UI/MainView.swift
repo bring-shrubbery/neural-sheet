@@ -110,6 +110,7 @@ struct MainView: View {
     private func appear() {
         Dialogs.install(on: model) { [windowController] in windowController.window }
         Dialogs.installConfirm(on: model) { [windowController] in windowController.window }
+        Dialogs.installNumber(on: model) { [windowController] in windowController.window }
         Dialogs.installProjectDialogs(on: model) { [windowController] in windowController.window }
 
         windowController.shouldClose = { window in model.handleWindowClose(window) }

@@ -36,6 +36,16 @@ import UniformTypeIdentifiers
     /// confirms at once, which is what happens before a window exists.
     @ObservationIgnored var presentConfirm: ((String, String, String, @escaping (Bool) -> Void) -> Void)?
 
+    /// Installed by the view layer: `(title, label, range, initial, suffix, completion)` for
+    /// the number alerts By Interval… and Scale… (editor commands design §2); the completion runs
+    /// only on OK. Nil drops the request, which is what happens before a window exists.
+    @ObservationIgnored var presentNumber: ((String, String, ClosedRange<Int>, Int, String, @escaping (Int) -> Void) -> Void)?
+
+    /// The last numbers By Interval… and Scale… were given, offered again next time; for the
+    /// session, so a new project keeps them (editor commands design §2).
+    @ObservationIgnored var lastTransposeSemitones = 7
+    @ObservationIgnored var lastVelocityPercent = 100
+
     /// What the save-changes sheet came back with.
     enum SaveReviewChoice {
         case save, discard, cancel
