@@ -15,8 +15,12 @@ final class ScoreView: NSView {
         didSet {
             hitsBySystem = [:]
             namesBySystem = [:]
+            invalidateAccessibilitySystems()
         }
     }
+
+    /// VoiceOver's systems, made when it asks and dropped with the layout (`+Accessibility`).
+    var accessibilitySystems: [DrawnElement]?
 
     /// The tab notes and the part names as drawn, by system: the systems drawn so far with this
     /// layout, which covers everything a click can land on. Kept per system because a tall view
