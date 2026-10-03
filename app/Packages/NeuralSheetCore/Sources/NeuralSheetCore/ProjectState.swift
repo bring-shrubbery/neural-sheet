@@ -59,6 +59,9 @@ public struct ProjectState: Codable, Equatable, Sendable {
     /// Whether the user has changed the list since Detect last filled it, so Detect asks before
     /// replacing it.
     public var chordsEdited = false
+    /// The section markers, in time order (markers and lyrics design §2); empty in a file from
+    /// before them.
+    public var markers: [Marker] = []
 
     // View state: written on every save, never what makes the project edited.
 
@@ -137,7 +140,7 @@ public struct ProjectState: Codable, Equatable, Sendable {
     private enum CodingKeys: String, CodingKey {
         case formatVersion, audioFileName, audioDisplayName, selectedGroups, mixer
         case exportTempo, gridOffsetSeconds, gridDivision, gridSegments, gridSwing, snapEnabled, targetProgram, key, arrangement
-        case chords, chordsEdited
+        case chords, chordsEdited, markers
         case workspace, playheadSeconds, playheadCentered, zoomLevel, verticalZoom
     }
 
@@ -168,6 +171,7 @@ public struct ProjectState: Codable, Equatable, Sendable {
             try container.decodeIfPresent(ScoreArrangement.self, forKey: .arrangement) ?? defaults.arrangement
         chords = try container.decodeIfPresent([ChordEvent].self, forKey: .chords) ?? defaults.chords
         chordsEdited = try container.decodeIfPresent(Bool.self, forKey: .chordsEdited) ?? defaults.chordsEdited
+        markers = try container.decodeIfPresent([Marker].self, forKey: .markers) ?? defaults.markers
         workspace = try container.decodeIfPresent(Workspace.self, forKey: .workspace) ?? defaults.workspace
         playheadSeconds =
             try container.decodeIfPresent(Double.self, forKey: .playheadSeconds) ?? defaults.playheadSeconds

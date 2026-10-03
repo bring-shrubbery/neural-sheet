@@ -14,11 +14,13 @@ extension NoteDocument {
 
     /// A note the user drew. It carries no confidence whatever it was built from: the model did
     /// not make it, so it is never doubtful (confidence design §2). Nor a pitch curve: nothing
-    /// was measured for it (pitch curves design §2).
+    /// was measured for it (pitch curves design §2). Nor a lyric: words are put on a note after
+    /// it exists (markers and lyrics design §2).
     public mutating func insert(_ note: NoteEvent) -> EditBatch {
         var note = note
         note.confidence = nil
         note.pitchCurve = nil
+        note.lyric = nil
         let inserted = EditableNote(id: allocateID(), note: note)
 
         return finished(EditBatch(title: "Add Note", inserted: [inserted]))
@@ -222,6 +224,11 @@ extension NoteDocument {
 
     /// Clamps every note the batch introduces, resolves the overlaps it creates, then drops the
     /// pitch curve of every changed note whose pitch or length the batch changed.
+    ///
+    /// The lyric has no rule here, deliberately: a syllable belongs to the note whatever its
+    /// pitch, length or place (markers and lyrics design §2, Lyrics in commands), so a change
+    /// carries it through, a trim keeps it and a note an overlap erases takes it along. The one
+    /// command that drops a lyric is Split, whose second half is a new note.
     func finished(_ batch: EditBatch) -> EditBatch {
         var batch = batch
         batch.inserted = batch.inserted.map { EditableNote(id: $0.id, note: NoteDocument.clamped($0.note)) }

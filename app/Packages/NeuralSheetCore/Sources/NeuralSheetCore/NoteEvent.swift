@@ -27,6 +27,13 @@ public struct NoteEvent: Equatable, Hashable, Codable, Sendable {
     ///
     /// Codable the same way as `confidence`: no key when nil, and older projects read back nil.
     public var pitchCurve: [Float]?
+    /// The syllable sung on this note, or nil for none (markers and lyrics design §2). An edit,
+    /// like the pitch: it goes through the document and undoes. Unlike the curve it does not
+    /// depend on the pitch or the length, so every command keeps it except the second half of a
+    /// split, which is a new note the syllable was never sung on.
+    ///
+    /// Codable the same way as `confidence`: no key when nil, and older projects read back nil.
+    public var lyric: Lyric?
 
     /// The program reserved for drum hits; the model routes drums itself, so no melodic note
     /// carries it and no drum hit carries any other program.
@@ -60,7 +67,8 @@ public struct NoteEvent: Equatable, Hashable, Codable, Sendable {
         amplitude: Double = NoteEvent.defaultAmplitude,
         program: Int,
         confidence: Double? = nil,
-        pitchCurve: [Float]? = nil
+        pitchCurve: [Float]? = nil,
+        lyric: Lyric? = nil
     ) {
         self.startTime = startTime
         self.endTime = endTime
@@ -69,6 +77,7 @@ public struct NoteEvent: Equatable, Hashable, Codable, Sendable {
         self.program = program
         self.confidence = confidence
         self.pitchCurve = pitchCurve
+        self.lyric = lyric
     }
 }
 

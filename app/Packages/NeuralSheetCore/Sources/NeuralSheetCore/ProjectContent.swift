@@ -24,6 +24,8 @@ public struct ProjectContent: Equatable, Sendable {
     /// The chord symbols: a correction is a project-state edit like the key (chord symbols
     /// design §2), not a note edit.
     public var chords: [ChordEvent]
+    /// The section markers: project state like the chords (markers and lyrics design §2).
+    public var markers: [Marker]
 
     public init(
         transcription: ProjectTranscription?,
@@ -38,7 +40,8 @@ public struct ProjectContent: Equatable, Sendable {
         targetProgram: Int?,
         key: MusicalKey? = nil,
         arrangement: ScoreArrangement = ScoreArrangement(),
-        chords: [ChordEvent] = []
+        chords: [ChordEvent] = [],
+        markers: [Marker] = []
     ) {
         self.transcription = transcription
         self.selectedGroups = selectedGroups
@@ -53,5 +56,6 @@ public struct ProjectContent: Equatable, Sendable {
         self.key = key
         self.arrangement = arrangement
         self.chords = chords
+        self.markers = markers
     }
 }
