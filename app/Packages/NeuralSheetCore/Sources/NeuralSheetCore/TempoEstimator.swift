@@ -1,21 +1,30 @@
 import Accelerate
 import Foundation
 
-/// What ``TempoEstimator`` found: a whole-number tempo and the earliest downbeat at or after the
-/// start of the take.
+/// What ``TempoEstimator`` found: a whole-number tempo, the earliest downbeat at or after the
+/// start of the take, and the tempo map the beats fold into (tempo map design §3) with the meter
+/// when the accents were clear.
 public struct TempoEstimate: Equatable, Sendable {
     public var bpm: Double
     public var downbeatSeconds: Double
+    /// From bar 1 at `downbeatSeconds`; one segment at `bpm` when the beats gave too little.
+    public var segments: [GridSegment]
+    /// 3/4 or 4/4 when the accents said so; nil leaves the meter as it was.
+    public var timeSignature: TimeSignature?
 
-    public init(bpm: Double, downbeatSeconds: Double) {
+    public init(bpm: Double, downbeatSeconds: Double, segments: [GridSegment]? = nil, timeSignature: TimeSignature? = nil) {
         self.bpm = bpm
         self.downbeatSeconds = downbeatSeconds
+        self.segments = segments ?? [GridSegment(startBar: 1, bpm: bpm, timeSignature: timeSignature ?? .common)]
+        self.timeSignature = timeSignature
     }
 }
 
 /// The tempo and a downbeat from the take's audio (tempo design §3.2): an onset-strength
 /// envelope, its autocorrelation under a prior about 120 BPM, then the beat phase and the
-/// strongest of a bar's four beat phases. Any thread; allocates freely.
+/// strongest of a bar's beat phases. Then the tempo map (tempo map design §2): the beats tracked
+/// through the take (`BeatTracker`), the meter from their accents (`MeterEstimator`) and the bars
+/// folded into segments (`TempoMapBuilder`). Any thread; allocates freely.
 public enum TempoEstimator {
     /// The model's mono copy is what is analysed.
     public static let sampleRate = 16_000.0
@@ -37,14 +46,28 @@ public enum TempoEstimator {
     /// The least audio worth analysing.
     public static let minimumSeconds = 4.0
 
-    public static func estimate(mono16k: [Float]) -> TempoEstimate? {
+    /// - Parameter meter: the meter the bars are counted in when the accents do not settle it.
+    public static func estimate(mono16k: [Float], meter: TimeSignature = .common) -> TempoEstimate? {
         guard Double(mono16k.count) / sampleRate >= minimumSeconds else { return nil }
 
         let envelope = onsetEnvelope(mono16k)
 
         guard let bpm = tempo(from: envelope) else { return nil }
 
-        return TempoEstimate(bpm: bpm, downbeatSeconds: downbeat(in: envelope, bpm: bpm))
+        let beats = BeatTracker.track(envelope: envelope, bpm: bpm)
+        let detected = MeterEstimator.estimate(envelope: envelope, beats: beats)
+        let counted = detected ?? meter
+        let beatsPerBar = counted.isCompound ? counted.numerator / 3 : counted.numerator
+        let downbeatIndex = MeterEstimator.downbeatIndex(envelope: envelope, beats: beats, beatsPerBar: beatsPerBar)
+
+        guard let map = TempoMapBuilder.build(beats: beats, downbeatIndex: downbeatIndex, timeSignature: counted) else {
+            // Too few bars to read a map from: the single estimate, as before the map.
+            let downbeat = downbeat(in: envelope, bpm: bpm, beatsPerBar: max(1, beatsPerBar))
+            return TempoEstimate(bpm: bpm, downbeatSeconds: downbeat,
+                                 segments: [GridSegment(startBar: 1, bpm: bpm, timeSignature: counted)], timeSignature: detected)
+        }
+
+        return TempoEstimate(bpm: bpm, downbeatSeconds: map.offset, segments: map.segments, timeSignature: detected)
     }
 
     // MARK: - Onset envelope
