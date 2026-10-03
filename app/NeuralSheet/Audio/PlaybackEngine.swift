@@ -139,10 +139,6 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
     private static let healBackoffMaxSeconds = 5.0
     private static let healAttemptLimit = 8
 
-    /// The fader's silent end, matching `InstrumentMixerState.minGainDb`.
-    private static let minGainDb = -36.0
-    private static let maxGainDb = 6.0
-
     /// How long a replaced take is kept alive after the box stops pointing at it. Orders of
     /// magnitude more than one render cycle, which is all the block needs.
     private static let retirementSeconds = 0.5
@@ -703,35 +699,19 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
         updateGains()
     }
 
+    /// The gains through ``MixLaw``, the one formula the offline renderer shares (audio export
+    /// design §2).
     private func updateGains() {
-        let hasNotes = synthBank.scheduler.hasNotes
-        let db = min(max(masterGainDb, Self.minGainDb), Self.maxGainDb)
-        // -36 dB is the fader's silent end, not a very quiet one.
-        let master = muted || db <= Self.minGainDb ? 0 : pow(10.0, db / 20.0)
+        let gains = MixLaw.resolve(mix: mix, masterGainDb: masterGainDb, muted: muted, stereoSplit: stereoSplit,
+                                   hasNotes: synthBank.scheduler.hasNotes)
 
-        if stereoSplit {
-            // Each side at full in its own ear. A hold (`mix` at exactly 0 or 1) silences the
-            // other ear; with no notes there is no synth side to hold, so the source stays on.
-            let sourceOn = !hasNotes || mix < 1
-            let synthOn = hasNotes && mix > 0
-
-            state.sourceGainBits.store(Float(sourceOn ? master : 0).bitPattern, ordering: .relaxed)
-            synthBank.synthGain = synthOn ? 1 : 0
-        } else {
-            // No notes means nothing on the synth side to fade to, so the mix is forced to
-            // all-source and the pill dims (§5.3).
-            let position = hasNotes ? min(max(mix, 0), 1) : 0
-            let angle = position * Double.pi / 2
-
-            state.sourceGainBits.store(Float(cos(angle) * master).bitPattern, ordering: .relaxed)
-            synthBank.synthGain = Float(sin(angle))
-        }
-
-        masterMixer.outputVolume = Float(master)
+        state.sourceGainBits.store(gains.source.bitPattern, ordering: .relaxed)
+        synthBank.synthGain = gains.synth
+        masterMixer.outputVolume = gains.master
         // The pans are the main mixer's input settings, re-applied here so a graph rebuilt for
         // another device gets them back with its gains.
-        sourceNode?.pan = stereoSplit ? -1 : 0
-        masterMixer.pan = stereoSplit ? 1 : 0
+        sourceNode?.pan = gains.stereoSplit ? -1 : 0
+        masterMixer.pan = gains.stereoSplit ? 1 : 0
     }
 
     // MARK: - Wrap notification

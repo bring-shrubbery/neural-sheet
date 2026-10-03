@@ -66,6 +66,12 @@ public struct GlobalSettings: Codable, Equatable, Sendable {
     /// app's own synths are silent, so the DAW's instruments are what is heard.
     public var midiOutMutesSynth = true
 
+    /// File → Export Audio…'s accessory (audio export design §2): the *What*, the *Format* and
+    /// whether *Marked range* was chosen, offered again next time.
+    public var audioExportWhat: AudioExportWhat = .midi
+    public var audioExportFormat: AudioExportFormat = .wav24
+    public var audioExportMarkedRange = false
+
     /// What the Count-in picker offers.
     public static let countInChoices = [0, 1, 2]
 
@@ -85,7 +91,10 @@ public struct GlobalSettings: Codable, Equatable, Sendable {
         clickWhileRecording: Bool = false,
         recordingInput: String = "",
         midiOutUniqueID: Int32? = nil,
-        midiOutMutesSynth: Bool = true
+        midiOutMutesSynth: Bool = true,
+        audioExportWhat: AudioExportWhat = .midi,
+        audioExportFormat: AudioExportFormat = .wav24,
+        audioExportMarkedRange: Bool = false
     ) {
         self.modelSize = modelSize
         self.editorScale = editorScale
@@ -103,6 +112,9 @@ public struct GlobalSettings: Codable, Equatable, Sendable {
         self.recordingInput = recordingInput
         self.midiOutUniqueID = midiOutUniqueID
         self.midiOutMutesSynth = midiOutMutesSynth
+        self.audioExportWhat = audioExportWhat
+        self.audioExportFormat = audioExportFormat
+        self.audioExportMarkedRange = audioExportMarkedRange
     }
 
     // MARK: - Files
@@ -135,6 +147,7 @@ public struct GlobalSettings: Codable, Equatable, Sendable {
         case showsConfidence, minimumNoteLength, minimumConfidence, showsPitchCurves, hiddenRecentProjects
         case soundBankPath, countInBars, clickWhileRecording, recordingInput
         case midiOutUniqueID, midiOutMutesSynth
+        case audioExportWhat, audioExportFormat, audioExportMarkedRange
     }
 
     /// Every key falls back to its default, so a file written by a version that did not have one
@@ -172,5 +185,13 @@ public struct GlobalSettings: Codable, Equatable, Sendable {
         midiOutUniqueID = try container.decodeIfPresent(Int32.self, forKey: .midiOutUniqueID)
         midiOutMutesSynth =
             try container.decodeIfPresent(Bool.self, forKey: .midiOutMutesSynth) ?? defaults.midiOutMutesSynth
+        // A value a later version wrote and this one does not know falls back rather than
+        // failing the whole file.
+        audioExportWhat = (try? container.decodeIfPresent(AudioExportWhat.self, forKey: .audioExportWhat))
+            .flatMap { $0 } ?? defaults.audioExportWhat
+        audioExportFormat = (try? container.decodeIfPresent(AudioExportFormat.self, forKey: .audioExportFormat))
+            .flatMap { $0 } ?? defaults.audioExportFormat
+        audioExportMarkedRange =
+            try container.decodeIfPresent(Bool.self, forKey: .audioExportMarkedRange) ?? defaults.audioExportMarkedRange
     }
 }
