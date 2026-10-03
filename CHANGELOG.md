@@ -36,6 +36,7 @@ Work towards v2 starts here: user-experience improvements beyond NeuralNote pari
 - Clean up a transcription in bulk from the Edit menu: transpose by an interval, scale the velocity or take it from the audio, make a line legato, join or split notes, humanize a passage, and swing the grid from the Edit toolbar.
 - Bring a MIDI file in over the take: File → Import MIDI…, or drop a `.mid` on the window, as the transcription or added to it.
 - Chord symbols: Detect names the harmony from the notes, a lane above the piano roll and the score show it, click a symbol to correct it, and the MusicXML export carries it.
+- Edit → Track Pitch follows slides, bends and vibrato inside each note from the audio, draws them on the piano roll, and exports them as pitch bend on monophonic MIDI tracks.
 
 ### Changed
 
