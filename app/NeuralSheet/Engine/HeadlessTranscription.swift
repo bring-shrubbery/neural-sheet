@@ -106,7 +106,8 @@ nonisolated final class HeadlessTranscription: @unchecked Sendable {
     let settings: GlobalSettings
 
     private let engine = TranscriptionEngine(retainsModel: true)
-    private let separator = StemSeparator()
+    /// Shared with the stems-only run in `+Stems.swift`.
+    let separator = StemSeparator()
 
     init(store: ModelStore = ModelStore(paths: .standard),
          settings: GlobalSettings = GlobalSettings.load(from: AppPaths.standard.globalSettings)) {
@@ -245,7 +246,7 @@ nonisolated final class HeadlessTranscription: @unchecked Sendable {
     // MARK: - Load
 
     /// The take, as the app loads a dropped file: a video's audio extracted first, into `scratch`.
-    private func load(_ input: URL, scratch: URL) async -> Result<SourceAudio, Failure> {
+    func load(_ input: URL, scratch: URL) async -> Result<SourceAudio, Failure> {
         let displayName = input.deletingPathExtension().lastPathComponent
 
         do {
@@ -339,76 +340,11 @@ nonisolated final class HeadlessTranscription: @unchecked Sendable {
         }
     }
 
-    // MARK: - Separate
-
-    /// The separator, awaited. The library cannot be stopped, so a cancel abandons the run: its
-    /// completion is dropped and this returns at once (the poll is a fifth of a second).
-    func separate(_ source: SourceAudio, modelPath: URL, keepTo: URL?, isCancelled: @escaping CancelCheck,
-                  onProgress: @escaping @Sendable (Float) -> Void) async -> Result<StemSeparator.Stems, Failure> {
-        let once = ResumeOnce<Result<StemSeparator.Stems, Failure>>()
-        let separator = self.separator
-
-        return await withCheckedContinuation { continuation in
-            once.install(continuation)
-
-            separator.run(
-                modelPath: modelPath,
-                source: source,
-                keepTo: keepTo,
-                onProgress: onProgress,
-                completion: { result in
-                    once.resume(with: result.mapError { .separation($0.message) })
-                })
-
-            Task.detached {
-                while !once.isResumed {
-                    if isCancelled() {
-                        separator.cancel()
-                        once.resume(with: .failure(.cancelled))
-                        return
-                    }
-
-                    try? await Task.sleep(for: .milliseconds(200))
-                }
-            }
-        }
-    }
-
     // MARK: - Errors
 
     static func describe(_ error: Error) -> String {
         if let error = error as? ProjectError, case let .couldNotWrite(reason) = error { return reason }
 
         return error.localizedDescription
-    }
-}
-
-/// A continuation resumed exactly once, by whichever of two racers gets there first.
-/// `@unchecked Sendable`: guarded by `lock`.
-nonisolated final class ResumeOnce<Value: Sendable>: @unchecked Sendable {
-    private let lock = NSLock()
-    private var continuation: CheckedContinuation<Value, Never>?
-    private var resumed = false
-
-    var isResumed: Bool {
-        lock.lock()
-        defer { lock.unlock() }
-        return resumed
-    }
-
-    func install(_ continuation: CheckedContinuation<Value, Never>) {
-        lock.lock()
-        self.continuation = continuation
-        lock.unlock()
-    }
-
-    func resume(with value: Value) {
-        lock.lock()
-        let continuation = resumed ? nil : self.continuation
-        resumed = true
-        self.continuation = nil
-        lock.unlock()
-
-        continuation?.resume(returning: value)
     }
 }
