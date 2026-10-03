@@ -39,6 +39,7 @@ Work towards v2 starts here: user-experience improvements beyond NeuralNote pari
 - Edit → Track Pitch follows slides, bends and vibrato inside each note from the audio, draws them on the piano roll, and exports them as pitch bend on monophonic MIDI tracks.
 - Name the sections and write the words: markers on the ruler (⌥M) become rehearsal marks in the score and the exports, and Edit → Lyric… or Paste Lyrics… puts syllables under the voice line.
 - Play the MIDI through your own SoundFont (Settings → Audio), pan each instrument from its strip, hear a click that follows the tempo (CLICK in the master panel, `k`), and record to a count-in.
+- Record what your Mac is playing: Audio → Input → System Audio, or one app, needs no loopback driver.
 
 ### Changed
 
