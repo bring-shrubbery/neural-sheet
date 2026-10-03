@@ -136,3 +136,17 @@ struct TranscriptionProgress: View {
                       onCancel: model.cancelTranscription)
     }
 }
+
+/// The status bar's progress group while Export Stems… separates the take or writes its files
+/// (audio export design §2): the stems run's own display, with the export's cancel.
+struct StemsExportProgress: View {
+    let model: AppModel
+
+    var body: some View {
+        ProgressGroup(caption: model.stemsExportCaption ?? TranscriptionProgress.separatingCaption,
+                      progress: model.stemsExport?.progress ?? 0,
+                      cancelling: false,
+                      cancelTooltip: "Cancel export",
+                      onCancel: model.cancelStemsExport)
+    }
+}

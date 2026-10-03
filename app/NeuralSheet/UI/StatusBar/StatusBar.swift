@@ -111,6 +111,10 @@ struct StatusBar: View {
                 TranscriptionProgress(model: model)
 
                 Spacer().frame(width: s(Metrics.progressGapToZoom))
+            } else if model.stemsExport != nil {
+                StemsExportProgress(model: model)
+
+                Spacer().frame(width: s(Metrics.progressGapToZoom))
             }
 
             Icons.VerticalZoomStroked()
