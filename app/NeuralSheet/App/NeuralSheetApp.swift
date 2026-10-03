@@ -225,6 +225,11 @@ struct NeuralSheetApp: App {
                 .keyboardShortcut("a", modifiers: [.command, .shift])
                 .disabled(model.workspace != .edit)
 
+            // Confidence design §2: the notes worth a look, ready for Delete.
+            Button("Select Doubtful Notes") { model.selectDoubtfulNotes() }
+                .keyboardShortcut("d", modifiers: [.command, .shift])
+                .disabled(!model.canSelectDoubtfulNotes)
+
             Divider()
 
             Button("Quantize") { model.quantizeSelectionOrAll() }
@@ -249,9 +254,9 @@ struct NeuralSheetApp: App {
 
     // MARK: - View menu
 
-    /// The three tabs (⌘1, ⌘2, ⌘3; Edit and Score only once there is a finished transcription) and Reset Zoom,
-    /// which the gear menu used to hold: horizontal back to 1, vertical back to automatic. ⌘0, as
-    /// every other app has it.
+    /// The three tabs (⌘1, ⌘2, ⌘3; Edit and Score only once there is a finished transcription),
+    /// Show Confidence (⌥⌘C), and Reset Zoom, which the gear menu used to hold: horizontal back to
+    /// 1, vertical back to automatic. ⌘0, as every other app has it.
     private func viewMenu(model: AppModel) -> some Commands {
         CommandMenu("View") {
             Button("Transcribe") { model.setWorkspace(.transcribe) }
@@ -264,6 +269,14 @@ struct NeuralSheetApp: App {
             Button("Score") { model.setWorkspace(.score) }
                 .keyboardShortcut("3", modifiers: .command)
                 .disabled(!model.canEdit)
+
+            Divider()
+
+            // A checkmark toggle, as the Audio menu's devices are; remembered in the global
+            // settings (confidence design §2).
+            Toggle("Show Confidence", isOn: Binding(get: { model.showsConfidence },
+                                                    set: { model.showsConfidence = $0 }))
+                .keyboardShortcut("c", modifiers: [.command, .option])
 
             Divider()
 
