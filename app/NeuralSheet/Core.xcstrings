@@ -3,536 +3,2382 @@
   "strings" : {
     "A4" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a page size on the Score toolbar",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A4"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A4"
+          }
+        }
+      }
     },
     "AIFF 24-bit" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: File → Export Audio…'s What and Format choices",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AIFF 24 Bit"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AIFF de 24 bits"
+          }
+        }
+      }
     },
     "Acoustic Bass" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an instrument, in the sidebar, the menus and the score's part names",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Akustikbass"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bajo acústico"
+          }
+        }
+      }
     },
     "Acoustic Guitar" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an instrument, in the sidebar, the menus and the score's part names",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Akustikgitarre"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guitarra acústica"
+          }
+        }
+      }
     },
     "Add Note" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an edit's title, after Undo or Redo in the Edit menu",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Note hinzufügen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadir nota"
+          }
+        }
+      }
     },
     "Alto Sax" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an instrument, in the sidebar, the menus and the score's part names",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Altsaxofon"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saxo alto"
+          }
+        }
+      }
     },
     "Banjo (5-string)" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab instrument on the part card",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Banjo (5-saitig)"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Banjo (5 cuerdas)"
+          }
+        }
+      }
     },
     "Banjo (plectrum)" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab instrument on the part card",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Banjo (Plektrum)"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Banjo (plectro)"
+          }
+        }
+      }
     },
     "Banjo (tenor)" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab instrument on the part card",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Banjo (Tenor)"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Banjo (tenor)"
+          }
+        }
+      }
     },
     "Baritone (D G B E)" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab tuning on the part card; the notes in brackets are the strings, bottom first",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bariton (D G B E)"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Barítono (D G B E)"
+          }
+        }
+      }
     },
     "Baritone Sax" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an instrument, in the sidebar, the menus and the score's part names",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Baritonsaxofon"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saxo barítono"
+          }
+        }
+      }
     },
     "Bass" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an instrument, in the sidebar, the menus and the score's part names",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bass"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bajo"
+          }
+        }
+      }
     },
     "Bass (5-string)" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab instrument on the part card",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bass (5-saitig)"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bajo (5 cuerdas)"
+          }
+        }
+      }
     },
     "Bass (6-string)" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab instrument on the part card",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bass (6-saitig)"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bajo (6 cuerdas)"
+          }
+        }
+      }
     },
     "Bassoon" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an instrument, in the sidebar, the menus and the score's part names",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fagott"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fagot"
+          }
+        }
+      }
     },
     "Both" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: the part card's Display choice",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Beides"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ambas"
+          }
+        }
+      }
     },
     "Brass" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an instrument, in the sidebar, the menus and the score's part names",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Blechbläser"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Metales"
+          }
+        }
+      }
     },
     "C6 (C E G A C E)" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab tuning on the part card; the notes in brackets are the strings, bottom first",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "C6 (C E G A C E)"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "C6 (C E G A C E)"
+          }
+        }
+      }
     },
     "Cello" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an instrument, in the sidebar, the menus and the score's part names",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cello"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Violonchelo"
+          }
+        }
+      }
     },
     "Change Instrument" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an edit's title, after Undo or Redo in the Edit menu",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Instrument ändern"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cambiar instrumento"
+          }
+        }
+      }
     },
     "Chicago (D G B E)" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab tuning on the part card; the notes in brackets are the strings, bottom first",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chicago (D G B E)"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chicago (D G B E)"
+          }
+        }
+      }
     },
     "Chromatic Perc." : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an instrument, in the sidebar, the menus and the score's part names",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chrom. Perkussion"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Perc. cromática"
+          }
+        }
+      }
     },
     "Clarinet" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an instrument, in the sidebar, the menus and the score's part names",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Klarinette"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clarinete"
+          }
+        }
+      }
     },
     "Contrabass" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an instrument, in the sidebar, the menus and the score's part names",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kontrabass"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Contrabajo"
+          }
+        }
+      }
     },
     "DADGAD" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab tuning on the part card; the notes in brackets are the strings, bottom first",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DADGAD"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DADGAD"
+          }
+        }
+      }
     },
     "Delete Instrument" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an edit's title, after Undo or Redo in the Edit menu",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Instrument löschen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar instrumento"
+          }
+        }
+      }
     },
     "Delete Note" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an edit's title, after Undo or Redo in the Edit menu",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Note löschen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar nota"
+          }
+        }
+      }
     },
     "Delete Notes" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an edit's title, after Undo or Redo in the Edit menu",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Noten löschen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar notas"
+          }
+        }
+      }
     },
     "Distorted Guitar" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an instrument, in the sidebar, the menus and the score's part names",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verzerrte Gitarre"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guitarra distorsionada"
+          }
+        }
+      }
     },
     "Double C (g C G C D)" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab tuning on the part card; the notes in brackets are the strings, bottom first",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Double C (g C G C D)"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Doble do (g C G C D)"
+          }
+        }
+      }
     },
     "Drop A (A E A D G B E)" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab tuning on the part card; the notes in brackets are the strings, bottom first",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Drop A (A E A D G B E)"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Drop A (A E A D G B E)"
+          }
+        }
+      }
     },
     "Drop C (g C G B D)" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab tuning on the part card; the notes in brackets are the strings, bottom first",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Drop C (g C G B D)"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Drop C (g C G B D)"
+          }
+        }
+      }
     },
     "Drop D (D A D G B E)" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab tuning on the part card; the notes in brackets are the strings, bottom first",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Drop D (D A D G B E)"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Drop D (D A D G B E)"
+          }
+        }
+      }
     },
     "Drop D (D A D G)" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab tuning on the part card; the notes in brackets are the strings, bottom first",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Drop D (D A D G)"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Drop D (D A D G)"
+          }
+        }
+      }
     },
     "Drums" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an instrument, in the sidebar, the menus and the score's part names",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Schlagzeug"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Batería"
+          }
+        }
+      }
     },
     "Duplicate Note" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an edit's title, after Undo or Redo in the Edit menu",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Note duplizieren"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Duplicar nota"
+          }
+        }
+      }
     },
     "Duplicate Notes" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an edit's title, after Undo or Redo in the Edit menu",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Noten duplizieren"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Duplicar notas"
+          }
+        }
+      }
     },
     "Electric Guitar" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an instrument, in the sidebar, the menus and the score's part names",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "E-Gitarre"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guitarra eléctrica"
+          }
+        }
+      }
     },
     "Electric Piano" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an instrument, in the sidebar, the menus and the score's part names",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "E-Piano"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Piano eléctrico"
+          }
+        }
+      }
     },
     "English Horn" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an instrument, in the sidebar, the menus and the score's part names",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Englischhorn"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Corno inglés"
+          }
+        }
+      }
     },
     "Fastest" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a model size and its hint in Settings → Model",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Am schnellsten"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El más rápido"
+          }
+        }
+      }
     },
     "Flute" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an instrument, in the sidebar, the menus and the score's part names",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Flöte"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Flauta"
+          }
+        }
+      }
     },
     "French Horn" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an instrument, in the sidebar, the menus and the score's part names",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Waldhorn"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trompa"
+          }
+        }
+      }
     },
     "Guitar" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab instrument on the part card",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gitarre"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guitarra"
+          }
+        }
+      }
     },
     "Guitar (7-string)" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab instrument on the part card",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gitarre (7-saitig)"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guitarra (7 cuerdas)"
+          }
+        }
+      }
     },
     "Half-step down (E♭ A♭ D♭ G♭ B♭ E♭)" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab tuning on the part card; the notes in brackets are the strings, bottom first",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Halbton tiefer (E♭ A♭ D♭ G♭ B♭ E♭)"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Medio tono abajo (E♭ A♭ D♭ G♭ B♭ E♭)"
+          }
+        }
+      }
     },
     "Half-step down (E♭ A♭ D♭ G♭)" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab tuning on the part card; the notes in brackets are the strings, bottom first",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Halbton tiefer (E♭ A♭ D♭ G♭)"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Medio tono abajo (E♭ A♭ D♭ G♭)"
+          }
+        }
+      }
     },
     "Harp" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an instrument, in the sidebar, the menus and the score's part names",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Harfe"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arpa"
+          }
+        }
+      }
     },
     "Humanize" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an edit's title, after Undo or Redo in the Edit menu",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Humanisieren"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Humanizar"
+          }
+        }
+      }
     },
     "Import MIDI" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an edit's title, after Undo or Redo in the Edit menu",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MIDI importieren"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importar MIDI"
+          }
+        }
+      }
     },
     "Irish (G D A E)" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab tuning on the part card; the notes in brackets are the strings, bottom first",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Irisch (G D A E)"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Irlandesa (G D A E)"
+          }
+        }
+      }
     },
     "Join Notes" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an edit's title, after Undo or Redo in the Edit menu",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Noten verbinden"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unir notas"
+          }
+        }
+      }
     },
     "Lap steel" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab instrument on the part card",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lap-Steel"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lap steel"
+          }
+        }
+      }
     },
     "Large" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a model size and its hint in Settings → Model",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Groß"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Grande"
+          }
+        }
+      }
     },
     "Largest, slowest" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a model size and its hint in Settings → Model",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Am größten, am langsamsten"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El más grande y lento"
+          }
+        }
+      }
     },
     "Legato" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an edit's title, after Undo or Redo in the Edit menu",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Legato"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Legato"
+          }
+        }
+      }
     },
     "Letter" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a page size on the Score toolbar",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "US-Letter"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Carta"
+          }
+        }
+      }
     },
     "Low G (G C E A)" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab tuning on the part card; the notes in brackets are the strings, bottom first",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tiefes G (G C E A)"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sol grave (G C E A)"
+          }
+        }
+      }
     },
     "Lyric" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an edit's title, after Undo or Redo in the Edit menu",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Liedtext"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Letra"
+          }
+        }
+      }
     },
     "M4A (AAC 256 kb/s)" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: File → Export Audio…'s What and Format choices",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "M4A (AAC 256 kbit/s)"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "M4A (AAC 256 kb/s)"
+          }
+        }
+      }
     },
     "MIDI only" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: File → Export Audio…'s What and Format choices",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nur MIDI"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Solo MIDI"
+          }
+        }
+      }
     },
     "Major" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: the key's mode, on the toolbar's KEY menu",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dur"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mayor"
+          }
+        }
+      }
     },
     "Mandolin" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab instrument on the part card",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mandoline"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mandolina"
+          }
+        }
+      }
     },
     "Medium" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a model size and its hint in Settings → Model",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mittel"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mediano"
+          }
+        }
+      }
     },
     "Minor" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: the key's mode, on the toolbar's KEY menu",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Moll"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Menor"
+          }
+        }
+      }
     },
     "Move Note" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an edit's title, after Undo or Redo in the Edit menu",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Note bewegen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mover nota"
+          }
+        }
+      }
     },
     "Move Notes" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an edit's title, after Undo or Redo in the Edit menu",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Noten bewegen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mover notas"
+          }
+        }
+      }
     },
     "Notation" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: the part card's Display choice",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Noten"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notación"
+          }
+        }
+      }
     },
     "Oboe" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an instrument, in the sidebar, the menus and the score's part names",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oboe"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oboe"
+          }
+        }
+      }
     },
     "Open D (D A D F♯ A D)" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab tuning on the part card; the notes in brackets are the strings, bottom first",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open D (D A D F♯ A D)"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Re abierta (D A D F♯ A D)"
+          }
+        }
+      }
     },
     "Open D (f♯ D F♯ A D)" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab tuning on the part card; the notes in brackets are the strings, bottom first",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open D (f♯ D F♯ A D)"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Re abierta (f♯ D F♯ A D)"
+          }
+        }
+      }
     },
     "Open E (E B E G♯ B E)" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab tuning on the part card; the notes in brackets are the strings, bottom first",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open E (E B E G♯ B E)"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mi abierta (E B E G♯ B E)"
+          }
+        }
+      }
     },
     "Open G (D G D G B D)" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab tuning on the part card; the notes in brackets are the strings, bottom first",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open G (D G D G B D)"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sol abierta (D G D G B D)"
+          }
+        }
+      }
     },
     "Open G (g D G B D)" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab tuning on the part card; the notes in brackets are the strings, bottom first",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open G (g D G B D)"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sol abierta (g D G B D)"
+          }
+        }
+      }
     },
     "Orchestra Hit" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an instrument, in the sidebar, the menus and the score's part names",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Orchester-Hit"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Golpe orquestal"
+          }
+        }
+      }
     },
     "Organ" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an instrument, in the sidebar, the menus and the score's part names",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Orgel"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Órgano"
+          }
+        }
+      }
     },
     "Original + MIDI as heard" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: File → Export Audio…'s What and Format choices",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Original + MIDI wie gehört"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Original + MIDI tal como suena"
+          }
+        }
+      }
     },
     "Original only" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: File → Export Audio…'s What and Format choices",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nur Original"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Solo el original"
+          }
+        }
+      }
     },
     "Paste Lyrics" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an edit's title, after Undo or Redo in the Edit menu",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Liedtext einsetzen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pegar letra"
+          }
+        }
+      }
     },
     "Paste Note" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an edit's title, after Undo or Redo in the Edit menu",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Note einsetzen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pegar nota"
+          }
+        }
+      }
     },
     "Paste Notes" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an edit's title, after Undo or Redo in the Edit menu",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Noten einsetzen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pegar notas"
+          }
+        }
+      }
     },
     "Piano" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an instrument, in the sidebar, the menus and the score's part names",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Klavier"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Piano"
+          }
+        }
+      }
     },
     "Quantize" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an edit's title, after Undo or Redo in the Edit menu",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quantisieren"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cuantizar"
+          }
+        }
+      }
     },
     "Re-transcribe" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an edit's title, after Undo or Redo in the Edit menu",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Neu transkribieren"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Retranscribir"
+          }
+        }
+      }
     },
     "Recommended" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a model size and its hint in Settings → Model",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Empfohlen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recomendado"
+          }
+        }
+      }
     },
     "Resize Note" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an edit's title, after Undo or Redo in the Edit menu",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notenlänge ändern"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cambiar duración de la nota"
+          }
+        }
+      }
     },
     "Resize Notes" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an edit's title, after Undo or Redo in the Edit menu",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notenlängen ändern"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cambiar duración de las notas"
+          }
+        }
+      }
     },
     "Sawmill (g D G C D)" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab tuning on the part card; the notes in brackets are the strings, bottom first",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sawmill (g D G C D)"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sawmill (g D G C D)"
+          }
+        }
+      }
     },
     "Separates drums, bass and vocals first" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a model size and its hint in Settings → Model",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trennt zuerst Schlagzeug, Bass und Gesang"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Separa primero batería, bajo y voces"
+          }
+        }
+      }
     },
     "Set Length" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an edit's title, after Undo or Redo in the Edit menu",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Länge festlegen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajustar duración"
+          }
+        }
+      }
     },
     "Set Pitch" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an edit's title, after Undo or Redo in the Edit menu",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tonhöhe festlegen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajustar altura"
+          }
+        }
+      }
     },
     "Set Start" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an edit's title, after Undo or Redo in the Edit menu",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Beginn festlegen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajustar inicio"
+          }
+        }
+      }
     },
     "Set Velocity" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an edit's title, after Undo or Redo in the Edit menu",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anschlagstärke festlegen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajustar velocidad"
+          }
+        }
+      }
     },
     "Small" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a model size and its hint in Settings → Model",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Klein"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pequeño"
+          }
+        }
+      }
     },
     "Snap to Scale" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an edit's title, after Undo or Redo in the Edit menu",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "An Tonleiter ausrichten"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajustar a la escala"
+          }
+        }
+      }
     },
     "Split Instrument" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an edit's title, after Undo or Redo in the Edit menu",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Instrument teilen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dividir instrumento"
+          }
+        }
+      }
     },
     "Split Note" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an edit's title, after Undo or Redo in the Edit menu",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Note teilen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dividir nota"
+          }
+        }
+      }
     },
     "Split Notes" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an edit's title, after Undo or Redo in the Edit menu",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Noten teilen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dividir notas"
+          }
+        }
+      }
     },
     "Standard (B E A D G B E)" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab tuning on the part card; the notes in brackets are the strings, bottom first",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Standard (B E A D G B E)"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estándar (B E A D G B E)"
+          }
+        }
+      }
     },
     "Standard (B E A D G C)" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab tuning on the part card; the notes in brackets are the strings, bottom first",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Standard (B E A D G C)"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estándar (B E A D G C)"
+          }
+        }
+      }
     },
     "Standard (B E A D G)" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab tuning on the part card; the notes in brackets are the strings, bottom first",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Standard (B E A D G)"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estándar (B E A D G)"
+          }
+        }
+      }
     },
     "Standard (C G B D)" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab tuning on the part card; the notes in brackets are the strings, bottom first",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Standard (C G B D)"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estándar (C G B D)"
+          }
+        }
+      }
     },
     "Standard (C G D A)" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab tuning on the part card; the notes in brackets are the strings, bottom first",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Standard (C G D A)"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estándar (C G D A)"
+          }
+        }
+      }
     },
     "Standard (E A D G B E)" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab tuning on the part card; the notes in brackets are the strings, bottom first",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Standard (E A D G B E)"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estándar (E A D G B E)"
+          }
+        }
+      }
     },
     "Standard (E A D G)" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab tuning on the part card; the notes in brackets are the strings, bottom first",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Standard (E A D G)"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estándar (E A D G)"
+          }
+        }
+      }
     },
     "Standard (G D A E)" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab tuning on the part card; the notes in brackets are the strings, bottom first",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Standard (G D A E)"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estándar (G D A E)"
+          }
+        }
+      }
     },
     "Standard (g C E A, high G)" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab tuning on the part card; the notes in brackets are the strings, bottom first",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Standard (g C E A, hohes G)"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estándar (g C E A, sol agudo)"
+          }
+        }
+      }
     },
     "Stems" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a model size and its hint in Settings → Model",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stems"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stems"
+          }
+        }
+      }
     },
     "Strings" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an instrument, in the sidebar, the menus and the score's part names",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Streicher"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cuerdas"
+          }
+        }
+      }
     },
     "Synth Lead" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an instrument, in the sidebar, the menus and the score's part names",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Synth-Lead"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sintetizador solista"
+          }
+        }
+      }
     },
     "Synth Pad" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an instrument, in the sidebar, the menus and the score's part names",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Synth-Pad"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pad de sintetizador"
+          }
+        }
+      }
     },
     "Synth Strings" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an instrument, in the sidebar, the menus and the score's part names",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Synth-Streicher"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cuerdas sintetizadas"
+          }
+        }
+      }
     },
     "Tab" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: the part card's Display choice",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tabulatur"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tablatura"
+          }
+        }
+      }
     },
     "Tenor (E A D G C)" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab tuning on the part card; the notes in brackets are the strings, bottom first",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tenor (E A D G C)"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tenor (E A D G C)"
+          }
+        }
+      }
     },
     "Tenor Sax" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an instrument, in the sidebar, the menus and the score's part names",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tenorsaxofon"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saxo tenor"
+          }
+        }
+      }
     },
     "The connection dropped" : {
       "comment" : "A message NeuralSheetCore gives in English, shown through CoreNames: a failed model download in Settings → Model",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Verbindung wurde unterbrochen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se ha perdido la conexión"
+          }
+        }
+      }
     },
     "The download was corrupted. Try again" : {
       "comment" : "A message NeuralSheetCore gives in English, shown through CoreNames: a failed model download in Settings → Model",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der Download ist beschädigt. Versuche es erneut"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La descarga está dañada. Vuelve a intentarlo"
+          }
+        }
+      }
     },
     "The partial download could not be resumed" : {
       "comment" : "A message NeuralSheetCore gives in English, shown through CoreNames: a failed model download in Settings → Model",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der unvollständige Download konnte nicht fortgesetzt werden"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se ha podido reanudar la descarga parcial"
+          }
+        }
+      }
     },
     "Timpani" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an instrument, in the sidebar, the menus and the score's part names",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pauken"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Timbales"
+          }
+        }
+      }
     },
     "Track Pitch" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an edit's title, after Undo or Redo in the Edit menu",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tonhöhe verfolgen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seguir afinación"
+          }
+        }
+      }
     },
     "Transcription" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: the model's own output, first in Edit → Versions",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transkription"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transcripción"
+          }
+        }
+      }
     },
     "Trombone" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an instrument, in the sidebar, the menus and the score's part names",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Posaune"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trombón"
+          }
+        }
+      }
     },
     "Trumpet" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an instrument, in the sidebar, the menus and the score's part names",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trompete"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trompeta"
+          }
+        }
+      }
     },
     "Tuba" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an instrument, in the sidebar, the menus and the score's part names",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tuba"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tuba"
+          }
+        }
+      }
     },
     "Ukulele" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab instrument on the part card",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ukulele"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ukelele"
+          }
+        }
+      }
     },
     "Untitled" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: the score's title with none set and no take name",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ohne Titel"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin título"
+          }
+        }
+      }
     },
     "Viola" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an instrument, in the sidebar, the menus and the score's part names",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bratsche"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Viola"
+          }
+        }
+      }
     },
     "Violin" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an instrument, in the sidebar, the menus and the score's part names",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Violine"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Violín"
+          }
+        }
+      }
     },
     "Voice" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: an instrument, in the sidebar, the menus and the score's part names",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stimme"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voz"
+          }
+        }
+      }
     },
     "WAV 24-bit" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: File → Export Audio…'s What and Format choices",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "WAV 24 Bit"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "WAV de 24 bits"
+          }
+        }
+      }
     },
     "Whole-step down (D G C F A D)" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a tab tuning on the part card; the notes in brackets are the strings, bottom first",
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ganzton tiefer (D G C F A D)"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un tono abajo (D G C F A D)"
+          }
+        }
+      }
     },
     "clef.alto" : {
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a clef on the part card",
       "extractionState" : "manual",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Altschlüssel"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Alto"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clave de do en 3.ª"
           }
         }
       }
@@ -541,10 +2387,22 @@
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a clef on the part card",
       "extractionState" : "manual",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatisch"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Automatic"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automática"
           }
         }
       }
@@ -553,10 +2411,22 @@
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a clef on the part card",
       "extractionState" : "manual",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bassschlüssel"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bass"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clave de fa"
           }
         }
       }
@@ -565,10 +2435,22 @@
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a clef on the part card",
       "extractionState" : "manual",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bassschlüssel 8vb"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bass 8vb"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clave de fa 8vb"
           }
         }
       }
@@ -577,10 +2459,22 @@
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a clef on the part card",
       "extractionState" : "manual",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Klaviersystem"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Grand staff"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sistema de piano"
           }
         }
       }
@@ -589,10 +2483,22 @@
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a clef on the part card",
       "extractionState" : "manual",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Schlagzeugschlüssel"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Percussion"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Percusión"
           }
         }
       }
@@ -601,10 +2507,22 @@
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a clef on the part card",
       "extractionState" : "manual",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tenorschlüssel"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tenor"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clave de do en 4.ª"
           }
         }
       }
@@ -613,10 +2531,22 @@
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a clef on the part card",
       "extractionState" : "manual",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Violinschlüssel"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Treble"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clave de sol"
           }
         }
       }
@@ -625,10 +2555,22 @@
       "comment" : "A name NeuralSheetCore gives in English, shown through CoreNames: a clef on the part card",
       "extractionState" : "manual",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Violinschlüssel 8vb"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Treble 8vb"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clave de sol 8vb"
           }
         }
       }
