@@ -22,6 +22,19 @@
 			<key>LSTypeIsPackage</key>
 			<true/>
 		</dict>
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string>Audio or Video</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSHandlerRank</key>
+			<string>Alternate</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>public.audio</string>
+				<string>public.movie</string>
+			</array>
+		</dict>
 	</array>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>

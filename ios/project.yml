@@ -143,6 +143,14 @@ targets:
             LSTypeIsPackage: true
             LSItemContentTypes:
               - com.quassum.neuralsheet.project
+          # Audio and video from the share sheet and other apps, which become a project's take
+          # (sub-issue D). A viewer, not an owner: the app never writes these files.
+          - CFBundleTypeName: Audio or Video
+            CFBundleTypeRole: Viewer
+            LSHandlerRank: Alternate
+            LSItemContentTypes:
+              - public.audio
+              - public.movie
         UTExportedTypeDeclarations:
           - UTTypeIdentifier: com.quassum.neuralsheet.project
             UTTypeDescription: NeuralSheet Project

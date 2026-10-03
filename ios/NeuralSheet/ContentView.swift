@@ -4,7 +4,8 @@ import SwiftUI
 
 /// The document's screen: the Transcribe screen for now (sub-issue D); the roll, the score and
 /// the transport come with sub-issues E to H. Wires what belongs to the document's lifetime: the
-/// undo manager iOS autosaves by, the scene coming back, and the document closing.
+/// undo manager iOS autosaves by, a file handed over while the project is open, the scene coming
+/// back, and the document closing.
 struct ContentView: View {
     @ObservedObject var document: NeuralSheetDocument
     let fileURL: URL?
@@ -23,6 +24,11 @@ struct ContentView: View {
             .onChange(of: undoManager) { _, manager in model.undoManager = manager }
             .onChange(of: scenePhase) { _, phase in
                 if phase == .active { model.sceneBecameActive() }
+            }
+            // Audio or video from the share sheet while this project is open: it becomes the
+            // take, as a file dropped on the Mac's window does (the old one is an undo away).
+            .onOpenURL { url in
+                model.importFile(at: url, securityScoped: true)
             }
             .onDisappear { model.closeDocument() }
             .task { await AutoRun.runIfAsked(model) }

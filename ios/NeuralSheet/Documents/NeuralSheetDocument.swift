@@ -45,9 +45,20 @@ final class NeuralSheetDocument: ReferenceFileDocument {
     /// Built on first use, on the main actor: the document is created off it.
     private(set) lazy var model: MobileModel = makeModel()
 
+    /// A take handed over by the share sheet, which a new project starts with (sub-issue D).
+    nonisolated let pendingTake: URL?
+
     /// A new, empty project.
     nonisolated init() {
         opened = nil
+        pendingTake = nil
+    }
+
+    /// A new project whose take is `take`, a file the app owns (`IncomingTakes`), imported as
+    /// soon as the project's model is built.
+    nonisolated init(importing take: URL) {
+        opened = nil
+        pendingTake = take
     }
 
     nonisolated convenience init(configuration: ReadConfiguration) throws {
@@ -68,6 +79,7 @@ final class NeuralSheetDocument: ReferenceFileDocument {
 
         let read = try ProjectPackage.read(from: working.packageURL)
 
+        pendingTake = nil
         opened = OpenedPackage(package: read.package,
                                audioURL: read.audioURL,
                                transcriptionUnreadable: read.transcriptionUnreadable,
@@ -77,7 +89,14 @@ final class NeuralSheetDocument: ReferenceFileDocument {
     private func makeModel() -> MobileModel {
         let model = MobileModel()
 
-        guard let opened else { return model }
+        guard let opened else {
+            if let pendingTake {
+                model.importFile(at: pendingTake, securityScoped: false)
+                try? FileManager.default.removeItem(at: pendingTake.deletingLastPathComponent())
+            }
+
+            return model
+        }
 
         var audio: SourceAudio?
 
