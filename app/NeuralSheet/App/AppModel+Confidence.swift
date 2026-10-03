@@ -33,9 +33,7 @@ extension AppModel {
     private var doubtfulNoteIDs: Set<NoteID> {
         guard let document else { return [] }
 
-        let minimumLength = settings.minimumNoteLength
-
-        return Set(document.notes.filter { NoteFilter.isDoubtful($0.note, minimumLength: minimumLength) }.map(\.id))
+        return EditingCommands.doubtfulNotes(in: document, minimumLength: settings.minimumNoteLength)
     }
 
     /// Edit tab only, and only when it would select something. Stops at the first doubtful note:
@@ -43,9 +41,7 @@ extension AppModel {
     var canSelectDoubtfulNotes: Bool {
         guard workspace == .edit, canEdit, let document else { return false }
 
-        let minimumLength = settings.minimumNoteLength
-
-        return document.notes.contains { NoteFilter.isDoubtful($0.note, minimumLength: minimumLength) }
+        return EditingCommands.hasDoubtfulNotes(in: document, minimumLength: settings.minimumNoteLength)
     }
 
     /// Edit → Select Doubtful Notes: replaces the selection, so Delete then removes them as one

@@ -84,4 +84,17 @@ nonisolated enum EditingCommands {
 
         return batch
     }
+
+    // MARK: - Confidence
+
+    /// The notes Select Doubtful Notes picks: under 50 %, or shorter than `minimumLength` when
+    /// that is on (above 0). A drawn note counts as sure.
+    static func doubtfulNotes(in document: NoteDocument, minimumLength: Double) -> Set<NoteID> {
+        Set(document.notes.filter { NoteFilter.isDoubtful($0.note, minimumLength: minimumLength) }.map(\.id))
+    }
+
+    /// Whether there is a doubtful note at all; stops at the first.
+    static func hasDoubtfulNotes(in document: NoteDocument, minimumLength: Double) -> Bool {
+        document.notes.contains { NoteFilter.isDoubtful($0.note, minimumLength: minimumLength) }
+    }
 }
