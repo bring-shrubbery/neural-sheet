@@ -7,6 +7,8 @@ import SwiftUI
 /// linked piece (the engine package, the core package, the demucs bridge), so a build that runs
 /// is a build that links.
 struct ContentView: View {
+    @State private var proof = AudioProof()
+
     private var version: String {
         let info = Bundle.main.infoDictionary
         let short = info?["CFBundleShortVersionString"] as? String ?? "?"
@@ -28,10 +30,25 @@ struct ContentView: View {
             Text(linkLine)
                 .font(.footnote.monospaced())
                 .foregroundStyle(.secondary)
+
+            // Temporary audio proof (sub-issue B); goes with the Transcribe screen (D).
+            HStack {
+                Button("Play test take") { Task { await proof.playTestTake() } }
+                Button("Record 3 s") { Task { await proof.record() } }
+            }
+            .buttonStyle(.bordered)
+            .disabled(proof.busy)
+            Text(proof.status)
+                .font(.footnote.monospaced())
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
         }
         .padding()
         .onAppear {
             print("NeuralSheet: \(version); \(linkLine)")
+        }
+        .task {
+            await proof.runFromLaunchArguments()
         }
     }
 }
