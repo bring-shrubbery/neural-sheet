@@ -68,7 +68,7 @@ extension AppModel {
     private func launchTranscriptionNow() {
         // 1. Only from `audioLoaded`, and only one run at a time. The Transcribe button hides on
         //    the next state change, so a second click can land while the first run is starting.
-        guard state == .audioLoaded, !jobActive, !transcriber.isRunning else { return }
+        guard state == .audioLoaded, !jobActive, !transcriber.isRunning, stemsExport == nil else { return }
 
         // 2. The stored size is a preference: when that checkpoint is missing and another is
         //    there, the run uses the one that is there. None at all aborts silently — the model

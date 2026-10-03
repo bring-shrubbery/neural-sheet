@@ -70,6 +70,8 @@ extension AppModel {
         separator.run(
             modelPath: stemsPath,
             source: source,
+            // The stereo stems are kept for Export Stems… (audio export design §2).
+            keepTo: newStemsFolder(),
             onProgress: { [weak self] progress in
                 guard let self else { return }
 
@@ -90,10 +92,15 @@ extension AppModel {
     }
 
     private func handleSeparated(_ result: Result<StemSeparator.Stems, StemSeparator.Failure>, jobID: UUID) {
-        guard var job = stemsJob, job.id == jobID, jobActive else { return }
+        guard var job = stemsJob, job.id == jobID, jobActive else {
+            // A run cleared meanwhile: its kept stems belong to nothing.
+            if case let .success(stems) = result, let folder = stems.keptFolder { removeImportFolder(folder) }
+            return
+        }
 
         switch result {
         case let .success(stems):
+            if let folder = stems.keptFolder { adoptStemsFolder(folder) }
             job.stems = stems
             stemsJob = job
             runStem(0)
@@ -166,6 +173,21 @@ extension AppModel {
             stemsJob = nil
             handleFinished(result)
         }
+    }
+
+    // MARK: - The kept stems
+
+    /// A fresh folder for a separation to keep its stems in, inside the recordings so the launch
+    /// sweep finds it after a crash (audio export design §2).
+    func newStemsFolder() -> URL {
+        paths.recordings.appendingPathComponent("stems-\(UUID().uuidString)", isDirectory: true)
+    }
+
+    /// Makes `folder` the take's kept separation, removing the one it replaces.
+    func adoptStemsFolder(_ folder: URL) {
+        if let old = stemsFolder, old != folder { removeImportFolder(old) }
+
+        stemsFolder = folder
     }
 
     // MARK: - Cancel and clear

@@ -217,6 +217,16 @@ import UniformTypeIdentifiers
     /// name, so the clear finds it here rather than by the recorder's prefix.
     @ObservationIgnored var importedAudioURL: URL?
 
+    /// The take's kept separation, 24-bit `.caf` per stem in a folder of its own inside the
+    /// recordings, or nil (audio export design §2). Set when a Stems run or Export Stems…
+    /// separates the take; it goes with the take, the import folder's way: removed by every clear
+    /// and close, and swept at launch with the rest of the recordings.
+    var stemsFolder: URL?
+
+    /// Export Stems…'s own separation, when the take has none kept, or nil
+    /// (`AppModel+StemsExport.swift`, its only writer besides ``clearNow()``, which cancels it).
+    var stemsExport: StemsExportJob?
+
     /// The instrument a strip click singled out: the roll fades every other instrument while it
     /// is set. Both tabs; not part of the project file.
     private(set) var highlightedProgram: Int?
@@ -642,7 +652,9 @@ import UniformTypeIdentifiers
     /// Record starts a take from empty, and stops one in progress or cancels its count-in.
     var canRecord: Bool { (state == .empty && importJob == nil) || state == .recording || state == .countingIn }
 
-    var canTranscribe: Bool { state == .audioLoaded && modelSize != nil && !jobActive && importJob == nil }
+    var canTranscribe: Bool {
+        state == .audioLoaded && modelSize != nil && !jobActive && importJob == nil && stemsExport == nil
+    }
 
     /// Both MIDI exits: only a finished transcription, never a half-decoded one (§6.1).
     var canExport: Bool { state == .populated }
@@ -878,6 +890,9 @@ import UniformTypeIdentifiers
         importJob?.cancel()
         importJob = nil
 
+        // Export Stems…'s separation belongs to the take going away.
+        cancelStemsExport()
+
         resetTranscription()
         engine.setSource(nil)
         deleteRecordedFiles()
@@ -970,6 +985,12 @@ import UniformTypeIdentifiers
         if let importedAudioURL {
             removeImportFolder(importedAudioURL.deletingLastPathComponent())
             self.importedAudioURL = nil
+        }
+
+        // The take's kept stems (audio export design §2).
+        if let stemsFolder {
+            removeImportFolder(stemsFolder)
+            self.stemsFolder = nil
         }
     }
 

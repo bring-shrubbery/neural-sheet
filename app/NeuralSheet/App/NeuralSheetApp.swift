@@ -149,6 +149,11 @@ struct NeuralSheetApp: App {
             Button("Export PDF…") { model.exportPDF() }
                 .keyboardShortcut("p", modifiers: [.command, .shift, .option])
                 .disabled(!model.canExport)
+
+            Divider()
+
+            Button("Export Stems…") { model.exportStems() }
+                .disabled(!model.canExportStems)
         }
     }
 

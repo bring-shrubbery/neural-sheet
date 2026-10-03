@@ -288,3 +288,38 @@ extension Dialogs {
         field.integerValue = stepper.integerValue
     }
 }
+
+extension Dialogs {
+    /// What the overwrite question came back with (audio export design §2).
+    enum OverwriteChoice {
+        case replace, replaceAll, skip, cancel
+    }
+
+    /// The standard "already exists" question for one file of a set Export Stems… writes:
+    /// Replace, Replace All (the rest of the set without asking), Skip, Cancel (Return, so a stray
+    /// key replaces nothing). App-modal and synchronous: the files are asked about one after
+    /// another, before any is written.
+    static func overwrite(fileName: String, folderName: String) -> OverwriteChoice {
+        let alert = NSAlert()
+        alert.messageText = "“\(fileName)” already exists. Do you want to replace it?"
+        alert.informativeText = "A file with the same name already exists in “\(folderName)”. Replacing it will overwrite its current contents."
+        alert.alertStyle = .warning
+
+        let replace = alert.addButton(withTitle: "Replace")
+        replace.hasDestructiveAction = true
+        replace.keyEquivalent = ""
+
+        alert.addButton(withTitle: "Replace All").hasDestructiveAction = true
+        alert.addButton(withTitle: "Skip")
+
+        let cancel = alert.addButton(withTitle: "Cancel")
+        cancel.keyEquivalent = "\r"
+
+        switch alert.runModal() {
+        case .alertFirstButtonReturn: return .replace
+        case .alertSecondButtonReturn: return .replaceAll
+        case .alertThirdButtonReturn: return .skip
+        default: return .cancel
+        }
+    }
+}
