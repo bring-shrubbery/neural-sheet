@@ -22,6 +22,27 @@ extension NoteDocument {
         }
     }
 
+    /// Each note named in `velocities` gets its own velocity, clamped to 1…127: Velocity → From
+    /// Audio, where every note's comes from the take at its onset (editor commands design §2).
+    /// Unchanged velocities keep their amplitude, as in the transform form.
+    public func setVelocities(_ velocities: [NoteID: Int], title: String = "Set Velocity") -> EditBatch {
+        var batch = EditBatch(title: title)
+
+        for source in notes {
+            guard let target = velocities[source.id] else { continue }
+
+            let velocity = min(max(target, 1), 127)
+
+            guard velocity != source.note.velocity else { continue }
+
+            var after = source.note
+            after.amplitude = NoteEvent.amplitude(forVelocity: velocity)
+            batch.changed.append(NoteChange(before: source, after: EditableNote(id: source.id, note: after)))
+        }
+
+        return finished(batch)
+    }
+
     /// Each note among `ids` ends where the next note of its instrument starts, whatever that
     /// note's pitch and whether or not it is among `ids` (editor commands design §2): the
     /// earliest start strictly after the note's own. A note with no successor keeps its length;

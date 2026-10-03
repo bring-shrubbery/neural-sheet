@@ -45,6 +45,16 @@ private func applied(_ document: NoteDocument, _ batch: EditBatch) -> [NoteEvent
     #expect(document.setVelocities(ids) { $0 }.isEmpty)
 }
 
+@Test func setVelocitiesByIdGivesEachNoteItsOwn() {
+    let document = NoteDocument(events: [note(0, 1, pitch: 60), note(1, 2, pitch: 62), note(2, 3, pitch: 64)])
+    let ids = document.notes.map(\.id)
+
+    let batch = document.setVelocities([ids[0]: 24, ids[1]: 300, ids[2]: 100], title: "Velocity from Audio")
+    #expect(batch.title == "Velocity from Audio")
+    #expect(batch.changed.count == 2)
+    #expect(applied(document, batch).map(\.velocity) == [24, 127, 100])
+}
+
 // MARK: - Legato
 
 @Test func legatoEndsAtTheNextNoteOfTheInstrumentWhateverItsPitch() {
