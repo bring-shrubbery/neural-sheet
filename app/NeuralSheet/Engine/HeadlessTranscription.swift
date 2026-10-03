@@ -50,6 +50,7 @@ nonisolated final class HeadlessTranscription: @unchecked Sendable {
     enum Failure: Error, Equatable, Sendable {
         case modelNotInstalled(ModelSize)
         case noModelInstalled
+        case notFound
         case unreadable
         case tooShort
         case separation(String)
@@ -71,6 +72,8 @@ nonisolated final class HeadlessTranscription: @unchecked Sendable {
                 "The \(size.displayName) model is not installed. Download it in NeuralSheet › Settings › Model."
             case .noModelInstalled:
                 "No transcription model is installed. Download one in NeuralSheet › Settings › Model."
+            case .notFound:
+                "The file could not be found."
             case .unreadable:
                 "Could not load the file. Check your file format (Accepted formats: \(AudioFileLoader.acceptedFormatsList))."
             case .tooShort:
@@ -127,6 +130,45 @@ nonisolated final class HeadlessTranscription: @unchecked Sendable {
         return nil
     }
 
+    // MARK: - Inputs
+
+    /// Files and folders to the files a batch runs over (issue #24 §2): a folder becomes the
+    /// accepted audio and video files inside it, recursively, in path order; a file is kept as it
+    /// is, so one of the wrong kind fails on its own row rather than vanishing. Repeats go.
+    static func expandInputs(_ urls: [URL]) -> [URL] {
+        let manager = FileManager.default
+        var seen = Set<String>()
+        var files: [URL] = []
+
+        func add(_ url: URL) {
+            let url = url.standardizedFileURL
+
+            if seen.insert(url.path).inserted {
+                files.append(url)
+            }
+        }
+
+        for url in urls {
+            var isDirectory: ObjCBool = false
+
+            guard manager.fileExists(atPath: url.path, isDirectory: &isDirectory), isDirectory.boolValue else {
+                add(url)
+                continue
+            }
+
+            let found = (manager.enumerator(at: url, includingPropertiesForKeys: [.isRegularFileKey],
+                                            options: [.skipsHiddenFiles, .skipsPackageDescendants])?
+                .allObjects as? [URL]) ?? []
+
+            found
+                .filter { AudioFileLoader.acceptedExtensions.contains($0.pathExtension.lowercased()) }
+                .sorted { $0.path.localizedStandardCompare($1.path) == .orderedAscending }
+                .forEach(add)
+        }
+
+        return files
+    }
+
     // MARK: - Run
 
     func run(_ request: Request, progress: @escaping ProgressHandler,
@@ -136,6 +178,8 @@ nonisolated final class HeadlessTranscription: @unchecked Sendable {
         guard let modelPath = store.installedPath(for: request.model) else {
             return .failure(.modelNotInstalled(request.model))
         }
+
+        guard FileManager.default.fileExists(atPath: request.input.path) else { return .failure(.notFound) }
 
         // Replace existing off: what is already there is skipped, and a file with nothing left
         // to write is not transcribed at all.
