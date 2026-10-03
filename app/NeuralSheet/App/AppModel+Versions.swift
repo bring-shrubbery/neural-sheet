@@ -107,6 +107,17 @@ extension AppModel {
 
     // MARK: - Managing
 
+    /// Manage Versions…: the sheet with the table, where versions are renamed and deleted.
+    func openManageVersions() {
+        guard canUseVersions else { return }
+
+        isManageVersionsPresented = true
+    }
+
+    func closeManageVersions() {
+        isManageVersionsPresented = false
+    }
+
     /// A new name; blank is refused, and the Transcription keeps its own.
     func renameVersion(id: UUID, to name: String) {
         let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)

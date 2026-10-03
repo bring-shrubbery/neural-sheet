@@ -36,6 +36,12 @@ struct MainView: View {
     var body: some View {
         ZStack(alignment: .topLeading) {
             Theme.bgRoot
+                // Manage Versions… (versions design §2), on its own view: one view carries one
+                // sheet.
+                .sheet(isPresented: Binding(get: { model.isManageVersionsPresented },
+                                            set: { if !$0 { model.closeManageVersions() } })) {
+                    ManageVersionsSheet(model: model)
+                }
 
             composition
                 // Export Audio…'s progress (audio export design §2). On the composition rather

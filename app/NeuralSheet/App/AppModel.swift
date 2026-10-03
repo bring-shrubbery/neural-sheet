@@ -934,6 +934,7 @@ import UniformTypeIdentifiers
         // keeps them for the run that follows.
         versions = []
         notesBeforeRun = nil
+        isManageVersionsPresented = false
 
         source = nil
         duration = 0

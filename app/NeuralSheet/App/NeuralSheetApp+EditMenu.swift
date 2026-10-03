@@ -118,6 +118,8 @@ extension NeuralSheetApp {
 
             Divider()
 
+            versionsMenu(model: model)
+
             Button("Revert to Transcription…") { model.revertToTranscription() }
                 .disabled(model.workspace != .edit || !model.hasEdits)
         }
