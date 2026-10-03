@@ -1,4 +1,8 @@
+#if os(macOS)
 import AppKit
+#else
+import UIKit
+#endif
 import CoreText
 import NeuralSheetCore
 import SwiftUI
@@ -150,11 +154,19 @@ enum TimelineFonts {
     }
 
     private static func font(_ name: String, size: CGFloat) -> CTFont {
+        #if os(macOS)
         if let font = NSFont(name: name, size: size) {
             return font
         }
 
         return NSFont.monospacedSystemFont(ofSize: size, weight: .regular)
+        #else
+        if let font = UIFont(name: name, size: size) {
+            return font
+        }
+
+        return UIFont.monospacedSystemFont(ofSize: size, weight: .regular)
+        #endif
     }
 }
 

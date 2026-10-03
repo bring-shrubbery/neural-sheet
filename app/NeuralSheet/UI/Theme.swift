@@ -1,4 +1,8 @@
+#if os(macOS)
 import AppKit
+#else
+import UIKit
+#endif
 import SwiftUI
 
 /// A plain sRGB colour, kept alongside `Color` so the palette can be darkened and brightened with
@@ -68,6 +72,7 @@ extension Color {
 
     /// The sRGB components behind this colour, so the interaction rules can do real arithmetic.
     var rgba: RGBA {
+        #if os(macOS)
         guard let resolved = NSColor(self).usingColorSpace(.sRGB) else {
             return RGBA(red: 0, green: 0, blue: 0, alpha: 0)
         }
@@ -76,6 +81,16 @@ extension Color {
                     green: Double(resolved.greenComponent),
                     blue: Double(resolved.blueComponent),
                     alpha: Double(resolved.alphaComponent))
+        #else
+        // The iPhone and iPad app (iOS app design §2): the same sRGB components through UIKit.
+        var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
+
+        guard UIColor(self).getRed(&red, green: &green, blue: &blue, alpha: &alpha) else {
+            return RGBA(red: 0, green: 0, blue: 0, alpha: 0)
+        }
+
+        return RGBA(red: Double(red), green: Double(green), blue: Double(blue), alpha: Double(alpha))
+        #endif
     }
 
     func darker(_ amount: Double) -> Color {
