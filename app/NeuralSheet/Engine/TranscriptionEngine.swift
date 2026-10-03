@@ -56,11 +56,14 @@ nonisolated enum EngineError: Error {
 /// Drives the `NeuralSheetEngine` transcriber on a dedicated thread.
 ///
 /// One run at a time per instance: the model is loaded, used and dropped within
-/// a single `run`, so nothing survives it.
+/// a single `run`, so nothing survives it -- unless the instance was made with
+/// `retainsModel`, as a headless batch makes it (batch and CLI design §2): then the
+/// last checkpoint stays loaded for the next run on the same file, and goes with
+/// the instance.
 ///
 /// `@unchecked Sendable`: `cancelRequested` and `running` are guarded by `lock`,
-/// and `updateHandler` is written before the transcription thread starts and
-/// read only on it.
+/// and `updateHandler` and `retained` are touched only on the transcription thread
+/// (or before it starts), one run at a time, the runs ordered by `lock`.
 nonisolated final class TranscriptionEngine: @unchecked Sendable {
     /// Guards `cancelRequested` and `running`, which `cancel` and `isRunning`
     /// read from any thread.
@@ -71,6 +74,16 @@ nonisolated final class TranscriptionEngine: @unchecked Sendable {
     /// Read only on the transcription thread: it is set before that thread
     /// starts and cleared on it once the run is over.
     private var updateHandler: (@Sendable (EngineUpdate) -> Bool)?
+
+    /// Whether a loaded checkpoint outlives its run.
+    private let retainsModel: Bool
+
+    /// The checkpoint the last run loaded, kept when `retainsModel`.
+    private var retained: (url: URL, transcriber: Transcriber)?
+
+    init(retainsModel: Bool = false) {
+        self.retainsModel = retainsModel
+    }
 
     /// True from `run` starting until the transcription thread is done; it is
     /// already false by the time `completion` runs.
@@ -153,8 +166,9 @@ nonisolated final class TranscriptionEngine: @unchecked Sendable {
 
     // MARK: - Transcription thread
 
-    /// Runs on the transcription thread. The transcriber goes out of scope on every
-    /// path, so the checkpoint's mapping and the backend are gone before we return.
+    /// Runs on the transcription thread. Unless it is retained, the transcriber goes out
+    /// of scope on every path, so the checkpoint's mapping and the backend are gone
+    /// before we return.
     private func loadAndTranscribe(modelPath: URL,
                                    groups: [Int32],
                                    samples16k: [Float]) -> Result<[EngineNote], EngineError> {
@@ -168,10 +182,21 @@ nonisolated final class TranscriptionEngine: @unchecked Sendable {
 
         let transcriber: Transcriber
 
-        do {
-            transcriber = try Transcriber(url: modelPath, options: LoadOptions(useGPU: true))
-        } catch {
-            return .failure(.load(Self.transcriberError(error)))
+        if let retained, retained.url == modelPath {
+            transcriber = retained.transcriber
+        } else {
+            // Another checkpoint's weights go before this one's are mapped.
+            retained = nil
+
+            do {
+                transcriber = try Transcriber(url: modelPath, options: LoadOptions(useGPU: true))
+            } catch {
+                return .failure(.load(Self.transcriberError(error)))
+            }
+
+            if retainsModel {
+                retained = (modelPath, transcriber)
+            }
         }
 
         return transcribe(with: transcriber, instruments: instruments, samples16k: samples16k)
