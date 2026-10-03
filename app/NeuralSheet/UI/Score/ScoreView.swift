@@ -67,17 +67,13 @@ final class ScoreView: NSView {
 
     /// Puts the cursor at `units` into measure `measure`, or hides it.
     func placeCursor(measure: Int?, units: Double) {
-        guard let layout, let measure, let (system, box) = layout.box(forMeasure: measure) else {
+        guard let layout, let measure, let frame = layout.cursorFrame(measure: measure, units: units) else {
             cursor.isHidden = true
             return
         }
 
-        let x = box.x(forUnits: units)
-        let top = system.staffTop - layout.sp
-        let bottom = system.staffBottom + layout.sp
-
         cursor.isHidden = false
-        cursor.set(frame: CGRect(x: (x - 0.75).rounded(), y: top, width: 1.5, height: bottom - top))
+        cursor.set(frame: frame)
     }
 
     // MARK: - Clicks
@@ -168,7 +164,7 @@ final class ScoreView: NSView {
             }
 
         case .pages:
-            ctx.fill(rect.intersection(bounds), ScoreView.surround)
+            ctx.fill(rect.intersection(bounds), ScoreLayout.surround)
 
             guard let pages = layout.pages else { break }
 
@@ -196,7 +192,4 @@ final class ScoreView: NSView {
             ctx.stroke(hit.frame.insetBy(dx: -layout.sp * 0.15, dy: -layout.sp * 0.15))
         }
     }
-
-    /// The grey behind the pages (arrangement design §6).
-    static let surround = TimelinePalette.cg(Theme.bgPanel)
 }

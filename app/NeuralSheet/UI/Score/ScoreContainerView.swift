@@ -37,9 +37,6 @@ final class ScoreContainerView: NSView {
     private var cursorSystemIndex: Int?
     private var isObservationArmed = false
 
-    /// Authored staff space; scaled by `scale`.
-    static let staffSpace: CGFloat = 8
-
     init(model: AppModel, scale: CGFloat) {
         self.model = model
         self.scale = scale
@@ -252,7 +249,7 @@ final class ScoreContainerView: NSView {
         let layout = ScoreLayout(document: score.document, arrangement: model.arrangement, width: width, scale: scale)
         score.layout = layout
         // The surround shows past the last page and under a short score.
-        scrollView.backgroundColor = NSColor(cgColor: layout.mode == .pages ? ScoreView.surround : ScoreRenderer.Style.screen.paper) ?? .black
+        scrollView.backgroundColor = NSColor(cgColor: layout.mode == .pages ? ScoreLayout.surround : ScoreRenderer.Style.screen.paper) ?? .black
         score.frame = CGRect(x: 0, y: 0, width: width, height: max(layout.totalHeight, scrollView.contentSize.height))
         score.needsDisplay = true
         cursorSystemIndex = nil

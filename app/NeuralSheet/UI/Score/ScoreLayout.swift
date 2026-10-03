@@ -1,4 +1,4 @@
-import AppKit
+import CoreGraphics
 import NeuralSheetCore
 
 /// The Score tab's geometry in view coordinates (arrangement design §6): the continuous system
@@ -7,6 +7,10 @@ import NeuralSheetCore
 /// the click and the follow work the same way whichever is showing.
 struct ScoreLayout {
     static let pageGap: CGFloat = 24
+    /// Authored staff space; scaled by the view's scale.
+    static let staffSpace: CGFloat = 8
+    /// The grey behind the pages (arrangement design §6).
+    static let surround = TimelinePalette.cg(Theme.bgPanel)
 
     let mode: ScoreLayoutMode
     let scale: CGFloat
@@ -30,7 +34,7 @@ struct ScoreLayout {
         switch arrangement.layout {
         case .continuous:
             let layout = ScoreSystemLayout(document: document, arrangement: arrangement, width: width,
-                                           sp: ScoreContainerView.staffSpace * scale)
+                                           sp: ScoreLayout.staffSpace * scale)
             sp = layout.sp
             continuous = layout
             pages = nil
@@ -72,6 +76,18 @@ struct ScoreLayout {
         }
 
         return nil
+    }
+
+    /// The playhead cursor's frame at `units` into measure `measure`: a line and a half wide, a
+    /// staff space past the system's outer staves; nil off the layout.
+    func cursorFrame(measure: Int, units: Double) -> CGRect? {
+        guard let (system, box) = box(forMeasure: measure) else { return nil }
+
+        let x = box.x(forUnits: units)
+        let top = system.staffTop - sp
+        let bottom = system.staffBottom + sp
+
+        return CGRect(x: (x - 0.75).rounded(), y: top, width: 1.5, height: bottom - top)
     }
 
     /// The measure and the position in it under `point`, or nil off the music.
