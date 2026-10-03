@@ -31,7 +31,8 @@ extension AppModel {
 
         return ProjectTranscription(sourceSampleCount: source.mono16k.count,
                                     rawNotes: transcription.rawNotes,
-                                    document: document)
+                                    document: document,
+                                    versions: versions)
     }
 
     /// The content the dirty rule compares (§3.4).

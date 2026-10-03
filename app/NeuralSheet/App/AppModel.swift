@@ -41,6 +41,11 @@ import UniformTypeIdentifiers
     /// only on OK. Nil drops the request, which is what happens before a window exists.
     @ObservationIgnored var presentNumber: ((String, String, ClosedRange<Int>, Int, String, @escaping (Int) -> Void) -> Void)?
 
+    /// Installed by the view layer: `(title, label, initial text, completion)` for the text
+    /// alert Save Version… asks its name with (versions design §2); the completion runs only on
+    /// OK. Nil drops the request, which is what happens before a window exists.
+    @ObservationIgnored var presentText: ((String, String, String, @escaping (String) -> Void) -> Void)?
+
     /// The last numbers By Interval… and Scale… were given, offered again next time; for the
     /// session, so a new project keeps them (editor commands design §2).
     @ObservationIgnored var lastTransposeSemitones = 7
@@ -150,6 +155,9 @@ import UniformTypeIdentifiers
         var jobActive = false
         /// The checkpoint the run in flight loaded, for the unsupported-version message.
         var jobModelPath: URL?
+        /// "Transcribe" or "Stems": what the run in flight is, for the automatic version its
+        /// landing saves first (versions design §2).
+        var jobRunName: String?
     }
 
     var transcription = TranscriptionState()
@@ -178,6 +186,27 @@ import UniformTypeIdentifiers
     /// The editable transcription: nil until a run completes or a project is opened. Once it
     /// exists, `transcription.notes` is always `document.events` (`AppModel+Editing.swift`).
     var document: NoteDocument?
+
+    /// The saved versions of the notes, oldest first (versions design §2); the "Transcription"
+    /// entry is not among them. `AppModel+Versions.swift` is the only writer besides the clear
+    /// that drops the take. Saved with the project inside `transcription.json`.
+    var versions: [NoteVersion] = []
+
+    /// The version ghosted behind the roll, or nil (versions design §2). View state: not saved,
+    /// dropped with the transcription.
+    var comparedVersion: NoteVersion?
+
+    /// What the status bar says while comparing, kept current by `refreshComparison()` rather
+    /// than matched on every read of the status line.
+    var comparisonSummary: VersionComparisonSummary?
+
+    /// Edit → Versions → Manage Versions…'s sheet.
+    var isManageVersionsPresented = false
+
+    /// The notes the toolbar's clear threw away, until the run that replaces them lands and
+    /// saves them as "Before Transcribe" (versions design §2): today a re-run needs a clear
+    /// first, so at the landing there is no document left to snapshot.
+    @ObservationIgnored var notesBeforeRun: [NoteEvent]?
 
     /// The editor's tool, selection, target instrument, snap and grid.
     var editor = EditorState() {
@@ -901,6 +930,11 @@ import UniformTypeIdentifiers
         engine.setSource(nil)
         deleteRecordedFiles()
 
+        // Versions are of this take's notes (versions design §2); a clear of the notes alone
+        // keeps them for the run that follows.
+        versions = []
+        notesBeforeRun = nil
+
         source = nil
         duration = 0
         transition(to: .empty)
@@ -915,6 +949,9 @@ import UniformTypeIdentifiers
         guard !jobActive, regionJob == nil else { return }
 
         confirmDiscardingEdits(action: "Clearing") { [weak self] in
+            // The clear is how a take is transcribed again: the next run saves these as
+            // "Before Transcribe" (versions design §2).
+            self?.keepNotesForNextRun()
             self?.clearTranscriptionNow()
         }
     }
@@ -946,6 +983,8 @@ import UniformTypeIdentifiers
         transcription = TranscriptionState()
         staging.reset()
         document = nil
+        comparedVersion = nil
+        comparisonSummary = nil
         editor.selection = []
         editor.range = nil
         highlightedProgram = nil

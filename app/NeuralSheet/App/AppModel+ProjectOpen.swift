@@ -120,6 +120,7 @@ extension AppModel {
 
         if let audio, let transcription = package.transcription, audio.mono16k.count == transcription.sourceSampleCount {
             installDocument(rawNotes: transcription.rawNotes, document: transcription.document)
+            versions = transcription.versions
             transition(to: .populated)
 
             if let target = saved.targetProgram {

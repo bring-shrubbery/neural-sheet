@@ -97,6 +97,9 @@ extension AppModel {
 
         selectedGroups = []
         resetMixerSettingsForLaunch()
+        // Notes a clear set aside for a run are kept here too, so a file over a cleared take
+        // loses no edits either (versions design §2).
+        saveVersionBeforeRun("Import MIDI")
         landTranscription(file.allNotes)
     }
 

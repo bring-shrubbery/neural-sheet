@@ -117,6 +117,7 @@ struct MainView: View {
         Dialogs.install(on: model) { [windowController] in windowController.window }
         Dialogs.installConfirm(on: model) { [windowController] in windowController.window }
         Dialogs.installNumber(on: model) { [windowController] in windowController.window }
+        Dialogs.installText(on: model) { [windowController] in windowController.window }
         Dialogs.installProjectDialogs(on: model) { [windowController] in windowController.window }
         Dialogs.installMIDIImportChoice(on: model) { [windowController] in windowController.window }
 

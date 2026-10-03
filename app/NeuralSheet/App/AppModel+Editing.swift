@@ -84,6 +84,7 @@ extension AppModel {
         publishNotes()
         validateTargetProgram()
         pruneStringChoices()
+        refreshComparison()
     }
 
     /// If the target instrument has left the mix, the first strip takes over; a highlight on an

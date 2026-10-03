@@ -108,8 +108,12 @@ extension AppModel {
         startDrainTimer()
 
         // With Stems on and the weights installed, the separator first and the engine four
-        // times after (stem separation design §5); the same state, staging and drain.
-        if settings.separateStems, let stemsPath = modelStore.installedPath(for: .stems) {
+        // times after (stem separation design §5); the same state, staging and drain. The run's
+        // name is what its landing calls the version it saves first (versions design §2).
+        let stems = settings.separateStems ? modelStore.installedPath(for: .stems) : nil
+        transcription.jobRunName = stems != nil ? "Stems" : "Transcribe"
+
+        if let stemsPath = stems {
             launchStemsRun(modelPath: modelPath, stemsPath: stemsPath, source: source)
             return
         }
@@ -217,6 +221,8 @@ extension AppModel {
 
         let modelPath = transcription.jobModelPath
         transcription.jobModelPath = nil
+        let runName = transcription.jobRunName ?? "Transcribe"
+        transcription.jobRunName = nil
 
         switch result {
         case let .success(final):
@@ -224,6 +230,8 @@ extension AppModel {
             // authoritative (the streamed one is missing any note the model never closed), and
             // it becomes the editable document. The After transcription settings apply here and
             // not to the stream: the roll shows what the model said, the landing what is kept.
+            // The notes it replaces are saved as a version first (versions design §2).
+            saveVersionBeforeRun(runName)
             landTranscription(NoteEvent.landing(final.map(NoteEvent.init(engineNote:)), settings: settings))
 
         case .failure(.cancelled):
