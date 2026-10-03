@@ -5,16 +5,21 @@ import NeuralSheetCore
 /// colours, the wash left of the playhead and the shade past the decode frontier. In the Edit tab
 /// the tempo grid runs over the lanes and each note's velocity shows in its alpha (design §6.5).
 ///
-/// The lanes are measured off the same geometry the key column is drawn with. Notes are bucketed by
-/// second so a repaint of one sliver — the playhead moving, a chunk landing — touches only the
-/// notes that cross it, never the whole transcription.
+/// The lanes are measured off the same geometry the key column is drawn with. What is drawn and
+/// how is ``RollPainter``'s (`PianoRollView+Drawing.swift`), shared with the iPhone and iPad app;
+/// this view holds one and adds the overlays, the mouse and VoiceOver.
 final class PianoRollView: NSView {
     let geometry: TimelineGeometry
 
+    /// The drawing's state and the drawing itself.
+    var painter: RollPainter
+
     /// Nothing is drawn unless the transport can play (`PianoRoll::paint`).
-    var canPlay = false {
-        didSet {
-            if canPlay != oldValue {
+    var canPlay: Bool {
+        get { painter.canPlay }
+        set {
+            if newValue != painter.canPlay {
+                painter.canPlay = newValue
                 needsDisplay = true
             }
         }
@@ -22,19 +27,31 @@ final class PianoRollView: NSView {
 
     /// The tempo grid drawn over the lanes, in the Edit tab; nil draws none. Whole-view repaint:
     /// the caller decides.
-    var grid: TempoGrid?
+    var grid: TempoGrid? {
+        get { painter.grid }
+        set { painter.grid = newValue }
+    }
 
     /// The project's key, whose scale colours the lanes in both tabs (key design §5); nil
     /// colours them by key colour. Whole-view repaint: the caller decides.
-    var key: MusicalKey?
+    var key: MusicalKey? {
+        get { painter.key }
+        set { painter.key = newValue }
+    }
 
     /// View → Show Confidence (confidence design §2): notes shade by how sure the model was, in
     /// both tabs, in place of velocity. Whole-view repaint: the caller decides.
-    var showsConfidence = false
+    var showsConfidence: Bool {
+        get { painter.showsConfidence }
+        set { painter.showsConfidence = newValue }
+    }
 
     /// View → Show Pitch Curves (pitch curves design §2): a tracked note's curve is drawn through
     /// it, in both tabs. Whole-view repaint: the caller decides.
-    var showsPitchCurves = true
+    var showsPitchCurves: Bool {
+        get { painter.showsPitchCurves }
+        set { painter.showsPitchCurves = newValue }
+    }
 
     /// The click is a seek; the container owns the model.
     var onSeek: ((Double) -> Void)?
@@ -51,30 +68,27 @@ final class PianoRollView: NSView {
     let marquee = MarqueeView(frame: .zero)
     let rangeBand = RangeBandView(frame: .zero)
 
-    private(set) var notes: [NoteEvent] = []
+    var notes: [NoteEvent] { painter.notes }
     /// `ids[i]` identifies `notes[i]`; placeholder ids while a run streams (nothing hit-tests them).
-    private(set) var ids: [NoteID] = []
+    var ids: [NoteID] { painter.ids }
 
     /// `buckets[s]` holds the indices of every note drawn over second `s`, in note order.
-    private(set) var buckets: [[Int]] = []
+    var buckets: [[Int]] { painter.buckets }
 
     /// Per program: whether it is heard, and the colour it draws in.
-    private(set) var audible = [Bool](repeating: true, count: NoteEvent.drumProgram + 1)
-    private(set) var colours: [CGColor] = []
-    /// Per program: its colour lightened 30 % toward white, what a pitch curve is stroked in so
-    /// it reads over its own note's fill.
-    private(set) var curveColours: [CGColor] = []
+    var audible: [Bool] { painter.audible }
+    var colours: [CGColor] { painter.colours }
 
     /// The instrument a strip click singled out: every other instrument fades while it is set.
-    private(set) var highlightedProgram: Int?
+    var highlightedProgram: Int? { painter.highlightedProgram }
 
     /// Design §6.5: the selection's outline, a drag's preview, and the indices the preview names.
-    private(set) var selection: Set<NoteID> = []
-    private(set) var preview: DragPreview?
-    var previewIndices: [Int] = []
+    var selection: Set<NoteID> { painter.selection }
+    var preview: DragPreview? { painter.preview }
+    var previewIndices: [Int] { painter.previewIndices }
 
     /// The compared version's notes, drawn hollow under the notes (versions design §2).
-    var ghosts = GhostNotes()
+    var ghosts: GhostNotes { painter.ghosts }
 
     private var trackingArea: NSTrackingArea?
 
@@ -83,16 +97,20 @@ final class PianoRollView: NSView {
     var accessibilityNotes: [DrawnElement]?
     weak var accessibilityHandler: RollAccessibilityHandler?
 
-    /// How far a drum hit is widened for drawing (`DRUM_MIN_DRAWN_SECONDS`).
-    static let drumMinDrawnSeconds = 0.1
-    static let mutedNoteAlpha: CGFloat = 0.16
-    /// What the other instruments fade to while one is highlighted: still legible, clearly behind.
-    static let unhighlightedNoteAlpha: CGFloat = 0.35
-    static let noteCorner: CGFloat = 2
-    static let onsetEdgeWidth: CGFloat = 2
+    /// The painter's constants, by the names the rest of the app knows them by.
+    static let drumMinDrawnSeconds = RollPainter.drumMinDrawnSeconds
+    static let mutedNoteAlpha = RollPainter.mutedNoteAlpha
+    static let unhighlightedNoteAlpha = RollPainter.unhighlightedNoteAlpha
+    static let noteCorner = RollPainter.noteCorner
+    static let onsetEdgeWidth = RollPainter.onsetEdgeWidth
+    static let selectionOutlineWidth = RollPainter.selectionOutlineWidth
+    static let ghostAlpha = RollPainter.ghostAlpha
+    static let lyricInset = RollPainter.lyricInset
+    static let lyricMinHeight = RollPainter.lyricMinHeight
 
     init(geometry: TimelineGeometry) {
         self.geometry = geometry
+        painter = RollPainter(geometry: geometry)
         super.init(frame: .zero)
         wantsLayer = true
         clipsToBounds = true
@@ -105,13 +123,6 @@ final class PianoRollView: NSView {
         addSubview(rangeBand)
         addSubview(marquee)
         addSubview(playhead)
-
-        colours = (0...NoteEvent.drumProgram).map { program in
-            TimelinePalette.cg(Instruments.info(forProgram: program).colour, alpha: 1)
-        }
-        curveColours = colours.map { colour in
-            NSColor(cgColor: colour)?.blended(withFraction: 0.3, of: .white)?.cgColor ?? colour
-        }
     }
 
     required init?(coder: NSCoder) {
@@ -128,24 +139,20 @@ final class PianoRollView: NSView {
     /// A note with a non-finite time cannot be placed and is left out rather than trapped on.
     func setNotes(_ newNotes: [EditableNote]) {
         let placeable = newNotes.filter { $0.note.startTime.isFinite && $0.note.endTime.isFinite }
-        notes = placeable.map(\.note)
-        ids = placeable.map(\.id)
-        rebuildBuckets()
-        refreshPreviewIndices()
+        painter.notes = placeable.map(\.note)
+        painter.ids = placeable.map(\.id)
+        painter.buckets = RollPainter.secondBuckets(painter.notes)
+        painter.refreshPreviewIndices()
         invalidateAccessibilityNotes()
     }
 
-    private func rebuildBuckets() {
-        buckets = PianoRollView.secondBuckets(notes)
-    }
-
-    var hasNotes: Bool { !notes.isEmpty }
+    var hasNotes: Bool { painter.hasNotes }
 
     /// Repaints the notes whose outline changes.
     func setSelection(_ new: Set<NoteID>) {
         guard new != selection else { return }
 
-        selection = new
+        painter.selection = new
         setNeedsDisplay(visibleRect)
         accessibilitySelectionDidChange()
     }
@@ -154,8 +161,8 @@ final class PianoRollView: NSView {
     func setPreview(_ new: DragPreview?) {
         guard new != preview else { return }
 
-        preview = new
-        refreshPreviewIndices()
+        painter.preview = new
+        painter.refreshPreviewIndices()
         setNeedsDisplay(visibleRect)
     }
 
@@ -166,8 +173,8 @@ final class PianoRollView: NSView {
         for program in 0...NoteEvent.drumProgram {
             let isAudible = mixer.isAudible(program: program)
 
-            if audible[program] != isAudible {
-                audible[program] = isAudible
+            if painter.audible[program] != isAudible {
+                painter.audible[program] = isAudible
                 changed = true
             }
         }
@@ -181,12 +188,12 @@ final class PianoRollView: NSView {
     func setHighlightedProgram(_ program: Int?) {
         guard program != highlightedProgram else { return }
 
-        highlightedProgram = program
+        painter.highlightedProgram = program
         setNeedsDisplay(visibleRect)
     }
 
     static func drawnEnd(of note: NoteEvent) -> Double {
-        note.isDrum ? max(note.endTime, note.startTime + drumMinDrawnSeconds) : note.endTime
+        RollPainter.drawnEnd(of: note)
     }
 
     // MARK: - Overlays
@@ -248,132 +255,7 @@ final class PianoRollView: NSView {
     override func draw(_ rect: NSRect) {
         guard let ctx = NSGraphicsContext.current?.cgContext else { return }
 
-        let dirtyRect = rect.intersection(bounds)
-
-        ctx.fill(dirtyRect, TimelinePalette.bgRoot)
-
-        guard canPlay else { return }
-
-        drawLanes(ctx, in: dirtyRect)
-        drawNotes(ctx, in: dirtyRect)
-    }
-
-    /// `PianoRoll::_drawLanes`: `laneWhite` / `laneBlack` by key colour, held back to 55 % while
-    /// there is nothing on them, and a 1 px `divOctave` separator under every C. With a key set
-    /// (key design §5) the lanes go by the scale instead: in-scale light, out-of-scale dark, the
-    /// tonic's washed with the accent.
-    private func drawLanes(_ ctx: CGContext, in dirtyRect: CGRect) {
-        let k = geometry.scale
-        let range = geometry.pitchRange
-        let column = CGRect(x: 0, y: 0, width: TimelineMetrics.gutterWidth * k, height: geometry.keyboardHeight * k)
-        let empty = !hasNotes
-
-        for note in range.low...range.high {
-            // Only the keys inside the column, which is what the keyboard shows too.
-            guard geometry.keyRect(note).intersects(column) else { continue }
-
-            let lane = geometry.lane(forPitch: note)
-            let laneRect = CGRect(x: dirtyRect.minX, y: lane.y, width: dirtyRect.width, height: lane.height)
-
-            guard laneRect.intersects(dirtyRect) else { continue }
-
-            let white = key.map { $0.contains(pitch: note) } ?? !KeyboardLayout.isBlack(note)
-            let colour = empty
-                ? (white ? TimelinePalette.laneWhiteEmpty : TimelinePalette.laneBlackEmpty)
-                : (white ? TimelinePalette.laneWhite : TimelinePalette.laneBlack)
-
-            ctx.fill(laneRect, colour)
-
-            if let key, key.isTonic(pitch: note) {
-                ctx.fill(laneRect, TimelinePalette.laneTonic)
-            }
-
-            // An octave separator on each C, which is the only thing standing in for the vertical
-            // grid the Transcribe tab deliberately does without.
-            if note % 12 == 0 {
-                ctx.fill(CGRect(x: dirtyRect.minX, y: lane.y + lane.height - k, width: dirtyRect.width, height: k),
-                         empty ? TimelinePalette.divOctaveEmpty : TimelinePalette.divOctave)
-            }
-        }
-
-        if let grid {
-            drawGrid(ctx, grid: grid, in: dirtyRect)
-        }
-    }
-
-    /// Design §6.5: bar, beat and division lines over the lanes; the finer kinds drop out as
-    /// they crowd, judged by the densest segment in view (tempo map design §2).
-    private func drawGrid(_ ctx: CGContext, grid: TempoGrid, in dirtyRect: CGRect) {
-        let k = geometry.scale
-        let pixelsPerSecond = Double(geometry.pixelsPerSecond / k)
-        // One authored pixel of slack on the left: a line's x is rounded, so one just outside the
-        // sliver can land inside it.
-        let from = max(0, geometry.seconds(forX: dirtyRect.minX - k))
-        let to = geometry.seconds(forX: dirtyRect.maxX)
-        let visible = grid.segments(from: from, to: to)
-        let fastest = visible.map(\.bpm).max() ?? grid.bpm
-        let divisionPixels = grid.division.beats * 60 / fastest * pixelsPerSecond
-        let beatPixels = (visible.map { $0.timeSignature.beatLength * 60 / $0.bpm }.min() ?? 0) * pixelsPerSecond
-        let drawDivisions = divisionPixels >= 6
-        let drawBeats = beatPixels >= 3
-        // A division coarser than a beat still shows the meter's beats.
-        let lines = drawDivisions && grid.division.beats < 1
-            ? grid.lines(from: from, to: to)
-            : grid.beatLines(from: from, to: to)
-
-        for line in lines {
-            let colour: CGColor
-
-            switch line.kind {
-            case .bar: colour = TimelinePalette.divStrong
-            case .beat where drawBeats: colour = TimelinePalette.divOctave
-            case .division where drawDivisions: colour = TimelinePalette.gridDivision
-            default: continue
-            }
-
-            let x = CGFloat((line.seconds * pixelsPerSecond).rounded()) * k
-            ctx.fill(CGRect(x: x, y: dirtyRect.minY, width: k, height: dirtyRect.height), colour)
-        }
-    }
-
-    /// `PianoRoll::_drawNotes`, over the notes whose seconds cross the exposed sliver; then the
-    /// notes a drag previews, wherever they land now, and the Draw tool's note in progress.
-    private func drawNotes(_ ctx: CGContext, in dirtyRect: CGRect) {
-        // Under the notes, so a note the version shares covers its ghost (versions design §2).
-        drawGhosts(ctx, in: dirtyRect)
-
-        let previewSet = Set(previewIndices)
-
-        for index in indices(crossing: dirtyRect) where !previewSet.contains(index) {
-            let note = notes[index]
-
-            guard let rect = noteRect(note), rect.maxX >= dirtyRect.minX, rect.minX <= dirtyRect.maxX else { continue }
-
-            drawNote(note, in: rect, selected: selection.contains(ids[index]), ctx: ctx)
-        }
-
-        // The preview's notes, wherever they land now. Not clipped to the sliver: the preview
-        // invalidates the whole visible rect, and a moved note has to leave where it was.
-        for index in previewIndices {
-            let original = notes[index]
-
-            if previewDuplicates, let rect = noteRect(original) {
-                drawNote(original, in: rect, selected: false, ctx: ctx)
-            }
-
-            guard let shown = previewed(original, id: ids[index]), let rect = noteRect(shown) else { continue }
-
-            drawNote(shown, in: rect, selected: true, ctx: ctx)
-        }
-
-        if let drawn = drawnPreview, let rect = noteRect(drawn) {
-            drawNote(drawn, in: rect, selected: true, ctx: ctx)
-        }
-    }
-
-    /// The indices of the notes whose seconds cross `dirtyRect`, in note order.
-    private func indices(crossing dirtyRect: CGRect) -> [Int] {
-        indices(crossing: dirtyRect, of: notes, buckets: buckets)
+        painter.draw(ctx, in: rect.intersection(bounds), bounds: bounds)
     }
 
     // MARK: - Mouse
