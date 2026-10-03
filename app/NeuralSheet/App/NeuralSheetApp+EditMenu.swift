@@ -101,6 +101,10 @@ extension NeuralSheetApp {
                 .keyboardShortcut("k", modifiers: [.command, .shift])
                 .disabled(model.workspace != .edit || model.editor.key == nil)
 
+            // Chord symbols design §2: no key, as ⇧⌘H is Humanize.
+            Button("Detect Chords") { model.detectChords() }
+                .disabled(model.workspace != .edit || !model.canDetectChords)
+
             bulkCommands(model: model)
 
             Divider()

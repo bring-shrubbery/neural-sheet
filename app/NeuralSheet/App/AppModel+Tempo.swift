@@ -4,7 +4,7 @@ import NeuralSheetCore
 /// The tempo and the key from the music rather than from typing (tempo design §4, key design
 /// §4): taps along with the take set the BPM; a detection over the take's audio sets the tempo
 /// map, the downbeat and, when the accents are clear, the meter (tempo map design §4), and over
-/// the transcription's notes the key.
+/// the transcription's notes the key and then the chords (chord symbols design §2).
 extension AppModel {
     // MARK: - Tap
 
@@ -24,7 +24,7 @@ extension AppModel {
 
     /// The Detect button: the take's tempo map and downbeat, found off the main thread and
     /// written to the grid when they land, unless the take has changed underneath, and then the
-    /// key from the notes. Nothing to find is said so in the standard dialog. A map someone has
+    /// key and the chords from the notes. Nothing to find is said so in the standard dialog. A map someone has
     /// shaped (a change, or a meter other than 4/4) is asked about first, the way Revert asks.
     func detectTempo() {
         guard source != nil, !isDetectingTempo else { return }
@@ -81,6 +81,8 @@ extension AppModel {
         // The whole map in one step, the meter with it when the accents were sure.
         editor.grid.replaceMap(estimate.segments, offsetSeconds: estimate.downbeatSeconds)
         detectKey()
+        // After the key, which spells them and tips a close call, on the new bars.
+        detectChords(reportsNothing: false)
     }
 
     /// The key of the transcription's notes (key design §2), when there are melodic notes to

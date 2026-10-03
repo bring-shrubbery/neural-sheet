@@ -47,7 +47,8 @@ extension AppModel {
                        snapEnabled: editor.snapEnabled,
                        targetProgram: editor.targetProgram,
                        key: editor.key,
-                       arrangement: arrangement)
+                       arrangement: arrangement,
+                       chords: editor.chords)
     }
 
     /// Everything `project.json` holds, ready to be written.
@@ -65,6 +66,8 @@ extension AppModel {
         state.snapEnabled = editor.snapEnabled
         state.targetProgram = editor.targetProgram
         state.key = editor.key
+        state.chords = editor.chords
+        state.chordsEdited = editor.chordsEdited
         state.arrangement = arrangement
         state.workspace = workspace.savedWorkspace
         state.playheadSeconds = playheadSeconds

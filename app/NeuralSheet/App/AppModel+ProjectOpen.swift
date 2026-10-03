@@ -102,6 +102,8 @@ extension AppModel {
         editor.grid = saved.tempoGrid
         editor.snapEnabled = saved.snapEnabled
         editor.key = saved.key
+        editor.chords = saved.chords.sortedChords()
+        editor.chordsEdited = saved.chordsEdited
         arrangement = saved.arrangement
         followPlayhead = saved.playheadCentered
         zoomLevel = saved.zoomLevel

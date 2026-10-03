@@ -18,6 +18,11 @@ struct EditorState: Equatable {
     /// The project's key (key design §4): the roll's scale highlight, the score's signature
     /// and Snap to Scale's target. Nil for none. Saved with the project.
     var key: MusicalKey?
+    /// The chord symbols in time order (chord symbols design §2): the Edit tab's lane, the score's
+    /// line and the MusicXML's harmony. Saved with the project; `AppModel+Chords.swift` writes it.
+    var chords: [ChordEvent] = []
+    /// Whether the user changed the list since Detect filled it, so Detect asks before replacing.
+    var chordsEdited = false
     /// The stretch marked on the ruler for Re-transcribe (region design §4.2), half-open seconds.
     /// Transient: not in the project file.
     var range: Range<Double>?
