@@ -11,7 +11,8 @@ import Synchronization
 /// 2. the first `.sf2` or `.dls` in `Library/NeuralSheet/soundbanks/`, where the bank download of
 ///    the transport and settings sub-issue (H) will put it.
 ///
-/// None is silence on the synths, said once in the log (`+SoundBank.swift`).
+/// With none the MIDI synth plays a fallback tone of its own (measured in the simulator on the
+/// piano), which is said once in the log (`+SoundBank.swift`).
 nonisolated extension InstrumentSynthBank {
     /// The folder a downloaded or imported bank lives in.
     static var soundBanksDirectory: URL {
@@ -41,12 +42,12 @@ nonisolated extension InstrumentSynthBank {
 
     private static let log = Logger(subsystem: "com.quassum.neuralsheet.ios", category: "audio")
 
-    /// Once per session: the synths are silent because there is no bank to load.
+    /// Once per session: the synths have no bank to load, so they play the fallback tone.
     static func reportMissingSoundBank() {
         guard !missingBankReported.exchange(true, ordering: .relaxed) else { return }
 
         log.error(
-            "No sound bank: the synth is silent until a .sf2 is in the bundle or \(soundBanksDirectory.path, privacy: .public)"
+            "No sound bank: the synth plays its fallback tone until a .sf2 is in the bundle or \(soundBanksDirectory.path, privacy: .public)"
         )
     }
 }
