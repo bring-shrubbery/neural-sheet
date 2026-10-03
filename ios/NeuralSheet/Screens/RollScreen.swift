@@ -16,7 +16,9 @@ struct RollScreen: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            TransportPlaceholder(model: model)
+            TransportPlaceholder(model: model) {
+                RollCommandsMenu(model: model)
+            }
 
             TimelineView(model: model) { rect in
                 cardAnchor = rect
@@ -134,9 +136,11 @@ private struct EditBar: View {
     }
 }
 
-/// Play/Pause and where the playhead is, polled from the engine while the screen shows.
-private struct TransportPlaceholder: View {
+/// Play/Pause and where the playhead is, polled from the engine while the screen shows, with the
+/// screen's own controls at the trailing end.
+struct TransportPlaceholder<Trailing: View>: View {
     let model: MobileModel
+    @ViewBuilder let trailing: () -> Trailing
 
     var body: some View {
         SwiftUI.TimelineView(.periodic(from: .now, by: 1.0 / 15)) { _ in
@@ -160,26 +164,11 @@ private struct TransportPlaceholder: View {
 
                 Spacer()
 
-                RollCommandsMenu(model: model)
+                trailing()
             }
             .padding(.horizontal, 12)
         }
         .frame(height: 52)
         .background(.bar)
-    }
-}
-
-/// The Score tab until sub-issue G.
-struct ScorePlaceholder: View {
-    var body: some View {
-        ContentUnavailableView {
-            Label {
-                Text("Score", comment: "Tab: the score")
-            } icon: {
-                Image(systemName: "music.note.list")
-            }
-        } description: {
-            Text("The score view is coming.", comment: "Score tab placeholder")
-        }
     }
 }

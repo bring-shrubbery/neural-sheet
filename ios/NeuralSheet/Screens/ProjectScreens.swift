@@ -45,7 +45,7 @@ enum ProjectScreen: Hashable, CaseIterable {
         switch self {
         case .transcribe: TranscribeScreen(model: model)
         case .roll: RollScreen(model: model)
-        case .score: ScorePlaceholder()
+        case .score: ScoreScreen(model: model)
         case .settings: SettingsScreen()
         }
     }
