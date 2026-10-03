@@ -80,6 +80,8 @@ final class TimelineContainerView: NSView {
     let tempoCard = PopupMenuPresenter()
     /// The chord lane's card (`TimelineContainerView+Chords.swift`).
     let chordCard = PopupMenuPresenter()
+    /// The lyric card (`TimelineContainerView+Lyrics.swift`).
+    let lyricCard = PopupMenuPresenter()
 
     // MARK: - Model mirror
 
@@ -109,6 +111,7 @@ final class TimelineContainerView: NSView {
         var chords: [ChordEvent] = []
         var markers: [Marker] = []
         var markerToRename: UUID?
+        var lyricNote: NoteID?
         var showsConfidence = false
         var showsPitchCurves = true
     }

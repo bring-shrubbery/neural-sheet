@@ -42,6 +42,7 @@ extension TimelineContainerView {
             _ = model.editor.chords
             _ = model.editor.markers
             _ = model.editor.markerToRename
+            _ = model.editor.lyricNote
             _ = model.showsConfidence
             _ = model.showsPitchCurves
             _ = model.regionJob
@@ -89,6 +90,7 @@ extension TimelineContainerView {
                            chords: model.editor.chords,
                            markers: model.editor.markers,
                            markerToRename: model.editor.markerToRename,
+                           lyricNote: model.editor.lyricNote,
                            showsConfidence: model.showsConfidence,
                            showsPitchCurves: model.showsPitchCurves)
         let old = snapshot
@@ -253,6 +255,7 @@ extension TimelineContainerView {
             placeOverlays()
         }
 
+        syncLyricCard(new, old: old, first: first)
         updatePlayhead()
         resumeDisplayLink()
         observeModel()

@@ -110,9 +110,19 @@ import SwiftUI
                                   @ViewBuilder content: () -> Content) {
         let content = content()
 
+        shownScale = scale
         present(AnyView(content.uiScale(scale)), in: window, scale: scale, becomesKey: true, swallowsOutsideClick: false) { size in
             Self.pointFrame(size: size, point: point, scale: scale)
         }
+    }
+
+    /// The panel shown by ``showPanel`` hung from another point, keeping its content, its focus
+    /// and its monitors: the lyric card stepping to the next note (markers and lyrics design §2),
+    /// where closing and reopening would lose the field's keyboard between syllables.
+    func movePanel(to point: CGPoint) {
+        guard let panel else { return }
+
+        panel.setFrame(Self.pointFrame(size: panel.frame.size, point: point, scale: shownScale), display: true)
     }
 
     /// The window, its monitors and its observers, whatever is shown in it.
