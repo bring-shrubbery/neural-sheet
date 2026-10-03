@@ -1081,9 +1081,8 @@ import UniformTypeIdentifiers
     func midiData() -> Data? {
         guard canExport else { return nil }
 
-        return MidiFileWriter.data(
-            notes: notes, bpm: exportTempo, startOffsetSeconds: editor.grid.exportStartOffsetSeconds,
-            mode: settings.midiOverflowMode)
+        // Through the tempo map: a tempo and a meter at each change (tempo map design §2).
+        return MidiFileWriter.data(notes: notes, grid: editor.grid, mode: settings.midiOverflowMode)
     }
 
     /// `<source>_NNTranscription.mid`, or `NNTranscription.mid` for a recorded take.

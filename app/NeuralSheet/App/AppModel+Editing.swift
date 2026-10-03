@@ -188,11 +188,13 @@ extension AppModel {
         commit(document.delete(editor.selection))
     }
 
-    /// Arrow keys: `steps` grid divisions (or 10 ms each with snap off), `semitones` up.
+    /// Arrow keys: `steps` grid divisions at the selection's tempo (or 10 ms each with snap off),
+    /// `semitones` up.
     func nudgeSelection(steps: Int, semitones: Int) {
         guard let document, !editor.selection.isEmpty else { return }
 
-        let seconds = Double(steps) * (editor.snapEnabled ? editor.grid.step : 0.010)
+        let earliest = document.notes.filter { editor.selection.contains($0.id) }.map(\.note.startTime).min() ?? playheadSeconds
+        let seconds = Double(steps) * (editor.snapEnabled ? editor.grid.step(atSeconds: earliest) : 0.010)
 
         commit(document.move(editor.selection, deltaSeconds: seconds, deltaSemitones: semitones))
         auditionSelection()
