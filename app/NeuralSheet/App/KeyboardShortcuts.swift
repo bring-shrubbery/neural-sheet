@@ -132,6 +132,14 @@ import NeuralSheetCore
         // that flickers play and pause serves nobody.
         guard !event.isARepeat else { return false }
 
+        // A control Full Keyboard Access has focused takes Space and Return as a press, as a
+        // focused button does anywhere on the platform (a11y design §2). Without keyboard
+        // navigation nothing is ever focused and the transport keeps both.
+        if KeyboardFocus.controlHasFocus, !shift,
+           [KeyCode.space, KeyCode.returnKey, KeyCode.keypadEnter].contains(event.keyCode) {
+            return false
+        }
+
         switch event.keyCode {
         case KeyCode.space:
             if shift {
