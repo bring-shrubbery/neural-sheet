@@ -43,6 +43,8 @@
 	<true/>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>NeuralSheet records from the microphone to transcribe what you play.</string>
+	<key>NSSupportsLiveActivities</key>
+	<true/>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

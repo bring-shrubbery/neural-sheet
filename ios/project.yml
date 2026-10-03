@@ -66,10 +66,13 @@ targets:
       - path: ../app/NeuralSheet/Decoders
       # The project package's UTType, so both apps name the one type (sub-issue C).
       - path: ../app/NeuralSheet/App/ProjectType.swift
+      # What the app and the widget extension share: the Live Activity's attributes.
+      - path: Shared
     dependencies:
       - package: NeuralSheetCore
       - package: NeuralSheetEngine
         product: NeuralSheetEngine
+      - target: NeuralSheetWidgets
     preBuildScripts:
       - name: Build engine
         basedOnDependencyAnalysis: false
@@ -122,6 +125,8 @@ targets:
           - UIInterfaceOrientationLandscapeLeft
           - UIInterfaceOrientationLandscapeRight
         NSMicrophoneUsageDescription: NeuralSheet records from the microphone to transcribe what you play.
+        # A run's progress on the Lock Screen and in the Dynamic Island (sub-issue D).
+        NSSupportsLiveActivities: true
         # The project package (sub-issue C): the same declaration as app/Info.plist, so iCloud
         # Drive and Files show one type whichever app saved the file. The document browser is the
         # system's, and documents open in place where they are.
@@ -142,6 +147,32 @@ targets:
             UTTypeTagSpecification:
               public.filename-extension:
                 - neuralsheet
+
+  # The Live Activity's drawing (sub-issue D), embedded in the app.
+  NeuralSheetWidgets:
+    type: app-extension
+    platform: iOS
+    deploymentTarget: "26.0"
+    sources:
+      - path: NeuralSheetWidgets
+      - path: Shared
+    settings:
+      base:
+        PRODUCT_NAME: NeuralSheetWidgets
+        PRODUCT_BUNDLE_IDENTIFIER: com.quassum.neuralsheet.ios.widgets
+        MARKETING_VERSION: 1.1.0
+        CURRENT_PROJECT_VERSION: 1
+        DEVELOPMENT_TEAM: 6WCYZER5LX
+        CODE_SIGN_STYLE: Automatic
+        TARGETED_DEVICE_FAMILY: "1,2"
+        GENERATE_INFOPLIST_FILE: YES
+        SKIP_INSTALL: YES
+    info:
+      path: NeuralSheetWidgets/Info.plist
+      properties:
+        CFBundleDisplayName: NeuralSheet
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
 
   # The document round trip and whatever else needs the app's own types (sub-issue C), hosted by
   # the app and run on the simulator.

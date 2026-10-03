@@ -4,8 +4,9 @@ import Observation
 
 /// The iOS app's model (iOS app design §2): one per open document, built from the same pieces as
 /// the Mac's `AppModel` -- the playback engine, the take, the note document, the editor state and
-/// the project fields `project.json` keeps. For now it holds that state, installs it from a
-/// package and snapshots it back; the commands come with the editing work (sub-issue F).
+/// the project fields `project.json` keeps. It installs that state from a package and snapshots it
+/// back; the take comes in through `+Imports` and `+Recording`, the notes through
+/// `+Transcription` (sub-issue D); the editing commands come with sub-issue F.
 ///
 /// The field list and the two directions follow `AppModel+Project.swift` and
 /// `AppModel+ProjectOpen.swift`, so a package the Mac saved reads back field for field and one
@@ -67,6 +68,41 @@ final class MobileModel {
 
     /// The project tempo: the grid's BPM and the tempo the MIDI file is written at.
     var exportTempo: Double { editor.grid.bpm }
+
+    // MARK: - Runs, takes and imports (sub-issue D)
+
+    /// The run in flight, or nil; `+Transcription` is its only writer.
+    var run: RunState?
+    /// What the run in flight has found so far, merged: what the screen counts while it streams.
+    var streamedNotes: [NoteEvent] = []
+    /// How long the last finished run took, in seconds, for the screen's result line.
+    var lastRunSeconds: Double?
+    /// A take being counted in or recorded, or nil; `+Recording`'s.
+    var recording: RecordingState?
+    /// True while an imported file is being copied, extracted or decoded.
+    var isImporting = false
+    /// The message box the screen shows, or nil.
+    var alert: MobileAlert?
+
+    @ObservationIgnored let transcriber = TranscriptionEngine()
+    @ObservationIgnored let separator = StemSeparator()
+    @ObservationIgnored let staging = TranscriptionStaging()
+    @ObservationIgnored var runTask: Task<Void, Never>?
+    @ObservationIgnored var runSupport: RunSupport?
+    /// The run in flight's cancel and thermal gate, reachable from any thread.
+    @ObservationIgnored var runControl: RunControl?
+    /// The transcription a run replaces: saved as a version when the run lands, put back when it
+    /// is cancelled or fails.
+    @ObservationIgnored var transcriptionBeforeRun: ProjectSnapshot?
+    /// Set when the system ended a run's background time: the run starts again on return.
+    @ObservationIgnored var resumeRunWhenActive = false
+    @ObservationIgnored lazy var recorder = Recorder(engine: engine, paths: .standard)
+    @ObservationIgnored var recordingPoll: Task<Void, Never>?
+    @ObservationIgnored var countInBeats: [Double] = []
+
+    /// The document's undo manager, which iOS autosaves by: a new take and a landed run register
+    /// with it, so the document is saved (sub-issue F registers the edits).
+    @ObservationIgnored weak var undoManager: UndoManager?
 
     init(engine: PlaybackEngine = PlaybackEngine()) {
         self.engine = engine
@@ -138,9 +174,87 @@ final class MobileModel {
         return false
     }
 
-    /// The document's notes to the synths and the scheduler, as the Mac's `publishNotes` does.
+    // MARK: - A new take and new notes
+
+    /// A take becomes the project's, with no transcription: the Mac's `installSource` after a
+    /// clear. The selection and the settings stay, as they do on the Mac.
+    func installSource(_ audio: SourceAudio) {
+        source = audio
+        engine.setSource(audio)
+        document = nil
+        rawNotes = []
+        streamedNotes = []
+        lastRunSeconds = nil
+        playheadSeconds = 0
+        editor.selection = []
+        publishNotes()
+    }
+
+    /// Makes the document from the model's own output, as the Mac's `installDocument` does: the
+    /// merge is the post-processing every raw note goes through, and the ids start again.
+    func installDocument(rawNotes: [NoteEvent]) {
+        self.rawNotes = rawNotes
+        document = NoteDocument(events: mergeOverlappingNotesWithSamePitch(rawNotes))
+        streamedNotes = []
+        editor.selection = []
+        publishNotes()
+    }
+
+    /// While a run streams: its raw notes so far, and what is drawn and played of them. There is
+    /// no document until the run lands.
+    func streamRawNotes(_ rawNotes: [NoteEvent]) {
+        self.rawNotes = rawNotes
+        document = nil
+        streamedNotes = TranscriptionRun.streamedNotes(rawNotes)
+        publishNotes()
+    }
+
+    // MARK: - Snapshots for undo and for a run
+
+    /// The take and the transcription, as a run or an import replaces them.
+    struct ProjectSnapshot {
+        var source: SourceAudio?
+        var rawNotes: [NoteEvent]
+        var document: NoteDocument?
+        var versions: [NoteVersion]
+    }
+
+    func projectSnapshot() -> ProjectSnapshot {
+        ProjectSnapshot(source: source, rawNotes: rawNotes, document: document, versions: versions)
+    }
+
+    func restore(_ snapshot: ProjectSnapshot) {
+        if snapshot.source !== source {
+            source = snapshot.source
+            engine.setSource(snapshot.source)
+        }
+
+        rawNotes = snapshot.rawNotes
+        document = snapshot.document
+        versions = snapshot.versions
+        streamedNotes = []
+        editor.selection = []
+        publishNotes()
+    }
+
+    /// Registers the change from `before` to now with the document's undo manager, which is what
+    /// marks an iOS document edited and gets it autosaved. Undo puts `before` back; redo the
+    /// state it replaced.
+    func registerUndo(_ actionName: String, before: ProjectSnapshot) {
+        guard let undoManager else { return }
+
+        undoManager.registerUndo(withTarget: self) { model in
+            let after = model.projectSnapshot()
+            model.restore(before)
+            model.registerUndo(actionName, before: after)
+        }
+        undoManager.setActionName(actionName)
+    }
+
+    /// The document's notes to the synths and the scheduler, as the Mac's `publishNotes` does;
+    /// while a run streams, what it has found so far.
     func publishNotes() {
-        let notes = document?.events ?? []
+        let notes = document?.events ?? streamedNotes
 
         for program in Set(notes.map(\.program)).sorted() {
             engine.synthBank.ensureInstrument(program: program)
@@ -195,6 +309,35 @@ final class MobileModel {
     /// The package a save writes: the state and the transcription.
     func projectPackage(audioFileName: String) -> ProjectPackage {
         ProjectPackage(state: projectState(audioFileName: audioFileName), transcription: transcriptionSnapshot())
+    }
+
+    // MARK: - Instrument selection
+
+    /// Adds or removes one group, as the Mac's `setSelected`. Not while a run is in flight: the
+    /// run has its own copy, and a change would only mislead.
+    func setSelected(_ group: InstrumentGroup, _ on: Bool) {
+        guard run == nil else { return }
+
+        var groups = selectedGroups
+
+        if on {
+            groups.append(group)
+        } else {
+            groups.removeAll { $0 == group }
+        }
+
+        let normalised = MobileModel.normalised(groups)
+
+        if normalised != selectedGroups {
+            selectedGroups = normalised
+        }
+    }
+
+    /// Back to Automatic.
+    func clearSelection() {
+        guard run == nil, !selectedGroups.isEmpty else { return }
+
+        selectedGroups = []
     }
 
     /// Enumerator order, duplicates dropped, as the Mac keeps ``selectedGroups``.

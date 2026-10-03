@@ -8,9 +8,12 @@
 
 /* Begin PBXBuildFile section */
 		0352A16A23D823B49C9AE295 /* ProjectType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A09B27DA7A76DF45C7CB0FC /* ProjectType.swift */; };
+		05A14C67F5D8041F4842C77C /* TranscriptionRunTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7ED8B70ABC0F6D185F5EE0A7 /* TranscriptionRunTests.swift */; };
 		069D54BC216CB2E87129BDF1 /* AudioFileLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = C91568AA7498575413EDF46D /* AudioFileLoader.swift */; };
+		06C1BE76BDEB950E939750C5 /* TranscriptionActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F127866C8C490F5BD8AE786 /* TranscriptionActivityAttributes.swift */; };
 		09BF64E9FFDB8A4377F721D8 /* NeuralSheetEngine in Frameworks */ = {isa = PBXBuildFile; productRef = 29498518F436E7FC865537DC /* NeuralSheetEngine */; };
 		0C03555B18DC99182747690C /* PlaybackEngine+Transport.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6D8A1F6AE3E8FA641FFEC58 /* PlaybackEngine+Transport.swift */; };
+		0D482701DF25260DD041B27D /* RunSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69C482CD1E1CC5D1F37F16EE /* RunSupport.swift */; };
 		114B5FE575AE9F7158D0D55A /* MidiOutput+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FC36307604DB1A338B4F2CA /* MidiOutput+iOS.swift */; };
 		1AFA0BBB7E6B34D6451D5FD5 /* StemSeparator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E2FF7355546FE6E86E6F168 /* StemSeparator.swift */; };
 		1C3C83F8B7BCD3DEC9C7158A /* NeuralSheetDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72F94013657929EFE3833174 /* NeuralSheetDocument.swift */; };
@@ -21,8 +24,12 @@
 		3469BE535358830F044B2EBA /* NeuralSheetCore in Frameworks */ = {isa = PBXBuildFile; productRef = 29C282FB9AA070942A5DC935 /* NeuralSheetCore */; };
 		381BD0A16355F8DA13E272F7 /* test-take.wav in Resources */ = {isa = PBXBuildFile; fileRef = CD631BA6F930D903BF159E74 /* test-take.wav */; };
 		38E44DAA2AB0C27C9DF9C425 /* NeuralSheetCore in Frameworks */ = {isa = PBXBuildFile; productRef = 4F10A6EC8C2E4948AFE2DA02 /* NeuralSheetCore */; };
+		3F56D789578E528B0B0F5FEE /* ThermalGateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC384ED7A2F2116E5237427C /* ThermalGateTests.swift */; };
 		4D6D9EC86F2A45D1B9F5DF07 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D020775408B048B92C1AE276 /* Assets.xcassets */; };
+		4E0109F87A3FAC8268995F3B /* MobileModel+Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6FF78780F22C857FBE69CE0 /* MobileModel+Models.swift */; };
 		58C2CA72644510B3246DEE71 /* SynthInstrument.swift in Sources */ = {isa = PBXBuildFile; fileRef = 640D8C9858F603029AEC4018 /* SynthInstrument.swift */; };
+		591B8488A216B670AB91F552 /* ThermalGate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E41DDEEC25F0BD885D4D905 /* ThermalGate.swift */; };
+		5EA03E5D146F5B0973AA3E42 /* MobileModel+Imports.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A49A0164420AAAE6BE36B74 /* MobileModel+Imports.swift */; };
 		65AFDED09D5E33BB8F728E9B /* Recorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6D12E5EF025B8AD7A8F7FA5 /* Recorder.swift */; };
 		69FE56DA39DEE18FC3CC1C4C /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC249053BA8637E3134E9B96 /* ContentView.swift */; };
 		718018CDD69D85F167A439DB /* InstrumentSynthBank.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27DAE908F39A0CF7BE43D8E9 /* InstrumentSynthBank.swift */; };
@@ -31,29 +38,43 @@
 		7E60F88D0081DA9F2B991A2F /* PlaybackEngine+Render.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B3D5CB6E881256ABE27AC91 /* PlaybackEngine+Render.swift */; };
 		82A8F058B53BA6E0E47D9FEF /* stb_vorbis.c in Sources */ = {isa = PBXBuildFile; fileRef = BBC36832D4DC96BAFACEB669 /* stb_vorbis.c */; };
 		8543EED6DF64204777288DBF /* PlaybackEngine+Poll.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A0074BE848C7BBDC9A95571 /* PlaybackEngine+Poll.swift */; };
+		96901D8A448669E84A31BDEA /* NeuralSheetWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA1E02AF3C448FD8C12755D8 /* NeuralSheetWidgets.swift */; };
 		98AA275FBFA73CFE5A0BD466 /* InstrumentSynthBank+Click.swift in Sources */ = {isa = PBXBuildFile; fileRef = 165C904AE00B7E1F9478BD74 /* InstrumentSynthBank+Click.swift */; };
 		9D5A00ABCDF9C49058FF2BBB /* PlaybackEngine+Input.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AD76373CFC75212E1F958FC /* PlaybackEngine+Input.swift */; };
 		A0E64666191562BA7D72D2CD /* DocumentRoundTripTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 762F74E4F478407AFC0A3FCF /* DocumentRoundTripTests.swift */; };
+		A4AF3C3B598343E3259E5F90 /* RunControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D97F4156AEA1F63D150D296 /* RunControl.swift */; };
 		AE5D81C82C0E6008C0F6EF5F /* InstrumentSynthBank+SoundBank.swift in Sources */ = {isa = PBXBuildFile; fileRef = 052243AAB4D027C196C04FF2 /* InstrumentSynthBank+SoundBank.swift */; };
 		B562B23A8E356262AFF58C8D /* VideoAudioExtractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F42D8FAD397C447B517DDA2 /* VideoAudioExtractor.swift */; };
 		C5B75F665C784700508A030D /* OfflineRenderer+Source.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C6ACB6DFC02527238869F51 /* OfflineRenderer+Source.swift */; };
 		C6695BD73416E4C4B0B93519 /* NeuralSheetApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03BAAB8E7B6DAC10B47FBA96 /* NeuralSheetApp.swift */; };
+		CBA4B91928F94EE55786E815 /* MobileModel+Recording.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C71304975BAABA1121D286A /* MobileModel+Recording.swift */; };
 		CBBD115ECF29F7FF6A76C117 /* PlaybackEngine+Session.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A415DC1264328088E2DD2A2 /* PlaybackEngine+Session.swift */; };
 		CD5FC76DC204CC7546623F61 /* PlaybackEngine+Mix.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0372A709F93BFA81CA9CABDF /* PlaybackEngine+Mix.swift */; };
 		D00DD7549DA0986C015A7457 /* InstrumentSynthBank+Mix.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A45FCF8143DFA90E81E264A /* InstrumentSynthBank+Mix.swift */; };
 		D38354151E799A8FC30615C1 /* StemFiles.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C2D55847A3F90A85BA70E83 /* StemFiles.swift */; };
+		D38AFB49FC81364F7BEB1E57 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E8D2A8E3864BBC433A55FA8 /* AppSettings.swift */; };
+		D6055CA861C055F3C2C27CF0 /* TranscriptionActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F127866C8C490F5BD8AE786 /* TranscriptionActivityAttributes.swift */; };
 		DF56ABE40398FFF5AEA90999 /* InstrumentSynthBank+DefaultBank.swift in Sources */ = {isa = PBXBuildFile; fileRef = C11A1EB5870C27BF3292450E /* InstrumentSynthBank+DefaultBank.swift */; };
 		DFCC3D99822AAAEF4A02FF08 /* PlaybackEngine+Source.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20811F454A56C430BC95FF13 /* PlaybackEngine+Source.swift */; };
 		E634D3B49814BD56B667B8E0 /* OfflineRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D7934C2ACB2C3E53B28135E /* OfflineRenderer.swift */; };
 		EAEF71CEF7C664D67F2B4532 /* MobileModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 433C909B58059800B1148FEB /* MobileModel.swift */; };
 		ED69ABF449EE1691D04A4981 /* AudioProof.swift in Sources */ = {isa = PBXBuildFile; fileRef = 095BC9A28A419B144985653A /* AudioProof.swift */; };
+		EE9F1BC5CE93C4FA2BC9E305 /* MobileModel+Transcription.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB8320895D01A97ACA9AF133 /* MobileModel+Transcription.swift */; };
 		F8AFF459786F5BC55D3FDC87 /* InstrumentSynthBank+Render.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FDD01CAD3090DD466753E1D /* InstrumentSynthBank+Render.swift */; };
 		FB4199BF8E931C1DE108A80E /* TranscriptionRun.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65AFF9F5CEC72F13D62D6AE5 /* TranscriptionRun.swift */; };
+		FB7F7EE20A3AAD2E78D6EA80 /* NeuralSheetWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 983FA8DE62CCAFEC53817465 /* NeuralSheetWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		FDEEFB38C39830F68867BA4F /* SourceAudio.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21860F05E117BB0BEE501F35 /* SourceAudio.swift */; };
 		FFA74B58B25AC53052DB2A44 /* Recorder+Files.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1607585F612B7640B5D91B3 /* Recorder+Files.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		65943CEEE979760C1963C27B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 492061A242D07609A8A3CE77 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = AD17E762176D0EB27B71E907;
+			remoteInfo = NeuralSheetWidgets;
+		};
 		B7449C88720090175289BA2B /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 492061A242D07609A8A3CE77 /* Project object */;
@@ -63,6 +84,20 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		45B29A6906935D2F5D47974B /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				FB7F7EE20A3AAD2E78D6EA80 /* NeuralSheetWidgets.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		01DF1504F6115B749D70B214 /* TranscriptionEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptionEngine.swift; sourceTree = "<group>"; };
 		0372A709F93BFA81CA9CABDF /* PlaybackEngine+Mix.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PlaybackEngine+Mix.swift"; sourceTree = "<group>"; };
@@ -71,7 +106,9 @@
 		087728EC95200F77CD217785 /* NeuralSheetTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = NeuralSheetTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		095BC9A28A419B144985653A /* AudioProof.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioProof.swift; sourceTree = "<group>"; };
 		0C6ACB6DFC02527238869F51 /* OfflineRenderer+Source.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OfflineRenderer+Source.swift"; sourceTree = "<group>"; };
+		0F127866C8C490F5BD8AE786 /* TranscriptionActivityAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptionActivityAttributes.swift; sourceTree = "<group>"; };
 		165C904AE00B7E1F9478BD74 /* InstrumentSynthBank+Click.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "InstrumentSynthBank+Click.swift"; sourceTree = "<group>"; };
+		1D97F4156AEA1F63D150D296 /* RunControl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunControl.swift; sourceTree = "<group>"; };
 		1FC36307604DB1A338B4F2CA /* MidiOutput+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MidiOutput+iOS.swift"; sourceTree = "<group>"; };
 		20811F454A56C430BC95FF13 /* PlaybackEngine+Source.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PlaybackEngine+Source.swift"; sourceTree = "<group>"; };
 		21860F05E117BB0BEE501F35 /* SourceAudio.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceAudio.swift; sourceTree = "<group>"; };
@@ -79,28 +116,38 @@
 		27BF13E12DFEE010EEF7B836 /* NeuralSheetCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = NeuralSheetCore; path = ../app/Packages/NeuralSheetCore; sourceTree = SOURCE_ROOT; };
 		27DAE908F39A0CF7BE43D8E9 /* InstrumentSynthBank.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstrumentSynthBank.swift; sourceTree = "<group>"; };
 		2A0074BE848C7BBDC9A95571 /* PlaybackEngine+Poll.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PlaybackEngine+Poll.swift"; sourceTree = "<group>"; };
+		2A49A0164420AAAE6BE36B74 /* MobileModel+Imports.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MobileModel+Imports.swift"; sourceTree = "<group>"; };
 		2A6F2FA61179724EEFDCA2DF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		2C2D55847A3F90A85BA70E83 /* StemFiles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StemFiles.swift; sourceTree = "<group>"; };
+		2C71304975BAABA1121D286A /* MobileModel+Recording.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MobileModel+Recording.swift"; sourceTree = "<group>"; };
 		3AD76373CFC75212E1F958FC /* PlaybackEngine+Input.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PlaybackEngine+Input.swift"; sourceTree = "<group>"; };
 		3D7934C2ACB2C3E53B28135E /* OfflineRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineRenderer.swift; sourceTree = "<group>"; };
 		3F42D8FAD397C447B517DDA2 /* VideoAudioExtractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoAudioExtractor.swift; sourceTree = "<group>"; };
 		433C909B58059800B1148FEB /* MobileModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MobileModel.swift; sourceTree = "<group>"; };
 		4B149A6B93FC14D59A40B663 /* NeuralSheet.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = NeuralSheet.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		4E41DDEEC25F0BD885D4D905 /* ThermalGate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThermalGate.swift; sourceTree = "<group>"; };
 		5A45FCF8143DFA90E81E264A /* InstrumentSynthBank+Mix.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "InstrumentSynthBank+Mix.swift"; sourceTree = "<group>"; };
 		640D8C9858F603029AEC4018 /* SynthInstrument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SynthInstrument.swift; sourceTree = "<group>"; };
 		64AFE2DF14117775CB15A796 /* stb_vorbis.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = stb_vorbis.h; sourceTree = "<group>"; };
 		65AFF9F5CEC72F13D62D6AE5 /* TranscriptionRun.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptionRun.swift; sourceTree = "<group>"; };
+		69C482CD1E1CC5D1F37F16EE /* RunSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunSupport.swift; sourceTree = "<group>"; };
+		6E8D2A8E3864BBC433A55FA8 /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
 		72F94013657929EFE3833174 /* NeuralSheetDocument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NeuralSheetDocument.swift; sourceTree = "<group>"; };
 		762F74E4F478407AFC0A3FCF /* DocumentRoundTripTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentRoundTripTests.swift; sourceTree = "<group>"; };
 		7A415DC1264328088E2DD2A2 /* PlaybackEngine+Session.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PlaybackEngine+Session.swift"; sourceTree = "<group>"; };
+		7B712EDFBCD5818D0297F721 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		7E2FF7355546FE6E86E6F168 /* StemSeparator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StemSeparator.swift; sourceTree = "<group>"; };
+		7ED8B70ABC0F6D185F5EE0A7 /* TranscriptionRunTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptionRunTests.swift; sourceTree = "<group>"; };
 		897641DEB991F9073B52C67C /* PlaybackEngine+Lifecycle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PlaybackEngine+Lifecycle.swift"; sourceTree = "<group>"; };
 		8A09B27DA7A76DF45C7CB0FC /* ProjectType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectType.swift; sourceTree = "<group>"; };
+		983FA8DE62CCAFEC53817465 /* NeuralSheetWidgets.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = NeuralSheetWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		9B3D5CB6E881256ABE27AC91 /* PlaybackEngine+Render.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PlaybackEngine+Render.swift"; sourceTree = "<group>"; };
 		9FDD01CAD3090DD466753E1D /* InstrumentSynthBank+Render.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "InstrumentSynthBank+Render.swift"; sourceTree = "<group>"; };
+		AB8320895D01A97ACA9AF133 /* MobileModel+Transcription.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MobileModel+Transcription.swift"; sourceTree = "<group>"; };
 		AC7691234BF45FA9084BBACF /* NeuralSheetEngine */ = {isa = PBXFileReference; lastKnownFileType = folder; name = NeuralSheetEngine; path = ../app/Packages/NeuralSheetEngine; sourceTree = SOURCE_ROOT; };
 		B6D12E5EF025B8AD7A8F7FA5 /* Recorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Recorder.swift; sourceTree = "<group>"; };
 		BBC36832D4DC96BAFACEB669 /* stb_vorbis.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = stb_vorbis.c; sourceTree = "<group>"; };
+		BC384ED7A2F2116E5237427C /* ThermalGateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThermalGateTests.swift; sourceTree = "<group>"; };
 		BC48D300B57BD8077795CBB6 /* InstrumentSynthBank+Audition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "InstrumentSynthBank+Audition.swift"; sourceTree = "<group>"; };
 		C11A1EB5870C27BF3292450E /* InstrumentSynthBank+DefaultBank.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "InstrumentSynthBank+DefaultBank.swift"; sourceTree = "<group>"; };
 		C34A7F7AC3AC1E37BE06C65D /* PlaybackEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaybackEngine.swift; sourceTree = "<group>"; };
@@ -110,6 +157,8 @@
 		CE67184FD217E5FF0A4BB2E7 /* NoteScheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteScheduler.swift; sourceTree = "<group>"; };
 		D020775408B048B92C1AE276 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		D6D8A1F6AE3E8FA641FFEC58 /* PlaybackEngine+Transport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PlaybackEngine+Transport.swift"; sourceTree = "<group>"; };
+		E6FF78780F22C857FBE69CE0 /* MobileModel+Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MobileModel+Models.swift"; sourceTree = "<group>"; };
+		EA1E02AF3C448FD8C12755D8 /* NeuralSheetWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NeuralSheetWidgets.swift; sourceTree = "<group>"; };
 		F1607585F612B7640B5D91B3 /* Recorder+Files.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Recorder+Files.swift"; sourceTree = "<group>"; };
 		FC249053BA8637E3134E9B96 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		FE54E2BC7CFC1D8DBA29014E /* NeuralSheet-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NeuralSheet-Bridging-Header.h"; sourceTree = "<group>"; };
@@ -136,11 +185,21 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		08D6E71F3EBFB59606FEAF2F /* NeuralSheetWidgets */ = {
+			isa = PBXGroup;
+			children = (
+				7B712EDFBCD5818D0297F721 /* Info.plist */,
+				EA1E02AF3C448FD8C12755D8 /* NeuralSheetWidgets.swift */,
+			);
+			path = NeuralSheetWidgets;
+			sourceTree = "<group>";
+		};
 		0B0C06A4EEC7BAFB1526B72C /* Products */ = {
 			isa = PBXGroup;
 			children = (
 				4B149A6B93FC14D59A40B663 /* NeuralSheet.app */,
 				087728EC95200F77CD217785 /* NeuralSheetTests.xctest */,
+				983FA8DE62CCAFEC53817465 /* NeuralSheetWidgets.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -177,7 +236,9 @@
 				12C5103528E1838BF112B5F4 /* neural-sheet */,
 				2BD5675C191DEC69F37EEC4E /* NeuralSheet */,
 				70301ED2D66DC9241419B61A /* NeuralSheetTests */,
+				08D6E71F3EBFB59606FEAF2F /* NeuralSheetWidgets */,
 				C992E487CDD65C0DB420C4DD /* Packages */,
+				A1412CA94CFF96634857A805 /* Shared */,
 				0B0C06A4EEC7BAFB1526B72C /* Products */,
 			);
 			sourceTree = "<group>";
@@ -215,7 +276,15 @@
 		37C6D26838CCA408F0E8326B /* Model */ = {
 			isa = PBXGroup;
 			children = (
+				6E8D2A8E3864BBC433A55FA8 /* AppSettings.swift */,
 				433C909B58059800B1148FEB /* MobileModel.swift */,
+				2A49A0164420AAAE6BE36B74 /* MobileModel+Imports.swift */,
+				E6FF78780F22C857FBE69CE0 /* MobileModel+Models.swift */,
+				2C71304975BAABA1121D286A /* MobileModel+Recording.swift */,
+				AB8320895D01A97ACA9AF133 /* MobileModel+Transcription.swift */,
+				1D97F4156AEA1F63D150D296 /* RunControl.swift */,
+				69C482CD1E1CC5D1F37F16EE /* RunSupport.swift */,
+				4E41DDEEC25F0BD885D4D905 /* ThermalGate.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -240,6 +309,8 @@
 			isa = PBXGroup;
 			children = (
 				762F74E4F478407AFC0A3FCF /* DocumentRoundTripTests.swift */,
+				BC384ED7A2F2116E5237427C /* ThermalGateTests.swift */,
+				7ED8B70ABC0F6D185F5EE0A7 /* TranscriptionRunTests.swift */,
 			);
 			path = NeuralSheetTests;
 			sourceTree = "<group>";
@@ -253,6 +324,14 @@
 				E874C823CBA969CC2EE504F8 /* Engine */,
 			);
 			path = NeuralSheet;
+			sourceTree = "<group>";
+		};
+		A1412CA94CFF96634857A805 /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				0F127866C8C490F5BD8AE786 /* TranscriptionActivityAttributes.swift */,
+			);
+			path = Shared;
 			sourceTree = "<group>";
 		};
 		A90E3DAD69E9E16CF2651F4D /* Audio */ = {
@@ -335,6 +414,23 @@
 			productReference = 087728EC95200F77CD217785 /* NeuralSheetTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
+		AD17E762176D0EB27B71E907 /* NeuralSheetWidgets */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 8760B99D5C2E3F53526A1589 /* Build configuration list for PBXNativeTarget "NeuralSheetWidgets" */;
+			buildPhases = (
+				79B86E5C6B09247B0A35763C /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = NeuralSheetWidgets;
+			packageProductDependencies = (
+			);
+			productName = NeuralSheetWidgets;
+			productReference = 983FA8DE62CCAFEC53817465 /* NeuralSheetWidgets.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		C22D53D5FD5EAC4331A1EEF8 /* NeuralSheet */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = A04DB60C19961CF5B540E6E1 /* Build configuration list for PBXNativeTarget "NeuralSheet" */;
@@ -343,10 +439,12 @@
 				52F28C40D51DB0970E62C39F /* Sources */,
 				2B3B5D19439DAA1EB6B651A0 /* Resources */,
 				C34E53C1B18087C87DDFDA7B /* Frameworks */,
+				45B29A6906935D2F5D47974B /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				B0653507CED99CC5C224FE2F /* PBXTargetDependency */,
 			);
 			name = NeuralSheet;
 			packageProductDependencies = (
@@ -367,6 +465,10 @@
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
 					48722AEF8CD8163E35AFDB15 = {
+						DevelopmentTeam = 6WCYZER5LX;
+						ProvisioningStyle = Automatic;
+					};
+					AD17E762176D0EB27B71E907 = {
 						DevelopmentTeam = 6WCYZER5LX;
 						ProvisioningStyle = Automatic;
 					};
@@ -395,6 +497,7 @@
 			projectRoot = "";
 			targets = (
 				C22D53D5FD5EAC4331A1EEF8 /* NeuralSheet */,
+				AD17E762176D0EB27B71E907 /* NeuralSheetWidgets */,
 				48722AEF8CD8163E35AFDB15 /* NeuralSheetTests */,
 			);
 		};
@@ -439,6 +542,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D38AFB49FC81364F7BEB1E57 /* AppSettings.swift in Sources */,
 				069D54BC216CB2E87129BDF1 /* AudioFileLoader.swift in Sources */,
 				ED69ABF449EE1691D04A4981 /* AudioProof.swift in Sources */,
 				69FE56DA39DEE18FC3CC1C4C /* ContentView.swift in Sources */,
@@ -450,6 +554,10 @@
 				AE5D81C82C0E6008C0F6EF5F /* InstrumentSynthBank+SoundBank.swift in Sources */,
 				718018CDD69D85F167A439DB /* InstrumentSynthBank.swift in Sources */,
 				114B5FE575AE9F7158D0D55A /* MidiOutput+iOS.swift in Sources */,
+				5EA03E5D146F5B0973AA3E42 /* MobileModel+Imports.swift in Sources */,
+				4E0109F87A3FAC8268995F3B /* MobileModel+Models.swift in Sources */,
+				CBA4B91928F94EE55786E815 /* MobileModel+Recording.swift in Sources */,
+				EE9F1BC5CE93C4FA2BC9E305 /* MobileModel+Transcription.swift in Sources */,
 				EAEF71CEF7C664D67F2B4532 /* MobileModel.swift in Sources */,
 				C6695BD73416E4C4B0B93519 /* NeuralSheetApp.swift in Sources */,
 				1C3C83F8B7BCD3DEC9C7158A /* NeuralSheetDocument.swift in Sources */,
@@ -468,10 +576,14 @@
 				0352A16A23D823B49C9AE295 /* ProjectType.swift in Sources */,
 				FFA74B58B25AC53052DB2A44 /* Recorder+Files.swift in Sources */,
 				65AFDED09D5E33BB8F728E9B /* Recorder.swift in Sources */,
+				A4AF3C3B598343E3259E5F90 /* RunControl.swift in Sources */,
+				0D482701DF25260DD041B27D /* RunSupport.swift in Sources */,
 				FDEEFB38C39830F68867BA4F /* SourceAudio.swift in Sources */,
 				D38354151E799A8FC30615C1 /* StemFiles.swift in Sources */,
 				1AFA0BBB7E6B34D6451D5FD5 /* StemSeparator.swift in Sources */,
 				58C2CA72644510B3246DEE71 /* SynthInstrument.swift in Sources */,
+				591B8488A216B670AB91F552 /* ThermalGate.swift in Sources */,
+				D6055CA861C055F3C2C27CF0 /* TranscriptionActivityAttributes.swift in Sources */,
 				76738E03A70664917AABC304 /* TranscriptionEngine.swift in Sources */,
 				FB4199BF8E931C1DE108A80E /* TranscriptionRun.swift in Sources */,
 				B562B23A8E356262AFF58C8D /* VideoAudioExtractor.swift in Sources */,
@@ -480,11 +592,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		79B86E5C6B09247B0A35763C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				96901D8A448669E84A31BDEA /* NeuralSheetWidgets.swift in Sources */,
+				06C1BE76BDEB950E939750C5 /* TranscriptionActivityAttributes.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		EFFF664F7EF67C92867D0D21 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				A0E64666191562BA7D72D2CD /* DocumentRoundTripTests.swift in Sources */,
+				3F56D789578E528B0B0F5FEE /* ThermalGateTests.swift in Sources */,
+				05A14C67F5D8041F4842C77C /* TranscriptionRunTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -495,6 +618,11 @@
 			isa = PBXTargetDependency;
 			target = C22D53D5FD5EAC4331A1EEF8 /* NeuralSheet */;
 			targetProxy = B7449C88720090175289BA2B /* PBXContainerItemProxy */;
+		};
+		B0653507CED99CC5C224FE2F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = AD17E762176D0EB27B71E907 /* NeuralSheetWidgets */;
+			targetProxy = 65943CEEE979760C1963C27B /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -583,6 +711,29 @@
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/NeuralSheet.app/NeuralSheet";
 			};
 			name = Debug;
+		};
+		49420D8897711E576DDE915B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 6WCYZER5LX;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = NeuralSheetWidgets/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.quassum.neuralsheet.ios.widgets;
+				PRODUCT_NAME = NeuralSheetWidgets;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
 		};
 		57C9CFCD22E54BB09FFA4DD5 /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -714,6 +865,29 @@
 			};
 			name = Release;
 		};
+		D00B576402B569654668C4CB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 6WCYZER5LX;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = NeuralSheetWidgets/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.quassum.neuralsheet.ios.widgets;
+				PRODUCT_NAME = NeuralSheetWidgets;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
 		D480A6736DA21AEAA6653483 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -760,6 +934,15 @@
 			buildConfigurations = (
 				34B94D535F1B4129789D15AF /* Debug */,
 				86CAE9F0FF9B2BE51B259C0E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		8760B99D5C2E3F53526A1589 /* Build configuration list for PBXNativeTarget "NeuralSheetWidgets" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D00B576402B569654668C4CB /* Debug */,
+				49420D8897711E576DDE915B /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
