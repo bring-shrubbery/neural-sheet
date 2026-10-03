@@ -32,8 +32,7 @@ extension AppModel {
 
         _ = dragCanceller?()
 
-        let ids = editor.selection.isEmpty ? Set(document.notes.map(\.id)) : editor.selection
-        let targets = document.notes.filter { ids.contains($0.id) && PitchTracker.measures($0.note) }
+        let targets = EditingCommands.pitchTrackingTargets(in: document, selection: editor.selection)
 
         guard !targets.isEmpty else { return }
 
@@ -56,7 +55,6 @@ extension AppModel {
 
         guard let document else { return }
 
-        let measuredOn = Dictionary(measured.map { ($0.id, $0.note) }, uniquingKeysWith: { first, _ in first })
-        commit(document.setPitchCurves(curves, measuredOn: measuredOn))
+        commit(EditingCommands.landPitchCurves(curves, measured: measured, in: document))
     }
 }

@@ -97,4 +97,22 @@ nonisolated enum EditingCommands {
     static func hasDoubtfulNotes(in document: NoteDocument, minimumLength: Double) -> Bool {
         document.notes.contains { NoteFilter.isDoubtful($0.note, minimumLength: minimumLength) }
     }
+
+    // MARK: - Pitch curves
+
+    /// The notes Track Pitch measures: every melodic one in the selection, or every one with
+    /// nothing selected, that the tracker can measure.
+    static func pitchTrackingTargets(in document: NoteDocument, selection: Set<NoteID>) -> [EditableNote] {
+        let ids = selectionOrAll(selection, in: document)
+
+        return document.notes.filter { ids.contains($0.id) && PitchTracker.measures($0.note) }
+    }
+
+    /// A finished Track Pitch's curves as one batch, each applied only to a note that still has
+    /// the start, end and pitch it was measured at.
+    static func landPitchCurves(_ curves: [NoteID: [Float]?], measured: [EditableNote], in document: NoteDocument) -> EditBatch {
+        let measuredOn = Dictionary(measured.map { ($0.id, $0.note) }, uniquingKeysWith: { first, _ in first })
+
+        return document.setPitchCurves(curves, measuredOn: measuredOn)
+    }
 }
