@@ -80,25 +80,35 @@ extension ScoreRenderer {
                               stemUp: stemUp, sp: sp, colour: ink, context: ctx)
     }
 
-    func drawTimeSignature(x: CGFloat, bottomLineY: CGFloat, colour: CGColor, in ctx: CGContext) {
+    func drawTimeSignature(_ meter: TimeSignature, x: CGFloat, bottomLineY: CGFloat, colour: CGColor, in ctx: CGContext) {
         let font = CTFontCreateWithName(Fonts.sansName(600) as CFString, 2.6 * sp, nil)
         let upper = CGRect(x: x, y: bottomLineY - 4 * sp, width: 2 * sp, height: 2 * sp)
         let lower = CGRect(x: x, y: bottomLineY - 2 * sp, width: 2 * sp, height: 2 * sp)
 
-        TimelineText.draw("\(TempoGrid.beatsPerBar)", font: font, colour: colour, in: upper, anchor: .centred, context: ctx)
-        TimelineText.draw("4", font: font, colour: colour, in: lower, anchor: .centred, context: ctx)
+        TimelineText.draw("\(meter.numerator)", font: font, colour: colour, in: upper, anchor: .centred, context: ctx)
+        TimelineText.draw("\(meter.denominator)", font: font, colour: colour, in: lower, anchor: .centred, context: ctx)
     }
 
-    /// A quarter note and "= 120".
-    func drawTempo(x: CGFloat, y: CGFloat, in ctx: CGContext) {
+    /// The beat unit the meter implies and its count, "♩ = 120", or "♩. = 80" in 6/8 at a
+    /// quarter-note 120 (tempo map design §2).
+    func drawTempo(_ bar: ScoreBar, x: CGFloat, y: CGFloat, in ctx: CGContext) {
         let ink = style.ink
+        let unit = bar.timeSignature.metronomeUnit
         let head = CGPoint(x: x + 0.6 * sp, y: y)
         ScoreGlyphs.drawHead(.normal, hollow: false, whole: false, centre: head, sp: sp * 0.8, colour: ink, context: ctx)
         ctx.fill(CGRect(x: head.x + 0.42 * sp, y: y - 2.6 * sp, width: max(1, 0.1 * sp), height: 2.6 * sp), ink)
 
+        var textX = head.x + 1.2 * sp
+
+        if unit.dotted {
+            ctx.setFillColor(ink)
+            ctx.fillEllipse(in: CGRect(x: head.x + 0.75 * sp, y: y - 0.45 * sp, width: 0.35 * sp, height: 0.35 * sp))
+            textX += 0.5 * sp
+        }
+
         let font = CTFontCreateWithName(Fonts.sansName(500) as CFString, 1.4 * sp, nil)
-        TimelineText.draw("= \(Int(document.bpm.rounded()))", font: font, colour: ink,
-                          in: CGRect(x: head.x + 1.2 * sp, y: y - 1.5 * sp, width: 10 * sp, height: 2 * sp),
+        TimelineText.draw("= \(MusicXMLWriter.tempoText(bar.bpm / unit.quarters))", font: font, colour: ink,
+                          in: CGRect(x: textX, y: y - 1.5 * sp, width: 10 * sp, height: 2 * sp),
                           anchor: .centredLeft, context: ctx)
     }
 }

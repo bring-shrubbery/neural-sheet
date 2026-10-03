@@ -84,7 +84,7 @@ struct ScoreLayout {
             }
 
             if let first = system.measures.first, point.x < first.x { return (first.index, 0) }
-            if let last = system.measures.last, point.x >= last.endX { return (last.index, Double(MusicXMLWriter.barUnits)) }
+            if let last = system.measures.last, point.x >= last.endX { return (last.index, Double(last.onsets.last?.units ?? 0)) }
         }
 
         return nil

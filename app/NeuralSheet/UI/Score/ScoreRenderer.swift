@@ -104,15 +104,15 @@ struct ScoreRenderer {
         }
     }
 
-    /// Part names, clefs (the "TAB" mark on a tab), key signatures and, on the first system, the
-    /// time signature. The full name goes on the first system and the abbreviation on the rest,
+    /// Part names, clefs (the "TAB" mark on a tab), key signatures and the time signature when
+    /// the system opens with one (the first, or a meter change; tempo map design §2). The full name goes on the first system and the abbreviation on the rest,
     /// but a name wider than the margin's room ("Acoustic Guitar") is abbreviated on the first
     /// system too rather than clipped. The room is measured from `leftEdge`, the paper's edge,
     /// so a page centred on screen gives a name the page margin, as the PDF does, and not the
     /// surround beside it.
     private func drawPrefixes(_ system: ScoreSystemLayout.System, leftEdge: CGFloat, in ctx: CGContext, names: inout [NameHit]) {
         let ink = style.ink
-        let isFirst = system.showsTimeSignature
+        let isFirst = system.isFirst
         let nameFont = TimelineFonts.meta(sp / 8)
 
         for row in system.rows {
@@ -167,14 +167,17 @@ struct ScoreRenderer {
                     x += CGFloat(abs(part.writtenFifths)) * ScoreSystemLayout.accidentalWidth * sp
                 }
 
-                if isFirst {
-                    drawTimeSignature(x: x + 0.3 * sp, bottomLineY: row.bottomLineY, colour: ink, in: ctx)
+                if system.showsTimeSignature, first.index < document.bars.count {
+                    drawTimeSignature(document.bars[first.index].timeSignature, x: x + 0.3 * sp, bottomLineY: row.bottomLineY,
+                                      colour: ink, in: ctx)
                 }
             }
         }
     }
 
-    /// The measure number above the top row at the system's start; the tempo on the first system.
+    /// The measure number above the top row at the system's start; a tempo mark over each
+    /// measure that changes the tempo, the first included, and a meter change inside the system
+    /// on each staff before its measure's music (tempo map design §2).
     private func drawNumbersAndTempo(_ system: ScoreSystemLayout.System, in ctx: CGContext) {
         guard let first = system.measures.first, let topRow = system.rows.first else { return }
 
@@ -187,8 +190,20 @@ struct ScoreRenderer {
                               anchor: .centredLeft, context: ctx)
         }
 
-        if system.showsTimeSignature, arrangement.sheet.showsTempo {
-            drawTempo(x: first.contentX, y: y - 3.2 * sp, in: ctx)
+        for box in system.measures where box.index < document.bars.count {
+            let bar = document.bars[box.index]
+
+            if bar.showsTempo, arrangement.sheet.showsTempo {
+                drawTempo(bar, x: box.contentX, y: y - 3.2 * sp, in: ctx)
+            }
+
+            if let meterX = box.timeSignatureX {
+                for row in system.rows {
+                    if case .staff = row.kind {
+                        drawTimeSignature(bar.timeSignature, x: meterX, bottomLineY: row.bottomLineY, colour: style.ink, in: ctx)
+                    }
+                }
+            }
         }
     }
 
