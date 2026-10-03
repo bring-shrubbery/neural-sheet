@@ -61,15 +61,16 @@ nonisolated enum EngineError: Error {
 /// last checkpoint stays loaded for the next run on the same file, and goes with
 /// the instance.
 ///
-/// `@unchecked Sendable`: `cancelRequested` and `running` are guarded by `lock`,
+/// `@unchecked Sendable`: `cancelRequested`, `running` and `backend` are guarded by `lock`,
 /// and `updateHandler` and `retained` are touched only on the transcription thread
 /// (or before it starts), one run at a time, the runs ordered by `lock`.
 nonisolated final class TranscriptionEngine: @unchecked Sendable {
-    /// Guards `cancelRequested` and `running`, which `cancel` and `isRunning`
-    /// read from any thread.
+    /// Guards `cancelRequested`, `running` and `backend`, which `cancel`, `isRunning`
+    /// and `lastBackendName` read from any thread.
     private let lock = NSLock()
     private var cancelRequested = false
     private var running = false
+    private var backend: String?
 
     /// Read only on the transcription thread: it is set before that thread
     /// starts and cleared on it once the run is over.
@@ -142,6 +143,14 @@ nonisolated final class TranscriptionEngine: @unchecked Sendable {
         thread.start()
     }
 
+    /// The backend the last loaded checkpoint runs on ("Metal" or "CPU", the library's name),
+    /// for a log line or a bug report; nil before the first load.
+    var lastBackendName: String? {
+        lock.lock()
+        defer { lock.unlock() }
+        return backend
+    }
+
     /// Ask the run in flight to stop. Safe from any thread; the flag is observed
     /// at the next chunk boundary, so the run ends within one chunk.
     func cancel() {
@@ -198,6 +207,10 @@ nonisolated final class TranscriptionEngine: @unchecked Sendable {
                 retained = (modelPath, transcriber)
             }
         }
+
+        lock.lock()
+        backend = transcriber.backendName
+        lock.unlock()
 
         return transcribe(with: transcriber, instruments: instruments, samples16k: samples16k)
     }
