@@ -64,7 +64,8 @@ extension HeadlessTranscription {
         case let .failure(failure): return .failure(failure)
         }
 
-        guard let keptFolder = stems.keptFolder else { return .failure(.couldNotWrite("the stems could not be kept")) }
+        guard let keptFolder = stems.keptFolder else { return .failure(.couldNotWrite(String(localized: "the stems could not be kept",
+                                                                                 comment: "The reason after \"Could not write the file:\""))) }
 
         let takeName = source.droppedFileName ?? input.deletingPathExtension().lastPathComponent
         var files: [URL] = []

@@ -31,7 +31,8 @@ nonisolated final class StemSeparator: @unchecked Sendable {
 
         var message: String {
             switch self {
-            case .load: "the stems model could not be loaded"
+            case .load: String(localized: "the stems model could not be loaded",
+                               comment: "The reason after \"The stems could not be separated:\"")
             case let .separate(reason): reason
             }
         }
@@ -67,7 +68,8 @@ nonisolated final class StemSeparator: @unchecked Sendable {
         if running {
             lock.unlock()
             assertionFailure("StemSeparator.run while a run is in flight")
-            completion(.failure(.separate("a separation is already running")))
+            completion(.failure(.separate(String(localized: "a separation is already running",
+                                                         comment: "The reason after \"The stems could not be separated:\""))))
             return
         }
         running = true
@@ -130,7 +132,8 @@ nonisolated final class StemSeparator: @unchecked Sendable {
             : Resampler.resample(channels: channels, from: source.deviceRate, to: Double(NSHEET_STEMS_SAMPLE_RATE))
 
         guard let left = resampled.first, !left.isEmpty else {
-            return .failure(.separate("the take is empty"))
+            return .failure(.separate(String(localized: "the take is empty",
+                                             comment: "The reason after \"The stems could not be separated:\"")))
         }
 
         let right = resampled.count > 1 ? resampled[1] : left

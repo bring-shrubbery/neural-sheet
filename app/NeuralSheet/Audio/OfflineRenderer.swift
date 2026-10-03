@@ -42,9 +42,9 @@ nonisolated enum OfflineRenderer {
 
         var errorDescription: String? {
             switch self {
-            case .format: "The audio format is not available."
+            case .format: String(localized: "The audio format is not available.", comment: "Alert body: Export Audio… could not set up the format")
             case let .engine(error): PlaybackEngine.describe(error)
-            case .render: "The offline render failed."
+            case .render: String(localized: "The offline render failed.", comment: "Alert body: Export Audio… failed while rendering")
             }
         }
     }

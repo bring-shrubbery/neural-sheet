@@ -66,28 +66,52 @@ nonisolated final class HeadlessTranscription: @unchecked Sendable {
             }
         }
 
-        var message: String {
+        /// In the user's language, for the batch window and Shortcuts (localization design §2).
+        var message: String { text(in: .current) }
+
+        /// In English, for the command-line tool, whose output is English throughout as its usage
+        /// is.
+        var englishMessage: String { text(in: Locale(identifier: "en")) }
+
+        private func text(in locale: Locale) -> String {
+            func resolved(_ resource: LocalizedStringResource) -> String {
+                var resource = resource
+                resource.locale = locale
+                return String(localized: resource)
+            }
+
             switch self {
             case let .modelNotInstalled(size):
-                "The \(size.displayName) model is not installed. Download it in NeuralSheet › Settings › Model."
+                let name = locale.language.languageCode == .english ? size.displayName : size.localizedName
+
+                return resolved(LocalizedStringResource("The \(name) model is not installed. Download it in NeuralSheet › Settings › Model.",
+                                                        comment: "A batch or Shortcuts failure: the chosen model size is missing"))
             case .noModelInstalled:
-                "No transcription model is installed. Download one in NeuralSheet › Settings › Model."
+                return resolved(LocalizedStringResource("No transcription model is installed. Download one in NeuralSheet › Settings › Model.",
+                                                        comment: "A batch or Shortcuts failure: no model at all"))
             case .notFound:
-                "The file could not be found."
+                return resolved(LocalizedStringResource("The file could not be found.", comment: "A batch or Shortcuts failure"))
             case .unreadable:
-                "Could not load the file. Check your file format (Accepted formats: \(AudioFileLoader.acceptedFormatsList))."
+                let formats = AudioFileLoader.acceptedFormatsList
+
+                return resolved(LocalizedStringResource("Could not load the file. Check your file format (Accepted formats: \(formats)).",
+                                                        comment: "A batch or Shortcuts failure: the file would not decode"))
             case .tooShort:
-                "The audio is shorter than a second."
+                return resolved(LocalizedStringResource("The audio is shorter than a second.", comment: "A batch or Shortcuts failure"))
             case let .separation(reason):
-                "Transcription failed. The stems could not be separated: \(reason)."
+                return resolved(LocalizedStringResource("Transcription failed. The stems could not be separated: \(reason).",
+                                                        comment: "A batch or Shortcuts failure; the reason is the separator's"))
             case let .transcription(reason):
-                reason.isEmpty
-                    ? "Transcription failed. The transcription model could not be loaded or run."
-                    : "Transcription failed. The transcription model could not be loaded or run: \(reason)."
+                return reason.isEmpty
+                    ? resolved(LocalizedStringResource("Transcription failed. The transcription model could not be loaded or run.",
+                                                       comment: "A batch or Shortcuts failure"))
+                    : resolved(LocalizedStringResource("Transcription failed. The transcription model could not be loaded or run: \(reason).",
+                                                       comment: "A batch or Shortcuts failure; the reason is the engine's"))
             case let .couldNotWrite(reason):
-                "Could not write the file: \(reason)"
+                return resolved(LocalizedStringResource("Could not write the file: \(reason)",
+                                                        comment: "A batch or Shortcuts failure; the reason is the system's"))
             case .cancelled:
-                "Cancelled."
+                return resolved(LocalizedStringResource("Cancelled.", comment: "A batch or Shortcuts run stopped by the user"))
             }
         }
     }

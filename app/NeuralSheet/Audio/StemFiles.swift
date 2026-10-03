@@ -12,8 +12,8 @@ nonisolated enum StemFiles {
 
         var errorDescription: String? {
             switch self {
-            case .format: "The audio format is not available."
-            case .converter: "The audio could not be converted."
+            case .format: String(localized: "The audio format is not available.", comment: "Alert body: Export Stems… could not set up the format")
+            case .converter: String(localized: "The audio could not be converted.", comment: "Alert body: Export Stems… could not convert")
             }
         }
     }
