@@ -38,6 +38,12 @@ struct MainView: View {
             Theme.bgRoot
 
             composition
+                // Export Audio…'s progress (audio export design §2). On the composition rather
+                // than beside the MIDI export's sheet: one view carries one sheet.
+                .sheet(isPresented: Binding(get: { model.audioRender != nil },
+                                            set: { if !$0 { model.cancelAudioExport() } })) {
+                    RenderProgressSheet(model: model)
+                }
 
             if model.isInstrumentMenuOpen {
                 InstrumentMenuOverlay(model: model)
