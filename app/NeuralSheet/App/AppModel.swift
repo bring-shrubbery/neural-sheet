@@ -223,6 +223,10 @@ import UniformTypeIdentifiers
     /// and close, and swept at launch with the rest of the recordings.
     var stemsFolder: URL?
 
+    /// Export Audio…'s render in flight, or nil (`AppModel+AudioExport.swift`, its only writer).
+    /// The progress sheet is up while it is set.
+    var audioRender: AudioRenderJob?
+
     /// Export Stems…'s own separation, when the take has none kept, or nil
     /// (`AppModel+StemsExport.swift`, its only writer besides ``clearNow()``, which cancels it).
     var stemsExport: StemsExportJob?

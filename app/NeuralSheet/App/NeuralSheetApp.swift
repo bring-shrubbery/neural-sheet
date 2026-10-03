@@ -152,6 +152,10 @@ struct NeuralSheetApp: App {
 
             Divider()
 
+            Button("Export Audio…") { model.exportAudio() }
+                .keyboardShortcut("e", modifiers: [.command, .option])
+                .disabled(!model.canExportAudio)
+
             Button("Export Stems…") { model.exportStems() }
                 .disabled(!model.canExportStems)
         }
