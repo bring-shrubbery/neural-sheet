@@ -41,6 +41,7 @@ extension TimelineContainerView {
             _ = model.editor.key
             _ = model.editor.chords
             _ = model.showsConfidence
+            _ = model.showsPitchCurves
             _ = model.regionJob
         } onChange: { [weak self] in
             // Called before the new value lands, from whichever context wrote it: the read has to
@@ -84,7 +85,8 @@ extension TimelineContainerView {
                            regionProgress: model.regionJob?.progress,
                            key: model.editor.key,
                            chords: model.editor.chords,
-                           showsConfidence: model.showsConfidence)
+                           showsConfidence: model.showsConfidence,
+                           showsPitchCurves: model.showsPitchCurves)
         let old = snapshot
         let first = !hasSynced
         // The document's identified notes, or the run's placeholders (ids nothing hit-tests).
@@ -140,6 +142,13 @@ extension TimelineContainerView {
         // Both tabs, like the key: confidence shades the notes wherever the roll is.
         if first || new.showsConfidence != old.showsConfidence {
             roll.showsConfidence = new.showsConfidence
+            roll.needsDisplay = true
+        }
+
+        // Both tabs too: a tracked note's curve is drawn wherever the roll is (pitch curves
+        // design §2).
+        if first || new.showsPitchCurves != old.showsPitchCurves {
+            roll.showsPitchCurves = new.showsPitchCurves
             roll.needsDisplay = true
         }
 

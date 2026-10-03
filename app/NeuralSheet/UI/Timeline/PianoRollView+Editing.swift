@@ -237,6 +237,14 @@ extension PianoRollView {
             ctx.fill(CGRect(x: rect.minX, y: rect.minY, width: edgeWidth, height: rect.height), TimelinePalette.noteOnsetEdge)
         }
 
+        // The curve at full strength over a velocity- or confidence-faded fill, but still behind
+        // a highlight and as faint as a muted note (pitch curves design §2). Under 6 px a lane
+        // is too thin for a line through it to read as anything but noise.
+        if showsPitchCurves, let curve = note.pitchCurve, !curve.isEmpty, rect.height >= 6 * k {
+            ctx.setAlpha(audible[program] ? highlightAlpha : PianoRollView.mutedNoteAlpha)
+            drawPitchCurve(curve, of: note, in: rect, colour: curveColours[program], ctx: ctx)
+        }
+
         ctx.setAlpha(1)
 
         guard selected else { return }
@@ -257,6 +265,48 @@ extension PianoRollView {
             ctx.addRect(outline)
         }
 
+        ctx.strokePath()
+    }
+
+    /// A 1 px polyline through `(x_i, midY − cents_i / 100 × semitone)` (pitch curves design
+    /// §2), stepping over frames so it has at most one vertex per point of width, and only over
+    /// the part of the note the redraw exposes: a long note at a deep zoom costs what is on
+    /// screen. Drawn straight into the context: this runs per note on every repaint.
+    private func drawPitchCurve(_ curve: [Float], of note: NoteEvent, in rect: CGRect, colour: CGColor, ctx: CGContext) {
+        let pointsPerFrame = geometry.pixelsPerSecond * CGFloat(PitchTracker.frameSeconds)
+
+        guard pointsPerFrame > 0 else { return }
+
+        // A merged note's curve can be shorter than the note; nothing is drawn past either end.
+        let last = min(curve.count, max(1, PitchTracker.frameCount(for: note))) - 1
+        let clip = ctx.boundingBoxOfClipPath
+        let first = max(0, Int(((clip.minX - rect.minX) / pointsPerFrame).rounded(.down)) - 1)
+        let end = min(last, Int(((min(clip.maxX, rect.maxX) - rect.minX) / pointsPerFrame).rounded(.up)) + 1)
+
+        guard first <= end else { return }
+
+        let step = max(1, Int((1 / pointsPerFrame).rounded(.up)))
+        let semitone = geometry.rowHeight * geometry.scale
+        let midY = rect.midY
+
+        func point(_ index: Int) -> CGPoint {
+            CGPoint(x: rect.minX + CGFloat(index) * pointsPerFrame,
+                    y: midY - CGFloat(curve[index]) / 100 * semitone)
+        }
+
+        ctx.move(to: point(first))
+
+        var index = first + step
+
+        while index < end {
+            ctx.addLine(to: point(index))
+            index += step
+        }
+
+        ctx.addLine(to: point(end))
+        ctx.setStrokeColor(colour)
+        ctx.setLineWidth(geometry.scale)
+        ctx.setLineJoin(.round)
         ctx.strokePath()
     }
 

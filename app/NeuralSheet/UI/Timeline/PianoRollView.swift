@@ -32,6 +32,10 @@ final class PianoRollView: NSView {
     /// both tabs, in place of velocity. Whole-view repaint: the caller decides.
     var showsConfidence = false
 
+    /// View → Show Pitch Curves (pitch curves design §2): a tracked note's curve is drawn through
+    /// it, in both tabs. Whole-view repaint: the caller decides.
+    var showsPitchCurves = true
+
     /// The click is a seek; the container owns the model.
     var onSeek: ((Double) -> Void)?
 
@@ -57,6 +61,9 @@ final class PianoRollView: NSView {
     /// Per program: whether it is heard, and the colour it draws in.
     private(set) var audible = [Bool](repeating: true, count: NoteEvent.drumProgram + 1)
     private(set) var colours: [CGColor] = []
+    /// Per program: its colour lightened 30 % toward white, what a pitch curve is stroked in so
+    /// it reads over its own note's fill.
+    private(set) var curveColours: [CGColor] = []
 
     /// The instrument a strip click singled out: every other instrument fades while it is set.
     private(set) var highlightedProgram: Int?
@@ -93,6 +100,9 @@ final class PianoRollView: NSView {
 
         colours = (0...NoteEvent.drumProgram).map { program in
             TimelinePalette.cg(Instruments.info(forProgram: program).colour, alpha: 1)
+        }
+        curveColours = colours.map { colour in
+            NSColor(cgColor: colour)?.blended(withFraction: 0.3, of: .white)?.cgColor ?? colour
         }
     }
 

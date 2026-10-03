@@ -108,6 +108,7 @@ final class TimelineContainerView: NSView {
         var key: MusicalKey?
         var chords: [ChordEvent] = []
         var showsConfidence = false
+        var showsPitchCurves = true
     }
 
     var snapshot = Snapshot()
