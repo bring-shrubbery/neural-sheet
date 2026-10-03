@@ -42,7 +42,13 @@ nonisolated final class InstrumentSynthBank: @unchecked Sendable {
     /// what the wire format uses.
     static let melodicChannel: UInt8 = 0
     static let drumChannel: UInt8 = 9
+    #if os(macOS)
     static let melodicBankMSB: UInt8 = 121
+    #else
+    /// iOS's MIDI synth finds a bank's General MIDI melodic presets at bank 0: measured in the
+    /// simulator with `gs_instruments.dls`, 121 is silent and 0 plays. Percussion is 120 on both.
+    static let melodicBankMSB: UInt8 = 0
+    #endif
     static let drumBankMSB: UInt8 = 120
 
     // Velocity is per note now (`SynthEvent.velocity`); the design's fixed 100 is what every

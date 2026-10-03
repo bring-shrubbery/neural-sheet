@@ -107,8 +107,9 @@ nonisolated extension InstrumentSynthBank {
     }
 
     #if !os(macOS)
-    /// iOS: no default bank installed is silence, said once in the log, not a refusal -- there is
-    /// nothing to fall back to (the bank download is the transport and settings sub-issue's).
+    /// iOS: no default bank installed leaves the MIDI synth on its own fallback tone, said once in
+    /// the log, and is not a refusal -- there is nothing to fall back to (the bank download is the
+    /// transport and settings sub-issue's).
     @discardableResult
     private static func load(_ url: URL?, into node: AVAudioUnitMIDIInstrument) -> OSStatus {
         guard let url else {
