@@ -20,6 +20,13 @@ public struct NoteEvent: Equatable, Hashable, Codable, Sendable {
     /// `decodeIfPresent`, so a note without one leaves no key and a project written before the
     /// field existed reads back nil: additive, no format bump.
     public var confidence: Double?
+    /// How far the played pitch wanders from `pitch`, in cents, one value per 10 ms from the
+    /// onset (`⌊duration / 0.01⌋` of them), or nil for none (pitch curves design §2). Measured
+    /// by ``PitchTracker``; relative to this pitch and this length, so an edit that changes
+    /// either drops it (``NoteDocument``'s invariants) and a move in time keeps it.
+    ///
+    /// Codable the same way as `confidence`: no key when nil, and older projects read back nil.
+    public var pitchCurve: [Float]?
 
     /// The program reserved for drum hits; the model routes drums itself, so no melodic note
     /// carries it and no drum hit carries any other program.
@@ -52,7 +59,8 @@ public struct NoteEvent: Equatable, Hashable, Codable, Sendable {
         pitch: Int,
         amplitude: Double = NoteEvent.defaultAmplitude,
         program: Int,
-        confidence: Double? = nil
+        confidence: Double? = nil,
+        pitchCurve: [Float]? = nil
     ) {
         self.startTime = startTime
         self.endTime = endTime
@@ -60,6 +68,7 @@ public struct NoteEvent: Equatable, Hashable, Codable, Sendable {
         self.amplitude = amplitude
         self.program = program
         self.confidence = confidence
+        self.pitchCurve = pitchCurve
     }
 }
 
@@ -79,7 +88,8 @@ extension NoteEvent: Comparable {
 /// Keyed on the instrument as well as the pitch: two instruments playing the same note at the same
 /// time is ordinary music, and merging those would delete one of them. Notes that merely touch
 /// (`endTime == startTime`) do not overlap and stay separate. The merged note keeps the earlier
-/// note's amplitude.
+/// note's amplitude and its pitch curve (pitch curves design §3): the curve runs from the
+/// earlier onset, and the later note's frames have no place in it.
 ///
 /// - Returns: the merged notes in sort order (see ``NoteEvent/<(_:_:)``).
 public func mergeOverlappingNotesWithSamePitch(_ notes: [NoteEvent]) -> [NoteEvent] {

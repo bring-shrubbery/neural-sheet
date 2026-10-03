@@ -71,7 +71,8 @@ extension NoteDocument {
     /// start to the last end, while each starts no more than `gap` seconds after the one before
     /// ends (editor commands design §2). Only neighbours in the whole pitch lane are joined, so
     /// a note outside `ids` between two that are keeps them apart. The merged note keeps the
-    /// first's id, velocity and confidence; the rest are deleted.
+    /// first's id, velocity and confidence, but not its pitch curve, which no longer spans it
+    /// (pitch curves design §2); the rest are deleted.
     public func join(_ ids: Set<NoteID>, gap: Double) -> EditBatch {
         struct Lane: Hashable {
             var program: Int
@@ -110,7 +111,8 @@ extension NoteDocument {
 
     /// Every note among `ids` that the playhead crosses, cut in two at `seconds`, both halves at
     /// least ``minimumLength`` (editor commands design §2). The first half keeps the id; the
-    /// second is a new note with the same instrument, pitch, velocity and confidence. Mutating
+    /// second is a new note with the same instrument, pitch, velocity and confidence; neither
+    /// keeps a pitch curve (pitch curves design §2). Mutating
     /// because it allocates ids, as ``paste(_:at:)`` does. Returns the ids of every half, for
     /// the selection.
     public mutating func split(_ ids: Set<NoteID>, at seconds: Double) -> (batch: EditBatch, halves: Set<NoteID>) {
@@ -121,6 +123,9 @@ extension NoteDocument {
             first.endTime = seconds
             var second = source.note
             second.startTime = seconds
+            // The curve ran from the first half's onset; the first half loses it to the length
+            // rule in `finished`, the second never had one of its own (pitch curves design §2).
+            second.pitchCurve = nil
 
             batch.changed.append(NoteChange(before: source, after: EditableNote(id: source.id, note: first)))
             batch.inserted.append(EditableNote(id: allocateID(), note: second))

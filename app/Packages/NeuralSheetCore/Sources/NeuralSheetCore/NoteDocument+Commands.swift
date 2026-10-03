@@ -13,10 +13,12 @@ extension NoteDocument {
     // MARK: - Builders
 
     /// A note the user drew. It carries no confidence whatever it was built from: the model did
-    /// not make it, so it is never doubtful (confidence design §2).
+    /// not make it, so it is never doubtful (confidence design §2). Nor a pitch curve: nothing
+    /// was measured for it (pitch curves design §2).
     public mutating func insert(_ note: NoteEvent) -> EditBatch {
         var note = note
         note.confidence = nil
+        note.pitchCurve = nil
         let inserted = EditableNote(id: allocateID(), note: note)
 
         return finished(EditBatch(title: "Add Note", inserted: [inserted]))
@@ -27,7 +29,14 @@ extension NoteDocument {
         var copies: [EditableNote] = []
 
         for source in sources {
-            copies.append(EditableNote(id: allocateID(), note: NoteDocument.shifted(source.note, by: deltaSeconds, semitones: deltaSemitones)))
+            var copy = NoteDocument.shifted(source.note, by: deltaSeconds, semitones: deltaSemitones)
+
+            // A copy at another pitch was not measured there (pitch curves design §2).
+            if deltaSemitones != 0 {
+                copy.pitchCurve = nil
+            }
+
+            copies.append(EditableNote(id: allocateID(), note: copy))
         }
 
         return finished(EditBatch(title: NoteDocument.title("Duplicate", count: copies.count), inserted: copies))
@@ -146,6 +155,33 @@ extension NoteDocument {
         }
     }
 
+    /// Each note named in `curves` given that curve, nil clearing it, and nothing else changed:
+    /// Track Pitch's landing, one batch (pitch curves design §2). A note in `measuredOn` whose
+    /// start, end or pitch is no longer what was measured is skipped, since an edit made while
+    /// the tracker ran has made its curve stale; so is a note no longer in the document.
+    public func setPitchCurves(_ curves: [NoteID: [Float]?], measuredOn: [NoteID: NoteEvent] = [:],
+                               title: String = "Track Pitch") -> EditBatch {
+        var batch = EditBatch(title: title)
+
+        for source in notes {
+            guard let curve = curves[source.id] else { continue }
+
+            if let measured = measuredOn[source.id],
+               measured.startTime != source.note.startTime || measured.endTime != source.note.endTime
+                || measured.pitch != source.note.pitch {
+                continue
+            }
+
+            guard curve != source.note.pitchCurve else { continue }
+
+            var after = source.note
+            after.pitchCurve = curve
+            batch.changed.append(NoteChange(before: source, after: EditableNote(id: source.id, note: after)))
+        }
+
+        return finished(batch)
+    }
+
     // MARK: - Helpers
 
     private func selected(_ ids: Set<NoteID>) -> [EditableNote] {
@@ -184,13 +220,35 @@ extension NoteDocument {
 
     // MARK: - Invariants
 
-    /// Clamps every note the batch introduces, then resolves the overlaps it creates.
+    /// Clamps every note the batch introduces, resolves the overlaps it creates, then drops the
+    /// pitch curve of every changed note whose pitch or length the batch changed.
     func finished(_ batch: EditBatch) -> EditBatch {
         var batch = batch
         batch.inserted = batch.inserted.map { EditableNote(id: $0.id, note: NoteDocument.clamped($0.note)) }
         batch.changed = batch.changed.map { NoteChange(before: $0.before, after: EditableNote(id: $0.after.id, note: NoteDocument.clamped($0.after.note))) }
 
-        return resolvingOverlaps(batch)
+        return droppingStaleCurves(resolvingOverlaps(batch))
+    }
+
+    /// A curve is cents from this pitch, frame by frame over this length (pitch curves design
+    /// §2, Curve lifetime): a move in time keeps it, but a new pitch (Set Pitch, Transpose, a
+    /// nudge, Snap to Scale) or a new length (Resize, Set Length, Quantize of lengths, Join, the
+    /// first half of a Split, an overlap trim) leaves it describing a note that is not there.
+    /// One rule here rather than one per command, so a command added later cannot forget it.
+    private func droppingStaleCurves(_ batch: EditBatch) -> EditBatch {
+        var batch = batch
+
+        for index in batch.changed.indices where batch.changed[index].after.note.pitchCurve != nil {
+            let before = batch.changed[index].before.note
+            let after = batch.changed[index].after.note
+            let lengthChanged = abs((after.endTime - after.startTime) - (before.endTime - before.startTime)) > 1e-6
+
+            if after.pitch != before.pitch || lengthChanged {
+                batch.changed[index].after.note.pitchCurve = nil
+            }
+        }
+
+        return batch
     }
 
     static func clamped(_ note: NoteEvent) -> NoteEvent {
