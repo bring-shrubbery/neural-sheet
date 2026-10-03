@@ -20,9 +20,11 @@ on any unit without a translation.
 | Menu commands | Infinitive, as macOS: *Exportieren …* | Infinitive: *Exportar…* |
 | Ellipsis | `…` after a space where the word is a noun phrase, as macOS German writes *Sichern unter …* | `…` with no space |
 | Captions in capitals (TRANSCRIBE, MASTER) | In capitals | In capitals |
-| Pitch names | Unchanged: C D E F G A B, ♯ and ♭, scientific octaves (C4). The roll, the score and the fields that parse them all use these. German *H* is not used. | Unchanged; *do re mi* is not used |
+| Pitch names | Unchanged: C D E F G A B, ♯ and ♭, scientific octaves (C4). The roll, the score and the fields that parse them all use these. German *H* is not used, nor *B* or *Es* for B♭ and E♭: a transposition reads *B♭-Tenor (+14)* | Unchanged; *do re mi* is not used, except in the transpositions' names, as Spanish reads them (*Si♭ tenor*) |
 | Key shortcuts in tooltips (`| Enter`, `(⌘U)`, `l`) | Unchanged | Unchanged |
 | Units | dB, ms, s, BPM, GB, MB unchanged; numbers in the locale's own notation (`-3,0 dB`) | Unchanged units; locale notation |
+| Tuning names | Proper names, unchanged: *Open G*, *Drop D*, *Double C*, *Low G*, *DADGAD*, *Chicago*, *Sawmill*; a descriptive name is translated (*Halbton tiefer*, *Irisch*) | The same: *Open G*, *Low G*; *Medio tono abajo*, *Irlandesa* |
+| Status captions (TRANSCRIBING, SEPARATING, EXPORTING) | A noun: *TRANSKRIPTION*, *TRENNUNG*, *EXPORT*; in a row's status, *Wird transkribiert* | The gerund: *TRANSCRIBIENDO* |
 | Product and format names | NeuralSheet, NeuralNote, MIDI, MusicXML, PDF, SoundFont, DLS, Demucs, Finder, Shortcuts, CoreAudio unchanged | Unchanged |
 | The transport clock | `m:ss.dd` unchanged | Unchanged |
 
@@ -44,7 +46,7 @@ on any unit without a translation.
 | pitch curve | Tonhöhenkurve | curva de altura | |
 | confidence | Sicherheit | confianza | How sure the model was |
 | grid | Raster | cuadrícula | |
-| snap | einrasten | ajustar | |
+| snap | einrasten | ajustar | Also Snap to Scale: *An Tonleiter einrasten* |
 | quantize | quantisieren | cuantizar | |
 | swing | Swing | swing | |
 | division (of the grid) | Rasterteilung | división | |
@@ -59,19 +61,22 @@ on any unit without a translation.
 | bar | Takt | compás | |
 | beat | Schlag | pulso | |
 | downbeat | Taktanfang | primer tiempo | |
-| count-in | Einzähler | claqueta | |
+| count-in | Einzähler | precuenta | Not *claqueta*, a clapperboard |
 | click (metronome) | Klick | clic | |
 | playhead | Abspielposition | cursor de reproducción | |
 | ruler | Lineal | regla | |
 | marker | Marker | marcador | |
 | marked range | markierter Bereich | rango marcado | |
+| loop (the Loop button) | Loop | loop | The loanword, as DAWs show it in both |
+| tap (tempo) | Tap | Tap | The button; the tooltip says *tippen* / *pulsa* |
+| speed (playback) | Geschwindigkeit; caption *GESCHW.* | velocidad; caption *VELOCIDAD* | The top bar's SPEED pill |
 | piano roll | Pianorolle | piano roll | |
 | keyboard (the key column) | Klaviatur | teclado | |
 | waveform | Wellenform | forma de onda | |
 | mix (ORIG / MIDI) | Mix | mezcla | |
 | source audio | Originalaudio | audio original | |
 | stereo split | Stereo-Split | división estéreo | |
-| mute / solo | stummschalten / Solo | silenciar / solo | The strip's M and S stay M and S |
+| mute / solo | stummschalten / Solo | silenciar / solo | The strip's M and S stay M and S; the master panel's MUTE caption is *STUMM* / *SILENCIAR* |
 | level | Pegel | nivel | |
 | pan | Panorama | panorama | |
 | output | Ausgang | salida | |
@@ -94,7 +99,10 @@ on any unit without a translation.
 | lyric, lyrics | Liedtext | letra | |
 | syllable | Silbe | sílaba | |
 | sheet (title block) | Notenblatt | hoja | |
+| arranger | Arrangeur; credit *Arr.: %@* | arreglista; credit *arr. %@* | |
 | version | Version | versión | |
+| download | herunterladen | descargar | Not *laden*, which reads as *load* beside *konnte nicht geladen werden* |
+| move (a note) | verschieben | mover | |
 | project | Projekt | proyecto | |
 | export / import | exportieren / importieren | exportar / importar | |
 | batch | Stapel | lote | File → Batch Transcribe… |
