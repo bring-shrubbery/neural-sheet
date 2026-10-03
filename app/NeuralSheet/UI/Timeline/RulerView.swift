@@ -9,19 +9,31 @@ import NeuralSheetCore
 final class RulerView: NSView {
     let geometry: TimelineGeometry
 
-    var canPlay = false {
-        didSet {
-            if canPlay != oldValue {
+    /// The drawing's state and the drawing itself (`RulerView+Drawing.swift`), shared with the
+    /// iPhone and iPad app.
+    var painter: RulerPainter
+
+    var canPlay: Bool {
+        get { painter.canPlay }
+        set {
+            if newValue != painter.canPlay {
+                painter.canPlay = newValue
                 needsDisplay = true
             }
         }
     }
 
     /// Bars and beats instead of seconds, in the Edit tab; nil labels seconds.
-    var grid: TempoGrid?
+    var grid: TempoGrid? {
+        get { painter.grid }
+        set { painter.grid = newValue }
+    }
 
     /// The tempo map whose changes are flagged, in both tabs (tempo map design §4).
-    var tempoMap: TempoGrid?
+    var tempoMap: TempoGrid? {
+        get { painter.tempoMap }
+        set { painter.tempoMap = newValue }
+    }
 
     /// A right-click, or a click on a tempo flag: the ruler's card for what is under the
     /// pointer, at a point in the window.
@@ -29,9 +41,11 @@ final class RulerView: NSView {
 
     /// The section markers flagged along the bottom of the ruler, in both tabs (markers and
     /// lyrics design §2).
-    var markers: [Marker] = [] {
-        didSet {
-            if markers != oldValue {
+    var markers: [Marker] {
+        get { painter.markers }
+        set {
+            if newValue != painter.markers {
+                painter.markers = newValue
                 needsDisplay = true
             }
         }
@@ -70,6 +84,7 @@ final class RulerView: NSView {
 
     init(geometry: TimelineGeometry) {
         self.geometry = geometry
+        painter = RulerPainter(geometry: geometry)
         super.init(frame: .zero)
         wantsLayer = true
         clipsToBounds = true
@@ -101,121 +116,7 @@ final class RulerView: NSView {
     override func draw(_ rect: NSRect) {
         guard let ctx = NSGraphicsContext.current?.cgContext else { return }
 
-        let dirtyRect = rect.intersection(bounds)
-        let k = geometry.scale
-        let height = bounds.height
-
-        ctx.fill(dirtyRect, TimelinePalette.bgPanel)
-        ctx.fill(CGRect(x: dirtyRect.minX, y: height - k, width: dirtyRect.width, height: k), TimelinePalette.divSoft)
-
-        guard canPlay else { return }
-
-        if let grid {
-            drawBarsAndBeats(ctx, grid: grid, in: dirtyRect)
-        } else {
-            drawSeconds(ctx, in: dirtyRect)
-        }
-
-        drawTempoFlags(ctx, in: dirtyRect)
-        drawMarkerFlags(ctx, in: dirtyRect)
-    }
-
-    /// `TimeRuler`: a tick per round division of seconds and its `m:ss` label.
-    private func drawSeconds(_ ctx: CGContext, in dirtyRect: CGRect) {
-        let k = geometry.scale
-        let height = bounds.height
-        let pixelsPerSecond = Double(geometry.pixelsPerSecond / k)
-        let division = RulerTicks.division(pixelsPerSecond: pixelsPerSecond)
-        let font = TimelineFonts.meta(k)
-        let labelInset = 6 * k
-        let labelWidth = 40 * k
-
-        guard division > 0, pixelsPerSecond > 0 else { return }
-
-        // Only the ticks whose tick or label can touch the exposed sliver: the label extends
-        // `labelInset + labelWidth` to the right of its tick.
-        let firstIndex = max(0, Int(((dirtyRect.minX - labelInset - labelWidth) / k / CGFloat(pixelsPerSecond)
-            / CGFloat(division)).rounded(.down)))
-        // The band's window ends at its bounds' maxX, not at its width.
-        let end = bounds.maxX
-
-        var index = firstIndex
-
-        while true {
-            let time = Double(index) * division
-            let x = CGFloat((time * pixelsPerSecond).rounded()) * k
-
-            if x >= end || x > dirtyRect.maxX {
-                break
-            }
-
-            ctx.fill(CGRect(x: x, y: 0, width: k, height: height), TimelinePalette.divTick)
-
-            TimelineText.draw(TimeFormat.ruler(time), font: font, colour: TimelinePalette.textFaint,
-                              in: CGRect(x: x + labelInset, y: 0, width: labelWidth, height: height),
-                              anchor: .centredLeft, context: ctx)
-
-            index += 1
-        }
-    }
-
-    /// Design §6.4: a bar tick full height with its number, a beat tick half height with
-    /// `bar.beat`; labels thinned to every 2nd, 4th, 8th… bar until they clear the minimum gap.
-    /// The beats are the meter's (six to a bar of 6/8) and the densest bar or beat in view sets
-    /// the thinning, so a tempo change does not crowd the labels (tempo map design §2).
-    private func drawBarsAndBeats(_ ctx: CGContext, grid: TempoGrid, in dirtyRect: CGRect) {
-        let k = geometry.scale
-        let height = bounds.height
-        let pixelsPerSecond = Double(geometry.pixelsPerSecond / k)
-        let font = TimelineFonts.meta(k)
-        let labelInset = 6 * k
-        let labelWidth = 40 * k
-
-        // Only the lines whose tick or label can touch the exposed sliver: the label extends
-        // `labelInset + labelWidth` to the right of its tick.
-        let from = geometry.seconds(forX: dirtyRect.minX - labelInset - labelWidth)
-        let to = geometry.seconds(forX: dirtyRect.maxX)
-        let visible = grid.segments(from: max(0, from), to: to)
-        let barPixels = (visible.map(\.barSeconds).min() ?? 0) * pixelsPerSecond
-        let beatPixels = (visible.map { $0.timeSignature.beatLength * 60 / $0.bpm }.min() ?? 0) * pixelsPerSecond
-
-        guard barPixels > 0 else { return }
-
-        var barsPerLabel = 1
-        while Double(barsPerLabel) * barPixels < RulerTicks.minLabelGap { barsPerLabel *= 2 }
-        let labelBeats = beatPixels >= RulerTicks.minLabelGap
-
-        for line in grid.beatLines(from: max(0, from), to: to) {
-            let x = CGFloat((line.seconds * pixelsPerSecond).rounded()) * k
-
-            guard x < bounds.maxX else { break }
-
-            let position = grid.barBeat(at: line.seconds + 1e-6)
-
-            switch line.kind {
-            case .bar:
-                ctx.fill(CGRect(x: x, y: 0, width: k, height: height), TimelinePalette.divStrong)
-
-                // A floored remainder: bars before the downbeat (0, −1…) keep the same cadence.
-                if (((position.bar - 1) % barsPerLabel) + barsPerLabel) % barsPerLabel == 0 {
-                    TimelineText.draw("\(position.bar)", font: font, colour: TimelinePalette.textBright,
-                                      in: CGRect(x: x + labelInset, y: 0, width: labelWidth, height: height),
-                                      anchor: .centredLeft, context: ctx)
-                }
-
-            case .beat:
-                ctx.fill(CGRect(x: x, y: height / 2, width: k, height: height / 2), TimelinePalette.divOctave)
-
-                if labelBeats {
-                    TimelineText.draw(grid.barBeatLabel(at: line.seconds + 1e-6), font: font, colour: TimelinePalette.textFaint,
-                                      in: CGRect(x: x + labelInset, y: 0, width: labelWidth, height: height),
-                                      anchor: .centredLeft, context: ctx)
-                }
-
-            case .division:
-                break
-            }
-        }
+        painter.draw(ctx, in: rect.intersection(bounds), bounds: bounds)
     }
 
     // MARK: - Mouse
@@ -349,32 +250,6 @@ final class GutterView: NSView {
     override func draw(_ rect: NSRect) {
         guard let ctx = NSGraphicsContext.current?.cgContext else { return }
 
-        let k = scale
-        let bandHeight = waveformHeight * k
-
-        ctx.fill(rect.intersection(bounds), TimelinePalette.bgGutter)
-        ctx.fill(CGRect(x: bounds.width - k, y: 0, width: k, height: bounds.height), TimelinePalette.divStrong)
-        ctx.fill(CGRect(x: 0, y: bandHeight - k, width: bounds.width, height: k), TimelinePalette.divSoft)
-        ctx.fill(CGRect(x: 0, y: bounds.height - k, width: bounds.width, height: k), TimelinePalette.divSoft)
-
-        guard !isCompact else { return }
-
-        let font = TimelineFonts.scaleLabel(k)
-        let labelHeight = 9 * k
-        let labelWidth = bounds.width - 6 * k
-        let centreY = waveformHeight * 0.5 + 0.5
-
-        func labelRect(amplitude: CGFloat) -> CGRect {
-            let y = (centreY - amplitude * TimelineMetrics.waveformAmpHalfSpan) * k
-
-            return CGRect(x: 0, y: y - labelHeight / 2, width: labelWidth, height: labelHeight)
-        }
-
-        TimelineText.draw("+1.0", font: font, colour: TimelinePalette.textScale, in: labelRect(amplitude: 1),
-                          anchor: .centredRight, context: ctx)
-        TimelineText.draw("\u{2212}1.0", font: font, colour: TimelinePalette.textScale, in: labelRect(amplitude: -1),
-                          anchor: .centredRight, context: ctx)
-        TimelineText.draw("0", font: font, colour: TimelinePalette.textFaint, in: labelRect(amplitude: 0),
-                          anchor: .centredRight, context: ctx)
+        GutterPainter.draw(ctx, in: rect, bounds: bounds, scale: scale, waveformHeight: waveformHeight, isCompact: isCompact)
     }
 }
