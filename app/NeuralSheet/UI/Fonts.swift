@@ -16,7 +16,8 @@ enum FontRegistry {
 ///
 /// The rule the original states: anything read as *data* (times, dB, counts, tempo, key labels) is
 /// JetBrains Mono NL; labels and names are Inter. Sizes are point heights, which is what
-/// `Font.custom(_:fixedSize:)` takes and what the mockup's CSS pixels are.
+/// `Font.custom(_:size:relativeTo:)` takes at the default text size and what the mockup's CSS
+/// pixels are.
 ///
 /// Every accessor takes the UI scale, so a view writes `Fonts.buttonLabel(k)` and never multiplies
 /// a size itself.
@@ -61,14 +62,17 @@ enum Fonts {
 
     // MARK: - Families
 
-    /// Inter at a point height, picking the face the weight maps onto.
+    /// Inter at a point height, picking the face the weight maps onto. Relative to the body
+    /// style, so the system's accessibility text size scales it (a11y design §2); at the
+    /// default size it is exactly `pointSize`.
     static func sans(_ pointSize: CGFloat, weight: Int, scale: CGFloat = 1) -> Font {
-        Font.custom(sansName(weight), fixedSize: pointSize * scale)
+        Font.custom(sansName(weight), size: pointSize * scale, relativeTo: .body)
     }
 
-    /// JetBrains Mono NL at a point height, picking the face the weight maps onto.
+    /// JetBrains Mono NL at a point height, picking the face the weight maps onto; scaled with
+    /// the accessibility text size as `sans` is.
     static func mono(_ pointSize: CGFloat, weight: Int, scale: CGFloat = 1) -> Font {
-        Font.custom(monoName(weight), fixedSize: pointSize * scale)
+        Font.custom(monoName(weight), size: pointSize * scale, relativeTo: .body)
     }
 
     static func sansName(_ weight: Int) -> String {
