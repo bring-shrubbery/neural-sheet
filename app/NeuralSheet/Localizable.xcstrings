@@ -1223,7 +1223,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bearb.: %@"
+            "value" : "Arr.: %@"
           }
         },
         "es" : {
@@ -1240,7 +1240,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bearbeitung"
+            "value" : "Arrangeur"
           }
         },
         "es" : {
@@ -1359,7 +1359,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "B Tenor (+14)"
+            "value" : "B♭-Tenor (+14)"
           }
         },
         "es" : {
@@ -2056,13 +2056,13 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Menü löschen"
+            "value" : "Einträge löschen"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Borrar menú"
+            "value" : "Vaciar menú"
           }
         }
       }
@@ -2674,7 +2674,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Claqueta"
+            "value" : "Precuenta"
           }
         }
       }
@@ -2691,7 +2691,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Claqueta %1$@ %2$lld"
+            "value" : "Precuenta %1$@ %2$lld"
           }
         }
       }
@@ -2708,7 +2708,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Claqueta en curso"
+            "value" : "Precuenta en curso"
           }
         }
       }
@@ -3065,7 +3065,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mostrar"
+            "value" : "Vista"
           }
         }
       }
@@ -3150,7 +3150,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "OK"
+            "value" : "Listo"
           }
         }
       }
@@ -3277,7 +3277,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Laden"
+            "value" : "Herunterladen"
           }
         },
         "es" : {
@@ -3294,7 +3294,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Lade ein Modell, um mit dem Transkribieren zu beginnen."
+            "value" : "Lade ein Modell herunter, um mit dem Transkribieren zu beginnen."
           }
         },
         "es" : {
@@ -3311,7 +3311,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Modell laden …"
+            "value" : "Modell herunterladen …"
           }
         },
         "es" : {
@@ -3328,7 +3328,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ladefortschritt"
+            "value" : "Download-Fortschritt"
           }
         },
         "es" : {
@@ -3345,7 +3345,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Lade das Stems-Modell in „Einstellungen“ › „Modell“"
+            "value" : "Lade das Stems-Modell unter „Einstellungen“ › „Modell“ herunter"
           }
         },
         "es" : {
@@ -3362,7 +3362,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Lade das Stems-Modell in „Einstellungen“ → „Modell“."
+            "value" : "Lade das Stems-Modell unter „Einstellungen“ → „Modell“ herunter."
           }
         },
         "es" : {
@@ -3379,7 +3379,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Laden, um die Aufnahme vor dem Transkribieren in Schlagzeug, Bass, Gesang und den Rest zu trennen."
+            "value" : "Herunterladen, um die Aufnahme vor dem Transkribieren in Schlagzeug, Bass, Gesang und den Rest zu trennen."
           }
         },
         "es" : {
@@ -3549,7 +3549,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Es Alt (+9)"
+            "value" : "E♭-Alt (+9)"
           }
         },
         "es" : {
@@ -3566,7 +3566,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Es Bariton (+21)"
+            "value" : "E♭-Bariton (+21)"
           }
         },
         "es" : {
@@ -3957,7 +3957,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "EXPORTIEREN"
+            "value" : "EXPORT"
           }
         },
         "es" : {
@@ -4314,7 +4314,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Halten, um nur das MIDI zu hören, im rechten Ohr"
+            "value" : "Halten, um nur das MIDI zu hören, auf dem rechten Ohr"
           }
         },
         "es" : {
@@ -4348,7 +4348,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Halten, um nur das Originalaudio zu hören, im linken Ohr"
+            "value" : "Halten, um nur das Originalaudio zu hören, auf dem linken Ohr"
           }
         },
         "es" : {
@@ -4909,13 +4909,13 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Schleife"
+            "value" : "Loop"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bucle"
+            "value" : "Loop"
           }
         }
       }
@@ -4926,13 +4926,13 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Schleife | l"
+            "value" : "Loop | l"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bucle | l"
+            "value" : "Loop | l"
           }
         }
       }
@@ -5419,7 +5419,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nach unten bewegen"
+            "value" : "Nach unten verschieben"
           }
         },
         "es" : {
@@ -5436,7 +5436,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nach links bewegen"
+            "value" : "Nach links verschieben"
           }
         },
         "es" : {
@@ -5453,7 +5453,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nach rechts bewegen"
+            "value" : "Nach rechts verschieben"
           }
         },
         "es" : {
@@ -5470,7 +5470,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nach oben bewegen"
+            "value" : "Nach oben verschieben"
           }
         },
         "es" : {
@@ -5504,7 +5504,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Stumm"
+            "value" : "Stummschalten"
           }
         },
         "es" : {
@@ -5527,7 +5527,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "SILENCIO"
+            "value" : "SILENCIAR"
           }
         }
       }
@@ -5538,13 +5538,13 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Eingang stumm / laut | m"
+            "value" : "Eingang stummschalten / Stummschaltung aufheben | m"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Silenciar / activar la entrada | m"
+            "value" : "Silenciar / activar el sonido de la entrada | m"
           }
         }
       }
@@ -5776,7 +5776,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Es ist kein Transkriptionsmodell installiert. Lade eines in „NeuralSheet“ › „Einstellungen“ › „Modell“."
+            "value" : "Es ist kein Transkriptionsmodell installiert. Lade eines unter „NeuralSheet“ › „Einstellungen“ › „Modell“ herunter."
           }
         },
         "es" : {
@@ -5946,7 +5946,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nichts abzuwägen, solange der Split aktiv ist: Jede Seite spielt voll auf ihrem eigenen Ohr"
+            "value" : "Nichts auszubalancieren, solange der Split aktiv ist: Jede Seite spielt voll auf ihrem eigenen Ohr"
           }
         },
         "es" : {
@@ -6592,7 +6592,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Vertikaler Zoom der Pianorolle | ⌥ + Scrollen oder ⌥ + Zusammenziehen auf der Rolle"
+            "value" : "Vertikaler Zoom der Pianorolle | ⌥ + Scrollen oder ⌥ + Zusammenziehen auf der Pianorolle"
           }
         },
         "es" : {
@@ -6643,7 +6643,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wiedergabe"
+            "value" : "Wiedergeben"
           }
         },
         "es" : {
@@ -6660,7 +6660,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wiedergabe / Pause | Leertaste"
+            "value" : "Wiedergeben / Pause | Leertaste"
           }
         },
         "es" : {
@@ -6949,7 +6949,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Aufnahme"
+            "value" : "Aufnehmen"
           }
         },
         "es" : {
@@ -6966,7 +6966,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Aufnahme | r"
+            "value" : "Aufnehmen | r"
           }
         },
         "es" : {
@@ -7983,7 +7983,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Trennen"
+            "value" : "Wird getrennt"
           }
         },
         "es" : {
@@ -8000,7 +8000,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "TRENNEN"
+            "value" : "TRENNUNG"
           }
         },
         "es" : {
@@ -8238,7 +8238,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Still"
+            "value" : "Stille"
           }
         },
         "es" : {
@@ -8340,7 +8340,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "An Tonleiter ausrichten"
+            "value" : "An Tonleiter einrasten"
           }
         },
         "es" : {
@@ -8476,7 +8476,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Split: das Originalaudio im linken Ohr, das MIDI im rechten, nichts gemischt"
+            "value" : "Split: das Originalaudio auf dem linken Ohr, das MIDI auf dem rechten, nichts gemischt"
           }
         },
         "es" : {
@@ -8771,7 +8771,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sintetizador solista"
+            "value" : "Lead de sintetizador"
           }
         }
       }
@@ -8918,13 +8918,13 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tippen"
+            "value" : "Tap"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Marcar"
+            "value" : "Tap"
           }
         }
       }
@@ -8941,7 +8941,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Marca al ritmo de la reproducción para fijar el tempo | t"
+            "value" : "Pulsa al ritmo de la reproducción para fijar el tempo | t"
           }
         }
       }
@@ -9071,7 +9071,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Das Modell „%@“ ist nicht installiert. Lade es in „NeuralSheet“ › „Einstellungen“ › „Modell“."
+            "value" : "Das Modell „%@“ ist nicht installiert. Lade es unter „NeuralSheet“ › „Einstellungen“ › „Modell“ herunter."
           }
         },
         "es" : {
@@ -9230,7 +9230,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "La claqueta toca un clic al tempo y en el compás del proyecto y después empieza la toma en el siguiente primer tiempo."
+            "value" : "La precuenta toca un clic al tempo y en el compás del proyecto y después empieza la toma en el siguiente primer tiempo."
           }
         }
       }
@@ -9417,7 +9417,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ha fallado el renderizado sin conexión."
+            "value" : "Ha fallado el renderizado offline."
           }
         }
       }
@@ -9989,7 +9989,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Titel, Untertitel, Komponist, Bearbeitung, Copyright"
+            "value" : "Titel, Untertitel, Komponist, Arrangeur, Copyright"
           }
         },
         "es" : {
@@ -10207,7 +10207,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Transkribieren"
+            "value" : "Wird transkribiert"
           }
         },
         "es" : {
@@ -10224,7 +10224,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "TRANSKRIBIEREN"
+            "value" : "TRANSKRIPTION"
           }
         },
         "es" : {

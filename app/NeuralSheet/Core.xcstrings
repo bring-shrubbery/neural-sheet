@@ -536,7 +536,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Doble do (g C G C D)"
+            "value" : "Double C (g C G C D)"
           }
         }
       }
@@ -1034,13 +1034,13 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tiefes G (G C E A)"
+            "value" : "Low G (G C E A)"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sol grave (G C E A)"
+            "value" : "Low G (G C E A)"
           }
         }
       }
@@ -1178,7 +1178,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Note bewegen"
+            "value" : "Note verschieben"
           }
         },
         "es" : {
@@ -1196,7 +1196,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Noten bewegen"
+            "value" : "Noten verschieben"
           }
         },
         "es" : {
@@ -1256,7 +1256,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Re abierta (D A D F♯ A D)"
+            "value" : "Open D (D A D F♯ A D)"
           }
         }
       }
@@ -1274,7 +1274,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Re abierta (f♯ D F♯ A D)"
+            "value" : "Open D (f♯ D F♯ A D)"
           }
         }
       }
@@ -1292,7 +1292,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mi abierta (E B E G♯ B E)"
+            "value" : "Open E (E B E G♯ B E)"
           }
         }
       }
@@ -1310,7 +1310,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sol abierta (D G D G B D)"
+            "value" : "Open G (D G D G B D)"
           }
         }
       }
@@ -1328,7 +1328,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sol abierta (g D G B D)"
+            "value" : "Open G (g D G B D)"
           }
         }
       }
@@ -1700,7 +1700,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "An Tonleiter ausrichten"
+            "value" : "An Tonleiter einrasten"
           }
         },
         "es" : {
@@ -1916,13 +1916,13 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Standard (g C E A, hohes G)"
+            "value" : "Standard (g C E A, High G)"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Estándar (g C E A, sol agudo)"
+            "value" : "Estándar (g C E A, High G)"
           }
         }
       }
@@ -1976,7 +1976,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sintetizador solista"
+            "value" : "Lead de sintetizador"
           }
         }
       }
@@ -2156,7 +2156,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Seguir afinación"
+            "value" : "Seguir la altura"
           }
         }
       }
@@ -2498,7 +2498,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Percusión"
+            "value" : "Clave de percusión"
           }
         }
       }
