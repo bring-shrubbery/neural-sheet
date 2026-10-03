@@ -28,6 +28,11 @@ nonisolated enum InputAggregate {
         static let mainSubDevice = "master"
         static let subDeviceList = "subdevices"
         static let driftCompensation = "drift"
+        /// `kAudioAggregateDeviceTapListKey`, `kAudioSubTapUIDKey`,
+        /// `kAudioAggregateDeviceTapAutoStartKey`.
+        static let tapList = "taps"
+        static let tapUID = "uid"
+        static let tapAutoStart = "tapautostart"
     }
 
     /// What asking for an aggregate came to.
@@ -72,6 +77,45 @@ nonisolated enum InputAggregate {
             Key.subDeviceList: uids.map { uid -> [String: Any] in
                 uid == main ? [Key.uid: uid] : [Key.uid: uid, Key.driftCompensation: 1]
             },
+        ]
+
+        var device = AudioDeviceID(0)
+        let status = AudioHardwareCreateAggregateDevice(description as CFDictionary, &device)
+
+        guard status == noErr else { return .failed(status) }
+        guard device != kAudioObjectUnknown else {
+            return .failed(OSStatus(kAudioHardwareUnspecifiedError))
+        }
+
+        return .created(device)
+    }
+
+    /// An aggregate presenting `tap` as its input and `output`'s output channels (system audio
+    /// design §2): a tap is made to be a sub-device of exactly such an aggregate, and the engine
+    /// then records it as it records a microphone.
+    ///
+    /// The output is the only sub-device and keeps the clock; the tap is drift-compensated
+    /// against it, since what it carries can be playing to another device, and it starts with
+    /// the aggregate (`tapautostart`), so the I/O unit starting is all it needs. The tap stays
+    /// the caller's: destroy this aggregate before it.
+    static func create(tap: ProcessTap, output: AudioDeviceID) -> Outcome {
+        let outputMembers = members(of: output)
+
+        guard let main = outputMembers.main else {
+            return .failed(OSStatus(kAudioHardwareBadDeviceError))
+        }
+
+        let description: [String: Any] = [
+            Key.name: "NeuralSheet System Audio",
+            Key.uid: "com.quassum.neuralsheet.aggregate.\(UUID().uuidString)",
+            Key.isPrivate: 1,
+            Key.isStacked: 0,
+            Key.mainSubDevice: main,
+            Key.subDeviceList: outputMembers.uids.map { uid -> [String: Any] in
+                uid == main ? [Key.uid: uid] : [Key.uid: uid, Key.driftCompensation: 1]
+            },
+            Key.tapList: [[Key.tapUID: tap.uid, Key.driftCompensation: 1]],
+            Key.tapAutoStart: 1,
         ]
 
         var device = AudioDeviceID(0)
