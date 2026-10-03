@@ -46,9 +46,7 @@ extension AppModel {
     private func runChordDetection() {
         guard let document else { return }
 
-        let notesEnd = document.events.map(\.endTime).max() ?? 0
-        let found = ChordDetector.detect(notes: document.events, grid: editor.grid, key: editor.key,
-                                         duration: max(duration, notesEnd))
+        let found = EditingCommands.detectedChords(in: document, editor: editor, duration: duration)
 
         if editor.chords != found { editor.chords = found }
         if editor.chordsEdited { editor.chordsEdited = false }
@@ -61,22 +59,17 @@ extension AppModel {
     /// already at that spot is answered instead of doubled.
     @discardableResult
     func addChord(at seconds: Double) -> Int? {
-        guard document != nil, seconds.isFinite else { return nil }
+        guard document != nil else { return nil }
 
-        let seconds = max(0, seconds)
+        var list = editor.chords
 
-        if let existing = editor.chords.firstIndex(where: { abs($0.seconds - seconds) < 0.001 }) {
-            return existing
+        guard let added = EditingCommands.addChord(&list, at: seconds, key: editor.key) else { return nil }
+
+        if added.inserted {
+            editChords { $0 = list }
         }
 
-        let sounding = editor.chords.chordIndex(at: seconds).flatMap { editor.chords[$0].chord }
-        let fallback = editor.key.map { ChordSymbol(root: $0.tonic, quality: $0.mode == .minor ? .minor : .major) }
-        let chord = sounding ?? fallback ?? ChordSymbol(root: 0, quality: .major)
-
-        let index = editor.chords.firstIndex { $0.seconds > seconds } ?? editor.chords.count
-        editChords { $0.insert(ChordEvent(seconds: seconds, chord: chord), at: index) }
-
-        return index
+        return added.index
     }
 
     /// The card's menus: the chord at `index` becomes `chord`, nil for N.C.
@@ -97,22 +90,13 @@ extension AppModel {
     /// where it landed; landing on another chord's spot replaces that one.
     @discardableResult
     func moveChord(from index: Int, to seconds: Double) -> Int? {
-        guard editor.chords.indices.contains(index), seconds.isFinite else { return nil }
-
-        let seconds = max(0, seconds)
-        var event = editor.chords[index]
-
-        guard event.seconds != seconds else { return index }
-
-        event.seconds = seconds
-
         var list = editor.chords
-        list.remove(at: index)
-        list.removeAll { abs($0.seconds - seconds) < 0.001 }
 
-        let landing = list.firstIndex { $0.seconds > seconds } ?? list.count
-        list.insert(event, at: landing)
-        editChords { $0 = list }
+        guard let landing = EditingCommands.moveChord(&list, from: index, to: seconds) else { return nil }
+
+        if list != editor.chords {
+            editChords { $0 = list }
+        }
 
         return landing
     }
