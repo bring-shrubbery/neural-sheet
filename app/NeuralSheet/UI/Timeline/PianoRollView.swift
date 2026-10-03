@@ -28,6 +28,10 @@ final class PianoRollView: NSView {
     /// colours them by key colour. Whole-view repaint: the caller decides.
     var key: MusicalKey?
 
+    /// View → Show Confidence (confidence design §2): notes shade by how sure the model was, in
+    /// both tabs, in place of velocity. Whole-view repaint: the caller decides.
+    var showsConfidence = false
+
     /// The click is a seek; the container owns the model.
     var onSeek: ((Double) -> Void)?
 

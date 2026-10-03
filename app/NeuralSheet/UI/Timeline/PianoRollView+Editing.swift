@@ -218,8 +218,12 @@ extension PianoRollView {
         let k = geometry.scale
         let program = min(max(note.program, 0), NoteEvent.drumProgram)
         // Edit mode: velocity 1…127 → 0.45…1 (§6.5); the Transcribe tab draws every note solid,
-        // as it always has. Muted wins in both.
-        let velocityAlpha = grid != nil ? 0.45 + 0.55 * CGFloat(note.velocity - 1) / 126 : 1
+        // as it always has. With Show Confidence on, confidence 0…1 → 0.25…1 in both tabs instead,
+        // replacing the velocity term rather than multiplying it, so a loud doubtful note is as
+        // faint as a quiet one (confidence design §2). Muted wins in all of them.
+        let velocityAlpha = showsConfidence
+            ? 0.25 + 0.75 * CGFloat(note.confidenceOrSure)
+            : grid != nil ? 0.45 + 0.55 * CGFloat(note.velocity - 1) / 126 : 1
         // A highlighted instrument keeps its alpha; the others step back behind it.
         let highlightAlpha: CGFloat = highlightedProgram.map { $0 == program ? 1 : PianoRollView.unhighlightedNoteAlpha } ?? 1
         let alpha = audible[program] ? velocityAlpha * highlightAlpha : PianoRollView.mutedNoteAlpha
