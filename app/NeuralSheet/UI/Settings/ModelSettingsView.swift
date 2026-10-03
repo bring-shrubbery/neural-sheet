@@ -27,7 +27,8 @@ nonisolated struct ModelRow: Equatable {
 }
 
 /// Settings → Model (`ModelDownloadPanel`, §3.2): a row per size -- an installed one picked by
-/// its radio, a missing one offering its download -- the models folder, and the weights' licence.
+/// its radio, a missing one offering its download -- what a run drops as it lands, the models
+/// folder, and the weights' licence.
 ///
 /// The tab polls nothing itself: `AppModel` re-scans the models folder at 10 Hz and republishes
 /// `installedModels` and `downloadPhases`, and the body follows them.
@@ -80,6 +81,29 @@ struct ModelSettingsView: View {
                     Link("Weights: MIT", destination: ModelManifest.stemsLicenceURL)
                 }
                 .foregroundStyle(.secondary)
+            }
+
+            // Confidence design §2: applied to a run's notes as they land (a full run, a stems
+            // run, a region), never to notes already in the document.
+            Section {
+                Picker("Drop notes shorter than", selection: Binding(get: { model.minimumNoteLength },
+                                                                     set: { model.minimumNoteLength = $0 })) {
+                    ForEach(NoteFilter.minimumLengthChoices, id: \.self) { seconds in
+                        Text(seconds == 0 ? "Off" : "\(Int((seconds * 1000).rounded())) ms").tag(seconds)
+                    }
+                }
+
+                Picker("Drop notes less sure than", selection: Binding(get: { model.minimumConfidence },
+                                                                       set: { model.minimumConfidence = $0 })) {
+                    ForEach(NoteFilter.minimumConfidenceChoices, id: \.self) { confidence in
+                        Text(confidence == 0 ? "Off" : "\(Int((confidence * 100).rounded())) %").tag(confidence)
+                    }
+                }
+            } header: {
+                Text("After transcription")
+            } footer: {
+                Text("Dropped notes are gone; lower the setting and transcribe again to get them back.")
+                    .foregroundStyle(.secondary)
             }
 
             Section {
