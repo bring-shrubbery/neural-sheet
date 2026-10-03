@@ -30,8 +30,8 @@ import SwiftUI
     private var shownFooterView: AnyView?
     private var monitors: [Any] = []
     private var observers: [NSObjectProtocol] = []
-    /// The window and the responder that had the keyboard before a key panel took it.
-    private var returnFocus: (window: NSWindow, responder: NSResponder?)?
+    /// The window that had the keyboard before a key panel took it.
+    private weak var returnFocus: NSWindow?
 
     /// A submenu shown from one of this menu's rows: a click inside it is a click inside this
     /// menu, and this menu closing closes it.
@@ -167,7 +167,7 @@ import SwiftUI
         if becomesKey {
             // Where the keyboard goes back to when the panel closes (a11y design §2): while it is
             // key, Tab cycles inside it and nowhere else.
-            returnFocus = (window, window.firstResponder)
+            returnFocus = window
             menu.makeKeyAndOrderFront(nil)
         } else {
             menu.orderFront(nil)
@@ -246,15 +246,12 @@ import SwiftUI
             self.panel = nil
             hosting = nil
 
-            // The keyboard back where it was, so Full Keyboard Access and VoiceOver carry on
-            // from the control that opened the panel. Only from a panel that still had it: one
-            // that lost the key to another window leaves that window alone.
-            if wasKey, let (window, responder) = returnFocus, window.isVisible {
+            // The keyboard back to the window it came from, whose first responder -- the control
+            // that opened the panel -- never changed while the panel had the key, so Full
+            // Keyboard Access and VoiceOver carry on from there. Only from a panel that still had
+            // the key: one that lost it to another window leaves that window alone.
+            if wasKey, let window = returnFocus, window.isVisible {
                 window.makeKey()
-
-                if let responder, responder !== window, (responder as? NSView)?.window === window {
-                    window.makeFirstResponder(responder)
-                }
             }
 
             returnFocus = nil
