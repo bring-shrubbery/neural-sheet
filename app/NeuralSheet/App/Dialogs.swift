@@ -26,7 +26,7 @@ import AppKit
         alert.informativeText = body
         // `NoIcon` in the original; AppKit always draws one, and the app's own is the least loud.
         alert.alertStyle = .informational
-        alert.addButton(withTitle: "OK")
+        alert.addButton(withTitle: String(localized: "OK", comment: "Alert button"))
 
         if let window, window.isVisible {
             // A second message while one is up queues behind it.
@@ -60,7 +60,7 @@ import AppKit
         confirm.hasDestructiveAction = true
         confirm.keyEquivalent = ""
 
-        let cancel = alert.addButton(withTitle: "Cancel")
+        let cancel = alert.addButton(withTitle: String(localized: "Cancel", comment: "Alert button"))
         cancel.keyEquivalent = "\r"
 
         if let window, window.isVisible {
@@ -92,8 +92,8 @@ import AppKit
         alert.messageText = title
         alert.informativeText = label
         alert.alertStyle = .informational
-        alert.addButton(withTitle: "OK")
-        alert.addButton(withTitle: "Cancel")
+        alert.addButton(withTitle: String(localized: "OK", comment: "Alert button"))
+        alert.addButton(withTitle: String(localized: "Cancel", comment: "Alert button"))
 
         let entry = NumberEntry(range: range, initial: initial, suffix: suffix)
         alert.accessoryView = entry.view
@@ -131,13 +131,15 @@ import AppKit
     static func saveReview(title: String, on window: NSWindow?,
                            completion: @escaping (AppModel.SaveReviewChoice) -> Void) {
         let alert = NSAlert()
-        alert.messageText = "Do you want to save the changes made to the document “\(title)”?"
-        alert.informativeText = "Your changes will be lost if you don't save them."
+        alert.messageText = String(localized: "Do you want to save the changes made to the document “\(title)”?",
+                                   comment: "Alert title: closing or quitting with unsaved changes, AppKit's own wording")
+        alert.informativeText = String(localized: "Your changes will be lost if you don't save them.",
+                                       comment: "Alert body: closing or quitting with unsaved changes")
         alert.alertStyle = .warning
-        alert.addButton(withTitle: "Save")
-        alert.addButton(withTitle: "Cancel")
+        alert.addButton(withTitle: String(localized: "Save", comment: "Alert button: save the project"))
+        alert.addButton(withTitle: String(localized: "Cancel", comment: "Alert button"))
 
-        let discard = alert.addButton(withTitle: "Don't Save")
+        let discard = alert.addButton(withTitle: String(localized: "Don't Save", comment: "Alert button: close without saving"))
         discard.hasDestructiveAction = true
         discard.keyEquivalent = "d"
         discard.keyEquivalentModifierMask = [.command]
@@ -164,15 +166,16 @@ import AppKit
     /// AppKit's own revert question: Revert, Cancel (Return, so a stray key is safe).
     static func revert(title: String, on window: NSWindow?, completion: @escaping (Bool) -> Void) {
         let alert = NSAlert()
-        alert.messageText = "Do you want to revert to the most recently saved version of “\(title)”?"
-        alert.informativeText = "Your current changes will be lost."
+        alert.messageText = String(localized: "Do you want to revert to the most recently saved version of “\(title)”?",
+                                   comment: "Alert title: File → Revert to Saved…, AppKit's own wording")
+        alert.informativeText = String(localized: "Your current changes will be lost.", comment: "Alert body: File → Revert to Saved…")
         alert.alertStyle = .warning
 
-        let revert = alert.addButton(withTitle: "Revert")
+        let revert = alert.addButton(withTitle: String(localized: "Revert", comment: "Alert button: revert to the saved project"))
         revert.hasDestructiveAction = true
         revert.keyEquivalent = ""
 
-        let cancel = alert.addButton(withTitle: "Cancel")
+        let cancel = alert.addButton(withTitle: String(localized: "Cancel", comment: "Alert button"))
         cancel.keyEquivalent = "\r"
 
         if let window, window.isVisible {
@@ -201,12 +204,13 @@ extension Dialogs {
     static func midiImportChoice(fileName: String, on window: NSWindow?,
                                  completion: @escaping (AppModel.MIDIImportChoice) -> Void) {
         let alert = NSAlert()
-        alert.messageText = "Import “\(fileName)”?"
-        alert.informativeText = "The take already has a transcription. The file's notes can replace its notes or be added to them."
+        alert.messageText = String(localized: "Import “\(fileName)”?", comment: "Alert title: File → Import MIDI… over a transcription")
+        alert.informativeText = String(localized: "The take already has a transcription. The file's notes can replace its notes or be added to them.",
+                                       comment: "Alert body: File → Import MIDI… over a transcription")
         alert.alertStyle = .informational
-        alert.addButton(withTitle: "Replace the notes")
-        alert.addButton(withTitle: "Add to the notes")
-        alert.addButton(withTitle: "Cancel")
+        alert.addButton(withTitle: String(localized: "Replace the notes", comment: "Alert button: the MIDI file's notes replace the transcription's"))
+        alert.addButton(withTitle: String(localized: "Add to the notes", comment: "Alert button: the MIDI file's notes join the transcription's"))
+        alert.addButton(withTitle: String(localized: "Cancel", comment: "Alert button"))
 
         let choice: (NSApplication.ModalResponse) -> AppModel.MIDIImportChoice = { response in
             switch response {
@@ -301,18 +305,20 @@ extension Dialogs {
     /// another, before any is written.
     static func overwrite(fileName: String, folderName: String) -> OverwriteChoice {
         let alert = NSAlert()
-        alert.messageText = "“\(fileName)” already exists. Do you want to replace it?"
-        alert.informativeText = "A file with the same name already exists in “\(folderName)”. Replacing it will overwrite its current contents."
+        alert.messageText = String(localized: "“\(fileName)” already exists. Do you want to replace it?",
+                                   comment: "Alert title: Export Stems… would overwrite a file, AppKit's own wording")
+        alert.informativeText = String(localized: "A file with the same name already exists in “\(folderName)”. Replacing it will overwrite its current contents.",
+                                       comment: "Alert body: Export Stems… would overwrite a file")
         alert.alertStyle = .warning
 
-        let replace = alert.addButton(withTitle: "Replace")
+        let replace = alert.addButton(withTitle: String(localized: "Replace", comment: "Alert button: overwrite the file"))
         replace.hasDestructiveAction = true
         replace.keyEquivalent = ""
 
-        alert.addButton(withTitle: "Replace All").hasDestructiveAction = true
-        alert.addButton(withTitle: "Skip")
+        alert.addButton(withTitle: String(localized: "Replace All", comment: "Alert button: overwrite this file and the rest of the set")).hasDestructiveAction = true
+        alert.addButton(withTitle: String(localized: "Skip", comment: "Alert button: leave this file and go on"))
 
-        let cancel = alert.addButton(withTitle: "Cancel")
+        let cancel = alert.addButton(withTitle: String(localized: "Cancel", comment: "Alert button"))
         cancel.keyEquivalent = "\r"
 
         switch alert.runModal() {

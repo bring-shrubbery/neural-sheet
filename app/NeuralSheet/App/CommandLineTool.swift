@@ -71,7 +71,7 @@ nonisolated enum CommandLineTool {
             let message = String(decoding: data, as: UTF8.self).trimmingCharacters(in: .whitespacesAndNewlines)
 
             // -128 is the password prompt's Cancel: the user chose not to, nothing failed.
-            return message.contains("-128") ? nil : (message.isEmpty ? "The command failed." : message)
+            return message.contains("-128") ? nil : (message.isEmpty ? String(localized: "The command failed.", comment: "Settings → General: installing the command-line tool failed") : message)
         }.value
     }
 

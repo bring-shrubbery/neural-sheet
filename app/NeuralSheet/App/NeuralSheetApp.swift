@@ -377,7 +377,7 @@ private struct BatchTranscribeMenuItem: View {
     static func title(of input: RecordingInput) -> String {
         switch input {
         case .device(let device): device.name
-        case .systemAudio: "System Audio"
+        case .systemAudio: String(localized: "System Audio", comment: "Audio menu and Settings → Audio: record what the Mac plays")
         case .app(_, _, let name): name
         }
     }

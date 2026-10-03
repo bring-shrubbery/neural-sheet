@@ -87,12 +87,12 @@ enum HeadlessMain {
         let pipeline = HeadlessTranscription()
 
         guard let model = options.model ?? pipeline.defaultModel() else {
-            Console.error("neuralsheet: \(HeadlessTranscription.Failure.noModelInstalled.message)")
+            Console.error("neuralsheet: \(HeadlessTranscription.Failure.noModelInstalled.englishMessage)")
             return ExitCode.usage
         }
 
         if let failure = pipeline.check(model: model, stems: options.stems) {
-            Console.error("neuralsheet: \(failure.message)")
+            Console.error("neuralsheet: \(failure.englishMessage)")
             return ExitCode.usage
         }
 
@@ -121,7 +121,7 @@ enum HeadlessMain {
                 return ExitCode.interrupted
 
             case let .failure(failure):
-                progress.fail(failure.message)
+                progress.fail(failure.englishMessage)
 
                 if failure.isSetupError { return ExitCode.usage }
 

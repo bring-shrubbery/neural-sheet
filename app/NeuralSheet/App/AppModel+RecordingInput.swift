@@ -128,16 +128,16 @@ extension AppModel {
         if status == OSStatus(kAudioHardwareIllegalOperationError) {
             presentSystemAudioDenied()
         } else {
-            showError("Audio device could not be used",
-                      status.map { "CoreAudio error \(PlaybackEngine.describe($0))." } ?? "")
+            showError(AppModel.deviceErrorTitle,
+                      status.map { AppModel.coreAudioError(PlaybackEngine.describe($0)) } ?? "")
         }
     }
 
     func presentSystemAudioDenied() {
         showError(
-            "NeuralSheet needs permission to record system audio.",
-            "Allow it in System Settings › Privacy & Security › Screen & System Audio Recording, then "
-                + "choose the input again.")
+            String(localized: "NeuralSheet needs permission to record system audio.", comment: "Alert title: System Audio refused"),
+            String(localized: "Allow it in System Settings › Privacy & Security › Screen & System Audio Recording, then choose the input again.",
+                   comment: "Alert body: System Audio refused"))
     }
 
     /// Back to the device that was chosen before System Audio or the app, or the system default.

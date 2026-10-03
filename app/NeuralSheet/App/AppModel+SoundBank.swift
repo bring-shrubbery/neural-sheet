@@ -15,8 +15,9 @@ extension AppModel {
     /// Choose…: an open panel for `.sf2` and `.dls`, then the bank applied at once.
     func chooseSoundBank() {
         let panel = NSOpenPanel()
-        panel.title = "Choose a Sound Bank"
-        panel.message = "Choose a SoundFont (.sf2) or DLS (.dls) file to play the MIDI through."
+        panel.title = String(localized: "Choose a Sound Bank", comment: "Settings → Audio → Sound bank → Choose…: the open panel's title")
+        panel.message = String(localized: "Choose a SoundFont (.sf2) or DLS (.dls) file to play the MIDI through.",
+                               comment: "Settings → Audio → Sound bank → Choose…: the open panel's message")
         panel.allowedContentTypes = ["sf2", "dls"].compactMap { UTType(filenameExtension: $0) }
         panel.allowsMultipleSelection = false
         panel.canChooseDirectories = false
@@ -59,9 +60,9 @@ extension AppModel {
             return
         }
 
-        showError("Could not load the sound bank.",
-                  "\"\(fileName)\" could not be loaded as a SoundFont (.sf2) or DLS (.dls) file. "
-                      + "NeuralSheet is using the system's General MIDI sounds instead.")
+        showError(String(localized: "Could not load the sound bank.", comment: "Alert title: a sound bank file was refused"),
+                  String(localized: "\"\(fileName)\" could not be loaded as a SoundFont (.sf2) or DLS (.dls) file. NeuralSheet is using the system's General MIDI sounds instead.",
+                         comment: "Alert body: a sound bank file was refused"))
     }
 
     /// The failure a launch (or a window-less Settings change) could not show yet.

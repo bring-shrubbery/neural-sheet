@@ -696,9 +696,8 @@ import UniformTypeIdentifiers
     /// with nothing loaded there is nothing to be specific about, so it names the action only.
     var transcribeLabel: String {
         switch state == .audioLoaded ? selectedGroups.count : 0 {
-        case 0: "Transcribe"
-        case 1: "Transcribe 1 instrument"
-        case let n: "Transcribe \(n) instruments"
+        case 0: String(localized: "Transcribe", comment: "The roll's call to action with no instruments chosen")
+        case let n: String(localized: "Transcribe \(n) instruments", comment: "The roll's call to action, with how many instruments are chosen")
         }
     }
 
@@ -780,7 +779,7 @@ import UniformTypeIdentifiers
             return
         } catch {
             clearNow()
-            showError("Error", "File creation for recording failed.")
+            showError(AppModel.errorTitle, String(localized: "File creation for recording failed.", comment: "Alert body: the recording file could not be made"))
             return
         }
 
@@ -816,9 +815,9 @@ import UniformTypeIdentifiers
     private func presentRecordingFailure(_ error: Recorder.RecordError) {
         switch error {
         case .fileCreation:
-            showError("Error", "File creation for recording failed.")
+            showError(AppModel.errorTitle, String(localized: "File creation for recording failed.", comment: "Alert body: the recording file could not be made"))
         case .readBack, .writeFailed:
-            showError("Could not load the recorded audio sample.", "")
+            showError(String(localized: "Could not load the recorded audio sample.", comment: "Alert title: a finished take could not be read back"), "")
         case .permissionDenied:
             presentMicrophoneDenied()
         }
@@ -826,9 +825,9 @@ import UniformTypeIdentifiers
 
     func presentMicrophoneDenied() {
         showError(
-            "Error",
-            "Microphone access has not been granted. Allow NeuralSheet to use the microphone in "
-                + "System Settings › Privacy & Security › Microphone.")
+            AppModel.errorTitle,
+            String(localized: "Microphone access has not been granted. Allow NeuralSheet to use the microphone in System Settings › Privacy & Security › Microphone.",
+                   comment: "Alert body: recording without the microphone permission"))
     }
 
     // MARK: - Loading
@@ -843,12 +842,13 @@ import UniformTypeIdentifiers
         // Before anything is cleared: the C++ drop target refuses an unknown extension ahead of
         // `onFileDrop`, so a stray .txt on a finished transcription costs nothing.
         guard AudioFileLoader.acceptedExtensions.contains(url.pathExtension.lowercased()) else {
-            showError("Could not load the file.",
-                      "Check your file format (Accepted formats: \(AudioFileLoader.acceptedFormatsList)).")
+            showError(String(localized: "Could not load the file.", comment: "Alert title: a dropped or opened file could not be read"),
+                      AppModel.checkFormatMessage)
             return
         }
 
-        confirmDiscardingEdits(action: "Loading another file") { [weak self] in
+        confirmDiscardingEdits(String(localized: "The transcription has been edited. Loading another file will throw the edits away.",
+                                      comment: "Alert body: loading a file over an edited transcription")) { [weak self] in
             guard let self else { return }
 
             clearNow()
@@ -879,8 +879,8 @@ import UniformTypeIdentifiers
     /// Every failure after the clear, the video path's included. The list is the loader's own
     /// (input formats design §2); NeuralNote's message hard-coded the five formats it had.
     func presentLoadFailure() {
-        showError("Could not load the audio file.",
-                  "Check your file format (Accepted formats: \(AudioFileLoader.acceptedFormatsList)).")
+        showError(String(localized: "Could not load the audio file.", comment: "Alert title: an audio file could not be decoded"),
+                  AppModel.checkFormatMessage)
     }
 
     /// Hands a take to the engine and moves to `audioLoaded`. The pipeline's and the project's
@@ -902,7 +902,8 @@ import UniformTypeIdentifiers
     func clear() {
         guard !jobActive, regionJob == nil, importJob == nil else { return }
 
-        confirmDiscardingEdits(action: "Clearing") { [weak self] in
+        confirmDiscardingEdits(String(localized: "The transcription has been edited. Clearing will throw the edits away.",
+                                      comment: "Alert body: clearing an edited transcription")) { [weak self] in
             self?.clearNow()
         }
     }
@@ -949,7 +950,8 @@ import UniformTypeIdentifiers
     func clearTranscription() {
         guard !jobActive, regionJob == nil else { return }
 
-        confirmDiscardingEdits(action: "Clearing") { [weak self] in
+        confirmDiscardingEdits(String(localized: "The transcription has been edited. Clearing will throw the edits away.",
+                                      comment: "Alert body: clearing an edited transcription")) { [weak self] in
             // The clear is how a take is transcribed again: the next run saves these as
             // "Before Transcribe" (versions design §2).
             self?.keepNotesForNextRun()
@@ -1110,7 +1112,7 @@ import UniformTypeIdentifiers
     /// that refused is one dialog, an output that then would not start is the other.
     func reportDeviceSwitch() {
         if let status = engine.lastDeviceError {
-            showError("Audio device could not be used", "CoreAudio error \(PlaybackEngine.describe(status)).")
+            showError(AppModel.deviceErrorTitle, AppModel.coreAudioError(PlaybackEngine.describe(status)))
         } else if !engine.isRunning, engine.lastStartError != nil {
             presentAudioStartFailure()
         }
@@ -1139,9 +1141,9 @@ import UniformTypeIdentifiers
         guard presentError != nil else { return }
 
         let detail = engine.lastStartError.map { PlaybackEngine.describe($0) + "." }
-            ?? "The audio output did not start."
+            ?? String(localized: "The audio output did not start.", comment: "Alert body: the output device would not start, with no error to say why")
 
-        showError("Audio could not start", detail)
+        showError(String(localized: "Audio could not start", comment: "Alert title: the audio output would not start"), detail)
     }
 
     private func syncTransport() {
@@ -1307,8 +1309,8 @@ import UniformTypeIdentifiers
 
         let panel = NSSavePanel()
         // `message` is what the modern panel shows; `title` is kept for the accessibility name.
-        panel.title = "Export MIDI"
-        panel.message = "Export MIDI"
+        panel.title = String(localized: "Export MIDI", comment: "File → Export MIDI…'s save panel")
+        panel.message = String(localized: "Export MIDI", comment: "File → Export MIDI…'s save panel")
         panel.directoryURL = paths.musicFolder
         panel.nameFieldStringValue = midiExportFileName()
         panel.allowedContentTypes = [.midi]
@@ -1319,7 +1321,7 @@ import UniformTypeIdentifiers
         do {
             try data.write(to: url, options: .atomic)
         } catch {
-            showError("Error", "Could not write the MIDI file.")
+            showError(AppModel.errorTitle, String(localized: "Could not write the MIDI file.", comment: "Alert body: File → Export MIDI… failed"))
         }
     }
 
@@ -1348,8 +1350,8 @@ import UniformTypeIdentifiers
         guard let data = musicXMLData() else { return }
 
         let panel = NSSavePanel()
-        panel.title = "Export MusicXML"
-        panel.message = "Export MusicXML"
+        panel.title = String(localized: "Export MusicXML", comment: "File → Export MusicXML…'s save panel")
+        panel.message = String(localized: "Export MusicXML", comment: "File → Export MusicXML…'s save panel")
         panel.directoryURL = paths.musicFolder
         panel.nameFieldStringValue = musicXMLExportFileName()
         panel.allowedContentTypes = [UTType(filenameExtension: "musicxml", conformingTo: .xml) ?? .xml]
@@ -1360,7 +1362,7 @@ import UniformTypeIdentifiers
         do {
             try data.write(to: url, options: .atomic)
         } catch {
-            showError("Error", "Could not write the MusicXML file.")
+            showError(AppModel.errorTitle, String(localized: "Could not write the MusicXML file.", comment: "Alert body: File → Export MusicXML… failed"))
         }
     }
 

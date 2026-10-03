@@ -109,7 +109,8 @@ extension AppModel {
             stemsJob = nil
             // The main run's failure path, with the separation's own words: the separation
             // never reached the engine, so there is no `EngineError` to carry them.
-            failRun(reason: "the stems could not be separated: \(failure.message)")
+            failRun(reason: String(localized: "the stems could not be separated: \(failure.message)",
+                                   comment: "The reason in a failed transcription's alert, after \"could not be loaded or run:\""))
         }
     }
 

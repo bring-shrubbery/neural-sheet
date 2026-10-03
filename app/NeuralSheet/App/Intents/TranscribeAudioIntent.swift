@@ -99,7 +99,9 @@ nonisolated struct IntentFailure: Error, CustomLocalizedStringResourceConvertibl
         self.message = message
     }
 
-    var localizedStringResource: LocalizedStringResource { "\(message)" }
+    /// Already in the user's language (`HeadlessTranscription.Failure.message`): handed over as
+    /// it is, not as a key.
+    var localizedStringResource: LocalizedStringResource { LocalizedStringResource(stringLiteral: message) }
 }
 
 /// Where an action works: the files handed in, copied out when they come as data, and the folder

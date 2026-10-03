@@ -10,7 +10,7 @@ extension AppModel {
 
     /// The window title: the file's display name, or "Untitled".
     var projectTitle: String {
-        projectURL?.deletingPathExtension().lastPathComponent ?? "Untitled"
+        projectURL?.deletingPathExtension().lastPathComponent ?? AppModel.untitled
     }
 
     /// New, Open, Revert and Close: not while recording or transcribing.
@@ -190,10 +190,10 @@ extension AppModel {
 
         let panel = NSSavePanel()
         // `message` is what the modern panel shows; `title` is kept for the accessibility name.
-        panel.title = "Save Project"
-        panel.message = "Save Project"
+        panel.title = String(localized: "Save Project", comment: "File → Save As…'s save panel")
+        panel.message = String(localized: "Save Project", comment: "File → Save As…'s save panel")
         panel.directoryURL = projectURL?.deletingLastPathComponent() ?? paths.musicFolder
-        panel.nameFieldStringValue = projectURL != nil ? projectTitle : (droppedFileName ?? "Untitled")
+        panel.nameFieldStringValue = projectURL != nil ? projectTitle : (droppedFileName ?? AppModel.untitled)
         panel.allowedContentTypes = [.neuralSheetProject]
         panel.canCreateDirectories = true
 
@@ -221,7 +221,7 @@ extension AppModel {
         do {
             try package.write(to: url, audioSource: audioSource)
         } catch {
-            showError("Could not save the project.", AppModel.describe(error))
+            showError(AppModel.saveFailedTitle, AppModel.describe(error))
             return false
         }
 
@@ -258,13 +258,13 @@ extension AppModel {
             : (source.sourcePath?.lastPathComponent ?? ProjectPackage.recordingFileName)
 
         guard let path = source.sourcePath else {
-            showError("Could not save the project.", "The audio has no file to copy.")
+            showError(AppModel.saveFailedTitle, String(localized: "The audio has no file to copy.", comment: "Alert body: saving a project whose take has no file"))
             return nil
         }
 
         guard manager.fileExists(atPath: path.path) else {
-            showError("Could not save the project.",
-                      "The project's audio file is no longer where it was saved.")
+            showError(AppModel.saveFailedTitle,
+                      String(localized: "The project's audio file is no longer where it was saved.", comment: "Alert body: saving a project whose audio moved"))
             return nil
         }
 
@@ -351,7 +351,7 @@ extension AppModel {
     /// description otherwise.
     static func describe(_ error: Error) -> String {
         if error is AudioFileLoader.LoadError {
-            return "The project's audio file could not be decoded."
+            return String(localized: "The project's audio file could not be decoded.", comment: "Alert body: opening a project")
         }
 
         guard let error = error as? ProjectError else {
@@ -360,15 +360,15 @@ extension AppModel {
 
         switch error {
         case .notFound:
-            return "The project file could not be found."
+            return String(localized: "The project file could not be found.", comment: "Alert body: opening a project")
         case .notAPackage:
-            return "The file is not a NeuralSheet project."
+            return String(localized: "The file is not a NeuralSheet project.", comment: "Alert body: opening a project")
         case let .unreadable(reason):
-            return "The project file could not be read: \(reason)"
+            return String(localized: "The project file could not be read: \(reason)", comment: "Alert body: opening a project; the reason is the system's")
         case .newerVersion:
-            return "The project was saved by a newer version of NeuralSheet."
+            return String(localized: "The project was saved by a newer version of NeuralSheet.", comment: "Alert body: opening a project")
         case .missingAudio:
-            return "The project's audio file is missing."
+            return String(localized: "The project's audio file is missing.", comment: "Alert body: opening a project")
         case let .couldNotWrite(reason):
             return reason
         }

@@ -74,7 +74,7 @@ extension AppModel {
         let syllables = LyricSplitter.syllables(from: NSPasteboard.general.string(forType: .string) ?? "")
 
         guard !syllables.isEmpty else {
-            showError("Could not paste lyrics.", "The clipboard holds no text.")
+            showError(Self.pasteLyricsFailedTitle, String(localized: "The clipboard holds no text.", comment: "Alert body: Paste Lyrics… with no text"))
             return
         }
 
@@ -83,7 +83,8 @@ extension AppModel {
             : document.notes.filter { editor.selection.contains($0.id) }
 
         guard !targets.isEmpty else {
-            showError("Could not paste lyrics.", "The instrument has no notes; select the notes the words go on.")
+            showError(Self.pasteLyricsFailedTitle, String(localized: "The instrument has no notes; select the notes the words go on.",
+                                                          comment: "Alert body: Paste Lyrics… with nowhere to put them"))
             return
         }
 
@@ -92,7 +93,12 @@ extension AppModel {
         commit(batch)
 
         if leftOver > 0 {
-            showError("Paste Lyrics", "\(leftOver) \(leftOver == 1 ? "syllable" : "syllables") did not fit; select more notes.")
+            showError(String(localized: "Paste Lyrics", comment: "Alert title: Paste Lyrics… left words over"),
+                      String(localized: "\(leftOver) syllables did not fit; select more notes.", comment: "Alert body: how many syllables were left over"))
         }
+    }
+
+    private static var pasteLyricsFailedTitle: String {
+        String(localized: "Could not paste lyrics.", comment: "Alert title: Edit → Paste Lyrics… failed")
     }
 }

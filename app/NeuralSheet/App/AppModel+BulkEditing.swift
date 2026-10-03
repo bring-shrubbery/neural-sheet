@@ -30,7 +30,7 @@ extension AppModel {
 
         let ids = selectionOrAll(in: document).filter { id in document.note(id).map { !$0.note.isDrum } ?? false }
         var batch = document.move(ids, deltaSeconds: 0, deltaSemitones: semitones)
-        batch.title = "Transpose"
+        batch.title = String(localized: "Transpose", comment: "Undo title: notes moved up or down")
         commit(batch)
     }
 
@@ -38,8 +38,10 @@ extension AppModel {
     func transposeByInterval() {
         guard canBulkEdit, let presentNumber else { return }
 
-        presentNumber("Transpose by Interval", "Semitones to move the notes by:", -24...24,
-                      lastTransposeSemitones, "semitones") { [weak self] semitones in
+        presentNumber(String(localized: "Transpose by Interval", comment: "Edit → Transpose → By Interval…: the alert's title"),
+                      String(localized: "Semitones to move the notes by:", comment: "Edit → Transpose → By Interval…: the alert's question"),
+                      -24...24, lastTransposeSemitones,
+                      String(localized: "semitones", comment: "Edit → Transpose → By Interval…: the unit after the field")) { [weak self] semitones in
             guard let self else { return }
 
             lastTransposeSemitones = semitones
@@ -53,8 +55,9 @@ extension AppModel {
     func scaleVelocityFromPrompt() {
         guard canBulkEdit, let presentNumber else { return }
 
-        presentNumber("Scale Velocity", "Percentage to scale each velocity by:", 10...200,
-                      lastVelocityPercent, "%") { [weak self] percent in
+        presentNumber(String(localized: "Scale Velocity", comment: "Edit → Velocity → Scale…: the alert's title"),
+                      String(localized: "Percentage to scale each velocity by:", comment: "Edit → Velocity → Scale…: the alert's question"),
+                      10...200, lastVelocityPercent, "%") { [weak self] percent in
             guard let self else { return }
 
             lastVelocityPercent = percent
@@ -69,7 +72,7 @@ extension AppModel {
         _ = dragCanceller?()
 
         let factor = Double(percent) / 100
-        commit(document.setVelocities(selectionOrAll(in: document), title: "Scale Velocity") {
+        commit(document.setVelocities(selectionOrAll(in: document), title: String(localized: "Scale Velocity", comment: "Undo title: velocities scaled")) {
             Int((Double($0) * factor).rounded())
         })
     }
@@ -87,7 +90,7 @@ extension AppModel {
         let velocities = OnsetLoudness.velocities(forOnsets: targets.map(\.note.startTime), mono16k: source.mono16k)
         let byID = Dictionary(uniqueKeysWithValues: zip(targets.map(\.id), velocities))
 
-        commit(document.setVelocities(byID, title: "Velocity from Audio"))
+        commit(document.setVelocities(byID, title: String(localized: "Velocity from Audio", comment: "Undo title: velocities set from the audio's loudness")))
     }
 
     // MARK: - Lengths

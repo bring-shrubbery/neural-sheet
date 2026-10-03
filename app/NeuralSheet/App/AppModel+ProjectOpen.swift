@@ -12,8 +12,8 @@ extension AppModel {
         guard canChangeProject, importJob == nil else { return }
 
         let panel = NSOpenPanel()
-        panel.title = "Open Project"
-        panel.message = "Open Project"
+        panel.title = String(localized: "Open Project", comment: "File → Open…'s open panel")
+        panel.message = String(localized: "Open Project", comment: "File → Open…'s open panel")
         panel.allowedContentTypes = [.neuralSheetProject]
         panel.canChooseDirectories = false
         panel.allowsMultipleSelection = false
@@ -48,7 +48,7 @@ extension AppModel {
                                                  namedAfterFile: package.state.audioDisplayName != nil)
             }
         } catch {
-            showError("Could not open the project.", AppModel.describe(error))
+            showError(String(localized: "Could not open the project.", comment: "Alert title: File → Open… failed"), AppModel.describe(error))
             return
         }
 
@@ -142,8 +142,9 @@ extension AppModel {
             // dot shows, and Close (or the next Save) reviews rather than silently overwriting the
             // file with the notes gone.
             showError(
-                "Could not load the project's transcription.",
-                "The notes in the file do not match its audio, or could not be read, and were left out. Saving the project will remove them from the file.")
+                String(localized: "Could not load the project's transcription.", comment: "Alert title: a project's notes could not be read"),
+                String(localized: "The notes in the file do not match its audio, or could not be read, and were left out. Saving the project will remove them from the file.",
+                       comment: "Alert body: a project's notes could not be read"))
         } else {
             markProjectSaved(audioFileName: saved.audioFileName)
         }

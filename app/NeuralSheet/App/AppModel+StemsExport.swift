@@ -27,7 +27,9 @@ extension AppModel {
     }
 
     /// The message every failure of an audio export shows (issue #22, requirement 7).
-    static let audioWriteFailureTitle = "Could not write the audio file."
+    static var audioWriteFailureTitle: String {
+        String(localized: "Could not write the audio file.", comment: "Alert title: File → Export Audio… or Export Stems… failed")
+    }
 
     /// A take, nothing running over it, and stems to write: kept ones, or the model to make them.
     var canExportStems: Bool {
@@ -44,7 +46,9 @@ extension AppModel {
     var stemsExportCaption: String? {
         guard let stemsExport else { return nil }
 
-        return stemsExport.phase == .separating ? "SEPARATING" : "EXPORTING"
+        return stemsExport.phase == .separating
+            ? String(localized: "SEPARATING", comment: "Status bar: the caption while the stems are separated")
+            : String(localized: "EXPORTING", comment: "Status bar: the caption while Export Stems… writes the files")
     }
 
     // MARK: - The command
@@ -55,9 +59,9 @@ extension AppModel {
         guard canExportStems else { return }
 
         let panel = NSOpenPanel()
-        panel.title = "Export Stems"
-        panel.message = "Export Stems"
-        panel.prompt = "Export"
+        panel.title = String(localized: "Export Stems", comment: "File → Export Stems…'s folder panel")
+        panel.message = String(localized: "Export Stems", comment: "File → Export Stems…'s folder panel")
+        panel.prompt = String(localized: "Export", comment: "File → Export Stems…'s folder panel: the button")
         panel.directoryURL = paths.musicFolder
         panel.canChooseDirectories = true
         panel.canChooseFiles = false
@@ -101,7 +105,7 @@ extension AppModel {
 
         // A cancelled separation's thread runs on until the library is done with it.
         guard !separator.isRunning else {
-            showError(AppModel.audioWriteFailureTitle, "A separation is still finishing. Try again in a moment.")
+            showError(AppModel.audioWriteFailureTitle, String(localized: "A separation is still finishing. Try again in a moment.", comment: "Alert body: Export Stems… while a separation ends"))
             return
         }
 
@@ -143,7 +147,7 @@ extension AppModel {
         switch result {
         case let .success(stems):
             guard let folder = stems.keptFolder else {
-                showError(AppModel.audioWriteFailureTitle, "The separated stems could not be written to disk.")
+                showError(AppModel.audioWriteFailureTitle, String(localized: "The separated stems could not be written to disk.", comment: "Alert body: Export Stems… failed to write"))
                 return
             }
 
@@ -151,7 +155,8 @@ extension AppModel {
             writeStems(from: folder, to: job.destination)
 
         case let .failure(failure):
-            showError(AppModel.audioWriteFailureTitle, "The stems could not be separated: \(failure.message).")
+            showError(AppModel.audioWriteFailureTitle, String(localized: "The stems could not be separated: \(failure.message).",
+                                                             comment: "Alert body: Export Stems… could not separate; the reason follows"))
         }
     }
 

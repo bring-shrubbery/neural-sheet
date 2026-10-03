@@ -32,7 +32,7 @@ extension AppModel {
     /// the Transcription, whose run time is not kept) and a note count. Cheap: no notes are
     /// copied or merged.
     var versionRows: [VersionRow] {
-        [VersionRow(id: NoteVersion.transcriptionID, name: NoteVersion.transcriptionName, date: nil,
+        [VersionRow(id: NoteVersion.transcriptionID, name: CoreNames.localized(NoteVersion.transcriptionName), date: nil,
                     noteCount: transcription.rawNotes.count)]
             + versions.map { VersionRow(id: $0.id, name: $0.name, date: $0.date, noteCount: $0.notes.count) }
     }
@@ -46,7 +46,9 @@ extension AppModel {
         var isTranscription: Bool { id == NoteVersion.transcriptionID }
 
         /// "small — 412 notes", the menu item's title (versions design §2).
-        var menuTitle: String { "\(name) — \(noteCount) \(noteCount == 1 ? "note" : "notes")" }
+        var menuTitle: String {
+            String(localized: "\(name) — \(noteCount) notes", comment: "Edit → Versions: a version and its note count, e.g. \"Version 2 — 412 notes\"")
+        }
     }
 
     /// The version with `id`, the Transcription made on demand.
@@ -64,8 +66,8 @@ extension AppModel {
         guard canUseVersions, let document, let presentText else { return }
 
         let count = document.notes.count
-        presentText("Save Version",
-                    "Save the current \(count) \(count == 1 ? "note" : "notes") as a version named:",
+        presentText(String(localized: "Save Version", comment: "Edit → Versions → Save Version…: the alert's title"),
+                    String(localized: "Save the current \(count) notes as a version named:", comment: "Edit → Versions → Save Version…: the alert's question"),
                     defaultVersionName()) { [weak self] name in
             self?.saveVersion(named: name)
         }
@@ -73,7 +75,10 @@ extension AppModel {
 
     /// "Version 3 — 3 Oct 2026 at 14:02": the next number after the versions there are, and now.
     func defaultVersionName(date: Date = Date()) -> String {
-        "Version \(versions.count + 1) — " + DateFormatter.localizedString(from: date, dateStyle: .medium, timeStyle: .short)
+        let number = versions.count + 1
+        let when = DateFormatter.localizedString(from: date, dateStyle: .medium, timeStyle: .short)
+
+        return String(localized: "Version \(number) — \(when)", comment: "A version's default name, its number and when it was saved")
     }
 
     /// The document's notes as a new version, last in the list. A blank name takes the default.
@@ -95,7 +100,8 @@ extension AppModel {
         guard let notes, !notes.isEmpty else { return }
 
         let time = DateFormatter.localizedString(from: Date(), dateStyle: .none, timeStyle: .short)
-        versions.append(NoteVersion(name: "Before \(run) — \(time)", notes: notes))
+        versions.append(NoteVersion(name: String(localized: "Before \(run) — \(time)", comment: "A version saved before a run, e.g. \"Before Transcribe — 14:02\""),
+                                    notes: notes))
     }
 
     /// The toolbar's clear, over a document: its notes are kept aside for the run that follows.
@@ -157,7 +163,7 @@ extension AppModel {
 
         _ = dragCanceller?()
 
-        let batch = document.replaceAll(with: version.notes, title: "Restore \(version.name)")
+        let batch = document.replaceAll(with: version.notes, title: String(localized: "Restore \(version.name)", comment: "Undo title: a version restored"))
         replaceDocumentAndCommit(document, batch)
     }
 
@@ -193,7 +199,7 @@ extension AppModel {
         if let comparedVersion, let document {
             let result = NoteMatcher.unmatched(current: document.notes, against: comparedVersion.notes)
             summary = VersionComparisonSummary(added: result.added.count, missing: result.missing.count,
-                                               name: comparedVersion.name)
+                                               name: CoreNames.localized(comparedVersion.name))
         }
 
         if summary != comparisonSummary {

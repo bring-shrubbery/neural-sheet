@@ -122,8 +122,23 @@ extension AppModel {
 
     var canUndo: Bool { canEdit && (document?.canUndo ?? false) }
     var canRedo: Bool { canEdit && (document?.canRedo ?? false) }
-    var undoMenuTitle: String { document?.undoTitle.map { "Undo \($0)" } ?? "Undo" }
-    var redoMenuTitle: String { document?.redoTitle.map { "Redo \($0)" } ?? "Redo" }
+    /// "Undo Move Note" in the user's language: the edit's title is the package's English for
+    /// its own commands, looked up in the Core table, or already localized by the app's.
+    var undoMenuTitle: String {
+        guard let title = document?.undoTitle.map(CoreNames.localized) else {
+            return String(localized: "Undo", comment: "Edit menu: undo with nothing to undo")
+        }
+
+        return String(localized: "Undo \(title)", comment: "Edit menu: undo the named edit, e.g. \"Undo Move Note\"")
+    }
+
+    var redoMenuTitle: String {
+        guard let title = document?.redoTitle.map(CoreNames.localized) else {
+            return String(localized: "Redo", comment: "Edit menu: redo with nothing to redo")
+        }
+
+        return String(localized: "Redo \(title)", comment: "Edit menu: redo the named edit, e.g. \"Redo Move Note\"")
+    }
 
     // Undo, redo and select-all are guarded on the workspace here as well as at the menu, since
     // the menu items stay enabled whatever the tab (their routing is decided when chosen).
@@ -150,7 +165,8 @@ extension AppModel {
     func revertToTranscription() {
         guard canEdit, document != nil, hasEdits else { return }
 
-        confirmDiscardingEdits(action: "Reverting to the transcription") { [weak self] in
+        confirmDiscardingEdits(String(localized: "The transcription has been edited. Reverting to the transcription will throw the edits away.",
+                                      comment: "Alert body: Edit → Revert to Transcription… over edits")) { [weak self] in
             guard let self else { return }
 
             _ = dragCanceller?()
@@ -159,15 +175,17 @@ extension AppModel {
     }
 
     /// Runs `proceed` at once when there is nothing to lose, otherwise after the user agrees.
-    func confirmDiscardingEdits(action: String, proceed: @escaping () -> Void) {
+    /// `message` is the whole sentence naming what will throw the edits away, so it translates
+    /// as one ("The transcription has been edited. Clearing will throw the edits away.").
+    func confirmDiscardingEdits(_ message: String, proceed: @escaping () -> Void) {
         guard hasEdits, let presentConfirm else {
             proceed()
             return
         }
 
-        presentConfirm("Discard your edits?",
-                       "The transcription has been edited. \(action) will throw the edits away.",
-                       "Discard") { confirmed in
+        presentConfirm(String(localized: "Discard your edits?", comment: "Alert title: an action would lose the edits to the transcription"),
+                       message,
+                       String(localized: "Discard", comment: "Alert button: go ahead and lose the edits")) { confirmed in
             if confirmed {
                 proceed()
             }

@@ -26,8 +26,8 @@ extension AppModel {
         guard canImportMIDI else { return }
 
         let panel = NSOpenPanel()
-        panel.title = "Import MIDI"
-        panel.message = "Import MIDI"
+        panel.title = String(localized: "Import MIDI", comment: "File → Import MIDI…'s open panel")
+        panel.message = String(localized: "Import MIDI", comment: "File → Import MIDI…'s open panel")
         panel.allowedContentTypes = [.midi]
         panel.canChooseDirectories = false
         panel.allowsMultipleSelection = false
@@ -43,7 +43,8 @@ extension AppModel {
     func importMIDI(url: URL) {
         guard state == .audioLoaded || state == .populated else {
             if state == .empty, importJob == nil {
-                showError(AppModel.midiImportFailedTitle, "Load or record audio first, then import a MIDI file over it.")
+                showError(AppModel.midiImportFailedTitle, String(localized: "Load or record audio first, then import a MIDI file over it.",
+                                                                     comment: "Alert body: a MIDI file dropped with no take"))
             }
             return
         }
@@ -56,15 +57,16 @@ extension AppModel {
             file = try MidiFileReader.read(url: url)
         } catch MidiFileReader.Error.unsupportedFormat(let format) {
             showError(AppModel.midiImportFailedTitle,
-                      "The file is a format \(format) MIDI file. NeuralSheet reads formats 0 and 1.")
+                      String(localized: "The file is a format \(format) MIDI file. NeuralSheet reads formats 0 and 1.",
+                             comment: "Alert body: a type 2 MIDI file"))
             return
         } catch {
-            showError(AppModel.midiImportFailedTitle, "The file is not a MIDI file, or it is damaged.")
+            showError(AppModel.midiImportFailedTitle, String(localized: "The file is not a MIDI file, or it is damaged.", comment: "Alert body: an unreadable MIDI file"))
             return
         }
 
         guard !file.allNotes.isEmpty else {
-            showError(AppModel.midiImportFailedTitle, "The file has no notes.")
+            showError(AppModel.midiImportFailedTitle, String(localized: "The file has no notes.", comment: "Alert body: a MIDI file without notes"))
             return
         }
 
@@ -83,7 +85,9 @@ extension AppModel {
         }
     }
 
-    private static let midiImportFailedTitle = "Could not import the MIDI file."
+    private static var midiImportFailedTitle: String {
+        String(localized: "Could not import the MIDI file.", comment: "Alert title: File → Import MIDI… failed")
+    }
 
     // MARK: - Landings
 
@@ -99,7 +103,7 @@ extension AppModel {
         resetMixerSettingsForLaunch()
         // Notes a clear set aside for a run are kept here too, so a file over a cleared take
         // loses no edits either (versions design §2).
-        saveVersionBeforeRun("Import MIDI")
+        saveVersionBeforeRun(String(localized: "Import MIDI", comment: "A version's name: \"Before Import MIDI — 14:02\""))
         landTranscription(file.allNotes)
     }
 

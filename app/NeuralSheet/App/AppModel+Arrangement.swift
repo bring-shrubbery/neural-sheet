@@ -177,13 +177,13 @@ extension AppModel {
 
         // A PDF context that cannot be made is as much a failure as a file that cannot be written.
         guard let data = ScorePDF.data(document: scoreDocument(), arrangement: arrangement, takeName: droppedFileName) else {
-            showError("Error", "Could not write the PDF file.")
+            showError(AppModel.errorTitle, String(localized: "Could not write the PDF file.", comment: "Alert body: File → Export PDF… failed"))
             return
         }
 
         let panel = NSSavePanel()
-        panel.title = "Export PDF"
-        panel.message = "Export PDF"
+        panel.title = String(localized: "Export PDF", comment: "File → Export PDF…'s save panel")
+        panel.message = String(localized: "Export PDF", comment: "File → Export PDF…'s save panel")
         panel.directoryURL = paths.musicFolder
         panel.nameFieldStringValue = PDFExport.fileName(sourceFileNameWithoutExtension: droppedFileName)
         panel.allowedContentTypes = [.pdf]
@@ -194,7 +194,7 @@ extension AppModel {
         do {
             try data.write(to: url, options: .atomic)
         } catch {
-            showError("Error", "Could not write the PDF file.")
+            showError(AppModel.errorTitle, String(localized: "Could not write the PDF file.", comment: "Alert body: File → Export PDF… failed"))
         }
     }
 }

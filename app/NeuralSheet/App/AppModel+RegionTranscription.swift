@@ -128,11 +128,7 @@ extension AppModel {
         case let .failure(error):
             let reason = AppModel.failureReason(error, modelPath: job.modelPath)
 
-            showError(
-                "Transcription failed.",
-                reason.isEmpty
-                    ? "The transcription model could not be loaded or run."
-                    : "The transcription model could not be loaded or run: \(reason).")
+            showError(AppModel.transcriptionFailedTitle, AppModel.transcriptionFailedBody(reason))
         }
     }
 

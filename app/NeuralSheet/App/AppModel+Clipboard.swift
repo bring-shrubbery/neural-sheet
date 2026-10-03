@@ -35,7 +35,9 @@ extension AppModel {
         guard copySelection(), let document else { return }
 
         var batch = document.delete(editor.selection)
-        batch.title = editor.selection.count == 1 ? "Cut Note" : "Cut Notes"
+        batch.title = editor.selection.count == 1
+            ? String(localized: "Cut Note", comment: "Undo title: one note cut")
+            : String(localized: "Cut Notes", comment: "Undo title: several notes cut")
         commit(batch)
     }
 

@@ -37,9 +37,10 @@ extension AppModel {
             return
         }
 
-        presentConfirm("Replace the tempo map?",
-                       "Detect replaces the tempo changes and the time signature with what it finds in the take.",
-                       "Replace") { [weak self] confirmed in
+        presentConfirm(String(localized: "Replace the tempo map?", comment: "Alert title: Detect over an edited tempo map"),
+                       String(localized: "Detect replaces the tempo changes and the time signature with what it finds in the take.",
+                              comment: "Alert body: Detect over an edited tempo map"),
+                       String(localized: "Replace", comment: "Alert button: replace the edited tempo map")) { [weak self] confirmed in
             if confirmed {
                 self?.runTempoDetection()
             }
@@ -74,7 +75,8 @@ extension AppModel {
         guard source === analysed else { return }
 
         guard let estimate else {
-            showError("Could not detect a tempo.", "The take is too short or has no clear beat.")
+            showError(String(localized: "Could not detect a tempo.", comment: "Alert title: Detect found no tempo"),
+                      String(localized: "The take is too short or has no clear beat.", comment: "Alert body: Detect found no tempo"))
             return
         }
 

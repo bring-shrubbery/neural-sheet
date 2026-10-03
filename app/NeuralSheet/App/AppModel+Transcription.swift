@@ -59,7 +59,8 @@ extension AppModel {
     func launchTranscription() {
         guard state == .audioLoaded, importJob == nil else { return }
 
-        confirmDiscardingEdits(action: "Transcribing again") { [weak self] in
+        confirmDiscardingEdits(String(localized: "The transcription has been edited. Transcribing again will throw the edits away.",
+                                      comment: "Alert body: transcribing over an edited transcription")) { [weak self] in
             self?.launchTranscriptionNow()
         }
     }
@@ -111,7 +112,9 @@ extension AppModel {
         // times after (stem separation design §5); the same state, staging and drain. The run's
         // name is what its landing calls the version it saves first (versions design §2).
         let stems = settings.separateStems ? modelStore.installedPath(for: .stems) : nil
-        transcription.jobRunName = stems != nil ? "Stems" : "Transcribe"
+        transcription.jobRunName = stems != nil
+            ? String(localized: "Stems", comment: "A version's name: \"Before Stems — 14:02\", saved before a stems run")
+            : String(localized: "Transcribe", comment: "A version's name: \"Before Transcribe — 14:02\", saved before a run")
 
         if let stemsPath = stems {
             launchStemsRun(modelPath: modelPath, stemsPath: stemsPath, source: source)
@@ -221,7 +224,7 @@ extension AppModel {
 
         let modelPath = transcription.jobModelPath
         transcription.jobModelPath = nil
-        let runName = transcription.jobRunName ?? "Transcribe"
+        let runName = transcription.jobRunName ?? String(localized: "Transcribe", comment: "A version's name: \"Before Transcribe — 14:02\", saved before a run")
         transcription.jobRunName = nil
 
         switch result {
@@ -266,11 +269,7 @@ extension AppModel {
 
         clearTranscriptionNow()
 
-        showError(
-            "Transcription failed.",
-            reason.isEmpty
-                ? "The transcription model could not be loaded or run."
-                : "The transcription model could not be loaded or run: \(reason).")
+        showError(AppModel.transcriptionFailedTitle, AppModel.transcriptionFailedBody(reason))
     }
 
     /// The `<reason>` of the failure dialog: the library's own description, except for a checkpoint
@@ -278,8 +277,10 @@ extension AppModel {
     /// Shared with the region run's failure dialog.
     nonisolated static func failureReason(_ error: EngineError, modelPath: URL?) -> String {
         if error.isUnsupportedVersion, let modelPath {
-            return "\(modelPath.lastPathComponent) is for another version of NeuralSheet. "
-                + "Delete it from the models folder, then download it again"
+            let file = modelPath.lastPathComponent
+
+            return String(localized: "\(file) is for another version of NeuralSheet. Delete it from the models folder, then download it again",
+                          comment: "The reason in a failed transcription's alert: the model file is from another release")
         }
 
         // `EngineError.message` rather than the library's `description` directly: only

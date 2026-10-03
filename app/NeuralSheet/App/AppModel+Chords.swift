@@ -21,7 +21,8 @@ extension AppModel {
     func detectChords(reportsNothing: Bool = true) {
         guard canDetectChords else {
             if reportsNothing, document != nil {
-                showError("Could not detect chords.", "The transcription has no melodic notes.")
+                showError(String(localized: "Could not detect chords.", comment: "Alert title: Edit → Detect Chords failed"),
+                          String(localized: "The transcription has no melodic notes.", comment: "Alert body: only drums, so no chords"))
             }
             return
         }
@@ -31,9 +32,10 @@ extension AppModel {
             return
         }
 
-        presentConfirm("Replace the chord symbols?",
-                       "Detect replaces the chord symbols you have edited with what it finds in the notes.",
-                       "Replace") { [weak self] confirmed in
+        presentConfirm(String(localized: "Replace the chord symbols?", comment: "Alert title: Detect Chords over edited chords"),
+                       String(localized: "Detect replaces the chord symbols you have edited with what it finds in the notes.",
+                              comment: "Alert body: Detect Chords over edited chords"),
+                       String(localized: "Replace", comment: "Alert button: replace the edited chords")) { [weak self] confirmed in
             if confirmed {
                 self?.runChordDetection()
             }

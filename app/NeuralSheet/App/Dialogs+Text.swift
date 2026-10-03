@@ -18,8 +18,8 @@ extension Dialogs {
         alert.messageText = title
         alert.informativeText = label
         alert.alertStyle = .informational
-        alert.addButton(withTitle: "OK")
-        alert.addButton(withTitle: "Cancel")
+        alert.addButton(withTitle: String(localized: "OK", comment: "Alert button"))
+        alert.addButton(withTitle: String(localized: "Cancel", comment: "Alert button"))
 
         let field = NSTextField(string: initial)
         field.frame = NSRect(x: 0, y: 0, width: 280, height: 24)
