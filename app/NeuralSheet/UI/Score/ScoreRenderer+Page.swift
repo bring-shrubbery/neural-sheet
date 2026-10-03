@@ -1,5 +1,6 @@
-import AppKit
+import CoreGraphics
 import CoreText
+import Foundation
 import NeuralSheetCore
 
 extension ScoreRenderer {

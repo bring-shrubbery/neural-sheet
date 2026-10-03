@@ -1,4 +1,5 @@
-import AppKit
+import CoreGraphics
+import Foundation
 import NeuralSheetCore
 
 /// The score's pages as a PDF (arrangement design §5): one PDF page per laid-out page, the
