@@ -1,3 +1,4 @@
+import AppKit
 import SwiftUI
 
 /// Which of the window's custom controls holds the keyboard through Full Keyboard Access (a11y
@@ -68,3 +69,20 @@ extension View {
             }
     }
 }
+
+/// A timeline or score view the keyboard can focus (a11y design §2): it takes the focus only
+/// while Full Keyboard Access is on -- a click never gives it a ring -- and draws the system
+/// focus ring around what is on screen of it.
+protocol KeyboardFocusableView: NSView {}
+
+extension KeyboardFocusableView {
+    /// Full Keyboard Access is on: Tab may land here.
+    var acceptsKeyboardFocus: Bool { NSApp.isFullKeyboardAccessEnabled }
+
+    /// The ring's shape: the visible part, inset so the ring is not clipped by the band's edge.
+    var focusRingRect: NSRect { visibleRect.insetBy(dx: 3, dy: 3) }
+}
+
+/// A focused view that takes the arrow keys itself, ahead of the Edit tab's nudges: the ruler
+/// steps the playhead, the keyboard scrolls (a11y design §2).
+protocol OwnsArrowKeys: NSView {}

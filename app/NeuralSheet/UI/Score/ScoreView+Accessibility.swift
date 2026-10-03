@@ -8,7 +8,7 @@ import NeuralSheetCore
 ///
 /// The systems are made when VoiceOver first asks and dropped with the layout; a system's notes
 /// only when VoiceOver goes into it.
-extension ScoreView {
+extension ScoreView: KeyboardFocusableView {
     override func isAccessibilityElement() -> Bool { true }
 
     override func accessibilityRole() -> NSAccessibility.Role? { .group }
@@ -134,4 +134,14 @@ extension ScoreView {
 
         return String(localized: "dotted \(name)", comment: "VoiceOver: a dotted note value, e.g. \"dotted quarter\"")
     }
+
+    // MARK: - Keyboard focus
+
+    override var acceptsFirstResponder: Bool { acceptsKeyboardFocus }
+
+    override func drawFocusRingMask() {
+        NSBezierPath(rect: focusRingRect).fill()
+    }
+
+    override var focusRingMaskBounds: NSRect { focusRingRect }
 }

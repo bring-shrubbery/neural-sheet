@@ -30,6 +30,8 @@ import SwiftUI
     private var shownFooterView: AnyView?
     private var monitors: [Any] = []
     private var observers: [NSObjectProtocol] = []
+    /// The window and the responder that had the keyboard before a key panel took it.
+    private var returnFocus: (window: NSWindow, responder: NSResponder?)?
 
     /// A submenu shown from one of this menu's rows: a click inside it is a click inside this
     /// menu, and this menu closing closes it.
@@ -160,6 +162,9 @@ import SwiftUI
         window.addChildWindow(menu, ordered: .above)
 
         if becomesKey {
+            // Where the keyboard goes back to when the panel closes (a11y design §2): while it is
+            // key, Tab cycles inside it and nowhere else.
+            returnFocus = (window, window.firstResponder)
             menu.makeKeyAndOrderFront(nil)
         } else {
             menu.orderFront(nil)
@@ -231,10 +236,25 @@ import SwiftUI
         observers = []
 
         if let panel {
+            let wasKey = panel.isKeyWindow
+
             panel.parent?.removeChildWindow(panel)
             panel.orderOut(nil)
             self.panel = nil
             hosting = nil
+
+            // The keyboard back where it was, so Full Keyboard Access and VoiceOver carry on
+            // from the control that opened the panel. Only from a panel that still had it: one
+            // that lost the key to another window leaves that window alone.
+            if wasKey, let (window, responder) = returnFocus, window.isVisible {
+                window.makeKey()
+
+                if let responder, responder !== window, (responder as? NSView)?.window === window {
+                    window.makeFirstResponder(responder)
+                }
+            }
+
+            returnFocus = nil
             onDismiss?()
         }
     }

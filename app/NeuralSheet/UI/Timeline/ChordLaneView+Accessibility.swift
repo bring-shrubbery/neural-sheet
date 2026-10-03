@@ -4,7 +4,7 @@ import NeuralSheetCore
 /// The chord lane as VoiceOver sees it (a11y design §2): a group of the symbols in the band, each
 /// a button read as its symbol and where it falls ("Am7, bar 3 beat 1") whose press opens its
 /// card, as a click does. Made when VoiceOver asks; dropped when the labels or the band change.
-extension ChordLaneView {
+extension ChordLaneView: KeyboardFocusableView {
     override func isAccessibilityElement() -> Bool { !chords.isEmpty }
 
     override func accessibilityRole() -> NSAccessibility.Role? { .group }
@@ -69,4 +69,14 @@ extension ChordLaneView {
 
         return element
     }
+
+    // MARK: - Keyboard focus
+
+    override var acceptsFirstResponder: Bool { acceptsKeyboardFocus }
+
+    override func drawFocusRingMask() {
+        NSBezierPath(rect: focusRingRect).fill()
+    }
+
+    override var focusRingMaskBounds: NSRect { focusRingRect }
 }

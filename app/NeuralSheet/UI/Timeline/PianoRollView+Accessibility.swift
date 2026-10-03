@@ -26,7 +26,7 @@ import NeuralSheetCore
 /// The elements are made when VoiceOver first asks and kept until the notes or the band change
 /// (`setNotes`, a band slide) -- never per draw. Their frames are asked of the roll live, so a
 /// zoom or a pitch scroll needs no rebuild.
-extension PianoRollView {
+extension PianoRollView: KeyboardFocusableView {
     override func isAccessibilityElement() -> Bool { true }
 
     override func accessibilityRole() -> NSAccessibility.Role? { .group }
@@ -187,4 +187,14 @@ extension PianoRollView {
             },
         ]
     }
+
+    // MARK: - Keyboard focus
+
+    override var acceptsFirstResponder: Bool { acceptsKeyboardFocus }
+
+    override func drawFocusRingMask() {
+        NSBezierPath(rect: focusRingRect).fill()
+    }
+
+    override var focusRingMaskBounds: NSRect { focusRingRect }
 }

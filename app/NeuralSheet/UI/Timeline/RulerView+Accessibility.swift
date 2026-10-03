@@ -6,7 +6,7 @@ import NeuralSheetCore
 /// click there would seek; its tempo and marker flags as buttons inside it that open the ruler's
 /// card, as clicking or right-clicking them does; and VoiceOver's menu key opens the card for the
 /// bar under the playhead, as a right-click there does.
-extension RulerView {
+extension RulerView: KeyboardFocusableView, OwnsArrowKeys {
     override func isAccessibilityElement() -> Bool { true }
 
     override func accessibilityRole() -> NSAccessibility.Role? { .slider }
@@ -122,5 +122,24 @@ extension RulerView {
         }
 
         return element
+    }
+
+    // MARK: - Keyboard focus
+
+    override var acceptsFirstResponder: Bool { acceptsKeyboardFocus }
+
+    override func drawFocusRingMask() {
+        NSBezierPath(rect: focusRingRect).fill()
+    }
+
+    override var focusRingMaskBounds: NSRect { focusRingRect }
+
+    /// Focused, ← and → step the playhead a beat, as VoiceOver's decrement and increment do.
+    override func keyDown(with event: NSEvent) {
+        switch event.specialKey {
+        case .leftArrow?: _ = accessibilityPerformDecrement()
+        case .rightArrow?: _ = accessibilityPerformIncrement()
+        default: super.keyDown(with: event)
+        }
     }
 }

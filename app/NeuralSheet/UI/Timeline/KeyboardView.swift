@@ -4,7 +4,7 @@ import NeuralSheetCore
 /// The key column left of the piano roll (`Keyboard`, a `KeyboardComponentBase` facing right):
 /// white keys with a 1 px gap on their bottom and right edges, black keys with a 1 px bottom gap,
 /// every C labelled, and the whole column blended 40 % toward the gutter while there are no notes.
-final class KeyboardView: NSView {
+final class KeyboardView: NSView, KeyboardFocusableView, OwnsArrowKeys {
     let geometry: TimelineGeometry
 
     /// `Keyboard::setDimmed`: the column falls back while the roll beside it is empty.
@@ -87,6 +87,7 @@ final class KeyboardView: NSView {
 
             ctx.fill(CGRect(x: area.minX, y: area.minY, width: area.width, height: area.height - k), blackColour)
         }
+
     }
 
     override func scrollWheel(with event: NSEvent) {
@@ -152,5 +153,24 @@ final class KeyboardView: NSView {
     override func accessibilityPerformDecrement() -> Bool {
         onAccessibilityScroll?(-12)
         return onAccessibilityScroll != nil
+    }
+
+    // MARK: - Keyboard focus
+
+    override var acceptsFirstResponder: Bool { acceptsKeyboardFocus }
+
+    override func drawFocusRingMask() {
+        NSBezierPath(rect: focusRingRect).fill()
+    }
+
+    override var focusRingMaskBounds: NSRect { focusRingRect }
+
+    /// Focused, ↑ and ↓ scroll the keys an octave, as VoiceOver's increment and decrement do.
+    override func keyDown(with event: NSEvent) {
+        switch event.specialKey {
+        case .upArrow?: _ = accessibilityPerformIncrement()
+        case .downArrow?: _ = accessibilityPerformDecrement()
+        default: super.keyDown(with: event)
+        }
     }
 }

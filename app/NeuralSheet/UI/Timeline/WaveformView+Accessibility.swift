@@ -4,7 +4,7 @@ import NeuralSheetCore
 /// The waveform strip as VoiceOver sees it (a11y design §2): a level indicator whose value is
 /// the level playing now, the master meter's. While nothing is loaded its help says what the
 /// drop zone does.
-extension WaveformView {
+extension WaveformView: KeyboardFocusableView {
     override func isAccessibilityElement() -> Bool { true }
 
     override func accessibilityRole() -> NSAccessibility.Role? { .levelIndicator }
@@ -27,4 +27,14 @@ extension WaveformView {
         return String(localized: "Load an audio file, or drop one here",
                       comment: "VoiceOver: the empty waveform's help, which is where a file can be dropped")
     }
+
+    // MARK: - Keyboard focus
+
+    override var acceptsFirstResponder: Bool { acceptsKeyboardFocus }
+
+    override func drawFocusRingMask() {
+        NSBezierPath(rect: focusRingRect).fill()
+    }
+
+    override var focusRingMaskBounds: NSRect { focusRingRect }
 }
