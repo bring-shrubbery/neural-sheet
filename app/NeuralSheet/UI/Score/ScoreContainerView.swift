@@ -29,6 +29,7 @@ final class ScoreContainerView: NSView {
     private var lastNotes: [NoteEvent] = []
     private var lastGrid = TempoGrid()
     private var lastKey: MusicalKey?
+    private var lastChords: [ChordEvent] = []
     private var lastArrangement = ScoreArrangement()
     private var hasDocument = false
     private var layoutWidth: CGFloat = 0
@@ -76,6 +77,10 @@ final class ScoreContainerView: NSView {
 
         score.onClickPartName = { [weak self] program, windowPoint in
             self?.showPartCard(for: program, at: windowPoint)
+        }
+
+        score.onRightClickChord = { [weak self] index, windowPoint in
+            self?.showChordCard(index: index, at: windowPoint)
         }
     }
 
@@ -133,6 +138,18 @@ final class ScoreContainerView: NSView {
         }
     }
 
+    /// The chord card the Edit tab's lane opens, from a symbol on the score.
+    private func showChordCard(index: Int, at windowPoint: NSPoint) {
+        guard let window, model.chords.indices.contains(index) else { return }
+
+        let card = card
+        let model = model
+
+        card.showPanel(at: window.convertPoint(toScreen: windowPoint), in: window, scale: scale) {
+            ChordCard(model: model, index: index, host: card)
+        }
+    }
+
     private func soundingPitch(program: Int, id: NoteID) -> Int? {
         guard let tab = score.document.parts.first(where: { $0.program == program })?.tab else { return nil }
 
@@ -157,6 +174,7 @@ final class ScoreContainerView: NSView {
             _ = model.notes
             _ = model.editor.grid
             _ = model.editor.key
+            _ = model.editor.chords
             _ = model.arrangement
             _ = model.selectedTabNote
             _ = model.state
@@ -171,7 +189,7 @@ final class ScoreContainerView: NSView {
         }
     }
 
-    /// Rebuilds what changed: the document on the notes, the grid, the key or the arrangement;
+    /// Rebuilds what changed: the document on the notes, the grid, the key, the chords or the arrangement;
     /// the layout on the document or the width; a repaint on the tab selection; the cursor
     /// every time.
     func sync() {
@@ -179,12 +197,15 @@ final class ScoreContainerView: NSView {
         let notes = model.notes
         let grid = model.editor.grid
         let key = model.editor.key
+        let chords = model.editor.chords
         let arrangement = model.arrangement
 
-        if !hasDocument || notes != lastNotes || grid != lastGrid || key != lastKey || arrangement != lastArrangement {
+        if !hasDocument || notes != lastNotes || grid != lastGrid || key != lastKey || chords != lastChords
+            || arrangement != lastArrangement {
             lastNotes = notes
             lastGrid = grid
             lastKey = key
+            lastChords = chords
             lastArrangement = arrangement
             hasDocument = true
             score.arrangement = arrangement

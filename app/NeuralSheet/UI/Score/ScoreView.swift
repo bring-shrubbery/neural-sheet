@@ -38,6 +38,9 @@ final class ScoreView: NSView {
     var onRightClickTabNote: ((TabHit, NSPoint) -> Void)?
     /// A click on a part's name, with the program and the point in the window.
     var onClickPartName: ((Int, NSPoint) -> Void)?
+    /// A right-click on a chord symbol (chord symbols design §2), with its index in the list and
+    /// the point in the window.
+    var onRightClickChord: ((Int, NSPoint) -> Void)?
 
     let cursor = FillView(colour: ScoreRenderer.Style.screen.cursor)
 
@@ -80,6 +83,21 @@ final class ScoreView: NSView {
         hits.first { $0.frame.insetBy(dx: -2, dy: -2).contains(point) }
     }
 
+    /// The chord symbol under `point`, placed as the renderer places it.
+    private func chordHit(at point: NSPoint) -> ChordHit? {
+        guard let layout else { return nil }
+
+        let renderer = ScoreRenderer(document: document, arrangement: arrangement, sp: layout.sp)
+
+        for system in layout.systems where system.frame.insetBy(dx: 0, dy: -8 * layout.sp).contains(point) {
+            if let hit = renderer.chordHits(system).first(where: { $0.frame.insetBy(dx: -2, dy: -2).contains(point) }) {
+                return hit
+            }
+        }
+
+        return nil
+    }
+
     /// The part name under `point`.
     private func nameHit(at point: NSPoint) -> NameHit? {
         nameHits.first { $0.frame.insetBy(dx: -2, dy: -2).contains(point) }
@@ -114,6 +132,8 @@ final class ScoreView: NSView {
 
         if let hit = hit(at: point) {
             onRightClickTabNote?(hit, event.locationInWindow)
+        } else if let chord = chordHit(at: point) {
+            onRightClickChord?(chord.index, event.locationInWindow)
         } else {
             super.rightMouseDown(with: event)
         }

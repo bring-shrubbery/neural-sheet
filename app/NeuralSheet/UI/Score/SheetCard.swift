@@ -3,7 +3,8 @@ import NeuralSheetCore
 import SwiftUI
 
 /// The sheet's title block (arrangement design §6): title, subtitle, composer, arranger and the
-/// copyright footer, then the measure numbers, the part names and the tempo mark as ticks. Every
+/// copyright footer, then the measure numbers, the part names, the tempo mark and the chord
+/// symbols as ticks. Every
 /// change goes to the model as a whole `SheetMetadata`. Shown in the Score toolbar's menu panel
 /// under `Sheet…`, which takes key so the fields can be typed in; the rows are sized so the whole
 /// card fits the panel's list without scrolling.
@@ -55,9 +56,14 @@ struct SheetCard: View {
                 SheetField(text: sheet.copyright, placeholder: "", scale: k) { text in update { $0.copyright = text } }
             }
 
-            tick("Measure numbers", isOn: sheet.showsMeasureNumbers) { update { $0.showsMeasureNumbers.toggle() } }
-            tick("Part names", isOn: sheet.showsPartNames) { update { $0.showsPartNames.toggle() } }
-            tick("Tempo mark", isOn: sheet.showsTempo) { update { $0.showsTempo.toggle() } }
+            // Stacked as a menu's rows are, without the fields' gap, so the fourth (chord symbols
+            // design §2) still fits the panel's list without scrolling.
+            VStack(spacing: 0) {
+                tick("Measure numbers", isOn: sheet.showsMeasureNumbers) { update { $0.showsMeasureNumbers.toggle() } }
+                tick("Part names", isOn: sheet.showsPartNames) { update { $0.showsPartNames.toggle() } }
+                tick("Tempo mark", isOn: sheet.showsTempo) { update { $0.showsTempo.toggle() } }
+                tick("Show chords", isOn: sheet.showsChords) { update { $0.showsChords.toggle() } }
+            }
         }
         .padding(.horizontal, s(MenuMetrics.padX))
         .padding(.vertical, s(Self.padY))
