@@ -38,8 +38,9 @@ final class MobileModel {
 
     // MARK: - The transcription
 
-    /// The editable notes: nil until a transcription exists.
-    private(set) var document: NoteDocument?
+    /// The editable notes: nil until a transcription exists. Written by the installs here and by
+    /// `+Editing`'s commits, nowhere else.
+    var document: NoteDocument?
     /// The model's own output, kept beside the document for Revert to Transcription.
     private(set) var rawNotes: [NoteEvent] = []
     /// The saved versions of the notes, oldest first (versions design §2).
@@ -90,6 +91,16 @@ final class MobileModel {
     /// The message box the screen shows, or nil.
     var alert: MobileAlert?
 
+    // MARK: - Editing (sub-issue F)
+
+    /// The version ghosted behind the roll (versions design §2), or nil. Not saved, as on the Mac.
+    var comparedVersion: NoteVersion?
+    /// True while Detect reads the take's tempo.
+    var isDetecting = false
+    /// True while Track Pitch measures; `pitchJob` is its task.
+    var isTrackingPitch = false
+    @ObservationIgnored var pitchJob: Task<Void, Never>?
+
     @ObservationIgnored let transcriber = TranscriptionEngine()
     @ObservationIgnored let separator = StemSeparator()
     @ObservationIgnored let staging = TranscriptionStaging()
@@ -109,6 +120,10 @@ final class MobileModel {
     /// The document's undo manager, which iOS autosaves by: a new take and a landed run register
     /// with it, so the document is saved (sub-issue F registers the edits).
     @ObservationIgnored weak var undoManager: UndoManager?
+
+    /// Cancels the roll's drag in progress, answering whether there was one: set by the touch
+    /// timeline, called before anything changes the notes under it (the Mac's `dragCanceller`).
+    @ObservationIgnored var dragCanceller: (() -> Bool)?
 
     init(engine: PlaybackEngine = PlaybackEngine()) {
         self.engine = engine
@@ -158,6 +173,8 @@ final class MobileModel {
         document = nil
         rawNotes = []
         versions = []
+        comparedVersion = nil
+        cancelPitchTracking()
 
         if let audio {
             engine.setSource(audio)
@@ -187,6 +204,7 @@ final class MobileModel {
     func installSource(_ audio: SourceAudio) {
         source = audio
         engine.setSource(audio)
+        cancelPitchTracking()
         document = nil
         rawNotes = []
         streamedNotes = []
@@ -199,6 +217,7 @@ final class MobileModel {
     /// Makes the document from the model's own output, as the Mac's `installDocument` does: the
     /// merge is the post-processing every raw note goes through, and the ids start again.
     func installDocument(rawNotes: [NoteEvent]) {
+        cancelPitchTracking()
         self.rawNotes = rawNotes
         document = NoteDocument(events: mergeOverlappingNotesWithSamePitch(rawNotes))
         streamedNotes = []
@@ -209,6 +228,7 @@ final class MobileModel {
     /// While a run streams: its raw notes so far, and what is drawn and played of them. There is
     /// no document until the run lands.
     func streamRawNotes(_ rawNotes: [NoteEvent]) {
+        cancelPitchTracking()
         self.rawNotes = rawNotes
         document = nil
         streamedNotes = TranscriptionRun.streamedNotes(rawNotes)

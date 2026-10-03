@@ -64,8 +64,10 @@ extension MobileModel {
     }
 
     /// The note a tap selected, sounded through its own synth (the Mac's audition on a click).
+    /// Not while the transport runs, where the scheduler's note-offs and the audition's would cut
+    /// each other short, as on the Mac.
     func audition(_ note: NoteEvent) {
-        guard startEngineIfNeeded() else { return }
+        guard !engine.isPlaying, startEngineIfNeeded() else { return }
 
         engine.synthBank.audition(program: note.program, pitch: note.pitch, velocity: note.velocity,
                                   seconds: MobileModel.auditionSeconds(note))
