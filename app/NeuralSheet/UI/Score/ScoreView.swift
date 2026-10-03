@@ -7,14 +7,29 @@ import NeuralSheetCore
 /// part names as drawn kept for the click, and the selected note outlined. Sized by its
 /// container to the layout's height.
 final class ScoreView: NSView {
-    var document = ScoreDocument.empty
-    var arrangement = ScoreArrangement()
+    /// The drawing and the hits as drawn (`+Drawing`), shared with the iPhone and iPad score.
+    private var painter = ScorePainter()
+
+    var document: ScoreDocument {
+        get { painter.document }
+        set { painter.document = newValue }
+    }
+
+    var arrangement: ScoreArrangement {
+        get { painter.arrangement }
+        set { painter.arrangement = newValue }
+    }
+
     /// The take's file name, the title's fallback on the first page's header.
-    var takeName: String?
+    var takeName: String? {
+        get { painter.takeName }
+        set { painter.takeName = newValue }
+    }
+
     var layout: ScoreLayout? {
-        didSet {
-            hitsBySystem = [:]
-            namesBySystem = [:]
+        get { painter.layout }
+        set {
+            painter.layout = newValue
             invalidateAccessibilitySystems()
         }
     }
@@ -22,17 +37,13 @@ final class ScoreView: NSView {
     /// VoiceOver's systems, made when it asks and dropped with the layout (`+Accessibility`).
     var accessibilitySystems: [DrawnElement]?
 
-    /// The tab notes and the part names as drawn, by system: the systems drawn so far with this
-    /// layout, which covers everything a click can land on. Kept per system because a tall view
-    /// is tiled and `draw(_:)` may cover one tile's systems at a time; flattened in system order
-    /// so the first hit found is the same whatever order the tiles were drawn in. In pages mode
-    /// a page is drawn whole and its hits go under its first system's index; a page's systems
-    /// are contiguous, so the order holds.
-    private var hitsBySystem: [Int: [TabHit]] = [:]
-    private var namesBySystem: [Int: [NameHit]] = [:]
-    var hits: [TabHit] { hitsBySystem.keys.sorted().flatMap { hitsBySystem[$0] ?? [] } }
-    var nameHits: [NameHit] { namesBySystem.keys.sorted().flatMap { namesBySystem[$0] ?? [] } }
-    var selectedTabNote: (program: Int, id: NoteID)?
+    var hits: [TabHit] { painter.hits }
+    var nameHits: [NameHit] { painter.nameHits }
+
+    var selectedTabNote: (program: Int, id: NoteID)? {
+        get { painter.selectedTabNote }
+        set { painter.selectedTabNote = newValue }
+    }
 
     /// A click on empty score seeks; the container owns the model.
     var onSeek: ((Int, Double) -> Void)?
@@ -78,29 +89,16 @@ final class ScoreView: NSView {
 
     // MARK: - Clicks
 
-    /// The tab note under `point`, with a little slack around its number.
     private func hit(at point: NSPoint) -> TabHit? {
-        hits.first { $0.frame.insetBy(dx: -2, dy: -2).contains(point) }
+        painter.hit(at: point)
     }
 
-    /// The chord symbol under `point`, placed as the renderer places it.
     private func chordHit(at point: NSPoint) -> ChordHit? {
-        guard let layout else { return nil }
-
-        let renderer = ScoreRenderer(document: document, arrangement: arrangement, sp: layout.sp)
-
-        for system in layout.systems where system.frame.insetBy(dx: 0, dy: -8 * layout.sp).contains(point) {
-            if let hit = renderer.chordHits(system).first(where: { $0.frame.insetBy(dx: -2, dy: -2).contains(point) }) {
-                return hit
-            }
-        }
-
-        return nil
+        painter.chordHit(at: point)
     }
 
-    /// The part name under `point`.
     private func nameHit(at point: NSPoint) -> NameHit? {
-        nameHits.first { $0.frame.insetBy(dx: -2, dy: -2).contains(point) }
+        painter.nameHit(at: point)
     }
 
     override func mouseDown(with event: NSEvent) {
@@ -144,52 +142,6 @@ final class ScoreView: NSView {
     override func draw(_ rect: NSRect) {
         guard let ctx = NSGraphicsContext.current?.cgContext else { return }
 
-        guard let layout else {
-            ctx.fill(rect.intersection(bounds), ScoreRenderer.Style.screen.paper)
-            return
-        }
-
-        let renderer = ScoreRenderer(document: document, arrangement: arrangement, sp: layout.sp)
-
-        switch layout.mode {
-        case .continuous:
-            ctx.fill(rect.intersection(bounds), ScoreRenderer.Style.screen.paper)
-
-            for (index, system) in layout.systems.enumerated() where system.frame.insetBy(dx: 0, dy: -8 * layout.sp).intersects(rect) {
-                var collected: [TabHit] = []
-                var names: [NameHit] = []
-                renderer.drawSystem(system, in: ctx, hits: &collected, names: &names)
-                hitsBySystem[index] = collected
-                namesBySystem[index] = names
-            }
-
-        case .pages:
-            ctx.fill(rect.intersection(bounds), ScoreLayout.surround)
-
-            guard let pages = layout.pages else { break }
-
-            var nextSystemIndex = 0
-
-            for (pageIndex, frame) in layout.pageFrames.enumerated() {
-                let systems = layout.pagesSystems[pageIndex]
-                let firstSystemIndex = nextSystemIndex
-                nextSystemIndex += systems.count
-
-                guard frame.intersects(rect) else { continue }
-
-                var collected: [TabHit] = []
-                var names: [NameHit] = []
-                renderer.drawPage(pages.pages[pageIndex], frame: frame, systems: systems, takeName: takeName,
-                                  scale: layout.scale, in: ctx, hits: &collected, names: &names)
-                hitsBySystem[firstSystemIndex] = collected
-                namesBySystem[firstSystemIndex] = names
-            }
-        }
-
-        if let selected = selectedTabNote, let hit = hits.first(where: { $0.program == selected.program && $0.id == selected.id }) {
-            ctx.setStrokeColor(ScoreRenderer.Style.screen.selectionEdge)
-            ctx.setLineWidth(max(1, layout.sp / 8))
-            ctx.stroke(hit.frame.insetBy(dx: -layout.sp * 0.15, dy: -layout.sp * 0.15))
-        }
+        painter.draw(rect, bounds: bounds, in: ctx)
     }
 }
