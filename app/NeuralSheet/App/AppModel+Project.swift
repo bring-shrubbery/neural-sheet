@@ -43,6 +43,7 @@ extension AppModel {
                        gridOffsetSeconds: editor.grid.offsetSeconds,
                        gridDivision: editor.grid.division,
                        gridSegments: editor.grid.segments,
+                       gridSwing: editor.grid.swing,
                        snapEnabled: editor.snapEnabled,
                        targetProgram: editor.targetProgram,
                        key: editor.key,
@@ -60,6 +61,7 @@ extension AppModel {
         state.gridOffsetSeconds = editor.grid.offsetSeconds
         state.gridDivision = editor.grid.division
         state.gridSegments = editor.grid.segments
+        state.gridSwing = editor.grid.swing
         state.snapEnabled = editor.snapEnabled
         state.targetProgram = editor.targetProgram
         state.key = editor.key
