@@ -5,7 +5,7 @@ import NeuralSheetCore
 /// `m:ss` label 6 px to its right. In the Edit tab it reads bars and beats off the tempo grid
 /// instead (design §6.4). Nothing is drawn unless the transport can play. In both tabs a drag
 /// marks a range; a click still seeks (region design §6.2); the tempo map's changes are flags
-/// (`RulerView+TempoMarkers.swift`).
+/// (`RulerView+TempoMarkers.swift`), and so are the section markers (`RulerView+Markers.swift`).
 final class RulerView: NSView {
     let geometry: TimelineGeometry
 
@@ -23,8 +23,26 @@ final class RulerView: NSView {
     /// The tempo map whose changes are flagged, in both tabs (tempo map design §4).
     var tempoMap: TempoGrid?
 
-    /// A right-click, or a click on a flag: the card for a bar, at a point in the window.
-    var onTempoCard: ((CGPoint, Int) -> Void)?
+    /// A right-click, or a click on a tempo flag: the ruler's card for what is under the
+    /// pointer, at a point in the window.
+    var onTempoCard: ((CGPoint, RulerCardTarget) -> Void)?
+
+    /// The section markers flagged along the bottom of the ruler, in both tabs (markers and
+    /// lyrics design §2).
+    var markers: [Marker] = [] {
+        didSet {
+            if markers != oldValue {
+                needsDisplay = true
+            }
+        }
+    }
+
+    /// A drag on a marker's flag moves it; a double-click marks its section.
+    var onMoveMarker: ((UUID, Double) -> Void)?
+    var onMarkRange: ((UUID) -> Void)?
+
+    /// The marker flag being pressed, and whether the press has become a drag.
+    var markerPress: MarkerPress?
 
     /// The click is a seek; the container owns the model.
     var onSeek: ((Double) -> Void)?
@@ -94,6 +112,7 @@ final class RulerView: NSView {
         }
 
         drawTempoFlags(ctx, in: dirtyRect)
+        drawMarkerFlags(ctx, in: dirtyRect)
     }
 
     /// `TimeRuler`: a tick per round division of seconds and its `m:ss` label.
@@ -206,9 +225,13 @@ final class RulerView: NSView {
         let point = convert(event.locationInWindow, from: nil)
         let x = point.x
 
+        // A section marker's flag is taken hold of: a drag moves it, a double-click marks its
+        // section, and a plain click does nothing, not even seek.
+        if beginMarkerPress(event, at: point) { return }
+
         // A tempo change's flag is its marker: the click opens its card rather than seeking.
         if let flag = tempoFlag(at: point), let onTempoCard {
-            onTempoCard(event.locationInWindow, flag.bar)
+            onTempoCard(event.locationInWindow, RulerCardTarget(bar: flag.bar, seconds: geometry.seconds(forX: flag.frame.minX)))
             return
         }
 
@@ -223,6 +246,8 @@ final class RulerView: NSView {
     }
 
     override func mouseDragged(with event: NSEvent) {
+        if dragMarker(event) { return }
+
         guard let pressX, onRange != nil else { return }
 
         let x = convert(event.locationInWindow, from: nil).x
@@ -235,6 +260,8 @@ final class RulerView: NSView {
 
     /// A press that never became a drag is the click it always was: a seek.
     override func mouseUp(with event: NSEvent) {
+        if endMarkerPress() { return }
+
         defer {
             pressX = nil
             isDragging = false

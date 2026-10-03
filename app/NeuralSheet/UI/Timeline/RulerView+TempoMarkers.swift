@@ -59,7 +59,8 @@ extension RulerView {
         }
     }
 
-    /// The card for the bar under the pointer, or the flag's bar on a flag.
+    /// The card for the bar under the pointer, or the flag's bar on a flag, with the marker
+    /// whose flag is under it, if any (markers and lyrics design §2).
     override func rightMouseDown(with event: NSEvent) {
         guard canPlay, let tempoMap, let onTempoCard else {
             super.rightMouseDown(with: event)
@@ -67,8 +68,10 @@ extension RulerView {
         }
 
         let point = convert(event.locationInWindow, from: nil)
-        let bar = tempoFlag(at: point)?.bar ?? tempoMap.bar(atSeconds: max(0, geometry.seconds(forX: point.x)))
+        let seconds = max(0, geometry.seconds(forX: point.x))
+        let bar = tempoFlag(at: point)?.bar ?? tempoMap.bar(atSeconds: seconds)
+        let marker = markerFlag(at: point)
 
-        onTempoCard(event.locationInWindow, bar)
+        onTempoCard(event.locationInWindow, RulerCardTarget(bar: bar, seconds: marker?.seconds ?? seconds, markerID: marker?.id))
     }
 }

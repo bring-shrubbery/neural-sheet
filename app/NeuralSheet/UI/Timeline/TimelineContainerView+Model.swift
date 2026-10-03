@@ -40,6 +40,8 @@ extension TimelineContainerView {
             _ = model.editor.snapEnabled
             _ = model.editor.key
             _ = model.editor.chords
+            _ = model.editor.markers
+            _ = model.editor.markerToRename
             _ = model.showsConfidence
             _ = model.showsPitchCurves
             _ = model.regionJob
@@ -85,6 +87,8 @@ extension TimelineContainerView {
                            regionProgress: model.regionJob?.progress,
                            key: model.editor.key,
                            chords: model.editor.chords,
+                           markers: model.editor.markers,
+                           markerToRename: model.editor.markerToRename,
                            showsConfidence: model.showsConfidence,
                            showsPitchCurves: model.showsPitchCurves)
         let old = snapshot
@@ -132,6 +136,7 @@ extension TimelineContainerView {
         }
 
         syncChordLane(new, old: old, first: first)
+        syncMarkers(new, old: old, first: first)
 
         // Both tabs: the key colours the lanes wherever the roll is.
         if first || new.key != old.key {

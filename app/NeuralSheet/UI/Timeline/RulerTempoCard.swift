@@ -5,13 +5,17 @@ import SwiftUI
 /// The ruler's card (tempo map design §4): a right-click on the ruler, or a click on a change's
 /// flag, opens the tempo and the meter of the segment under the pointer in a floating panel, the
 /// note card's style, with the command that adds a change at that bar or removes the one there.
-/// It reads the grid live, so adding a change turns its button into Remove.
+/// It reads the grid live, so adding a change turns its button into Remove. Under it, the marker
+/// section (markers and lyrics design §2, ``RulerMarkerSection``): the marker under the pointer
+/// with its name and Delete, or Add Marker Here.
 struct RulerTempoCard: View {
     let model: AppModel
-    /// The bar under the pointer.
-    let bar: Int
+    /// The bar, the time and the marker under the pointer.
+    let target: RulerCardTarget
     /// The panel this card is in, so the TIME menus open as its children.
     let host: PopupMenuPresenter
+    /// Opened by Add Marker at Playhead: the name field takes the keyboard at once.
+    var focusesMarkerName = false
 
     @Environment(\.uiScale) private var k
 
@@ -21,8 +25,8 @@ struct RulerTempoCard: View {
     var body: some View {
         let s = Scaled(k: k)
         let grid = model.editor.grid
+        let bar = target.bar
         let segment = grid.segment(atBar: bar)
-        let bar = bar
 
         VStack(alignment: .leading, spacing: 0) {
             Text("Tempo from bar \(max(1, segment.startBar))".uppercased())
@@ -58,6 +62,10 @@ struct RulerTempoCard: View {
                 }
                 .padding(.top, s(10))
             }
+
+            RulerMarkerSection(model: model, seconds: target.seconds, markerID: target.markerID, host: host,
+                               focusesName: focusesMarkerName)
+                .padding(.top, s(12))
         }
         .padding(s(Self.padding))
         .frame(width: s(NoteCard.width))

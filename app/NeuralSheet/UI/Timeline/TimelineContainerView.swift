@@ -107,6 +107,8 @@ final class TimelineContainerView: NSView {
         var regionProgress: Float?
         var key: MusicalKey?
         var chords: [ChordEvent] = []
+        var markers: [Marker] = []
+        var markerToRename: UUID?
         var showsConfidence = false
         var showsPitchCurves = true
     }
@@ -186,8 +188,9 @@ final class TimelineContainerView: NSView {
         // A drag on the ruler marks the range for Re-transcribe in both tabs (region design §6.2).
         ruler.onRange = { [weak self] range in self?.model.setRange(range) }
         ruler.snapEnabled = model.editor.snapEnabled
-        ruler.onTempoCard = { [weak self] point, bar in self?.showTempoCard(at: point, bar: bar) }
+        ruler.onTempoCard = { [weak self] point, target in self?.showTempoCard(at: point, target: target) }
         installChordLane()
+        installMarkers()
         keyboard.onWheel = { [weak self] event in
             guard let self else { return }
 

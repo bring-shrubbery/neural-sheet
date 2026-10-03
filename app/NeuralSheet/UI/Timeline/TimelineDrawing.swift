@@ -62,6 +62,12 @@ enum TimelinePalette {
     static let tempoStem = cg(Theme.accent)
     static let tempoLabel = cg(Theme.accentText)
 
+    /// Markers and lyrics design §2: a section marker's flag along the ruler's lower half, in
+    /// the accent like the tempo flags but lighter, so the two rows read apart.
+    static let markerFlag = cg(Theme.accent, alpha: 0.22)
+    static let markerStem = cg(Theme.accent)
+    static let markerLabel = cg(Theme.textBright)
+
     /// Region design §6.3: the marked range, its edges, and the fill that grows with a run.
     static let rangeFill = cg(Theme.accent, alpha: 0.10)
     static let rangeEdge = cg(Theme.accent, alpha: 0.6)
