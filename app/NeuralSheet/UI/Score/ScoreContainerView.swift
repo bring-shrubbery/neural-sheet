@@ -30,6 +30,7 @@ final class ScoreContainerView: NSView {
     private var lastGrid = TempoGrid()
     private var lastKey: MusicalKey?
     private var lastChords: [ChordEvent] = []
+    private var lastMarkers: [Marker] = []
     private var lastArrangement = ScoreArrangement()
     private var hasDocument = false
     private var layoutWidth: CGFloat = 0
@@ -175,6 +176,7 @@ final class ScoreContainerView: NSView {
             _ = model.editor.grid
             _ = model.editor.key
             _ = model.editor.chords
+            _ = model.editor.markers
             _ = model.arrangement
             _ = model.selectedTabNote
             _ = model.state
@@ -189,7 +191,8 @@ final class ScoreContainerView: NSView {
         }
     }
 
-    /// Rebuilds what changed: the document on the notes, the grid, the key, the chords or the arrangement;
+    /// Rebuilds what changed: the document on the notes, the grid, the key, the chords, the
+    /// markers (the rehearsal marks; markers and lyrics design §2) or the arrangement;
     /// the layout on the document or the width; a repaint on the tab selection; the cursor
     /// every time.
     func sync() {
@@ -198,11 +201,13 @@ final class ScoreContainerView: NSView {
         let grid = model.editor.grid
         let key = model.editor.key
         let chords = model.editor.chords
+        let markers = model.editor.markers
         let arrangement = model.arrangement
 
         if !hasDocument || notes != lastNotes || grid != lastGrid || key != lastKey || chords != lastChords
-            || arrangement != lastArrangement {
+            || markers != lastMarkers || arrangement != lastArrangement {
             lastNotes = notes
+            lastMarkers = markers
             lastGrid = grid
             lastKey = key
             lastChords = chords

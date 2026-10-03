@@ -18,8 +18,8 @@ struct NameHit: Equatable {
 
 /// Draws a laid-out score into any `CGContext` (arrangement design §4): the view and the PDF
 /// export share it. Staves, bar lines, clefs, signatures, part names, measure numbers and the
-/// tempo here; chords in `+Chords`, chord symbols in `+Harmony`, tab staves in `+Tab`, the page's
-/// header and footer in `+Page`.
+/// tempo here; chords in `+Chords`, chord symbols in `+Harmony`, rehearsal marks and lyrics in
+/// `+Text`, tab staves in `+Tab`, the page's header and footer in `+Page`.
 struct ScoreRenderer {
     let document: ScoreDocument
     let arrangement: ScoreArrangement
@@ -45,6 +45,7 @@ struct ScoreRenderer {
         drawPrefixes(system, leftEdge: leftEdge, in: ctx, names: &names)
         drawNumbersAndTempo(system, in: ctx)
         drawChordSymbols(system, in: ctx)
+        drawRehearsalMarks(system, in: ctx)
 
         for row in system.rows {
             let part = document.parts[row.partIndex]
@@ -52,6 +53,10 @@ struct ScoreRenderer {
             switch row.kind {
             case let .staff(index, _):
                 drawStaffMusic(part.staves[index], row: row, system: system, in: ctx)
+
+                if row.lyricsBelow {
+                    drawLyrics(system, row: row, in: ctx)
+                }
             case .tab:
                 if let tab = part.tab {
                     drawTabMusic(tab, part: part, row: row, system: system, in: ctx, hits: &hits)
