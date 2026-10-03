@@ -6,8 +6,9 @@ import Foundation
 extension MusicXMLWriter {
     /// One `<part>`: the attributes on the first measure and the meter wherever it changes, then
     /// every staff of every measure, a `<backup>` of the measure's length between the staves of a
-    /// grand staff. The first part written carries the tempo marks.
-    static func notationPartXML(_ part: ScorePart, id: String, bars: [ScoreBar], writesTempo: Bool) -> String {
+    /// grand staff. The first part written carries the tempo marks and the `chords`.
+    static func notationPartXML(_ part: ScorePart, id: String, bars: [ScoreBar], writesTempo: Bool,
+                                chords: [ScoreChord] = []) -> String {
         let isDrums = part.program == NoteEvent.drumProgram
         let preferFlats = part.writtenFifths < 0
         let measureCount = part.staves.first?.measures.count ?? 0
@@ -53,6 +54,7 @@ extension MusicXMLWriter {
                 let pitchShift = staff.clef.isOctaveDown ? -12 : 0
 
                 for piece in staff.measures[measureIndex].pieces {
+                    if staffIndex == 0 { xml += harmoniesXML(chords.inMeasure(measureIndex), in: piece) }
                     xml += pieceXML(piece, voice: staffIndex + 1, staff: staffNumber, isDrums: isDrums,
                                     preferFlats: preferFlats, pitchShift: pitchShift)
                 }

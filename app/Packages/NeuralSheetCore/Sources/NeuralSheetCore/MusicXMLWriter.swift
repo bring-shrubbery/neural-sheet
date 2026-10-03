@@ -32,10 +32,12 @@ public enum MusicXMLWriter {
     ///   - title: the work title; nil takes the sheet's, then the take's name.
     ///   - arrangement: which parts show, how, and what the sheet says about itself.
     ///   - takeName: the take's name, the title of last resort.
+    ///   - chords: the chord symbols, written as `<harmony>` on the first part (chord symbols design §2).
     public static func data(notes: [NoteEvent], ids: [NoteID?]? = nil, grid: TempoGrid, key: MusicalKey?,
                             title: String? = nil, arrangement: ScoreArrangement = ScoreArrangement(),
-                            takeName: String? = nil) -> Data {
-        let document = ScoreDocument.build(notes: notes, ids: ids, grid: grid, key: key, arrangement: arrangement)
+                            takeName: String? = nil, chords: [ChordEvent] = []) -> Data {
+        let document = ScoreDocument.build(notes: notes, ids: ids, grid: grid, key: key, arrangement: arrangement,
+                                           chords: chords)
         let channels = channelMap(notes)
         let sheet = arrangement.sheet
         let workTitle = title ?? sheet.resolvedTitle(takeName: takeName)
@@ -84,7 +86,8 @@ public enum MusicXMLWriter {
         xml += "  </part-list>\n"
 
         if document.parts.isEmpty {
-            xml += notationPartXML(emptyPart(document.bars), id: "P1", bars: document.bars, writesTempo: true)
+            xml += notationPartXML(emptyPart(document.bars), id: "P1", bars: document.bars, writesTempo: true,
+                                   chords: document.chords)
         }
 
         var writesTempo = true
@@ -92,13 +95,16 @@ public enum MusicXMLWriter {
         for (index, part) in document.parts.enumerated() {
             let id = "P\(index + 1)"
 
+            // The first part written carries the tempo marks and the chord symbols.
             if !part.staves.isEmpty {
-                xml += notationPartXML(part, id: id, bars: document.bars, writesTempo: writesTempo)
+                xml += notationPartXML(part, id: id, bars: document.bars, writesTempo: writesTempo,
+                                       chords: writesTempo ? document.chords : [])
                 writesTempo = false
             }
 
             if let tab = part.tab {
-                xml += tabPartXML(tab, id: "\(id)T", fifths: document.fifths, bars: document.bars, writesTempo: writesTempo)
+                xml += tabPartXML(tab, id: "\(id)T", fifths: document.fifths, bars: document.bars, writesTempo: writesTempo,
+                                  chords: writesTempo ? document.chords : [])
                 writesTempo = false
             }
         }

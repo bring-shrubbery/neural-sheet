@@ -14,6 +14,8 @@ public struct ScoreDocument: Equatable, Sendable {
     public var bpm: Double
     /// Each measure's place in time, meter and tempo (tempo map design §2), one per measure.
     public var bars: [ScoreBar] = []
+    /// The chord symbols over the measures (chord symbols design §2), in order.
+    public var chords: [ScoreChord] = []
 
     /// The empty score: no parts, no measures.
     public static let empty = ScoreDocument(parts: [], measureCount: 0, firstBar: 0, fifths: 0, bpm: TempoGrid.defaultBpm)
@@ -22,9 +24,11 @@ public struct ScoreDocument: Equatable, Sendable {
     /// out, each part at its written transposition, in its clefs, with a tab staff when it has
     /// a template. `ids` runs alongside `notes` (the document's) or is nil while a run streams.
     /// The grid's swing is dropped: it is a feel, not notation, so the Score tab and both score
-    /// exports quantize to the straight grid (editor commands design §2).
+    /// exports quantize to the straight grid (editor commands design §2). `chords` are placed on
+    /// the measures the notes span.
     public static func build(notes: [NoteEvent], ids: [NoteID?]? = nil, grid: TempoGrid, key: MusicalKey?,
-                             arrangement: ScoreArrangement = ScoreArrangement()) -> ScoreDocument {
+                             arrangement: ScoreArrangement = ScoreArrangement(),
+                             chords: [ChordEvent] = []) -> ScoreDocument {
         let grid = grid.straight
         var notesByProgram: [Int: [(NoteEvent, NoteID?)]] = [:]
 
@@ -93,8 +97,11 @@ public struct ScoreDocument: Equatable, Sendable {
             return scorePart
         }
 
-        return ScoreDocument(parts: parts, measureCount: span.count, firstBar: span.lowerBound, fifths: key?.fifths ?? 0,
-                             bpm: bars.first?.bpm ?? grid.bpm, bars: bars)
+        var document = ScoreDocument(parts: parts, measureCount: span.count, firstBar: span.lowerBound,
+                                     fifths: key?.fifths ?? 0, bpm: bars.first?.bpm ?? grid.bpm, bars: bars)
+        document.chords = scoreChords(chords, bars: bars, grid: grid, key: key)
+
+        return document
     }
 
     /// One bar as pieces: the export's segments of `notes` over the bar, each split into printable
