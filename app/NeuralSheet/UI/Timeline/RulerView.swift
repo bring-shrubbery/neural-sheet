@@ -122,6 +122,8 @@ final class RulerView: NSView {
 
     /// Design §6.4: a bar tick full height with its number, a beat tick half height with
     /// `bar.beat`; labels thinned to every 2nd, 4th, 8th… bar until they clear the minimum gap.
+    /// The beats are the meter's (six to a bar of 6/8) and the densest bar or beat in view sets
+    /// the thinning, so a tempo change does not crowd the labels (tempo map design §2).
     private func drawBarsAndBeats(_ ctx: CGContext, grid: TempoGrid, in dirtyRect: CGRect) {
         let k = geometry.scale
         let height = bounds.height
@@ -129,8 +131,14 @@ final class RulerView: NSView {
         let font = TimelineFonts.meta(k)
         let labelInset = 6 * k
         let labelWidth = 40 * k
-        let barPixels = grid.secondsPerBeat * Double(TempoGrid.beatsPerBar) * pixelsPerSecond
-        let beatPixels = grid.secondsPerBeat * pixelsPerSecond
+
+        // Only the lines whose tick or label can touch the exposed sliver: the label extends
+        // `labelInset + labelWidth` to the right of its tick.
+        let from = geometry.seconds(forX: dirtyRect.minX - labelInset - labelWidth)
+        let to = geometry.seconds(forX: dirtyRect.maxX)
+        let visible = grid.segments(from: max(0, from), to: to)
+        let barPixels = (visible.map(\.barSeconds).min() ?? 0) * pixelsPerSecond
+        let beatPixels = (visible.map { $0.timeSignature.beatLength * 60 / $0.bpm }.min() ?? 0) * pixelsPerSecond
 
         guard barPixels > 0 else { return }
 
@@ -138,12 +146,7 @@ final class RulerView: NSView {
         while Double(barsPerLabel) * barPixels < RulerTicks.minLabelGap { barsPerLabel *= 2 }
         let labelBeats = beatPixels >= RulerTicks.minLabelGap
 
-        // Only the lines whose tick or label can touch the exposed sliver: the label extends
-        // `labelInset + labelWidth` to the right of its tick.
-        let from = geometry.seconds(forX: dirtyRect.minX - labelInset - labelWidth)
-        let to = geometry.seconds(forX: dirtyRect.maxX)
-
-        for line in grid.lines(from: max(0, from), to: to, division: .quarter) {
+        for line in grid.beatLines(from: max(0, from), to: to) {
             let x = CGFloat((line.seconds * pixelsPerSecond).rounded()) * k
 
             guard x < bounds.maxX else { break }

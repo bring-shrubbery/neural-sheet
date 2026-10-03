@@ -294,21 +294,26 @@ final class PianoRollView: NSView {
     }
 
     /// Design §6.5: bar, beat and division lines over the lanes; the finer kinds drop out as
-    /// they crowd.
+    /// they crowd, judged by the densest segment in view (tempo map design §2).
     private func drawGrid(_ ctx: CGContext, grid: TempoGrid, in dirtyRect: CGRect) {
         let k = geometry.scale
         let pixelsPerSecond = Double(geometry.pixelsPerSecond / k)
-        let divisionPixels = grid.step * pixelsPerSecond
-        let beatPixels = grid.secondsPerBeat * pixelsPerSecond
-        let drawDivisions = divisionPixels >= 6
-        let drawBeats = beatPixels >= 3
-        // A division coarser than a beat still shows the beats.
-        let division: GridDivision = drawDivisions && grid.division.beats < 1 ? grid.division : .quarter
-
         // One authored pixel of slack on the left: a line's x is rounded, so one just outside the
         // sliver can land inside it.
-        for line in grid.lines(from: max(0, geometry.seconds(forX: dirtyRect.minX - k)),
-                               to: geometry.seconds(forX: dirtyRect.maxX), division: division) {
+        let from = max(0, geometry.seconds(forX: dirtyRect.minX - k))
+        let to = geometry.seconds(forX: dirtyRect.maxX)
+        let visible = grid.segments(from: from, to: to)
+        let fastest = visible.map(\.bpm).max() ?? grid.bpm
+        let divisionPixels = grid.division.beats * 60 / fastest * pixelsPerSecond
+        let beatPixels = (visible.map { $0.timeSignature.beatLength * 60 / $0.bpm }.min() ?? 0) * pixelsPerSecond
+        let drawDivisions = divisionPixels >= 6
+        let drawBeats = beatPixels >= 3
+        // A division coarser than a beat still shows the meter's beats.
+        let lines = drawDivisions && grid.division.beats < 1
+            ? grid.lines(from: from, to: to)
+            : grid.beatLines(from: from, to: to)
+
+        for line in lines {
             let colour: CGColor
 
             switch line.kind {
