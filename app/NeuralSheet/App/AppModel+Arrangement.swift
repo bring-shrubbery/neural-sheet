@@ -15,15 +15,9 @@ extension AppModel {
         }
     }
 
-    /// Tab or notation and tab on a part with no template first gives it one, so the switch
-    /// works on any part: the template its program suggests (a guitar's or a bass's), or the
-    /// guitar's for the rest, in the default tuning. The Template menu changes it afterwards.
+    /// Tab or notation and tab on a part with no template first gives it one (`ArrangementCommands`).
     func setPartMode(_ mode: PartDisplay.Mode, program: Int) {
-        if mode != .notation, arrangement.display(for: program).tab == nil,
-           let template = TabTemplate.template(forProgram: program) ?? TabTemplate.all.first {
-            setPartTab(template: template, preset: template.presets[0], program: program)
-        }
-        updatePart(program) { $0.mode = mode }
+        updatePart(program) { ArrangementCommands.setMode(mode, program: program, &$0) }
     }
 
     func setPartClef(_ clef: ClefChoice, program: Int) {
@@ -32,47 +26,25 @@ extension AppModel {
 
     /// Semitones, −36…36.
     func setPartTransposition(_ semitones: Int, program: Int) {
-        updatePart(program) { $0.transposition = min(max(semitones, -36), 36) }
+        updatePart(program) { ArrangementCommands.setTransposition(semitones, &$0) }
     }
 
-    /// A template and one of its presets. A part still in notation goes to notation and tab,
-    /// and one with no transposition takes the template's customary one.
+    /// A template and one of its presets (`ArrangementCommands.setTab`).
     func setPartTab(template: TabTemplate, preset: TuningPreset, program: Int) {
-        updatePart(program) { display in
-            let hadTab = display.tab != nil
-            display.tab = template.setup(preset: preset)
-            if display.mode == .notation { display.mode = .both }
-            if !hadTab, display.transposition == 0 { display.transposition = template.defaultTransposition }
-            display.strings = [:]
-        }
+        updatePart(program) { ArrangementCommands.setTab(template: template, preset: preset, &$0) }
     }
 
     func clearPartTab(program: Int) {
-        updatePart(program) { display in
-            display.tab = nil
-            display.strings = [:]
-            if display.mode != .notation { display.mode = .notation }
-        }
+        updatePart(program) { ArrangementCommands.clearTab(&$0) }
     }
 
-    /// One string's open pitch, which makes the tuning custom. Any tuning change drops the
-    /// manual string choices, as choosing a preset does: they were made for the old pitches.
+    /// One string's open pitch, which makes the tuning custom (`ArrangementCommands.setTuning`).
     func setPartTuning(string: Int, pitch: Int, program: Int) {
-        updatePart(program) { display in
-            guard var tab = display.tab, string >= 0, string < tab.tuning.count else { return }
-            tab.tuning[string] = min(max(pitch, 0), 127)
-            tab.presetName = nil
-            display.tab = tab
-            display.strings = [:]
-        }
+        updatePart(program) { ArrangementCommands.setTuning(string: string, pitch: pitch, &$0) }
     }
 
     func setPartFrets(_ frets: Int, program: Int) {
-        updatePart(program) { display in
-            guard var tab = display.tab else { return }
-            tab.frets = min(max(frets, 1), 36)
-            display.tab = tab
-        }
+        updatePart(program) { ArrangementCommands.setFrets(frets, &$0) }
     }
 
     func setPartHidden(_ hidden: Bool, program: Int) {
@@ -126,8 +98,7 @@ extension AppModel {
     /// The score as the Score tab and the exports see it.
     func scoreDocument() -> ScoreDocument {
         let ids = document?.notes.map { Optional($0.id) }
-        return ScoreDocument.build(notes: notes, ids: ids, grid: editor.grid, key: editor.key, arrangement: arrangement,
-                                   chords: editor.chords, markers: editor.markers)
+        return ArrangementCommands.scoreDocument(notes: notes, ids: ids, editor: editor, arrangement: arrangement)
     }
 
     /// Drops every manual string choice and the tab selection: for a document whose ids start
