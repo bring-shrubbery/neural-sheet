@@ -53,6 +53,10 @@ public struct GlobalSettings: Codable, Equatable, Sendable {
     /// the output only.
     public var clickWhileRecording = false
 
+    /// Audio → Input (system audio design §2): the recording input as
+    /// ``RecordingInputSetting/encoded`` has it, or empty for the system default.
+    public var recordingInput = ""
+
     /// What the Count-in picker offers.
     public static let countInChoices = [0, 1, 2]
 
@@ -69,7 +73,8 @@ public struct GlobalSettings: Codable, Equatable, Sendable {
         hiddenRecentProjects: [String] = [],
         soundBankPath: String? = nil,
         countInBars: Int = 0,
-        clickWhileRecording: Bool = false
+        clickWhileRecording: Bool = false,
+        recordingInput: String = ""
     ) {
         self.modelSize = modelSize
         self.editorScale = editorScale
@@ -84,6 +89,7 @@ public struct GlobalSettings: Codable, Equatable, Sendable {
         self.soundBankPath = soundBankPath
         self.countInBars = countInBars
         self.clickWhileRecording = clickWhileRecording
+        self.recordingInput = recordingInput
     }
 
     // MARK: - Files
@@ -114,7 +120,7 @@ public struct GlobalSettings: Codable, Equatable, Sendable {
     private enum CodingKeys: String, CodingKey {
         case modelSize, editorScale, tooltipsVisible, midiOverflowMode, separateStems
         case showsConfidence, minimumNoteLength, minimumConfidence, showsPitchCurves, hiddenRecentProjects
-        case soundBankPath, countInBars, clickWhileRecording
+        case soundBankPath, countInBars, clickWhileRecording, recordingInput
     }
 
     /// Every key falls back to its default, so a file written by a version that did not have one
@@ -147,5 +153,7 @@ public struct GlobalSettings: Codable, Equatable, Sendable {
         countInBars = GlobalSettings.countInChoices.contains(bars) ? bars : defaults.countInBars
         clickWhileRecording =
             try container.decodeIfPresent(Bool.self, forKey: .clickWhileRecording) ?? defaults.clickWhileRecording
+        recordingInput =
+            try container.decodeIfPresent(String.self, forKey: .recordingInput) ?? defaults.recordingInput
     }
 }
