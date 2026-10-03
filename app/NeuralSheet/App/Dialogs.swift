@@ -187,6 +187,47 @@ import AppKit
     }
 }
 
+extension Dialogs {
+    /// Points `model.presentMIDIImportChoice` at the window.
+    static func installMIDIImportChoice(on model: AppModel, window: @escaping () -> NSWindow?) {
+        model.presentMIDIImportChoice = { fileName, completion in
+            midiImportChoice(fileName: fileName, on: window(), completion: completion)
+        }
+    }
+
+    /// Import MIDI over a transcription (MIDI import design §2): Replace the notes (Return), Add
+    /// to the notes, Cancel (Escape). Neither choice needs guarding behind Cancel as Discard
+    /// does: both land as one edit that Undo takes back.
+    static func midiImportChoice(fileName: String, on window: NSWindow?,
+                                 completion: @escaping (AppModel.MIDIImportChoice) -> Void) {
+        let alert = NSAlert()
+        alert.messageText = "Import “\(fileName)”?"
+        alert.informativeText = "The take already has a transcription. The file's notes can replace its notes or be added to them."
+        alert.alertStyle = .informational
+        alert.addButton(withTitle: "Replace the notes")
+        alert.addButton(withTitle: "Add to the notes")
+        alert.addButton(withTitle: "Cancel")
+
+        let choice: (NSApplication.ModalResponse) -> AppModel.MIDIImportChoice = { response in
+            switch response {
+            case .alertFirstButtonReturn: .replace
+            case .alertSecondButtonReturn: .add
+            default: .cancel
+            }
+        }
+
+        if let window, window.isVisible {
+            alert.beginSheetModal(for: window) { response in
+                completion(choice(response))
+            }
+        } else {
+            DispatchQueue.main.async {
+                completion(choice(alert.runModal()))
+            }
+        }
+    }
+}
+
 /// The number alert's accessory: a whole-number field, a stepper and the unit, kept in step.
 @MainActor private final class NumberEntry: NSObject {
     let view: NSStackView

@@ -61,6 +61,15 @@ import UniformTypeIdentifiers
     /// Nil declines.
     @ObservationIgnored var presentRevert: ((String, @escaping (Bool) -> Void) -> Void)?
 
+    /// What the Import MIDI question came back with (MIDI import design §2).
+    enum MIDIImportChoice {
+        case replace, add, cancel
+    }
+
+    /// Installed by the view layer: `(file name, completion)` for "Replace the notes" / "Add to
+    /// the notes" / Cancel. Nil cancels, which is what happens before a window exists.
+    @ObservationIgnored var presentMIDIImportChoice: ((String, @escaping (MIDIImportChoice) -> Void) -> Void)?
+
     /// Cancels the roll drag in progress and says whether there was one; installed by the edit
     /// controller, a no-op without a drag.
     @ObservationIgnored var dragCanceller: (() -> Bool)?
