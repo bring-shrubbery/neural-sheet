@@ -5,7 +5,7 @@ import Foundation
 /// from the top (1 is the highest line); the tab staff numbers them from the bottom.
 extension MusicXMLWriter {
     /// One `<part>` for a part's tab staff, the same measures as its notation.
-    static func tabPartXML(_ tab: ScoreTabStaff, id: String, fifths: Int, grid: TempoGrid, writesTempo: Bool) -> String {
+    static func tabPartXML(_ tab: ScoreTabStaff, id: String, fifths: Int, bars: [ScoreBar], writesTempo: Bool) -> String {
         var xml = "  <part id=\"\(id)\">\n"
 
         for (measureIndex, measure) in tab.measures.enumerated() {
@@ -15,13 +15,15 @@ extension MusicXMLWriter {
                 xml += "      <attributes>\n"
                 xml += "        <divisions>\(divisions)</divisions>\n"
                 xml += "        <key><fifths>\(fifths)</fifths></key>\n"
-                xml += "        <time><beats>\(TempoGrid.beatsPerBar)</beats><beat-type>4</beat-type></time>\n"
+                xml += "        \(timeXML(bars[measureIndex].timeSignature))\n"
                 xml += "        <clef><sign>TAB</sign><line>5</line></clef>\n"
                 xml += staffDetailsXML(tuning: tab.tuning)
                 xml += "      </attributes>\n"
-
-                if writesTempo { xml += tempoXML(grid: grid) }
+            } else if bars[measureIndex].showsTimeSignature {
+                xml += meterChangeXML(bars[measureIndex].timeSignature)
             }
+
+            if writesTempo, bars[measureIndex].showsTempo { xml += tempoXML(bars[measureIndex]) }
 
             for piece in measure.pieces {
                 xml += tabPieceXML(piece, stringCount: tab.tuning.count)

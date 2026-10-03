@@ -34,6 +34,7 @@ import Testing
     #expect(sliver == [.init(start: 48, end: 54, pitch: 60)])
     #expect(MusicXMLWriter.quantum(for: .eighthTriplet) == 12)
     #expect(MusicXMLWriter.quantum(for: .bar) == 96)
+    #expect(MusicXMLWriter.quantum(for: .bar, in: TimeSignature(numerator: 3, denominator: 4)) == 72)
 }
 
 @Test func segmentsChangeAtEveryOnsetOffsetAndBarLine() {
@@ -50,7 +51,7 @@ import Testing
     #expect(segments[3].isRest)
 
     // A note across a bar line is cut there.
-    let across = MusicXMLWriter.segments([.init(start: 72, end: 120, pitch: 60)], from: 0, to: 192)
+    let across = MusicXMLWriter.segments([.init(start: 72, end: 120, pitch: 60)], from: 0, to: 192, barLines: [96])
     #expect(across.map { [$0.start, $0.end] } == [[0, 72], [72, 96], [96, 120], [120, 192]])
 }
 

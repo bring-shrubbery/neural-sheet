@@ -33,8 +33,11 @@ public struct ScoreSystemLayout: Sendable {
         /// Where the music starts, past the clef and signatures of a system's first measure.
         public var contentX: CGFloat
         /// Every onset in the measure (units from its start, across all rows) and its x. Sorted
-        /// by units; always begins at 0 and ends with the measure's end at `barUnits`.
+        /// by units; always begins at 0 and ends with the measure's end at its length.
         public var onsets: [(units: Int, x: CGFloat)]
+        /// Where a meter change inside a system is drawn, before the music; nil when the measure
+        /// has none, or when it opens its system and the prefix draws it.
+        public var timeSignatureX: CGFloat? = nil
 
         public var endX: CGFloat { x + width }
 
@@ -77,8 +80,11 @@ public struct ScoreSystemLayout: Sendable {
         public var frame: CGRect
         public var rows: [StaffRow]
         public var measures: [MeasureBox]
-        /// Whether this system's first measure carries the time signature (the first of all).
+        /// Whether the prefix draws the time signature: the system's first measure shows one
+        /// (the first of all, or a meter change that opens the system; tempo map design §2).
         public var showsTimeSignature: Bool
+        /// The score's first system, which names the parts in full.
+        public var isFirst: Bool
 
         /// The rows' vertical extent: the top row's top line to the bottom row's bottom line.
         public var staffTop: CGFloat { rows.first.map { $0.topLineY } ?? frame.minY }
@@ -154,19 +160,29 @@ public struct ScoreSystemLayout: Sendable {
         // project in C with a trumpet at +2 still needs room for two sharps.
         let widestSignature = document.parts.map { abs($0.writtenFifths) }.max() ?? 0
         let signatureWidth = CGFloat(widestSignature) * ScoreSystemLayout.accidentalWidth * sp
-        let prefixFirst = (ScoreSystemLayout.clefWidth + ScoreSystemLayout.timeSignatureWidth + 1) * sp + signatureWidth
-        let prefixLater = (ScoreSystemLayout.clefWidth + 1) * sp + signatureWidth
+        let meterWidth = ScoreSystemLayout.timeSignatureWidth * sp
+        // A meter shown at a measure: in the prefix when the measure opens a system, before its
+        // music otherwise.
+        let showsMeter = (0..<document.measureCount).map { $0 < document.bars.count && document.bars[$0].showsTimeSignature }
+        let prefixBase = (ScoreSystemLayout.clefWidth + 1) * sp + signatureWidth
+
+        func prefix(startingAt measure: Int) -> CGFloat {
+            prefixBase + (showsMeter[measure] ? meterWidth : 0)
+        }
+
+        func lead(_ measure: Int, opensSystem: Bool) -> CGFloat {
+            !opensSystem && showsMeter[measure] ? meterWidth : 0
+        }
 
         // Pack measures into systems.
         var ranges: [Range<Int>] = []
         var start = 0
         while start < document.measureCount {
-            let prefix = ranges.isEmpty ? prefixFirst : prefixLater
-            var used = prefix
+            var used = prefix(startingAt: start)
             var end = start
 
             while end < document.measureCount {
-                let next = naturalWidths[end]
+                let next = naturalWidths[end] + lead(end, opensSystem: end == start)
                 if end > start, used + next > available { break }
                 used += next
                 end += 1
@@ -182,8 +198,8 @@ public struct ScoreSystemLayout: Sendable {
         let x0 = ScoreSystemLayout.leftMargin * sp
 
         for (systemIndex, range) in ranges.enumerated() {
-            let prefix = systemIndex == 0 ? prefixFirst : prefixLater
-            let natural = range.reduce(prefix) { $0 + naturalWidths[$1] }
+            let prefix = prefix(startingAt: range.lowerBound)
+            let natural = range.reduce(prefix) { $0 + naturalWidths[$1] + lead($1, opensSystem: $1 == range.lowerBound) }
             let isLast = systemIndex == ranges.count - 1
             // Every system but the last fills the width; the last keeps its natural spacing
             // unless it has to shrink.
@@ -193,20 +209,24 @@ public struct ScoreSystemLayout: Sendable {
             var x = x0
 
             for (position, measureIndex) in range.enumerated() {
-                let measurePrefix = position == 0 ? prefix : 0
+                let meterLead = lead(measureIndex, opensSystem: position == 0)
+                let measurePrefix = (position == 0 ? prefix : 0) + meterLead
                 let boxWidth = (measurePrefix + naturalWidths[measureIndex]) * stretch
                 let contentX = x + measurePrefix * stretch
                 let onsets = onsetXs(measure: measureIndex, in: document, contentX: contentX,
                                      contentWidth: naturalWidths[measureIndex] * stretch)
+                var box = MeasureBox(index: measureIndex, x: x, width: boxWidth, contentX: contentX, onsets: onsets)
+                box.timeSignatureX = meterLead > 0 ? x + 0.3 * sp * stretch : nil
 
-                measures.append(MeasureBox(index: measureIndex, x: x, width: boxWidth, contentX: contentX, onsets: onsets))
+                measures.append(box)
                 x += boxWidth
             }
 
             let rows = ScoreSystemLayout.rows(for: document, top: y, sp: sp)
 
             systems.append(System(frame: CGRect(x: x0, y: y, width: x - x0, height: systemHeight),
-                                  rows: rows, measures: measures, showsTimeSignature: systemIndex == 0))
+                                  rows: rows, measures: measures, showsTimeSignature: showsMeter[range.lowerBound],
+                                  isFirst: systemIndex == 0))
 
             y += systemHeight + ScoreSystemLayout.systemGap * sp
         }
@@ -283,12 +303,18 @@ public struct ScoreSystemLayout: Sendable {
         return sp * CGFloat(1.6 + 0.9 * log2(ratio))
     }
 
+    /// The measure's length in units: its bar's, or a 4/4 bar's for a document without bars.
+    private func length(of measure: Int, in document: ScoreDocument) -> Int {
+        measure < document.bars.count ? document.bars[measure].lengthUnits : MusicXMLWriter.divisions * 4
+    }
+
     private func naturalWidth(measure: Int, in document: ScoreDocument) -> CGFloat {
         let table = onsetTable(measure: measure, in: document)
+        let end = length(of: measure, in: document)
         var width = ScoreSystemLayout.measurePadLeft * sp
 
         for (index, entry) in table.enumerated() {
-            let next = index + 1 < table.count ? table[index + 1].units : MusicXMLWriter.barUnits
+            let next = index + 1 < table.count ? table[index + 1].units : end
             width += CGFloat(min(entry.accidentals, 2)) * ScoreSystemLayout.accidentalWidth * sp
             width += gapWidth(units: next - entry.units)
         }
@@ -302,13 +328,14 @@ public struct ScoreSystemLayout: Sendable {
     /// ``naturalWidth`` spaced them and scaled to fit.
     private func onsetXs(measure: Int, in document: ScoreDocument, contentX: CGFloat, contentWidth: CGFloat) -> [(units: Int, x: CGFloat)] {
         let table = onsetTable(measure: measure, in: document)
+        let end = length(of: measure, in: document)
         var positions: [(Int, CGFloat)] = []
         var cursor = ScoreSystemLayout.measurePadLeft * sp
 
         for (index, entry) in table.enumerated() {
             cursor += CGFloat(min(entry.accidentals, 2)) * ScoreSystemLayout.accidentalWidth * sp
             positions.append((entry.units, cursor))
-            let next = index + 1 < table.count ? table[index + 1].units : MusicXMLWriter.barUnits
+            let next = index + 1 < table.count ? table[index + 1].units : end
             cursor += gapWidth(units: next - entry.units)
         }
 
@@ -316,7 +343,7 @@ public struct ScoreSystemLayout: Sendable {
         let scale = contentWidth / natural
 
         var result = positions.map { (units: $0.0, x: contentX + $0.1 * scale) }
-        result.append((units: MusicXMLWriter.barUnits, x: contentX + contentWidth - ScoreSystemLayout.measurePadRight * sp * scale))
+        result.append((units: end, x: contentX + contentWidth - ScoreSystemLayout.measurePadRight * sp * scale))
 
         return result
     }
@@ -348,7 +375,7 @@ public struct ScoreSystemLayout: Sendable {
             }
 
             if let last = system.measures.last, point.x >= last.endX {
-                return (last.index, Double(MusicXMLWriter.barUnits))
+                return (last.index, Double(last.onsets.last?.units ?? 0))
             }
         }
 

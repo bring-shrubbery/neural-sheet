@@ -131,14 +131,15 @@ extension NoteDocument {
     }
 
     /// Starts to the nearest line; with `lengths`, lengths to the nearest whole number of
-    /// divisions, never under one.
+    /// divisions at the note's tempo, never under one.
     public func quantize(_ ids: Set<NoteID>, grid: TempoGrid, lengths: Bool) -> EditBatch {
         changing(selected(ids), title: "Quantize") { note in
             var note = NoteDocument.shifted(note, by: grid.snap(note.startTime) - note.startTime, semitones: 0)
 
             if lengths {
-                let divisions = max(1, ((note.endTime - note.startTime) / grid.step).rounded())
-                note.endTime = note.startTime + divisions * grid.step
+                let step = grid.step(atSeconds: note.startTime)
+                let divisions = max(1, ((note.endTime - note.startTime) / step).rounded())
+                note.endTime = note.startTime + divisions * step
             }
 
             return note

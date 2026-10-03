@@ -10,7 +10,10 @@ public struct ScoreDocument: Equatable, Sendable {
     /// notes precede the downbeat.
     public var firstBar: Int
     public var fifths: Int
+    /// The first measure's tempo.
     public var bpm: Double
+    /// Each measure's place in time, meter and tempo (tempo map design §2), one per measure.
+    public var bars: [ScoreBar] = []
 
     /// The empty score: no parts, no measures.
     public static let empty = ScoreDocument(parts: [], measureCount: 0, firstBar: 0, fifths: 0, bpm: TempoGrid.defaultBpm)
@@ -27,7 +30,6 @@ public struct ScoreDocument: Equatable, Sendable {
             notesByProgram[note.program, default: []].append((note, id))
         }
 
-        let quantum = MusicXMLWriter.quantum(for: grid.division)
         let programs = notesByProgram.keys.sorted().filter { !arrangement.display(for: $0).isHidden }
 
         let writerParts = programs.map { program -> MusicXMLWriter.Part in
@@ -35,10 +37,11 @@ public struct ScoreDocument: Equatable, Sendable {
             return MusicXMLWriter.Part(program: program,
                                        name: Instruments.info(forProgram: program).name,
                                        channel: 1,
-                                       notes: MusicXMLWriter.unitNotes(pairs.map(\.0), ids: pairs.map(\.1), grid: grid, quantum: quantum))
+                                       notes: MusicXMLWriter.unitNotes(pairs.map(\.0), ids: pairs.map(\.1), grid: grid))
         }
 
-        let span = MusicXMLWriter.measureSpan(writerParts)
+        let span = MusicXMLWriter.measureSpan(writerParts, grid: grid)
+        let bars = ScoreBar.table(span, grid: grid)
 
         let parts = writerParts.map { part -> ScorePart in
             let info = Instruments.info(forProgram: part.program)
@@ -65,7 +68,7 @@ public struct ScoreDocument: Equatable, Sendable {
                     : [(clefs[0], written)]
 
                 staves = staffNotes.map { clef, unitNotes in
-                    ScoreStaff(clef: clef, measures: span.map { bar in
+                    ScoreStaff(clef: clef, measures: bars.map { bar in
                         measure(bar: bar, notes: unitNotes, transposition: transposition, clef: clef, isDrums: isDrums, fifths: fifths)
                     })
                 }
@@ -74,7 +77,7 @@ public struct ScoreDocument: Equatable, Sendable {
             var tab: ScoreTabStaff?
 
             if let setup = display.tab, display.showsTab, !isDrums {
-                tab = ScoreTabStaff(tuning: setup.tuning, frets: setup.frets, measures: span.map { bar in
+                tab = ScoreTabStaff(tuning: setup.tuning, frets: setup.frets, measures: bars.map { bar in
                     tabMeasure(bar: bar, notes: part.notes, setup: setup, manual: display.strings)
                 })
             }
@@ -87,21 +90,22 @@ public struct ScoreDocument: Equatable, Sendable {
             return scorePart
         }
 
-        return ScoreDocument(parts: parts, measureCount: span.count, firstBar: span.lowerBound, fifths: key?.fifths ?? 0, bpm: grid.bpm)
+        return ScoreDocument(parts: parts, measureCount: span.count, firstBar: span.lowerBound, fifths: key?.fifths ?? 0,
+                             bpm: bars.first?.bpm ?? grid.bpm, bars: bars)
     }
 
     /// One bar as pieces: the export's segments of `notes` over the bar, each split into printable
     /// values; an empty bar is one whole-measure rest. `scoreNotes(segment, pieceStart, pieceEnd)`
     /// gives the notes of one piece of `segment`.
-    static func pieces(bar: Int, notes: [MusicXMLWriter.UnitNote],
+    static func pieces(bar: ScoreBar, notes: [MusicXMLWriter.UnitNote],
                        scoreNotes: (_ segment: MusicXMLWriter.Segment, _ pieceStart: Int, _ pieceEnd: Int) -> [ScoreNote]) -> ScoreMeasure {
-        let from = bar * MusicXMLWriter.barUnits
-        let to = from + MusicXMLWriter.barUnits
+        let from = bar.startUnits
+        let to = bar.endUnits
         var pieces: [ScorePiece] = []
 
         for segment in MusicXMLWriter.segments(notes, from: from, to: to) {
             if segment.isRest, segment.start == from, segment.end == to {
-                pieces.append(ScorePiece(startUnits: 0, units: MusicXMLWriter.barUnits, type: "whole", dots: 0,
+                pieces.append(ScorePiece(startUnits: 0, units: bar.lengthUnits, type: "whole", dots: 0,
                                          notes: [], isWholeMeasureRest: true))
                 continue
             }
@@ -117,12 +121,14 @@ public struct ScoreDocument: Equatable, Sendable {
             }
         }
 
-        return ScoreMeasure(pieces: pieces)
+        return ScoreMeasure(pieces: pieces, lengthUnits: bar.lengthUnits,
+                            timeSignature: bar.showsTimeSignature ? bar.timeSignature : nil,
+                            tempo: bar.showsTempo ? bar.bpm : nil)
     }
 
     /// One bar of one staff. `notes` are the written unit notes; each note sounds `transposition`
     /// semitones lower.
-    static func measure(bar: Int, notes: [MusicXMLWriter.UnitNote], transposition: Int, clef: Clef, isDrums: Bool, fifths: Int) -> ScoreMeasure {
+    static func measure(bar: ScoreBar, notes: [MusicXMLWriter.UnitNote], transposition: Int, clef: Clef, isDrums: Bool, fifths: Int) -> ScoreMeasure {
         pieces(bar: bar, notes: notes) { segment, pieceStart, pieceEnd in
             segment.notes.map { note -> ScoreNote in
                 if isDrums {
@@ -153,7 +159,7 @@ public struct ScoreDocument: Equatable, Sendable {
     /// One bar of a tab staff: the same pieces as the notation, each chord's notes placed on
     /// strings. `notes` are the sounding unit notes; a note's `step` is its string (the renderer
     /// draws the fret on that line).
-    static func tabMeasure(bar: Int, notes: [MusicXMLWriter.UnitNote], setup: TabSetup, manual: [NoteID: Int]) -> ScoreMeasure {
+    static func tabMeasure(bar: ScoreBar, notes: [MusicXMLWriter.UnitNote], setup: TabSetup, manual: [NoteID: Int]) -> ScoreMeasure {
         pieces(bar: bar, notes: notes) { segment, pieceStart, pieceEnd in
             let placements = TabFingering.place(pitches: segment.notes.map(\.pitch), tuning: setup.tuning, frets: setup.frets,
                                                 manual: segment.notes.map { $0.id.flatMap { manual[$0] } })
@@ -164,29 +170,6 @@ public struct ScoreDocument: Equatable, Sendable {
                           id: note.id, writtenPitch: note.pitch, placement: placements[index])
             }
         }
-    }
-
-    // MARK: - Time
-
-    /// The measure (0-based) and the position in it, in units, at `seconds`; nil before the first
-    /// measure or past the last.
-    public func measureIndex(atSeconds seconds: Double, grid: TempoGrid) -> (measure: Int, units: Double)? {
-        let unitsFromDownbeat = (seconds - grid.offsetSeconds) / grid.secondsPerBeat * Double(MusicXMLWriter.divisions)
-        let barsFromDownbeat = unitsFromDownbeat / Double(MusicXMLWriter.barUnits)
-        let measure = Int(barsFromDownbeat.rounded(.down)) - firstBar
-
-        guard measure >= 0, measure < measureCount else { return nil }
-
-        let units = unitsFromDownbeat - Double(firstBar + measure) * Double(MusicXMLWriter.barUnits)
-
-        return (measure, units)
-    }
-
-    /// The seconds at `units` into measure `measure` (0-based), never before 0.
-    public func seconds(atMeasure measure: Int, units: Double, grid: TempoGrid) -> Double {
-        let unitsFromDownbeat = Double(firstBar + measure) * Double(MusicXMLWriter.barUnits) + units
-
-        return max(0, grid.offsetSeconds + unitsFromDownbeat / Double(MusicXMLWriter.divisions) * grid.secondsPerBeat)
     }
 }
 
@@ -216,6 +199,12 @@ public struct ScoreStaff: Equatable, Sendable {
 
 public struct ScoreMeasure: Equatable, Sendable {
     public var pieces: [ScorePiece]
+    /// The bar's length in units: 96 for 4/4, 72 for 3/4 and 6/8.
+    public var lengthUnits: Int = MusicXMLWriter.divisions * 4
+    /// The meter, on the first measure and wherever it changes; nil elsewhere.
+    public var timeSignature: TimeSignature? = nil
+    /// The quarter-note tempo, on the first measure and wherever it changes; nil elsewhere.
+    public var tempo: Double? = nil
 }
 
 /// One chord or rest of one printable value.

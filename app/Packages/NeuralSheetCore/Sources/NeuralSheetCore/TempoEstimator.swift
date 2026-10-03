@@ -197,8 +197,9 @@ public enum TempoEstimator {
     // MARK: - Downbeat
 
     /// The beat phase as the fullest of `⌈τ⌉` bins the envelope folds into at the beat period,
-    /// then the one of a bar's four beats whose bar-period comb collects the most; in seconds.
-    static func downbeat(in envelope: [Float], bpm: Double) -> Double {
+    /// then the one of a bar's `beatsPerBar` beats whose bar-period comb collects the most; in
+    /// seconds.
+    static func downbeat(in envelope: [Float], bpm: Double, beatsPerBar: Int = 4) -> Double {
         let period = envelopeRate * 60 / bpm
 
         guard period > 1, envelope.count > 1 else { return 0 }
@@ -216,13 +217,13 @@ public enum TempoEstimator {
             phase = bin
         }
 
-        // Which of the bar's four beats: the comb at the bar period, ±1 frame, that collects
-        // the most from each candidate phase.
-        let bar = period * Double(TempoGrid.beatsPerBar)
+        // Which of the bar's beats: the comb at the bar period, ±1 frame, that collects the most
+        // from each candidate phase.
+        let bar = period * Double(beatsPerBar)
         var bestBeat = 0
         var bestEnergy = -1.0
 
-        for m in 0..<TempoGrid.beatsPerBar {
+        for m in 0..<beatsPerBar {
             let start = Double(phase) + Double(m) * period
             var energy = 0.0
             var position = start

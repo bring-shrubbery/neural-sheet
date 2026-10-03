@@ -58,8 +58,7 @@ public struct TempoGrid: Equatable, Codable, Sendable {
     public static let minBpm = 20.0
     public static let maxBpm = 999.0
     public static let defaultBpm = 120.0
-    /// The one-meter grid's bar; goes when every consumer reads the segment's meter.
-    public static let beatsPerBar = 4
+    public static let beatsPerBar = 4 // TEMP
 
     public var offsetSeconds: Double
     public var division: GridDivision

@@ -60,7 +60,7 @@ public enum EditGestureMath {
     /// off) to the pointer, never shorter than one division.
     public static func drawnNote(anchor: Double, current: Double, grid: TempoGrid, snapEnabled: Bool) -> (start: Double, end: Double) {
         let start = max(0, snapEnabled ? grid.snapDown(anchor) : anchor)
-        let end = max(snapEnabled ? grid.snap(current) : current, start + grid.step)
+        let end = max(snapEnabled ? grid.snap(current) : current, start + grid.step(atSeconds: start))
 
         return (start, end)
     }

@@ -12,11 +12,12 @@ extension MusicXMLWriter {
         var id: NoteID? = nil
     }
 
-    /// The quantization step for a grid division, in units; a triplet division is straightened
-    /// to the plain value of its size, since the score has no tuplets (§1).
-    static func quantum(for division: GridDivision) -> Int {
+    /// The quantization step for a grid division in a bar of `meter`, in units; a triplet
+    /// division is straightened to the plain value of its size, since the score has no tuplets
+    /// (§1), and the whole-bar division is the bar.
+    static func quantum(for division: GridDivision, in meter: TimeSignature = .common) -> Int {
         switch division {
-        case .bar: barUnits
+        case .bar: units(quarterBeats: meter.quarterBeatsPerBar)
         case .half: divisions * 2
         case .quarter: divisions
         case .eighth, .eighthTriplet: divisions / 2
@@ -25,29 +26,35 @@ extension MusicXMLWriter {
         }
     }
 
-    /// Every note as units, start and end each to the nearest multiple of `quantum`, at least
-    /// one quantum long; sorted by start then pitch.
-    static func unitNotes(_ notes: [NoteEvent], grid: TempoGrid, quantum: Int) -> [UnitNote] {
-        unitNotes(notes, ids: nil, grid: grid, quantum: quantum)
-    }
+    /// Every note as units, start and end each to the nearest step of `quantum` (the grid's
+    /// division in each bar when nil) counted from its bar line, at least one step long; sorted by
+    /// start then pitch. The steps restart at every bar line, as the grid's do, so a note never
+    /// lands off a bar a meter's odd length would put it off (tempo map design §2).
+    static func unitNotes(_ notes: [NoteEvent], ids: [NoteID?]? = nil, grid: TempoGrid, quantum: Int? = nil) -> [UnitNote] {
+        func quantized(_ seconds: Double) -> (units: Int, step: Int) {
+            let beats = grid.quarterBeats(atSeconds: seconds)
+            guard beats.isFinite else { return (0, max(1, quantum ?? 1)) }
 
-    /// ``unitNotes(_:grid:quantum:)`` with the document's ids alongside, where there are any.
-    static func unitNotes(_ notes: [NoteEvent], ids: [NoteID?]?, grid: TempoGrid, quantum: Int) -> [UnitNote] {
-        let unitsPerSecond = Double(divisions) / grid.secondsPerBeat
-        let step = max(1, quantum)
+            let bar = grid.bar(atQuarterBeats: beats)
+            let meter = grid.segment(atBar: bar).timeSignature
+            let start = units(quarterBeats: grid.quarterBeats(atBar: bar))
+            let length = units(quarterBeats: meter.quarterBeatsPerBar)
+            let step = max(1, quantum ?? self.quantum(for: grid.division, in: meter))
+            let into = beats * Double(divisions) - Double(start)
+            var position = min(Int((into / Double(step)).rounded()) * step, length)
 
-        func units(_ seconds: Double) -> Int {
-            let raw = (seconds - grid.offsetSeconds) * unitsPerSecond
-            guard raw.isFinite else { return 0 }
-            return Int((raw / Double(step)).rounded()) * step
+            // The bar line ahead can be nearer than the last whole step before it.
+            if Double(length) - into < abs(into - Double(position)) { position = length }
+
+            return (start + position, step)
         }
 
         return notes.enumerated().map { index, note in
-            let start = units(note.startTime)
-            let end = max(units(note.endTime), start + step)
+            let start = quantized(note.startTime)
+            let end = max(quantized(note.endTime).units, start.units + start.step)
             let id = ids.flatMap { index < $0.count ? $0[index] : nil }
 
-            return UnitNote(start: start, end: end, pitch: note.pitch, id: id)
+            return UnitNote(start: start.units, end: end, pitch: note.pitch, id: id)
         }
         .sorted { ($0.start, $0.pitch, $0.end) < ($1.start, $1.pitch, $1.end) }
     }
@@ -63,9 +70,10 @@ extension MusicXMLWriter {
         var isRest: Bool { notes.isEmpty }
     }
 
-    /// The segments of `[from, to)`: every note start, note end and bar line inside it is a
-    /// boundary, and each gap between consecutive boundaries is one segment.
-    static func segments(_ notes: [UnitNote], from: Int, to: Int, barLength: Int = MusicXMLWriter.barUnits) -> [Segment] {
+    /// The segments of `[from, to)`: every note start, note end and bar line (`barLines`, in
+    /// units) inside it is a boundary, and each gap between consecutive boundaries is one segment.
+    /// The score asks one measure at a time, so it has no bar lines inside.
+    static func segments(_ notes: [UnitNote], from: Int, to: Int, barLines: [Int] = []) -> [Segment] {
         guard to > from else { return [] }
 
         var boundaries: Set<Int> = [from, to]
@@ -75,12 +83,8 @@ extension MusicXMLWriter {
             if note.end > from, note.end < to { boundaries.insert(note.end) }
         }
 
-        if barLength > 0 {
-            var bar = Int((Double(from) / Double(barLength)).rounded(.down)) * barLength
-            while bar < to {
-                if bar > from { boundaries.insert(bar) }
-                bar += barLength
-            }
+        for bar in barLines where bar > from && bar < to {
+            boundaries.insert(bar)
         }
 
         let sorted = boundaries.sorted()

@@ -2,10 +2,11 @@ import Foundation
 
 /// Writes a transcription as a MusicXML score (MusicXML design; arrangement design §5):
 /// `score-partwise`, one part per instrument in the sidebar's order as the arrangement shows
-/// it, 4/4 at the grid's tempo from the grid's downbeat, the notes quantized to the grid's
-/// division, chords, ties, rests, each part in its clef and at its written transposition, a
-/// tab part beside a fretted part's notation, a percussion staff for the drums, hidden parts
-/// left out, and the sheet's title, credits and copyright.
+/// it, in the grid's meters and tempos from the grid's downbeat (a `<time>` and a metronome
+/// mark at each change, tempo map design §2), the notes quantized to the grid's division,
+/// chords, ties, rests, each part in its clef and at its written transposition, a tab part
+/// beside a fretted part's notation, a percussion staff for the drums, hidden parts left out,
+/// and the sheet's title, credits and copyright.
 ///
 /// The measures come from `ScoreDocument`, so the export and the Score tab agree by
 /// construction. The rhythm lives in `MusicXMLWriter+Rhythm.swift`, the pitches in
@@ -14,8 +15,14 @@ import Foundation
 public enum MusicXMLWriter {
     /// Units per quarter note: enough for 32nds and every dotted value between.
     public static let divisions = 24
-    /// A 4/4 bar in units.
-    public static let barUnits = divisions * TempoGrid.beatsPerBar
+    public static let barUnits = divisions * 4 // TEMP
+
+    /// `quarterBeats` in units, to the nearest.
+    static func units(quarterBeats: Double) -> Int {
+        guard quarterBeats.isFinite else { return 0 }
+
+        return Int((quarterBeats * Double(divisions)).rounded())
+    }
 
     /// The whole document.
     ///
@@ -78,7 +85,7 @@ public enum MusicXMLWriter {
         xml += "  </part-list>\n"
 
         if document.parts.isEmpty {
-            xml += notationPartXML(emptyPart, id: "P1", grid: grid, writesTempo: true)
+            xml += notationPartXML(emptyPart(document.bars), id: "P1", bars: document.bars, writesTempo: true)
         }
 
         var writesTempo = true
@@ -87,12 +94,12 @@ public enum MusicXMLWriter {
             let id = "P\(index + 1)"
 
             if !part.staves.isEmpty {
-                xml += notationPartXML(part, id: id, grid: grid, writesTempo: writesTempo)
+                xml += notationPartXML(part, id: id, bars: document.bars, writesTempo: writesTempo)
                 writesTempo = false
             }
 
             if let tab = part.tab {
-                xml += tabPartXML(tab, id: "\(id)T", fifths: document.fifths, grid: grid, writesTempo: writesTempo)
+                xml += tabPartXML(tab, id: "\(id)T", fifths: document.fifths, bars: document.bars, writesTempo: writesTempo)
                 writesTempo = false
             }
         }
@@ -143,11 +150,11 @@ public enum MusicXMLWriter {
         return xml
     }
 
-    /// One treble staff of one resting measure, for a transcription with nothing in it.
-    private static var emptyPart: ScorePart {
-        let measure = ScoreDocument.measure(bar: 0, notes: [], transposition: 0, clef: .treble, isDrums: false, fifths: 0)
+    /// One treble staff of resting measures, for a transcription with nothing in it.
+    private static func emptyPart(_ bars: [ScoreBar]) -> ScorePart {
+        let measures = bars.map { ScoreDocument.measure(bar: $0, notes: [], transposition: 0, clef: .treble, isDrums: false, fifths: 0) }
 
-        return ScorePart(program: 0, name: "", abbreviation: "", staves: [ScoreStaff(clef: .treble, measures: [measure])])
+        return ScorePart(program: 0, name: "", abbreviation: "", staves: [ScoreStaff(clef: .treble, measures: measures)])
     }
 
     // MARK: - Parts and measures
@@ -163,15 +170,17 @@ public enum MusicXMLWriter {
     }
 
     /// The bars the score covers, as bar indices from the downbeat (bar 0 starts at the
-    /// downbeat; earlier bars are negative). One bar when there is nothing.
-    static func measureSpan(_ parts: [Part]) -> Range<Int> {
+    /// downbeat, the grid's bar 1; earlier bars are negative), found through the tempo map. One
+    /// bar when there is nothing.
+    static func measureSpan(_ parts: [Part], grid: TempoGrid) -> Range<Int> {
         let starts = parts.flatMap(\.notes).map(\.start)
         let ends = parts.flatMap(\.notes).map(\.end)
 
         guard let first = starts.min(), let last = ends.max() else { return 0 ..< 1 }
 
-        let firstBar = Int((Double(first) / Double(barUnits)).rounded(.down))
-        let lastBar = Int((Double(last) / Double(barUnits)).rounded(.up))
+        let perQuarter = Double(divisions)
+        let firstBar = grid.bar(atQuarterBeats: Double(first) / perQuarter) - 1
+        let lastBar = grid.bar(atQuarterBeats: Double(max(last - 1, first)) / perQuarter)
 
         return firstBar ..< max(lastBar, firstBar + 1)
     }

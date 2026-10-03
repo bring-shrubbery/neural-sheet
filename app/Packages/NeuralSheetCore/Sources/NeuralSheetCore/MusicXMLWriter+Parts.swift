@@ -4,10 +4,10 @@ import Foundation
 /// document, its clef or clefs, its written key and its transposition, and the notes, rests,
 /// ties and chords of each measure.
 extension MusicXMLWriter {
-    /// One `<part>`: the attributes on the first measure, then every staff of every measure,
-    /// a `<backup>` between the staves of a grand staff. The first part written carries the
-    /// tempo.
-    static func notationPartXML(_ part: ScorePart, id: String, grid: TempoGrid, writesTempo: Bool) -> String {
+    /// One `<part>`: the attributes on the first measure and the meter wherever it changes, then
+    /// every staff of every measure, a `<backup>` of the measure's length between the staves of a
+    /// grand staff. The first part written carries the tempo marks.
+    static func notationPartXML(_ part: ScorePart, id: String, bars: [ScoreBar], writesTempo: Bool) -> String {
         let isDrums = part.program == NoteEvent.drumProgram
         let preferFlats = part.writtenFifths < 0
         let measureCount = part.staves.first?.measures.count ?? 0
@@ -24,7 +24,7 @@ extension MusicXMLWriter {
                 xml += "      <attributes>\n"
                 xml += "        <divisions>\(divisions)</divisions>\n"
                 xml += "        <key><fifths>\(part.writtenFifths)</fifths></key>\n"
-                xml += "        <time><beats>\(TempoGrid.beatsPerBar)</beats><beat-type>4</beat-type></time>\n"
+                xml += "        \(timeXML(bars[measureIndex].timeSignature))\n"
 
                 if part.staves.count > 1 {
                     xml += "        <staves>\(part.staves.count)</staves>\n"
@@ -38,13 +38,15 @@ extension MusicXMLWriter {
                 if !transpose.isEmpty { xml += "        \(transpose)\n" }
 
                 xml += "      </attributes>\n"
-
-                if writesTempo { xml += tempoXML(grid: grid) }
+            } else if bars[measureIndex].showsTimeSignature {
+                xml += meterChangeXML(bars[measureIndex].timeSignature)
             }
+
+            if writesTempo, bars[measureIndex].showsTempo { xml += tempoXML(bars[measureIndex]) }
 
             for (staffIndex, staff) in part.staves.enumerated() where measureIndex < staff.measures.count {
                 if staffIndex > 0 {
-                    xml += "      <backup><duration>\(barUnits)</duration></backup>\n"
+                    xml += "      <backup><duration>\(bars[measureIndex].lengthUnits)</duration></backup>\n"
                 }
 
                 let staffNumber = part.staves.count > 1 ? staffIndex + 1 : nil
@@ -96,12 +98,33 @@ extension MusicXMLWriter {
         return xml + "</transpose>"
     }
 
-    static func tempoXML(grid: TempoGrid) -> String {
-        let bpm = Int(TempoGrid.clampedBpm(grid.bpm).rounded())
-        var xml = "      <direction placement=\"above\"><direction-type><metronome><beat-unit>quarter</beat-unit>"
-        xml += "<per-minute>\(bpm)</per-minute></metronome></direction-type><sound tempo=\"\(bpm)\"/></direction>\n"
+    static func timeXML(_ meter: TimeSignature) -> String {
+        "<time><beats>\(meter.numerator)</beats><beat-type>\(meter.denominator)</beat-type></time>"
+    }
+
+    /// The meter alone, for a measure after the first where it changes.
+    static func meterChangeXML(_ meter: TimeSignature) -> String {
+        "      <attributes>\n        \(timeXML(meter))\n      </attributes>\n"
+    }
+
+    /// The metronome mark in the unit the meter is felt in (a dotted quarter in 6/8) and the
+    /// quarter-note tempo a player sets, at a tempo to a tenth.
+    static func tempoXML(_ bar: ScoreBar) -> String {
+        let bpm = TempoGrid.clampedBpm(bar.bpm)
+        let unit = bar.timeSignature.metronomeUnit
+        var xml = "      <direction placement=\"above\"><direction-type><metronome><beat-unit>\(unit.type)</beat-unit>"
+        if unit.dotted { xml += "<beat-unit-dot/>" }
+        xml += "<per-minute>\(tempoText(bpm / unit.quarters))</per-minute></metronome></direction-type>"
+        xml += "<sound tempo=\"\(tempoText(bpm))\"/></direction>\n"
 
         return xml
+    }
+
+    /// "120", or "92.5" for a tempo between whole numbers.
+    public static func tempoText(_ bpm: Double) -> String {
+        let tenths = (bpm * 10).rounded() / 10
+
+        return tenths == tenths.rounded() ? "\(Int(tenths))" : "\(tenths)"
     }
 
     // MARK: - Notes and rests
@@ -111,7 +134,7 @@ extension MusicXMLWriter {
         var xml = "      <note>"
 
         if piece.isWholeMeasureRest {
-            xml += "<rest measure=\"yes\"/><duration>\(barUnits)</duration><voice>\(voice)</voice>"
+            xml += "<rest measure=\"yes\"/><duration>\(piece.units)</duration><voice>\(voice)</voice>"
         } else {
             xml += "<rest/><duration>\(piece.units)</duration><voice>\(voice)</voice><type>\(piece.type)</type>"
             xml += String(repeating: "<dot/>", count: piece.dots)

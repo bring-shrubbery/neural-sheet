@@ -22,7 +22,9 @@ public struct MidiTrackSpec: Equatable, Sendable {
 
 /// Writes a transcription out as a standard MIDI file, byte for byte what NeuralNote's JUCE-backed
 /// writer produced: format 1, 960 ticks per quarter note, a conductor track and one track per
-/// instrument.
+/// instrument. Written from a tempo grid, the conductor track carries a tempo and a meter at each
+/// of the map's changes and every tick goes through the map, so a DAW's bars are the score's
+/// (tempo map design §2); one 4/4 segment gives the same bytes as the one-tempo writer.
 ///
 /// One track per instrument (rather than one channel per instrument in a single track) is what
 /// carries the instrument identity across reliably: many DAWs split an import by track and
@@ -101,7 +103,51 @@ public enum MidiFileWriter {
 
     // MARK: - The file
 
-    /// The whole MIDI file as bytes, ready to be written to disk or handed to a drag.
+    /// The whole MIDI file over `grid`'s tempo map: tick 0 is the bar line
+    /// ``TempoGrid/exportStartOffsetSeconds`` before the audio, and each note's tick is its
+    /// quarter beats from there × 960.
+    public static func data(notes: [NoteEvent], grid: TempoGrid, mode: MidiOverflowMode) -> Data {
+        let first = grid.segments[0]
+        let fileStartSeconds = -grid.exportStartOffsetSeconds
+        // Whole bars of the first segment from tick 0 to bar 1, so tick 0 is a bar line exactly.
+        let barsBefore = first.barSeconds > 0 ? ((grid.offsetSeconds - fileStartSeconds) / first.barSeconds).rounded() : 0
+        let fileStartBeats = -barsBefore * first.timeSignature.quarterBeatsPerBar
+
+        // Where each segment starts, in seconds and in quarter beats from tick 0. The first is
+        // anchored at tick 0 itself, so a one-segment grid computes `(seconds + offset) × bpm / 60`
+        // exactly as the one-tempo writer does and gives its bytes.
+        let anchors = [(seconds: fileStartSeconds, beats: 0.0, bpm: first.bpm)]
+            + grid.segments.dropFirst().map { segment in
+                (seconds: grid.barStart(bar: segment.startBar),
+                 beats: grid.quarterBeats(atBar: segment.startBar) - fileStartBeats,
+                 bpm: segment.bpm)
+            }
+
+        func ticks(beats: Double) -> Int {
+            max(0, safeInt((beats * Double(ticksPerQuarterNote)).rounded()))
+        }
+
+        var meta: [(tick: Int, bytes: [UInt8])] = []
+        var meter: TimeSignature?
+
+        for (segment, anchor) in zip(grid.segments, anchors) {
+            let tick = ticks(beats: anchor.beats)
+            meta.append((tick, tempoEvent(bpm: segment.bpm)))
+
+            if segment.timeSignature != meter {
+                meta.append((tick, timeSignatureEvent(segment.timeSignature)))
+                meter = segment.timeSignature
+            }
+        }
+
+        return data(notes: notes, mode: mode, conductor: meta) { seconds in
+            let anchor = anchors.last { $0.seconds <= seconds } ?? anchors[0]
+
+            return ticks(beats: anchor.beats + (seconds - anchor.seconds) * anchor.bpm / 60.0)
+        }
+    }
+
+    /// The whole MIDI file at one tempo in 4/4, ready to be written to disk or handed to a drag.
     ///
     /// - Parameters:
     ///   - bpm: the export tempo, which sets both the tempo meta event and the seconds-to-ticks
@@ -111,6 +157,19 @@ public enum MidiFileWriter {
     ///     bar line for a take recorded against a rolling transport.
     public static func data(
         notes: [NoteEvent], bpm: Double, startOffsetSeconds: Double, mode: MidiOverflowMode
+    ) -> Data {
+        // The model gives no meter, so 4/4 is a placeholder.
+        let conductor = [(tick: 0, bytes: tempoEvent(bpm: bpm)), (tick: 0, bytes: timeSignatureEvent(.common))]
+
+        return data(notes: notes, mode: mode, conductor: conductor) { seconds in
+            tick(seconds: seconds, bpm: bpm, startOffsetSeconds: startOffsetSeconds)
+        }
+    }
+
+    /// The file from its conductor track's meta events (in tick order) and a note's tick.
+    private static func data(
+        notes: [NoteEvent], mode: MidiOverflowMode, conductor: [(tick: Int, bytes: [UInt8])],
+        tick: (Double) -> Int
     ) -> Data {
         var noteCounts: [Int: Int] = [:]
         var notesByProgram: [Int: [NoteEvent]] = [:]
@@ -133,10 +192,10 @@ public enum MidiFileWriter {
         }
 
         var bytes = header(trackCount: 1 + specs.count)
-        bytes += conductorTrack(bpm: bpm)
+        bytes += conductorTrack(conductor)
 
         for spec in specs {
-            bytes += instrumentTrack(spec, bpm: bpm, startOffsetSeconds: startOffsetSeconds)
+            bytes += instrumentTrack(spec, tick: tick)
         }
 
         return Data(bytes)
@@ -162,29 +221,41 @@ public enum MidiFileWriter {
         return chunk("MThd", body)
     }
 
-    private static func conductorTrack(bpm: Double) -> [UInt8] {
+    /// The meta events, each at its tick's delta from the last.
+    private static func conductorTrack(_ events: [(tick: Int, bytes: [UInt8])]) -> [UInt8] {
         var body: [UInt8] = []
+        var lastTick = 0
 
+        for event in events {
+            body += vlq(max(0, event.tick - lastTick)) + event.bytes
+            lastTick = max(lastTick, event.tick)
+        }
+
+        return chunk("MTrk", body + endOfTrack)
+    }
+
+    /// `FF 51`: microseconds per quarter note.
+    private static func tempoEvent(bpm: Double) -> [UInt8] {
         let microsecondsPerQuarterNote = self.microsecondsPerQuarterNote(bpm: bpm)
-        body += vlq(0)
-        body += [
+
+        return [
             0xFF, 0x51, 0x03,
             UInt8((microsecondsPerQuarterNote >> 16) & 0xFF),
             UInt8((microsecondsPerQuarterNote >> 8) & 0xFF),
             UInt8(microsecondsPerQuarterNote & 0xFF),
         ]
-
-        // The model gives no meter, so 4/4 is a placeholder: 4 beats of a 2^2 note, 24 MIDI clocks
-        // per metronome tick, 8 32nd notes per quarter note.
-        body += vlq(0)
-        body += [0xFF, 0x58, 0x04, 0x04, 0x02, 0x18, 0x08]
-
-        return chunk("MTrk", body + endOfTrack)
     }
 
-    private static func instrumentTrack(
-        _ spec: MidiTrackSpec, bpm: Double, startOffsetSeconds: Double
-    ) -> [UInt8] {
+    /// `FF 58`: the numerator, the denominator as a power of two, MIDI clocks per metronome click
+    /// (24 a quarter; a dotted beat in a compound meter) and 8 32nd notes per quarter note.
+    private static func timeSignatureEvent(_ meter: TimeSignature) -> [UInt8] {
+        let power = UInt8(meter.denominator.trailingZeroBitCount)
+        let clocks = 96 / meter.denominator * (meter.isCompound ? 3 : 1)
+
+        return [0xFF, 0x58, 0x04, UInt8(meter.numerator), power, UInt8(min(max(clocks, 1), 255)), 0x08]
+    }
+
+    private static func instrumentTrack(_ spec: MidiTrackSpec, tick: (Double) -> Int) -> [UInt8] {
         let channelBits = UInt8((min(max(spec.channel, 1), 16) - 1) & 0x0F)
         var body: [UInt8] = []
 
@@ -214,14 +285,12 @@ public enum MidiFileWriter {
 
             events.append(
                 Event(
-                    tick: tick(
-                        seconds: note.startTime, bpm: bpm, startOffsetSeconds: startOffsetSeconds),
+                    tick: tick(note.startTime),
                     isNoteOn: true,
                     bytes: [0x90 | channelBits, pitch, velocity]))
             events.append(
                 Event(
-                    tick: tick(
-                        seconds: note.endTime, bpm: bpm, startOffsetSeconds: startOffsetSeconds),
+                    tick: tick(note.endTime),
                     isNoteOn: false,
                     bytes: [0x80 | channelBits, pitch, 0x00]))
         }

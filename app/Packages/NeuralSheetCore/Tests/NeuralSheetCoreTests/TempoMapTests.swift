@@ -160,3 +160,9 @@ private func near(_ a: Double, _ b: Double) -> Bool { abs(a - b) < 1e-9 }
     let encoded = try JSONEncoder().encode(map)
     #expect(try JSONDecoder().decode(TempoGrid.self, from: encoded) == map)
 }
+
+@Test func theSegmentsInAStretchAreTheOnesSoundingThere() {
+    #expect(map.segments(from: 0, to: 4).map(\.startBar) == [1])
+    #expect(map.segments(from: 4, to: 12).map(\.startBar) == [1, 3, 5])
+    #expect(map.segments(from: 20, to: 30).map(\.startBar) == [5])
+}

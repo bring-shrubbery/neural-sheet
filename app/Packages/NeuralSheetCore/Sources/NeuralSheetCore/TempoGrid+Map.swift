@@ -34,6 +34,15 @@ extension TempoGrid {
         zip(boundaries, segments).dropFirst().map { (offsetSeconds + $0.seconds, $1) }
     }
 
+    /// The segments sounding anywhere in `from...to`: what a view asks before deciding how dense
+    /// its lines may get.
+    public func segments(from: Double, to: Double) -> ArraySlice<GridSegment> {
+        let first = segmentIndex(atRelativeSeconds: from - offsetSeconds)
+        let last = segmentIndex(atRelativeSeconds: max(from, to) - offsetSeconds)
+
+        return segments[first...last]
+    }
+
     private func segmentIndex(atRelativeSeconds seconds: Double) -> Int {
         lastIndex { boundaries[$0].seconds <= seconds }
     }
