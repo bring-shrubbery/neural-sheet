@@ -66,6 +66,10 @@ targets:
       - path: ../app/NeuralSheet/Decoders
       # The project package's UTType, so both apps name the one type (sub-issue C).
       - path: ../app/NeuralSheet/App/ProjectType.swift
+      # The core package's names (instruments, model sizes) in the user's language, and their
+      # string table, as the Mac shows them (sub-issue D).
+      - path: ../app/NeuralSheet/UI/Localization/CoreNames.swift
+      - path: ../app/NeuralSheet/Core.xcstrings
       # What the app and the widget extension share: the Live Activity's attributes.
       - path: Shared
     dependencies:

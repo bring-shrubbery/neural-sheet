@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Writes NeuralSheet/Resources/test-take.wav: the audio proof's take (sub-issue B).
+"""Writes NeuralSheet/Resources/test-take.wav: the bundled test take (sub-issues B and D).
 
 Three seconds of 16-bit stereo at 22.05 kHz, kept small: an A3 sine in the left channel and an
 E4 in the right, at -12 dBFS, with 10 ms fades so it starts and ends without a click.
