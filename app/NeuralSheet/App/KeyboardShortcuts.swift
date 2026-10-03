@@ -14,10 +14,11 @@ import NeuralSheetCore
 /// | m | mute input toggle |
 /// | c | centre playhead toggle |
 /// | l | loop toggle (ours; the original's Loop button was disabled) |
+/// | k | click toggle (ours; click design §2) |
 /// | - / = | the playback speed a step slower / faster (ours) |
 /// | t | tap the tempo, while playing (ours) |
 /// | [ / ] | the mix a tenth toward the original / the MIDI (ours; the original had no key for it) |
-/// | Esc | close the instrument picker, else clear the marked range |
+/// | Esc | cancel the count-in, else close the instrument picker, else clear the marked range |
 ///
 /// And in the Edit tab only (design §5.4), ahead of the rows above:
 ///
@@ -149,6 +150,12 @@ import NeuralSheetCore
             return true
 
         case KeyCode.escape:
+            // A count-in is cancelled without a take (issue #19 §9), whatever else is open.
+            if !shift, model.state == .countingIn {
+                model.cancelCountIn()
+                return true
+            }
+
             // The picker listens for its own Escape; with it closed, the marked range goes. (The
             // Edit tab's Escape was handled above, with its drag and selection ahead of the range.)
             guard !shift, !model.isInstrumentMenuOpen else { return false }
@@ -190,6 +197,10 @@ import NeuralSheetCore
 
         case "l":
             model.toggleLoop()
+            return true
+
+        case "k":
+            model.toggleClick()
             return true
 
         case "t":

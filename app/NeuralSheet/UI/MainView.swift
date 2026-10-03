@@ -132,6 +132,7 @@ struct MainView: View {
         // rather than a sheet, and an app-modal alert stalls the engine's own retries.
         DispatchQueue.main.async {
             model.presentAudioStartFailureIfAny()
+            model.presentSoundBankFailureIfAny()
         }
         persistence.start()
         tracker.start()

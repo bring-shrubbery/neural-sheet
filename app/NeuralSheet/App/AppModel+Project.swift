@@ -49,7 +49,9 @@ extension AppModel {
                        key: editor.key,
                        arrangement: arrangement,
                        chords: editor.chords,
-                       markers: editor.markers)
+                       markers: editor.markers,
+                       clickEnabled: clickEnabled,
+                       clickGainDb: clickGainDb)
     }
 
     /// Everything `project.json` holds, ready to be written.
@@ -70,6 +72,8 @@ extension AppModel {
         state.chords = editor.chords
         state.chordsEdited = editor.chordsEdited
         state.markers = editor.markers
+        state.clickEnabled = clickEnabled
+        state.clickGainDb = clickGainDb
         state.arrangement = arrangement
         state.workspace = workspace.savedWorkspace
         state.playheadSeconds = playheadSeconds
@@ -105,6 +109,8 @@ extension AppModel {
         resetMixerSettingsForLaunch()
         selectedGroups = []
         editor = EditorState()
+        clickEnabled = false
+        clickGainDb = ProjectState.defaultClickGainDb
         arrangement = ScoreArrangement()
         selectedTabNote = nil
         followPlayhead = true

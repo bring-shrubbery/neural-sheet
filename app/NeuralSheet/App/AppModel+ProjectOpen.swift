@@ -96,7 +96,11 @@ extension AppModel {
             setGain(program: program, db: channel.gainDb)
             setMuted(program: program, channel.muted)
             setSoloed(program: program, channel.soloed)
+            setPan(program: program, channel.pan)
         }
+
+        clickEnabled = saved.clickEnabled
+        clickGainDb = min(max(saved.clickGainDb, InstrumentMixerState.minGainDb), InstrumentMixerState.maxGainDb)
 
         // The map, or one segment at the tempo of a file from before it (tempo map design §2).
         editor.grid = saved.tempoGrid

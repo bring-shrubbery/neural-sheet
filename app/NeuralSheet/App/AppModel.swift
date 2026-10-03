@@ -106,7 +106,12 @@ import UniformTypeIdentifiers
     /// Seconds of audio: 0 when there is none, growing live while recording (refreshed by the
     /// display-link tick), `source.duration` otherwise.
     private(set) var duration: Double = 0 {
-        didSet { if duration != oldValue { applyLoop() } }
+        didSet {
+            if duration != oldValue {
+                applyLoop()
+                refreshClickTrack()
+            }
+        }
     }
 
     /// The dropped file's name without its extension, which the toolbar shows and the MIDI exit is
@@ -176,7 +181,11 @@ import UniformTypeIdentifiers
 
     /// The editor's tool, selection, target instrument, snap and grid.
     var editor = EditorState() {
-        didSet { if editor.range != oldValue.range { applyLoop() } }
+        didSet {
+            if editor.range != oldValue.range { applyLoop() }
+            // The click's beats are the grid's (click design §2).
+            if editor.grid != oldValue.grid { refreshClickTrack() }
+        }
     }
 
     /// How the Score tab shows the transcription (arrangement design §3.1). Saved with the
@@ -398,6 +407,28 @@ import UniformTypeIdentifiers
         didSet { engine.masterGainDb = masterGainDb }
     }
 
+    /// The master panel's CLICK and `k`: the metronome on the grid's beats during playback
+    /// (click design §2). Per project; `AppModel+Click.swift` pushes it to the engine.
+    var clickEnabled = false {
+        didSet { applyClickEnabled() }
+    }
+
+    /// The click's fader, −36 (silence) … +6 dB. Per project.
+    var clickGainDb: Double = ProjectState.defaultClickGainDb {
+        didSet { engine.synthBank.setClickGain(db: clickGainDb) }
+    }
+
+    /// The beats still to come in the count-in, as the status bar shows them ("Count-in · 3"),
+    /// or nil when there is no count-in. `AppModel+Click.swift` is its only writer.
+    var countInRemaining: Int?
+
+    /// When each beat of the count-in in progress falls on the click's clock, for that count.
+    @ObservationIgnored var countInBeats: [Double] = []
+
+    /// A sound bank that could not be loaded before a window could say so; shown once one can
+    /// (`AppModel+SoundBank.swift`).
+    @ObservationIgnored var pendingSoundBankFailure: String?
+
     // MARK: - Zoom
 
     var zoomLevel: Double = 1
@@ -542,6 +573,14 @@ import UniformTypeIdentifiers
             self?.handlePlayheadWrapped()
         }
 
+        // The count-in's state machine runs off the engine's own poll (click design §2).
+        engine.onPoll = { [weak self] in
+            self?.pollCountIn()
+        }
+
+        engine.synthBank.setClickGain(db: clickGainDb)
+        applySoundBankSetting()
+
         // Eight rebuilds, backed off, and still nothing: said so, and said again if the next
         // budget -- Play, or a device pick -- runs out the same way.
         engine.onHealExhausted = { [weak self] in
@@ -571,7 +610,8 @@ import UniformTypeIdentifiers
 
     // MARK: - Derived
 
-    var canRecord: Bool { (state == .empty && importJob == nil) || state == .recording }
+    /// Record starts a take from empty, and stops one in progress or cancels its count-in.
+    var canRecord: Bool { (state == .empty && importJob == nil) || state == .recording || state == .countingIn }
 
     var canTranscribe: Bool { state == .audioLoaded && modelSize != nil && !jobActive && importJob == nil }
 
@@ -615,7 +655,7 @@ import UniformTypeIdentifiers
 
             switch Recorder.microphoneAuthorization {
             case .authorized:
-                startRecording()
+                beginRecording()
 
             case .notDetermined:
                 // The prompt stands for as long as the user leaves it; `start()` never waits on it.
@@ -624,7 +664,7 @@ import UniformTypeIdentifiers
                         guard let self, self.state == .empty, self.importJob == nil else { return }
 
                         if granted {
-                            self.startRecording()
+                            self.beginRecording()
                         } else {
                             self.presentMicrophoneDenied()
                         }
@@ -638,14 +678,26 @@ import UniformTypeIdentifiers
         case .recording:
             stopRecording()
 
-        case .countingIn, .audioLoaded, .processing, .populated:
+        case .countingIn:
+            // Record again during the count-in cancels it, without a take (issue #19 §9).
+            cancelCountIn()
+
+        case .audioLoaded, .processing, .populated:
             return
         }
     }
 
-    private func startRecording() {
+    /// Opens the take. `atDownbeat` is the count-in's and Click while recording's: the recorder
+    /// is armed against the click's downbeat and the click's clock is started
+    /// (`AppModel+Click.swift`); otherwise the take starts now, as it always did.
+    func startRecording(atDownbeat: Bool = false) {
+        // Before the recorder is armed: a mark left from the last take would start it at once.
+        if atDownbeat {
+            engine.synthBank.resetDownbeat()
+        }
+
         do {
-            try recorder.start()
+            try recorder.start(atDownbeat: atDownbeat)
         } catch Recorder.RecordError.permissionDenied {
             presentMicrophoneDenied()
             return
@@ -656,7 +708,12 @@ import UniformTypeIdentifiers
         }
 
         duration = 0
-        transition(to: .recording)
+
+        if atDownbeat {
+            startCountIn()
+        } else {
+            transition(to: .recording)
+        }
     }
 
     private func stopRecording() {
@@ -671,6 +728,7 @@ import UniformTypeIdentifiers
         }
 
         installSource(take)
+        endRecordingClick()
     }
 
     private func presentRecordingFailure(_ error: Recorder.RecordError) {
@@ -684,7 +742,7 @@ import UniformTypeIdentifiers
         }
     }
 
-    private func presentMicrophoneDenied() {
+    func presentMicrophoneDenied() {
         showError(
             "Error",
             "Microphone access has not been granted. Allow NeuralSheet to use the microphone in "
@@ -770,8 +828,11 @@ import UniformTypeIdentifiers
     /// `clear()` past the question: the pipeline's, for a take too short to run and for a
     /// recording that failed -- neither has edits to ask about.
     func clearNow() {
-        if state == .recording {
-            // The take is discarded whatever came of it; the files go below.
+        let wasRecording = state == .recording || state == .countingIn
+
+        if wasRecording {
+            // The take is discarded whatever came of it -- a count-in cancelled after its
+            // downbeat may already hold a few blocks; the files go below.
             _ = recorder.stop()
         }
 
@@ -787,6 +848,10 @@ import UniformTypeIdentifiers
         source = nil
         duration = 0
         transition(to: .empty)
+
+        if wasRecording {
+            endRecordingClick()
+        }
     }
 
     /// The transcription only, keeping the audio (§2.6).
@@ -1051,6 +1116,13 @@ import UniformTypeIdentifiers
         engine.synthBank.apply(mixer: mixer)
     }
 
+    /// The strip's pan, −1…1 (click design §2): a mixing setting like the fader, so not on the
+    /// undo stack, but in the project, so it marks it edited.
+    func setPan(program: Int, _ pan: Double) {
+        mixer.setPan(program: program, pan: pan)
+        engine.synthBank.apply(mixer: mixer)
+    }
+
     // MARK: - Models
 
     /// The preference; ``modelSize`` is what a run resolves it to.
@@ -1109,7 +1181,11 @@ import UniformTypeIdentifiers
 
         // Through the tempo map: a tempo and a meter at each change (tempo map design §2).
         // The section markers in the conductor track (markers and lyrics design §2).
-        return MidiFileWriter.data(notes: notes, grid: editor.grid, mode: settings.midiOverflowMode, markers: editor.markers)
+        // Each track's pan as CC 10 (click design §2).
+        let pans = mixer.settings.mapValues(\.pan)
+
+        return MidiFileWriter.data(notes: notes, grid: editor.grid, mode: settings.midiOverflowMode, markers: editor.markers,
+                                   pans: pans)
     }
 
     /// `<source>_NNTranscription.mid`, or `NNTranscription.mid` for a recorded take.
