@@ -114,6 +114,10 @@ extension NeuralSheetApp {
 
             Divider()
 
+            textCommands(model: model)
+
+            Divider()
+
             Button("Revert to Transcription…") { model.revertToTranscription() }
                 .disabled(model.workspace != .edit || !model.hasEdits)
         }
@@ -160,6 +164,56 @@ extension NeuralSheetApp {
             // ⇧⌘H rather than the design's ⌥⌘H, which is the app menu's Hide Others.
             .keyboardShortcut("h", modifiers: [.command, .shift])
             .disabled(!model.canBulkEdit)
+    }
+
+    /// The markers and the lyrics (markers and lyrics design §4). Their keys carry ⌥, which in a
+    /// field types a character (⌥M is µ) or moves by words, and a menu key equivalent is seen
+    /// before the field: so while a field is being typed in — the lyric card's, a marker's name
+    /// — the press is handed to it as typing (``keyBelongsToField()``), the way Undo and Copy
+    /// route theirs. KeyboardShortcuts.swift is untouched: these are menu shortcuts.
+    @ViewBuilder
+    private func textCommands(model: AppModel) -> some View {
+        Menu("Markers") {
+            Button("Add Marker at Playhead") {
+                if !Self.keyBelongsToField() { model.addMarkerAtPlayhead() }
+            }
+            .keyboardShortcut("m", modifiers: .option)
+
+            Button("Previous Marker") {
+                if !Self.keyBelongsToField() { model.seekToPreviousMarker() }
+            }
+            .keyboardShortcut(.leftArrow, modifiers: [.command, .option])
+            .disabled(!model.canSeekToMarkers)
+
+            Button("Next Marker") {
+                if !Self.keyBelongsToField() { model.seekToNextMarker() }
+            }
+            .keyboardShortcut(.rightArrow, modifiers: [.command, .option])
+            .disabled(!model.canSeekToMarkers)
+        }
+        .disabled(!model.canEditMarkers)
+
+        Button("Lyric…") {
+            if !Self.keyBelongsToField() { model.openLyricEntry() }
+        }
+        .keyboardShortcut("l", modifiers: .option)
+        .disabled(!model.canEnterLyric)
+
+        Button("Paste Lyrics…") { model.pasteLyrics() }
+            .disabled(!model.canPasteLyrics)
+    }
+
+    /// When a field has the keyboard and the item was chosen by its key, the key press goes to
+    /// the field as the typing it would have been, and the item does nothing; true then. Chosen
+    /// with the mouse, the item acts whatever has focus.
+    private static func keyBelongsToField() -> Bool {
+        guard textFieldHasFocus, let event = NSApp.currentEvent, event.type == .keyDown,
+              let responder = NSApp.keyWindow?.firstResponder
+        else { return false }
+
+        responder.keyDown(with: event)
+
+        return true
     }
 
     /// Whether a text field is being typed in; the menu's shortcuts then belong to it.
