@@ -79,6 +79,12 @@ struct StatusBar: View {
             segments.append("\(TimeFormat.seconds2(model.duration)) s")
         }
 
+        // While a version is ghosted behind the roll (versions design §2): how far the notes
+        // are from it, by the same matching Show Differences selects with.
+        if let comparison = model.comparisonSummary {
+            segments.append("\(comparison.added) added, \(comparison.missing) missing vs \(comparison.name)")
+        }
+
         return segments
     }
 
