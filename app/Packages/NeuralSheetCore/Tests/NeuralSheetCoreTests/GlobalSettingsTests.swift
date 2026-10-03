@@ -128,3 +128,26 @@ private func makeTempDirectory() throws -> URL {
 
     #expect(GlobalSettings.load(from: url).hiddenRecentProjects == ["/Users/me/Music/Song.neuralsheet"])
 }
+
+@Test func globalSettingsMidiOutRoundTripsAndDefaults() throws {
+    let url = FileManager.default.temporaryDirectory.appendingPathComponent("midiout-\(UUID().uuidString).settings")
+    defer { try? FileManager.default.removeItem(at: url) }
+
+    #expect(GlobalSettings().midiOutUniqueID == nil)
+    #expect(GlobalSettings().midiOutMutesSynth)
+
+    var settings = GlobalSettings()
+    settings.midiOutUniqueID = -123_456
+    settings.midiOutMutesSynth = false
+    try settings.save(to: url)
+
+    #expect(GlobalSettings.load(from: url) == settings)
+
+    // A file from before the keys is None, with the synth muted while sending.
+    let text = try String(contentsOf: url, encoding: .utf8)
+        .replacingOccurrences(of: "<key>midiOutUniqueID</key>", with: "<key>somethingElse</key>")
+        .replacingOccurrences(of: "<key>midiOutMutesSynth</key>", with: "<key>somethingOther</key>")
+    try text.write(to: url, atomically: true, encoding: .utf8)
+    #expect(GlobalSettings.load(from: url).midiOutUniqueID == nil)
+    #expect(GlobalSettings.load(from: url).midiOutMutesSynth)
+}

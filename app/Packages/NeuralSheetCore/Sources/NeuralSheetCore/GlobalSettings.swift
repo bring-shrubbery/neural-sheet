@@ -57,6 +57,15 @@ public struct GlobalSettings: Codable, Equatable, Sendable {
     /// ``RecordingInputSetting/encoded`` has it, or empty for the system default.
     public var recordingInput = ""
 
+    /// Audio → MIDI Output (MIDI out design §2): the chosen CoreMIDI destination's
+    /// `kMIDIPropertyUniqueID`, or nil for None. A destination missing at launch reads as None
+    /// without changing this, so it comes back when the device does.
+    public var midiOutUniqueID: Int32? = nil
+
+    /// Audio → MIDI Output → Mute Built-in Synth While Sending: while a destination is chosen the
+    /// app's own synths are silent, so the DAW's instruments are what is heard.
+    public var midiOutMutesSynth = true
+
     /// What the Count-in picker offers.
     public static let countInChoices = [0, 1, 2]
 
@@ -74,7 +83,9 @@ public struct GlobalSettings: Codable, Equatable, Sendable {
         soundBankPath: String? = nil,
         countInBars: Int = 0,
         clickWhileRecording: Bool = false,
-        recordingInput: String = ""
+        recordingInput: String = "",
+        midiOutUniqueID: Int32? = nil,
+        midiOutMutesSynth: Bool = true
     ) {
         self.modelSize = modelSize
         self.editorScale = editorScale
@@ -90,6 +101,8 @@ public struct GlobalSettings: Codable, Equatable, Sendable {
         self.countInBars = countInBars
         self.clickWhileRecording = clickWhileRecording
         self.recordingInput = recordingInput
+        self.midiOutUniqueID = midiOutUniqueID
+        self.midiOutMutesSynth = midiOutMutesSynth
     }
 
     // MARK: - Files
@@ -121,6 +134,7 @@ public struct GlobalSettings: Codable, Equatable, Sendable {
         case modelSize, editorScale, tooltipsVisible, midiOverflowMode, separateStems
         case showsConfidence, minimumNoteLength, minimumConfidence, showsPitchCurves, hiddenRecentProjects
         case soundBankPath, countInBars, clickWhileRecording, recordingInput
+        case midiOutUniqueID, midiOutMutesSynth
     }
 
     /// Every key falls back to its default, so a file written by a version that did not have one
@@ -155,5 +169,8 @@ public struct GlobalSettings: Codable, Equatable, Sendable {
             try container.decodeIfPresent(Bool.self, forKey: .clickWhileRecording) ?? defaults.clickWhileRecording
         recordingInput =
             try container.decodeIfPresent(String.self, forKey: .recordingInput) ?? defaults.recordingInput
+        midiOutUniqueID = try container.decodeIfPresent(Int32.self, forKey: .midiOutUniqueID)
+        midiOutMutesSynth =
+            try container.decodeIfPresent(Bool.self, forKey: .midiOutMutesSynth) ?? defaults.midiOutMutesSynth
     }
 }
