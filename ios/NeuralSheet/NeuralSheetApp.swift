@@ -10,6 +10,8 @@ struct NeuralSheetApp: App {
         // A take lives in the recordings only until its project saves it into the package, so
         // anything there at launch is left over, as on the Mac.
         AppPaths.standard.sweepRecordings()
+        // The timeline's faces, which its labels are drawn in by PostScript name.
+        FontRegistry.registerBundledFonts()
     }
 
     var body: some Scene {

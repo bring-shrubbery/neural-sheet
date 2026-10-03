@@ -42,7 +42,7 @@ struct InstrumentsSheet: View {
         }
     }
 
-    private func row(title: String, chip: RGBA?, ticked: Bool, action: @escaping () -> Void) -> some View {
+    private func row(title: String, chip: NeuralSheetCore.RGBA?, ticked: Bool, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             HStack(spacing: 12) {
                 Circle()

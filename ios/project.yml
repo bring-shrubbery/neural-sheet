@@ -70,6 +70,27 @@ targets:
       # string table, as the Mac shows them (sub-issue D).
       - path: ../app/NeuralSheet/UI/Localization/CoreNames.swift
       - path: ../app/NeuralSheet/Core.xcstrings
+      # The timeline's drawing, shared with the Mac by path (iOS app design §2, sub-issue E): the
+      # geometry, the palette and text, the playhead layer and each band's `+Drawing.swift`
+      # painter, over the theme, the type ramp and the locale's number formats. The AppKit
+      # halves (the NSViews, their mouse handling, cards and VoiceOver) stay on the Mac; the
+      # iPhone and iPad views over the same painters are in NeuralSheet/Timeline.
+      - path: ../app/NeuralSheet/UI/Theme.swift
+      - path: ../app/NeuralSheet/UI/Theme+Accommodations.swift
+      - path: ../app/NeuralSheet/UI/Fonts.swift
+      - path: ../app/NeuralSheet/UI/Localization/Formats.swift
+      - path: ../app/NeuralSheet/UI/Timeline/TimelineGeometry.swift
+      - path: ../app/NeuralSheet/UI/Timeline/TimelineDrawing.swift
+      - path: ../app/NeuralSheet/UI/Timeline/PlayheadLayer.swift
+      - path: ../app/NeuralSheet/UI/Timeline/PianoRollView+Drawing.swift
+      - path: ../app/NeuralSheet/UI/Timeline/RulerView+Drawing.swift
+      - path: ../app/NeuralSheet/UI/Timeline/WaveformView+Drawing.swift
+      - path: ../app/NeuralSheet/UI/Timeline/KeyboardView+Drawing.swift
+      - path: ../app/NeuralSheet/UI/Timeline/ChordLaneView+Drawing.swift
+      # The faces the timeline draws its labels in (JetBrains Mono NL, Inter), registered at
+      # launch as on the Mac.
+      - path: ../app/NeuralSheet/Resources/Fonts
+        buildPhase: resources
       # What the app and the widget extension share: the Live Activity's attributes.
       - path: Shared
     dependencies:
