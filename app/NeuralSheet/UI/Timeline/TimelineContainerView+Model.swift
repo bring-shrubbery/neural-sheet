@@ -165,6 +165,17 @@ extension TimelineContainerView {
             lastNoteIDs = ids
             roll.setNotes(identified)
             roll.needsDisplay = true
+
+            // Notes past the take widen the content to reach them; relaid only when that moves.
+            let notesEnd = notes.map(\.endTime).max() ?? 0
+            if notesEnd != geometry.notesEnd {
+                let width = geometry.contentWidth
+                geometry.notesEnd = notesEnd
+
+                if geometry.contentWidth != width {
+                    layoutDocument()
+                }
+            }
         }
 
         if first || new.mixer != old.mixer {

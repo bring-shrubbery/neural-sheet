@@ -45,6 +45,9 @@ final class TimelineGeometry {
     var scale: CGFloat = 1
     var zoom: Double = 1
     var duration: Double = 0
+    /// The last note's end, which may lie past the take: an imported MIDI file's notes are kept
+    /// wherever they fall, so the content reaches them (MIDI import design §2).
+    var notesEnd: Double = 0
 
     /// The clip view's width, in real points.
     var viewportWidth: CGFloat = 0
@@ -62,9 +65,12 @@ final class TimelineGeometry {
     var pixelsPerSecond: CGFloat { CGFloat(ZoomMath.basePixelsPerSecond * zoom) * scale }
 
     /// The scrolled content's width in real points: whole authored pixels, never narrower than the
-    /// viewport (`CombinedAudioMidiRegion::resizeAccordingToNumSamplesAvailable`).
+    /// viewport (`CombinedAudioMidiRegion::resizeAccordingToNumSamplesAvailable`), and as far as
+    /// the take or the last note, whichever ends later.
     var contentWidth: CGFloat {
-        CGFloat(ZoomMath.contentWidth(zoom: zoom, duration: duration, viewportWidth: Double(viewportWidth / scale)))
+        let seconds = max(duration, notesEnd)
+
+        return CGFloat(ZoomMath.contentWidth(zoom: zoom, duration: seconds, viewportWidth: Double(viewportWidth / scale)))
             * scale
     }
 
