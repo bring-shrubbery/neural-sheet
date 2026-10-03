@@ -29,17 +29,34 @@ public struct InstrumentEntry: Equatable, Sendable {
     }
 }
 
-/// One instrument's fader, mute and solo. The absent case is the neutral one, so only instruments
-/// the user has actually touched take up room in the state.
+/// One instrument's fader, mute, solo and pan. The absent case is the neutral one, so only
+/// instruments the user has actually touched take up room in the state.
 public struct InstrumentChannelSettings: Equatable, Codable, Sendable {
     public var gainDb: Double = 0
     public var muted = false
     public var soloed = false
+    /// −1 (left) … 1 (right), 0 centred (click design §2): the synth node's pan, and CC 10 in
+    /// the MIDI file.
+    public var pan: Double = 0
 
-    public init(gainDb: Double = 0, muted: Bool = false, soloed: Bool = false) {
+    public init(gainDb: Double = 0, muted: Bool = false, soloed: Bool = false, pan: Double = 0) {
         self.gainDb = gainDb
         self.muted = muted
         self.soloed = soloed
+        self.pan = pan
+    }
+
+    private enum CodingKeys: String, CodingKey { case gainDb, muted, soloed, pan }
+
+    /// Every key falls back to its default, so a project saved before pan existed still opens,
+    /// centred.
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        gainDb = try container.decodeIfPresent(Double.self, forKey: .gainDb) ?? 0
+        muted = try container.decodeIfPresent(Bool.self, forKey: .muted) ?? false
+        soloed = try container.decodeIfPresent(Bool.self, forKey: .soloed) ?? false
+        pan = InstrumentMixerState.clampedPan(try container.decodeIfPresent(Double.self, forKey: .pan) ?? 0)
     }
 }
 
@@ -137,6 +154,8 @@ public struct InstrumentMixerState: Equatable, Codable, Sendable {
 
     public func isSoloed(program: Int) -> Bool { settings[program]?.soloed ?? false }
 
+    public func pan(program: Int) -> Double { settings[program]?.pan ?? 0 }
+
     /// Clamped to the fader's own range, so a value from an old project file or a typed-in number
     /// cannot put the mix outside what the strip can show.
     public mutating func setGain(program: Int, db: Double) {
@@ -150,6 +169,16 @@ public struct InstrumentMixerState: Equatable, Codable, Sendable {
 
     public mutating func setSoloed(program: Int, soloed: Bool) {
         settings[program, default: InstrumentChannelSettings()].soloed = soloed
+    }
+
+    /// Clamped to −1…1; a non-finite value is centred.
+    public mutating func setPan(program: Int, pan: Double) {
+        settings[program, default: InstrumentChannelSettings()].pan = InstrumentMixerState.clampedPan(pan)
+    }
+
+    /// The pan range, −1…1, with anything that is not a number centred.
+    public static func clampedPan(_ pan: Double) -> Double {
+        pan.isFinite ? min(max(pan, -1), 1) : 0
     }
 
     /// Drops every stored fader, mute and solo so the next transcription's instruments start

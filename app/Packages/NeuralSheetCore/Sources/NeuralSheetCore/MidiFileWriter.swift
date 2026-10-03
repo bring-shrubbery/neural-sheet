@@ -11,12 +11,16 @@ public struct MidiTrackSpec: Equatable, Sendable {
     public var channel: Int
     /// Every note of this instrument, in whatever order; the writer sorts them.
     public var notes: [NoteEvent]
+    /// CC 10, 0…127 with 64 the centre (click design §2). Written after the program change only
+    /// when it is not the centre, so a file from an unpanned mix is byte for byte what it was.
+    public var pan: Int
 
-    public init(program: Int, name: String, channel: Int, notes: [NoteEvent]) {
+    public init(program: Int, name: String, channel: Int, notes: [NoteEvent], pan: Int = MidiFileWriter.centrePan) {
         self.program = program
         self.name = name
         self.channel = channel
         self.notes = notes
+        self.pan = pan
     }
 }
 
@@ -32,6 +36,17 @@ public struct MidiTrackSpec: Equatable, Sendable {
 public enum MidiFileWriter {
     /// The file's time base. Every tick in the file is 1/960 of a quarter note at the export tempo.
     public static let ticksPerQuarterNote = 960
+
+    /// CC 10's centre, which a track with no pan is left at by not writing the controller.
+    public static let centrePan = 64
+
+    /// The mixer's −1…1 pan as CC 10: `(pan + 1) × 63.5`, rounded and clamped (click design §2),
+    /// so −1 is 0, 0 is 64 and 1 is 127.
+    public static func midiPan(_ pan: Double) -> Int {
+        let clamped = InstrumentMixerState.clampedPan(pan)
+
+        return min(max(Int(((clamped + 1) * 63.5).rounded()), 0), 127)
+    }
 
     // MARK: - Channels
 
@@ -107,7 +122,10 @@ public enum MidiFileWriter {
     /// ``TempoGrid/exportStartOffsetSeconds`` before the audio, and each note's tick is its
     /// quarter beats from there × 960. Each of `markers` is a marker meta event in the conductor
     /// track at its own tick (markers and lyrics design §2), so a DAW shows the sections.
-    public static func data(notes: [NoteEvent], grid: TempoGrid, mode: MidiOverflowMode, markers: [Marker] = []) -> Data {
+    ///
+    /// `pans` is the mixer's pan by program (−1…1); a program not in it is centred.
+    public static func data(notes: [NoteEvent], grid: TempoGrid, mode: MidiOverflowMode, markers: [Marker] = [],
+                            pans: [Int: Double] = [:]) -> Data {
         let first = grid.segments[0]
         let fileStartSeconds = -grid.exportStartOffsetSeconds
         // Whole bars of the first segment from tick 0 to bar 1, so tick 0 is a bar line exactly.
@@ -147,7 +165,7 @@ public enum MidiFileWriter {
             return ticks(beats: anchor.beats + (seconds - anchor.seconds) * anchor.bpm / 60.0)
         }
 
-        return data(notes: notes, mode: mode, conductor: withMarkers(meta, markers, tick: tick), tick: tick)
+        return data(notes: notes, mode: mode, conductor: withMarkers(meta, markers, tick: tick), pans: pans, tick: tick)
     }
 
     /// The whole MIDI file at one tempo in 4/4, ready to be written to disk or handed to a drag.
@@ -164,7 +182,7 @@ public enum MidiFileWriter {
         // The model gives no meter, so 4/4 is a placeholder.
         let conductor = [(tick: 0, bytes: tempoEvent(bpm: bpm)), (tick: 0, bytes: timeSignatureEvent(.common))]
 
-        return data(notes: notes, mode: mode, conductor: conductor) { seconds in
+        return data(notes: notes, mode: mode, conductor: conductor, pans: [:]) { seconds in
             tick(seconds: seconds, bpm: bpm, startOffsetSeconds: startOffsetSeconds)
         }
     }
@@ -172,7 +190,7 @@ public enum MidiFileWriter {
     /// The file from its conductor track's meta events (in tick order) and a note's tick.
     private static func data(
         notes: [NoteEvent], mode: MidiOverflowMode, conductor: [(tick: Int, bytes: [UInt8])],
-        tick: (Double) -> Int
+        pans: [Int: Double], tick: (Double) -> Int
     ) -> Data {
         var noteCounts: [Int: Int] = [:]
         var notesByProgram: [Int: [NoteEvent]] = [:]
@@ -191,7 +209,8 @@ public enum MidiFileWriter {
                 program: program,
                 name: Instruments.info(forProgram: program).name,
                 channel: map[program] ?? 1,
-                notes: notesByProgram[program] ?? [])
+                notes: notesByProgram[program] ?? [],
+                pan: pans[program].map(midiPan) ?? centrePan)
         }
 
         var bytes = header(trackCount: 1 + specs.count)
@@ -268,6 +287,12 @@ public enum MidiFileWriter {
 
         let program = spec.program == NoteEvent.drumProgram ? drumKitProgram : spec.program
         body += vlq(0) + [0xC0 | channelBits, UInt8(min(max(program, 0), 127))]
+
+        // CC 10 at tick 0, after the program change (click design §2); a centred track has none,
+        // which every player reads as the centre anyway.
+        if spec.pan != centrePan {
+            body += vlq(0) + [0xB0 | channelBits, 10, UInt8(min(max(spec.pan, 0), 127))]
+        }
 
         // Sorting the notes first makes the file a function of the transcription rather than of the
         // order the notes happened to arrive in.
