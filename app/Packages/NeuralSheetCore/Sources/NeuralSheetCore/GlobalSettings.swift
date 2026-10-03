@@ -41,6 +41,21 @@ public struct GlobalSettings: Codable, Equatable, Sendable {
     /// project opened or saved again leaves the list.
     public var hiddenRecentProjects: [String] = []
 
+    /// Settings → Audio → Sound bank (click design §2): the `.sf2` or `.dls` every synth plays
+    /// through, by path, or nil for the system's General MIDI bank. A plain path is enough: the
+    /// app is not sandboxed, so no security-scoped bookmark is needed to reach the file again.
+    public var soundBankPath: String? = nil
+
+    /// Settings → Audio → Count-in: bars of click before a take starts, 0 (off), 1 or 2.
+    public var countInBars = 0
+
+    /// Settings → Audio → Click while recording: the click carries on through the take, through
+    /// the output only.
+    public var clickWhileRecording = false
+
+    /// What the Count-in picker offers.
+    public static let countInChoices = [0, 1, 2]
+
     public init(
         modelSize: ModelSize = .medium,
         editorScale: Double = 1.0,
@@ -51,7 +66,10 @@ public struct GlobalSettings: Codable, Equatable, Sendable {
         minimumNoteLength: Double = 0,
         minimumConfidence: Double = 0,
         showsPitchCurves: Bool = true,
-        hiddenRecentProjects: [String] = []
+        hiddenRecentProjects: [String] = [],
+        soundBankPath: String? = nil,
+        countInBars: Int = 0,
+        clickWhileRecording: Bool = false
     ) {
         self.modelSize = modelSize
         self.editorScale = editorScale
@@ -63,6 +81,9 @@ public struct GlobalSettings: Codable, Equatable, Sendable {
         self.minimumConfidence = minimumConfidence
         self.showsPitchCurves = showsPitchCurves
         self.hiddenRecentProjects = hiddenRecentProjects
+        self.soundBankPath = soundBankPath
+        self.countInBars = countInBars
+        self.clickWhileRecording = clickWhileRecording
     }
 
     // MARK: - Files
@@ -93,6 +114,7 @@ public struct GlobalSettings: Codable, Equatable, Sendable {
     private enum CodingKeys: String, CodingKey {
         case modelSize, editorScale, tooltipsVisible, midiOverflowMode, separateStems
         case showsConfidence, minimumNoteLength, minimumConfidence, showsPitchCurves, hiddenRecentProjects
+        case soundBankPath, countInBars, clickWhileRecording
     }
 
     /// Every key falls back to its default, so a file written by a version that did not have one
@@ -120,5 +142,10 @@ public struct GlobalSettings: Codable, Equatable, Sendable {
         hiddenRecentProjects =
             try container.decodeIfPresent([String].self, forKey: .hiddenRecentProjects)
             ?? defaults.hiddenRecentProjects
+        soundBankPath = try container.decodeIfPresent(String.self, forKey: .soundBankPath)
+        let bars = try container.decodeIfPresent(Int.self, forKey: .countInBars) ?? defaults.countInBars
+        countInBars = GlobalSettings.countInChoices.contains(bars) ? bars : defaults.countInBars
+        clickWhileRecording =
+            try container.decodeIfPresent(Bool.self, forKey: .clickWhileRecording) ?? defaults.clickWhileRecording
     }
 }

@@ -638,7 +638,7 @@ import UniformTypeIdentifiers
         case .recording:
             stopRecording()
 
-        case .audioLoaded, .processing, .populated:
+        case .countingIn, .audioLoaded, .processing, .populated:
             return
         }
     }

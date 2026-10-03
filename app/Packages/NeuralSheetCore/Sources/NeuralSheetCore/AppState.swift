@@ -2,6 +2,9 @@
 public enum AppState: String, Codable, Sendable {
     /// No audio has been recorded or loaded yet.
     case empty
+    /// Record was pressed with a count-in: the click is counting the bars in and the recorder
+    /// starts on the downbeat after them (click design §2). Nothing is captured yet.
+    case countingIn
     /// Audio is currently being captured from the input device.
     case recording
     /// Audio is available but has not been transcribed yet.
@@ -15,7 +18,7 @@ public enum AppState: String, Codable, Sendable {
     public var canPlay: Bool {
         switch self {
         case .audioLoaded, .processing, .populated: true
-        case .empty, .recording: false
+        case .empty, .countingIn, .recording: false
         }
     }
 
@@ -23,7 +26,7 @@ public enum AppState: String, Codable, Sendable {
     public var hasTranscription: Bool {
         switch self {
         case .processing, .populated: true
-        case .empty, .recording, .audioLoaded: false
+        case .empty, .countingIn, .recording, .audioLoaded: false
         }
     }
 }

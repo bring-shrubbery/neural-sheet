@@ -26,6 +26,9 @@ public struct ProjectContent: Equatable, Sendable {
     public var chords: [ChordEvent]
     /// The section markers: project state like the chords (markers and lyrics design §2).
     public var markers: [Marker]
+    /// The click and its level: per-project settings like the mix (click design §2).
+    public var clickEnabled: Bool
+    public var clickGainDb: Double
 
     public init(
         transcription: ProjectTranscription?,
@@ -41,7 +44,9 @@ public struct ProjectContent: Equatable, Sendable {
         key: MusicalKey? = nil,
         arrangement: ScoreArrangement = ScoreArrangement(),
         chords: [ChordEvent] = [],
-        markers: [Marker] = []
+        markers: [Marker] = [],
+        clickEnabled: Bool = false,
+        clickGainDb: Double = ProjectState.defaultClickGainDb
     ) {
         self.transcription = transcription
         self.selectedGroups = selectedGroups
@@ -57,5 +62,7 @@ public struct ProjectContent: Equatable, Sendable {
         self.arrangement = arrangement
         self.chords = chords
         self.markers = markers
+        self.clickEnabled = clickEnabled
+        self.clickGainDb = clickGainDb
     }
 }

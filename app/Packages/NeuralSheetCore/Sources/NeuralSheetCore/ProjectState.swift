@@ -62,6 +62,12 @@ public struct ProjectState: Codable, Equatable, Sendable {
     /// The section markers, in time order (markers and lyrics design §2); empty in a file from
     /// before them.
     public var markers: [Marker] = []
+    /// The master panel's CLICK and its fader (click design §2): per project, off and −6 dB by
+    /// default.
+    public var clickEnabled = false
+    public var clickGainDb: Double = ProjectState.defaultClickGainDb
+
+    public static let defaultClickGainDb = -6.0
 
     // View state: written on every save, never what makes the project edited.
 
@@ -140,7 +146,7 @@ public struct ProjectState: Codable, Equatable, Sendable {
     private enum CodingKeys: String, CodingKey {
         case formatVersion, audioFileName, audioDisplayName, selectedGroups, mixer
         case exportTempo, gridOffsetSeconds, gridDivision, gridSegments, gridSwing, snapEnabled, targetProgram, key, arrangement
-        case chords, chordsEdited, markers
+        case chords, chordsEdited, markers, clickEnabled, clickGainDb
         case workspace, playheadSeconds, playheadCentered, zoomLevel, verticalZoom
     }
 
@@ -172,6 +178,8 @@ public struct ProjectState: Codable, Equatable, Sendable {
         chords = try container.decodeIfPresent([ChordEvent].self, forKey: .chords) ?? defaults.chords
         chordsEdited = try container.decodeIfPresent(Bool.self, forKey: .chordsEdited) ?? defaults.chordsEdited
         markers = try container.decodeIfPresent([Marker].self, forKey: .markers) ?? defaults.markers
+        clickEnabled = try container.decodeIfPresent(Bool.self, forKey: .clickEnabled) ?? defaults.clickEnabled
+        clickGainDb = try container.decodeIfPresent(Double.self, forKey: .clickGainDb) ?? defaults.clickGainDb
         workspace = try container.decodeIfPresent(Workspace.self, forKey: .workspace) ?? defaults.workspace
         playheadSeconds =
             try container.decodeIfPresent(Double.self, forKey: .playheadSeconds) ?? defaults.playheadSeconds
