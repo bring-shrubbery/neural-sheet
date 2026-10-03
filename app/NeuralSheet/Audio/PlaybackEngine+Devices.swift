@@ -70,7 +70,6 @@ nonisolated extension PlaybackEngine {
         guard !isShutDown else { return }
 
         lastDeviceError = nil
-        lastTapError = nil
 
         let wantedInput = inputTap != nil || inputTapInstalled ? recordingInput : nil
 
@@ -208,6 +207,7 @@ nonisolated extension PlaybackEngine {
     /// tap that could not be made is also ``lastTapError``.
     private func makeTapAggregate(kind: ProcessTap.Kind, output: AudioDeviceID) -> (Aggregate?, OSStatus) {
         let tap: ProcessTap
+        lastTapError = nil
 
         do {
             tap = try ProcessTap.create(kind: kind)

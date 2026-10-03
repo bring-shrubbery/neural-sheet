@@ -207,10 +207,11 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
     /// is set, so the two never disagree.
     var lastDeviceError: OSStatus?
 
-    /// Why the last attempt to make a process tap failed, or nil: set beside ``lastDeviceError``
-    /// when the input that could not be used was System Audio or an app, so the model can tell a
-    /// refused permission (`kAudioHardwareIllegalOperationError`) from a device that refused
-    /// (system audio design §2).
+    /// Why the last attempt to make a process tap failed, or nil when it was made: set beside
+    /// ``lastDeviceError`` when the input that could not be used was System Audio or an app, so
+    /// the model can tell a refused permission (`kAudioHardwareIllegalOperationError`) from a
+    /// device that refused (system audio design §2). Only the next attempt clears it -- not the
+    /// rebuild that follows a refusal, whose input is already back on a device.
     var lastTapError: OSStatus?
 
     /// Why the engine last refused to start, or nil if it is running or was stopped deliberately.
