@@ -47,6 +47,44 @@ nonisolated final class TranscriptionStaging: @unchecked Sendable {
 }
 
 extension AppModel {
+    /// Everything the transcription pipeline writes, as one value: `AppModel+Transcription.swift`
+    /// is the only writer, and the read-only members below are what everyone else sees.
+    struct TranscriptionState: Equatable {
+        /// The model's own output accumulated across chunks; `notes` is derived from it.
+        var rawNotes: [NoteEvent] = []
+        /// The post-processed notes: what the piano roll draws, the synth plays, the export writes.
+        var notes: [NoteEvent] = []
+        /// Seconds: every note ending before this has been reported (the decode frontier).
+        var finalizedThrough: Double = 0
+        /// 0…1 while processing, 1 once populated.
+        var progress: Float = 0
+        /// True from the cancel click until the engine acknowledges it at the next chunk boundary.
+        var cancelLatched = false
+        /// True from `transcriber.run` until its completion has been handled on the main actor.
+        var jobActive = false
+        /// The checkpoint the run in flight loaded, for the unsupported-version message.
+        var jobModelPath: URL?
+        /// "Transcribe" or "Stems": what the run in flight is, for the automatic version its
+        /// landing saves first (versions design §2).
+        var jobRunName: String?
+    }
+
+    /// The post-processed notes: what the piano roll draws, what the synth plays, what is exported.
+    var notes: [NoteEvent] { transcription.notes }
+
+    /// Seconds: every note ending before this has been reported (the decode frontier).
+    var finalizedThrough: Double { transcription.finalizedThrough }
+
+    /// 0…1 while processing, 1 once populated.
+    var transcriptionProgress: Float { transcription.progress }
+
+    /// True from the cancel click until the engine acknowledges it at the next chunk boundary. The
+    /// progress group dims on it (§3.4).
+    var cancelLatched: Bool { transcription.cancelLatched }
+
+    /// True while a run owns the notes: from `transcriber.run` until its completion has landed.
+    var jobActive: Bool { transcription.jobActive }
+
     /// The 30 Hz drain's rate (§11.5).
     private static let drainHz = 30.0
 
