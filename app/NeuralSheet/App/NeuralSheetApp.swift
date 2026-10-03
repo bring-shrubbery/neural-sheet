@@ -59,6 +59,13 @@ struct NeuralSheetApp: App {
             audioMenu(model: model)
         }
 
+        // File → Batch Transcribe… (batch and CLI design §2): one window, beside the project's.
+        Window("Batch Transcribe", id: "batch") {
+            BatchWindow(model: model)
+        }
+        .defaultSize(width: 720, height: 640)
+        .restorationBehavior(.disabled)
+
         // ⌘, and the app menu's "Settings…", for free.
         Settings {
             SettingsView(model: model, audioDevices: audioMenu)
@@ -114,6 +121,10 @@ struct NeuralSheetApp: App {
             Button("Import MIDI…") { model.importMIDI() }
                 .keyboardShortcut("i", modifiers: [.command, .option])
                 .disabled(!model.canImportMIDI)
+
+            Divider()
+
+            BatchTranscribeMenuItem()
         }
 
         CommandGroup(replacing: .saveItem) {
@@ -289,6 +300,15 @@ struct NeuralSheetApp: App {
         ForEach(devices) { device in
             Toggle(device.name, isOn: Binding(get: { chosen == device }, set: { _ in choose(device) }))
         }
+    }
+}
+
+/// File → Batch Transcribe…: a view of its own so it can reach `openWindow`.
+private struct BatchTranscribeMenuItem: View {
+    @Environment(\.openWindow) private var openWindow
+
+    var body: some View {
+        Button("Batch Transcribe…") { openWindow(id: "batch") }
     }
 }
 
