@@ -25,9 +25,10 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
 
     /// How long the health check waits before its first retry, how far that doubles, and how many
     /// retries it gets before it stops and leaves ``lastStartError`` for the UI to show.
-    private static let healBackoffSeconds = 0.25
-    private static let healBackoffMaxSeconds = 5.0
-    private static let healAttemptLimit = 8
+    // Internal: the health check in PlaybackEngine+Poll.swift reads them.
+    static let healBackoffSeconds = 0.25
+    static let healBackoffMaxSeconds = 5.0
+    static let healAttemptLimit = 8
 
     let engine = AVAudioEngine()
 
@@ -56,7 +57,8 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
     var retiredSources: [SourceAudio] = []
 
     /// Polls ``RenderState/wrapGeneration``, so the render block never has to dispatch.
-    private var wrapPoll: DispatchSourceTimer?
+    // Internal: PlaybackEngine+Poll.swift makes it.
+    var wrapPoll: DispatchSourceTimer?
     // Internal: PlaybackEngine+Source.swift supersedes a pending wrap through it.
     var lastWrapGeneration = 0
 
@@ -64,23 +66,28 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
     var inputTapInstalled = false
 
     /// Guards ``rebuildGraph(_:)`` against re-entering itself.
-    private var isRebuilding = false
+    // Internal: the health check in PlaybackEngine+Poll.swift reads it.
+    var isRebuilding = false
 
     /// When the last rebuild finished, so a graph that cannot start is not rebuilt every tick.
-    private var lastRebuild = Date.distantPast
+    // Internal: the health check in PlaybackEngine+Poll.swift reads it.
+    var lastRebuild = Date.distantPast
 
     /// True between ``start()`` and ``stopEngine()``. What the health check compares the engine's
     /// actual state against.
-    private var shouldRun = false
+    // Internal: the health check in PlaybackEngine+Poll.swift reads it.
+    var shouldRun = false
 
     /// How long the health check waits before its next attempt, and how many it has spent. Both are
     /// reset by a successful start, by Play and by the user choosing a device.
-    private var healDelay = PlaybackEngine.healBackoffSeconds
-    private var healAttempts = 0
+    // Internal: the health check in PlaybackEngine+Poll.swift spends them.
+    var healDelay = PlaybackEngine.healBackoffSeconds
+    var healAttempts = 0
 
     /// True once the health check has spent its budget on an engine that will not start, until a
     /// fresh budget is handed out. What ``onHealExhausted`` announces.
-    private(set) var healExhausted = false
+    // Internal setter: the health check in PlaybackEngine+Poll.swift sets it.
+    var healExhausted = false
 
     /// Set while a failed device switch is being rolled back, so the rollback's `didSet` does not
     /// start another reconfiguration.
@@ -335,35 +342,6 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
         engine.disconnectNodeOutput(masterMixer)
     }
 
-    /// CoreAudio reshaping the graph under the engine — the default device changing, a device going
-    /// away, the format the hardware settles on after a switch — stops the engine and invalidates
-    /// its connections, sometimes a moment after the call that caused it returned. Rather than
-    /// chasing the notification, the poll that watches for the end of the take also watches for an
-    /// engine that should be running and is not, and rebuilds it.
-    private func healIfNeeded() {
-        guard shouldRun, !engine.isRunning, !isRebuilding,
-            healAttempts < Self.healAttemptLimit,
-            Date().timeIntervalSince(lastRebuild) > healDelay
-        else { return }
-
-        healAttempts += 1
-        rebuildGraph {}
-
-        if engine.isRunning {
-            resetHealBudget()
-        } else {
-            // Backing off rather than hammering: an engine that cannot start is usually waiting on
-            // hardware that is not coming back, and a full graph rebuild four times a second for
-            // the rest of the session is worse than giving up and saying so.
-            healDelay = Swift.min(healDelay * 2, Self.healBackoffMaxSeconds)
-
-            if healAttempts >= Self.healAttemptLimit {
-                healExhausted = true
-                onHealExhausted?()
-            }
-        }
-    }
-
     /// The common path for "the hardware underneath us changed": our own device switch, and the
     /// health check finding an engine that stopped on its own.
     func rebuildGraph(_ beforeRebuild: () -> Void) {
@@ -450,35 +428,5 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
         }
 
         return nsError.localizedDescription
-    }
-
-    // MARK: - Wrap notification
-
-    private func startWrapPoll() {
-        wrapPoll?.cancel()
-        lastWrapGeneration = state.wrapGeneration.load(ordering: .relaxed)
-
-        let timer = DispatchSource.makeTimerSource(queue: .main)
-        timer.schedule(deadline: .now(), repeating: 1.0 / 30.0)
-        timer.setEventHandler { [weak self] in
-            guard let self else { return }
-
-            self.healIfNeeded()
-            self.onPoll?()
-
-            let generation = self.state.wrapGeneration.load(ordering: .relaxed)
-            guard generation != self.lastWrapGeneration else { return }
-
-            self.lastWrapGeneration = generation
-
-            // The current playhead, not 0: the block rewound to 0 when it wrapped, but up to 33 ms
-            // have passed and a seek in that window has already moved the transport somewhere else.
-            self.synthBank.scheduler.seek(toSeconds: self.playheadSeconds)
-            self.synthBank.allNotesOff()
-            self.synthBank.midiOut.panic()
-            self.onPlayheadWrapped?()
-        }
-        timer.resume()
-        wrapPoll = timer
     }
 }
