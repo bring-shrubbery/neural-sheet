@@ -220,17 +220,11 @@ extension AppModel {
 
         switch result {
         case let .success(final):
-            transcription.finalizedThrough = duration
-            transcription.progress = 1
-            transcription.cancelLatched = false
-            staging.reset()
             // Replaces the accumulation rather than extending it: the run's own result is
             // authoritative (the streamed one is missing any note the model never closed), and
             // it becomes the editable document. The After transcription settings apply here and
             // not to the stream: the roll shows what the model said, the landing what is kept.
-            let landing = NoteEvent.landing(final.map(NoteEvent.init(engineNote:)), settings: settings)
-            installDocument(rawNotes: landing)
-            transition(to: .populated)
+            landTranscription(NoteEvent.landing(final.map(NoteEvent.init(engineNote:)), settings: settings))
 
         case .failure(.cancelled):
             // Back to where the Transcribe button was, with the audio still loaded: cancelling a
@@ -240,6 +234,18 @@ extension AppModel {
         case let .failure(error):
             failRun(reason: AppModel.failureReason(error, modelPath: modelPath))
         }
+    }
+
+    /// Notes become the transcription: the whole take finalised, the document made, `populated`.
+    /// A finished run's landing, and an imported MIDI file's on an untranscribed take (MIDI
+    /// import design §2), which is why it is not inside ``handleFinished(_:)``.
+    func landTranscription(_ notes: [NoteEvent]) {
+        transcription.finalizedThrough = duration
+        transcription.progress = 1
+        transcription.cancelLatched = false
+        staging.reset()
+        installDocument(rawNotes: notes)
+        transition(to: .populated)
     }
 
     /// Ends the run with the failure dialog. Also where a stems run lands when the separation
