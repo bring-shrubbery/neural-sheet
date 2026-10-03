@@ -101,6 +101,13 @@ import NeuralSheetCore
 
         let shift = modifiers.contains(.shift)
 
+        // A ruler or a keyboard column Full Keyboard Access has focused takes the arrows itself
+        // (a11y design §2); nothing takes the focus without keyboard navigation.
+        if window.firstResponder is OwnsArrowKeys,
+           [KeyCode.left, KeyCode.right, KeyCode.up, KeyCode.down].contains(event.keyCode) {
+            return false
+        }
+
         // Before the repeat guard: a held arrow keeps nudging.
         if model.workspace == .edit, let handled = handleEditorKey(event, shift: shift) {
             return handled
