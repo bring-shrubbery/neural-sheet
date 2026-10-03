@@ -48,7 +48,8 @@ extension AppModel {
                        targetProgram: editor.targetProgram,
                        key: editor.key,
                        arrangement: arrangement,
-                       chords: editor.chords)
+                       chords: editor.chords,
+                       markers: editor.markers)
     }
 
     /// Everything `project.json` holds, ready to be written.
@@ -68,6 +69,7 @@ extension AppModel {
         state.key = editor.key
         state.chords = editor.chords
         state.chordsEdited = editor.chordsEdited
+        state.markers = editor.markers
         state.arrangement = arrangement
         state.workspace = workspace.savedWorkspace
         state.playheadSeconds = playheadSeconds

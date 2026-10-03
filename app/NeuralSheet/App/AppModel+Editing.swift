@@ -23,6 +23,16 @@ struct EditorState: Equatable {
     var chords: [ChordEvent] = []
     /// Whether the user changed the list since Detect filled it, so Detect asks before replacing.
     var chordsEdited = false
+    /// The section markers in time order (markers and lyrics design §2): the ruler's flags, the
+    /// score's rehearsal marks and both exports. Saved with the project; `AppModel+Markers.swift`
+    /// writes it.
+    var markers: [Marker] = []
+    /// The marker just added from the menu, for the timeline to open its card on so it can be
+    /// named at once. Transient; the timeline hands it back once shown.
+    var markerToRename: UUID?
+    /// The note the lyric card is open on (markers and lyrics design §2), nil with none.
+    /// Transient: `AppModel+Lyrics.swift` moves it along as syllables are entered.
+    var lyricNote: NoteID?
     /// The stretch marked on the ruler for Re-transcribe (region design §4.2), half-open seconds.
     /// Transient: not in the project file.
     var range: Range<Double>?

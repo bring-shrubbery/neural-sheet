@@ -1108,7 +1108,8 @@ import UniformTypeIdentifiers
         guard canExport else { return nil }
 
         // Through the tempo map: a tempo and a meter at each change (tempo map design §2).
-        return MidiFileWriter.data(notes: notes, grid: editor.grid, mode: settings.midiOverflowMode)
+        // The section markers in the conductor track (markers and lyrics design §2).
+        return MidiFileWriter.data(notes: notes, grid: editor.grid, mode: settings.midiOverflowMode, markers: editor.markers)
     }
 
     /// `<source>_NNTranscription.mid`, or `NNTranscription.mid` for a recorded take.
@@ -1150,13 +1151,14 @@ import UniformTypeIdentifiers
 
     /// The score as bytes, or nil unless the transcription is finished (MusicXML design §4):
     /// the notes quantized to the grid, the parts as the arrangement shows them, titled after
-    /// the sheet or the take, with the chord symbols as harmony (chord symbols design §2).
+    /// the sheet or the take, with the chord symbols as harmony (chord symbols design §2) and the
+    /// markers as rehearsal marks (markers and lyrics design §2).
     func musicXMLData() -> Data? {
         guard canExport else { return nil }
 
         return MusicXMLWriter.data(notes: notes, ids: document?.notes.map { Optional($0.id) }, grid: editor.grid,
                                    key: editor.key, arrangement: arrangement, takeName: droppedFileName,
-                                   chords: editor.chords)
+                                   chords: editor.chords, markers: editor.markers)
     }
 
     /// `<source>_NNTranscription.musicxml`, or `NNTranscription.musicxml` for a recorded take.

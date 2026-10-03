@@ -127,7 +127,7 @@ extension AppModel {
     func scoreDocument() -> ScoreDocument {
         let ids = document?.notes.map { Optional($0.id) }
         return ScoreDocument.build(notes: notes, ids: ids, grid: editor.grid, key: editor.key, arrangement: arrangement,
-                                   chords: editor.chords)
+                                   chords: editor.chords, markers: editor.markers)
     }
 
     /// Drops every manual string choice and the tab selection: for a document whose ids start

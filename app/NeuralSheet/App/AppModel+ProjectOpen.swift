@@ -104,6 +104,7 @@ extension AppModel {
         editor.key = saved.key
         editor.chords = saved.chords.sortedChords()
         editor.chordsEdited = saved.chordsEdited
+        editor.markers = saved.markers.sortedMarkers()
         arrangement = saved.arrangement
         followPlayhead = saved.playheadCentered
         zoomLevel = saved.zoomLevel
