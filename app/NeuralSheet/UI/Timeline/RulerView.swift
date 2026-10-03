@@ -61,6 +61,11 @@ final class RulerView: NSView {
     /// Authored pixels a press may wander and still be a click.
     static let dragThreshold: CGFloat = 3
 
+    /// The playhead VoiceOver reads as the ruler's value (`+Accessibility`); the container's.
+    var accessibilityPlayhead: (() -> Double)?
+    /// The flags' elements, kept while the flags stay the same (`+Accessibility`).
+    var accessibilityFlags: (flags: [String], elements: [DrawnElement])?
+
     let playhead = PlayheadView(drawsTriangle: false)
 
     init(geometry: TimelineGeometry) {

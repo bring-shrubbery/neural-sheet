@@ -78,6 +78,11 @@ final class PianoRollView: NSView {
 
     private var trackingArea: NSTrackingArea?
 
+    /// VoiceOver's notes for the band, made when it asks and dropped when the notes or the band
+    /// change (`+Accessibility`); the model's side of their actions.
+    var accessibilityNotes: [DrawnElement]?
+    weak var accessibilityHandler: RollAccessibilityHandler?
+
     /// How far a drum hit is widened for drawing (`DRUM_MIN_DRAWN_SECONDS`).
     static let drumMinDrawnSeconds = 0.1
     static let mutedNoteAlpha: CGFloat = 0.16
@@ -127,6 +132,7 @@ final class PianoRollView: NSView {
         ids = placeable.map(\.id)
         rebuildBuckets()
         refreshPreviewIndices()
+        invalidateAccessibilityNotes()
     }
 
     private func rebuildBuckets() {
@@ -141,6 +147,7 @@ final class PianoRollView: NSView {
 
         selection = new
         setNeedsDisplay(visibleRect)
+        accessibilitySelectionDidChange()
     }
 
     /// The drag in progress, or nil once it ends; the named notes are drawn where they would land.

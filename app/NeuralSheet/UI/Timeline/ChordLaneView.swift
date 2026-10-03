@@ -37,7 +37,11 @@ final class ChordLaneView: NSView {
     let playhead = PlayheadView(drawsTriangle: false)
 
     /// Each event's text, built when the list or the key changes rather than in `draw`.
-    private var labels: [String] = []
+    private(set) var labels: [String] = []
+
+    /// VoiceOver's symbols, made when it asks and dropped with the labels or a band slide
+    /// (`+Accessibility`).
+    var accessibilityChords: [DrawnElement]?
 
     /// The press on a symbol: which, where, and where the drag has it now.
     private struct Press {
@@ -83,6 +87,7 @@ final class ChordLaneView: NSView {
     private func rebuildLabels() {
         labels = chords.map { $0.text(in: key) }
         needsDisplay = true
+        invalidateAccessibilityChords()
     }
 
     // MARK: - Drawing

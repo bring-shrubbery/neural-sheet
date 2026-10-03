@@ -223,6 +223,7 @@ final class TimelineContainerView: NSView {
         }
 
         installOverlays()
+        installAccessibility()
     }
 
     required init?(coder: NSCoder) {

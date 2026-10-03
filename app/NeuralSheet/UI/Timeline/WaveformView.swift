@@ -35,6 +35,9 @@ final class WaveformView: NSView {
     /// The click is a seek; the container owns the model.
     var onSeek: ((Double) -> Void)?
 
+    /// The level VoiceOver reads as the strip's value, in dB (`+Accessibility`); the container's.
+    var accessibilityLevel: (() -> Double)?
+
     let playhead = PlayheadView(drawsTriangle: true)
     let wash = FillView(colour: TimelinePalette.accentWashWave)
     let washEdge = FillView(colour: TimelinePalette.accentWashEdge)
