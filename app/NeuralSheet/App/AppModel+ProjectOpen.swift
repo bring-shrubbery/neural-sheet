@@ -98,9 +98,8 @@ extension AppModel {
             setSoloed(program: program, channel.soloed)
         }
 
-        exportTempo = saved.exportTempo
-        editor.grid.offsetSeconds = max(0, saved.gridOffsetSeconds)
-        editor.grid.division = saved.gridDivision
+        // The map, or one segment at the tempo of a file from before it (tempo map design §2).
+        editor.grid = saved.tempoGrid
         editor.snapEnabled = saved.snapEnabled
         editor.key = saved.key
         arrangement = saved.arrangement

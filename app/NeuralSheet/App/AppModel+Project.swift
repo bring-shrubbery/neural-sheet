@@ -42,6 +42,7 @@ extension AppModel {
                        exportTempo: exportTempo,
                        gridOffsetSeconds: editor.grid.offsetSeconds,
                        gridDivision: editor.grid.division,
+                       gridSegments: editor.grid.segments,
                        snapEnabled: editor.snapEnabled,
                        targetProgram: editor.targetProgram,
                        key: editor.key,
@@ -58,6 +59,7 @@ extension AppModel {
         state.exportTempo = exportTempo
         state.gridOffsetSeconds = editor.grid.offsetSeconds
         state.gridDivision = editor.grid.division
+        state.gridSegments = editor.grid.segments
         state.snapEnabled = editor.snapEnabled
         state.targetProgram = editor.targetProgram
         state.key = editor.key
