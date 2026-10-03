@@ -1,51 +1,6 @@
 import Foundation
 import NeuralSheetCore
 
-/// Where the engine thread leaves each chunk for the main actor's 30 Hz drain (§3.4, §11.5).
-///
-/// The engine reports once per 5 s of audio, on its own thread; the drain runs at the timer's
-/// pace and finds something only at the model's. Keeping the hand-off in a buffer rather than
-/// hopping every update onto the main actor keeps the C++ shape: nothing the engine does can touch
-/// the notes the piano roll is drawing, and a cancelled or failed run leaves nothing half-applied.
-///
-/// `@unchecked Sendable`: every field is guarded by `lock`.
-nonisolated final class TranscriptionStaging: @unchecked Sendable {
-    private let lock = NSLock()
-    private var notes: [EngineNote] = []
-    private var finalizedThrough = 0.0
-    private var progress: Float = 0
-
-    /// The engine thread: adds one chunk's notes and moves the frontier and the progress.
-    func stage(_ update: EngineUpdate) {
-        lock.lock()
-        notes.append(contentsOf: update.newNotes)
-        finalizedThrough = max(finalizedThrough, update.finalizedThrough)
-        progress = max(progress, update.progress)
-        lock.unlock()
-    }
-
-    /// The main actor: takes everything staged since the last drain. The frontier and the progress
-    /// are left as they are, so a drain that finds no notes still reads the latest of each.
-    func drain() -> (notes: [EngineNote], finalizedThrough: Double, progress: Float) {
-        lock.lock()
-        defer { lock.unlock() }
-
-        let drained = notes
-        notes = []
-
-        return (drained, finalizedThrough, progress)
-    }
-
-    /// Before a run, and after one ends: nothing from the last run may leak into the next.
-    func reset() {
-        lock.lock()
-        notes = []
-        finalizedThrough = 0
-        progress = 0
-        lock.unlock()
-    }
-}
-
 extension AppModel {
     /// Everything the transcription pipeline writes, as one value: `AppModel+Transcription.swift`
     /// is the only writer, and the read-only members below are what everyone else sees.
@@ -125,7 +80,7 @@ extension AppModel {
         transcription = TranscriptionState()
 
         // 5. The selection is snapshotted here; the run only ever sees the copy.
-        let groups = selectedGroups.map(\.rawValue)
+        let groups = TranscriptionPlan.passes(selected: selectedGroups, stems: false)[0].engineGroups
 
         // 6. Every instrument this run finds is a new one: it starts at unity and unmuted rather
         //    than inheriting a fader from whatever was transcribed before.
@@ -218,9 +173,9 @@ extension AppModel {
             transcription.progress = drained.progress
         }
 
-        guard !drained.notes.isEmpty || drained.finalizedThrough > transcription.finalizedThrough else { return }
+        guard drained.advances(past: transcription.finalizedThrough) else { return }
 
-        transcription.rawNotes.append(contentsOf: drained.notes.map(NoteEvent.init(engineNote:)))
+        transcription.rawNotes.append(contentsOf: drained.rawNotes)
         transcription.finalizedThrough = max(transcription.finalizedThrough, drained.finalizedThrough)
 
         applyPostProcessing()
@@ -229,7 +184,7 @@ extension AppModel {
     /// `_updatePostProcessing`: the raw notes become what is drawn, played and exported. While a
     /// run streams there is no document; the merge is the whole post-processing.
     private func applyPostProcessing() {
-        transcription.notes = mergeOverlappingNotesWithSamePitch(transcription.rawNotes)
+        transcription.notes = TranscriptionRun.streamedNotes(transcription.rawNotes)
         publishNotes()
     }
 
@@ -273,7 +228,7 @@ extension AppModel {
             // not to the stream: the roll shows what the model said, the landing what is kept.
             // The notes it replaces are saved as a version first (versions design §2).
             saveVersionBeforeRun(runName)
-            landTranscription(NoteEvent.landing(final.map(NoteEvent.init(engineNote:)), settings: settings))
+            landTranscription(TranscriptionRun.landing(final, settings: settings))
 
         case .failure(.cancelled):
             // Back to where the Transcribe button was, with the audio still loaded: cancelling a
@@ -281,7 +236,7 @@ extension AppModel {
             clearTranscriptionNow()
 
         case let .failure(error):
-            failRun(reason: AppModel.failureReason(error, modelPath: modelPath))
+            failRun(reason: TranscriptionRun.failureReason(error, modelPath: modelPath))
         }
     }
 
@@ -307,33 +262,6 @@ extension AppModel {
 
         clearTranscriptionNow()
 
-        showError(AppModel.transcriptionFailedTitle, AppModel.transcriptionFailedBody(reason))
-    }
-
-    /// The `<reason>` of the failure dialog: the library's own description, except for a checkpoint
-    /// from another release, which is the first place such a file shows up and says what to do.
-    /// Shared with the region run's failure dialog.
-    nonisolated static func failureReason(_ error: EngineError, modelPath: URL?) -> String {
-        if error.isUnsupportedVersion, let modelPath {
-            let file = modelPath.lastPathComponent
-
-            return String(localized: "\(file) is for another version of NeuralSheet. Delete it from the models folder, then download it again",
-                          comment: "The reason in a failed transcription's alert: the model file is from another release")
-        }
-
-        // `EngineError.message` rather than the library's `description` directly: only
-        // `TranscriptionEngine` imports `NeuralSheetEngine`, so the app sees the wording
-        // through its own type.
-        return error.message
-    }
-}
-
-extension NoteEvent {
-    /// The engine's note as the app's: the same span, pitch, program and confidence, with the fixed
-    /// amplitude of 100/127 the model gives every note (it predicts no velocity).
-    nonisolated init(engineNote note: EngineNote) {
-        self.init(
-            startTime: note.onset, endTime: note.offset, pitch: note.pitch, program: note.program,
-            confidence: note.confidence)
+        showError(TranscriptionRun.failedTitle, TranscriptionRun.failedBody(reason))
     }
 }

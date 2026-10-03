@@ -358,7 +358,7 @@ nonisolated final class HeadlessTranscription: @unchecked Sendable {
                         continuation.resume(returning: .failure(.cancelled))
                     case let .failure(error):
                         continuation.resume(returning: .failure(.transcription(
-                            AppModel.failureReason(error, modelPath: modelPath))))
+                            TranscriptionRun.failureReason(error, modelPath: modelPath))))
                     }
                 })
         }

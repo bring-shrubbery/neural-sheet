@@ -126,9 +126,9 @@ extension AppModel {
             break
 
         case let .failure(error):
-            let reason = AppModel.failureReason(error, modelPath: job.modelPath)
+            let reason = TranscriptionRun.failureReason(error, modelPath: job.modelPath)
 
-            showError(AppModel.transcriptionFailedTitle, AppModel.transcriptionFailedBody(reason))
+            showError(TranscriptionRun.failedTitle, TranscriptionRun.failedBody(reason))
         }
     }
 

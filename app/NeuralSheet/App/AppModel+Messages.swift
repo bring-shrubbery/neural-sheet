@@ -34,16 +34,4 @@ extension AppModel {
     static var saveFailedTitle: String {
         String(localized: "Could not save the project.", comment: "Alert title: File → Save or Save As… failed")
     }
-
-    static var transcriptionFailedTitle: String {
-        String(localized: "Transcription failed.", comment: "Alert title: a run failed")
-    }
-
-    /// The model's failure, with its reason when there is one.
-    static func transcriptionFailedBody(_ reason: String) -> String {
-        reason.isEmpty
-            ? String(localized: "The transcription model could not be loaded or run.", comment: "Alert body: a run failed without a reason")
-            : String(localized: "The transcription model could not be loaded or run: \(reason).",
-                     comment: "Alert body: a run failed; the reason is the engine's, or a sentence from this catalog")
-    }
 }
