@@ -90,6 +90,41 @@ jobs:
         working-directory: app
         run: Scripts/check-localizations.sh CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
 
+  ios:
+    name: Build the iOS app
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: recursive
+      - name: Select the newest installed Xcode
+        run: |
+          # shellcheck disable=SC2012
+          XCODE=$(ls -d /Applications/Xcode_*.app | sort -V | tail -1)
+          echo "using $XCODE"
+          sudo xcode-select -s "$XCODE"
+          xcodebuild -version
+      - name: Cache the engine build
+        uses: actions/cache@v6
+        with:
+          path: app/build/engine/iossimulator
+          key: engine-iossimulator-${{ runner.os }}-${{ hashFiles('.gitmodules') }}-${{ hashFiles('app/Scripts/build-engine.sh') }}
+      - name: Build (Debug, simulator, unsigned)
+        working-directory: ios
+        run: |
+          set -o pipefail
+          xcodebuild -project NeuralSheet-iOS.xcodeproj -scheme NeuralSheet \
+            -configuration Debug -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO \
+            build 2>&1 | tee build.log | tail -40
+      - name: Fail on warnings in our own sources
+        working-directory: ios
+        run: |
+          if grep -E "/(ios/NeuralSheet|app/NeuralSheet|app/Packages)/.*warning:" build.log; then
+            echo "::error::warnings in NeuralSheet sources"; exit 1
+          fi
+          echo "no warnings in NeuralSheet sources"
+
   web:
     name: Website
     runs-on: ubuntu-latest
