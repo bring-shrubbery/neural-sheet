@@ -40,6 +40,7 @@ Work towards v2 starts here: user-experience improvements beyond NeuralNote pari
 - Name the sections and write the words: markers on the ruler (⌥M) become rehearsal marks in the score and the exports, and Edit → Lyric… or Paste Lyrics… puts syllables under the voice line.
 - Play the MIDI through your own SoundFont (Settings → Audio), pan each instrument from its strip, hear a click that follows the tempo (CLICK in the master panel, `k`), and record to a count-in.
 - Record what your Mac is playing, or one app, with Audio → Input → System Audio; no loopback driver needed.
+- Send the transcription to a DAW: Audio → MIDI Output plays it live into any MIDI destination, and the MIDI chip on the Edit and Score toolbars drags the file straight onto a track.
 
 ### Changed
 
