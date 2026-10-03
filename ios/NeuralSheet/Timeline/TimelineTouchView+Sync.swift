@@ -23,6 +23,7 @@ extension TimelineTouchView {
         var peaksIdentity: ObjectIdentifier?
         var zoomLevel: Double = 1
         var verticalZoom: Double = -1
+        var transportRunning = false
     }
 
     /// What the model holds now, read inside the observation tracker.
@@ -44,7 +45,8 @@ extension TimelineTouchView {
                         frontier: model.run.map(\.finalizedThrough),
                         peaksIdentity: model.source.map { ObjectIdentifier($0.peaks) },
                         zoomLevel: model.zoomLevel,
-                        verticalZoom: model.verticalZoom)
+                        verticalZoom: model.verticalZoom,
+                        transportRunning: model.isTransportRunning)
     }
 
     /// Applies what changed since the last sync, then arms the next one.

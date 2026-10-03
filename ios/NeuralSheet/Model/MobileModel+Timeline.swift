@@ -30,6 +30,7 @@ extension MobileModel {
 
         if engine.isPlaying {
             engine.pause()
+            isTransportRunning = false
             playheadSeconds = engine.playheadSeconds
             return
         }
@@ -37,6 +38,7 @@ extension MobileModel {
         guard startEngineIfNeeded() else { return }
 
         engine.play()
+        isTransportRunning = true
     }
 
     /// A tap on the roll's empty lanes, the ruler or the waveform: the playhead there, as the

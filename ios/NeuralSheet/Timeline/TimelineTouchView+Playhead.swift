@@ -32,6 +32,12 @@ extension TimelineTouchView {
         updatePlayhead()
 
         let playing = model.isPlaying
+
+        // The take ran out under the transport: Play is Play again.
+        if !playing, model.isTransportRunning {
+            model.isTransportRunning = false
+            model.playheadSeconds = model.engine.playheadSeconds
+        }
         let touching = scrollView.isTracking || scrollView.isDecelerating || pinch.axis != nil
 
         if playing, model.followPlayhead, !touching {

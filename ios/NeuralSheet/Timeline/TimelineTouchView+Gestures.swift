@@ -133,7 +133,9 @@ extension TimelineTouchView: UIGestureRecognizerDelegate {
             let a = recognizer.location(ofTouch: 0, in: self)
             let b = recognizer.location(ofTouch: 1, in: self)
 
-            pinch.axis = abs(a.y - b.y) > abs(a.x - b.x) ? .pitch : .time
+            // Pitch only for fingers spread clearly up and down; a diagonal pinch, the usual one,
+            // zooms time.
+            pinch.axis = abs(a.y - b.y) > 2 * abs(a.x - b.x) ? .pitch : .time
             pinch.startZoom = geometry.zoom
             pinch.startRowHeight = geometry.rowHeight
             wakeDisplayLink()

@@ -68,6 +68,9 @@ final class MobileModel {
     /// The instrument singled out from the iPad's sidebar: the roll fades every other one, as a
     /// strip click does on the Mac. Not saved.
     var highlightedProgram: Int?
+    /// True from Play until Pause or the take running out: what wakes the timeline's display link,
+    /// the engine's own flag not being observable. Not saved.
+    var isTransportRunning = false
 
     /// The project tempo: the grid's BPM and the tempo the MIDI file is written at.
     var exportTempo: Double { editor.grid.bpm }
