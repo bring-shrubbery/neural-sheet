@@ -40,6 +40,10 @@ nonisolated final class MidiOutRing: @unchecked Sendable {
     private let storage: UnsafeMutablePointer<MidiOutEntry>
     private let mask = MidiOutRing.capacity - 1
 
+    /// ``capacity`` as a stored word, so the render thread's push reads the instance it already
+    /// holds rather than a global.
+    private let size = MidiOutRing.capacity
+
     /// Written by the producer only.
     private let head = Atomic<Int>(0)
 
@@ -65,7 +69,7 @@ nonisolated final class MidiOutRing: @unchecked Sendable {
     func push(_ entry: MidiOutEntry) -> Bool {
         let position = head.load(ordering: .relaxed)
 
-        guard position - tail.load(ordering: .acquiring) < MidiOutRing.capacity else {
+        guard position - tail.load(ordering: .acquiring) < size else {
             dropped.wrappingAdd(1, ordering: .relaxed)
             return false
         }
