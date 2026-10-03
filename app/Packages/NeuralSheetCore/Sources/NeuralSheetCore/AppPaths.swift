@@ -10,7 +10,8 @@ func fileByteSize(_ url: URL) -> Int64 {
 ///
 /// Every path is injected, so tests never touch the real home directory.
 public struct AppPaths: Sendable {
-    /// `~/Library/NeuralSheet`
+    /// `~/Library/NeuralSheet` on the Mac, `Library/Application Support/NeuralSheet` in the iOS
+    /// app's container.
     public var root: URL
     public var models: URL
     public var recordings: URL
@@ -43,9 +44,19 @@ public struct AppPaths: Sendable {
         let library =
             fileManager.urls(for: .libraryDirectory, in: .userDomainMask).first
             ?? home.appendingPathComponent("Library", isDirectory: true)
+        #if os(macOS)
+        let root = library.appendingPathComponent("NeuralSheet", isDirectory: true)
+        #else
+        // The app's own Application Support (iOS app design §2): the models, the settings and the
+        // takes in progress belong to the app, not to the user's documents.
+        let support =
+            fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
+            ?? library.appendingPathComponent("Application Support", isDirectory: true)
+        let root = support.appendingPathComponent("NeuralSheet", isDirectory: true)
+        #endif
 
         return AppPaths(
-            root: library.appendingPathComponent("NeuralSheet", isDirectory: true),
+            root: root,
             secondaryModels: library.appendingPathComponent("NeuralNote/models", isDirectory: true),
             music: fileManager.urls(for: .musicDirectory, in: .userDomainMask).first
                 ?? home.appendingPathComponent("Music", isDirectory: true))
