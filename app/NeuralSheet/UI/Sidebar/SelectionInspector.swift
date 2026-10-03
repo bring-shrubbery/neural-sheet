@@ -2,14 +2,16 @@ import AppKit
 import NeuralSheetCore
 import SwiftUI
 
-/// The sidebar's SELECTION panel in the Edit tab (design §6.3): what is selected, and the five
-/// fields that set it (``SelectionFields``), which the roll's note card shares.
+/// The sidebar's SELECTION panel in the Edit tab (design §6.3): what is selected, and the fields
+/// that set it (``SelectionFields``), which the roll's note card shares.
 struct SelectionInspector: View {
     let model: AppModel
 
     @Environment(\.uiScale) private var k
 
-    static let height: CGFloat = 150
+    /// The header and six rows: 150 for the design's five, one row and its gap more for the
+    /// read-only confidence (confidence design §2).
+    static let height: CGFloat = 174
     private static let paddingSide: CGFloat = 14
     private static let paddingTop: CGFloat = 12
     private static let labelHeight: CGFloat = 12

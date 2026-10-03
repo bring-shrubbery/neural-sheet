@@ -3,8 +3,9 @@ import NeuralSheetCore
 import SwiftUI
 
 /// The five rows that set the selection (design §6.3): instrument, start, length, pitch and
-/// velocity. Every commit is one batch over the whole selection; a field whose notes disagree
-/// shows "—". The sidebar's inspector and the roll's note card both show these.
+/// velocity, then a read-only sixth, confidence (confidence design §2). Every commit is one batch
+/// over the whole selection; a field whose notes disagree shows "—". The sidebar's inspector and
+/// the roll's note card both show these.
 ///
 /// A change the ear can tell -- instrument, pitch, velocity -- sounds the first selected note
 /// once it has landed, so a value can be found by listening.
@@ -53,6 +54,12 @@ struct SelectionFields: View {
             }
             row("Pitch") { pitchControl(notes: notes) }
             row("Velocity") { velocityControl(notes: notes) }
+            row("Confidence") {
+                Text(SelectionFields.confidenceText(notes))
+                    .font(Fonts.mono(10, weight: 500, scale: k))
+                    .foregroundStyle(Theme.textStrong)
+                    .padding(.horizontal, s(6))
+            }
         }
         .disabled(!enabled)
         .opacity(enabled ? 1 : Theme.disabledAlpha)
@@ -81,6 +88,19 @@ struct SelectionFields: View {
         case 1: "1 note"
         default: "\(count) notes"
         }
+    }
+
+    /// "72 %", "31 – 88 %" for a selection that disagrees, "—" when no selected note came from the
+    /// model. A drawn note in a mixed selection counts as sure, as it does everywhere confidence
+    /// is read.
+    static func confidenceText(_ notes: [NoteEvent]) -> String {
+        guard notes.contains(where: { $0.confidence != nil }) else { return "—" }
+
+        let percents = notes.map { Int(($0.confidenceOrSure * 100).rounded()) }
+        let lowest = percents.min() ?? 0
+        let highest = percents.max() ?? 0
+
+        return lowest == highest ? "\(lowest) %" : "\(lowest) – \(highest) %"
     }
 
     private func mixed<T: Equatable>(_ values: [T]) -> Bool {

@@ -2,7 +2,7 @@ import AppKit
 import NeuralSheetCore
 import SwiftUI
 
-/// The note card: a right-click on the roll opens the selection's five fields in a floating panel
+/// The note card: a right-click on the roll opens the selection's fields in a floating panel
 /// at the pointer, so a note can be set without a trip to the sidebar. On a note the click
 /// selects it first; on empty roll the selection stays as it is, so notes picked out anywhere can
 /// be set from wherever the pointer is. It follows the selection while it is up and goes with
