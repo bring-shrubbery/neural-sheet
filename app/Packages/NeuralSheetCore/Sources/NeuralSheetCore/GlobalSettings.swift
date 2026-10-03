@@ -32,6 +32,10 @@ public struct GlobalSettings: Codable, Equatable, Sendable {
     /// 0…1; 0 is off.
     public var minimumConfidence: Double = 0
 
+    /// View → Show Pitch Curves (pitch curves design §2): the roll draws each tracked note's
+    /// curve through it. On by default: a curve only exists once Track Pitch has been asked for.
+    public var showsPitchCurves = true
+
     /// Recent projects the user removed from the welcome window's list, by path: the system's
     /// recent-documents list has no per-item removal, so the app filters it through this. A
     /// project opened or saved again leaves the list.
@@ -46,6 +50,7 @@ public struct GlobalSettings: Codable, Equatable, Sendable {
         showsConfidence: Bool = false,
         minimumNoteLength: Double = 0,
         minimumConfidence: Double = 0,
+        showsPitchCurves: Bool = true,
         hiddenRecentProjects: [String] = []
     ) {
         self.modelSize = modelSize
@@ -56,6 +61,7 @@ public struct GlobalSettings: Codable, Equatable, Sendable {
         self.showsConfidence = showsConfidence
         self.minimumNoteLength = minimumNoteLength
         self.minimumConfidence = minimumConfidence
+        self.showsPitchCurves = showsPitchCurves
         self.hiddenRecentProjects = hiddenRecentProjects
     }
 
@@ -86,7 +92,7 @@ public struct GlobalSettings: Codable, Equatable, Sendable {
 
     private enum CodingKeys: String, CodingKey {
         case modelSize, editorScale, tooltipsVisible, midiOverflowMode, separateStems
-        case showsConfidence, minimumNoteLength, minimumConfidence, hiddenRecentProjects
+        case showsConfidence, minimumNoteLength, minimumConfidence, showsPitchCurves, hiddenRecentProjects
     }
 
     /// Every key falls back to its default, so a file written by a version that did not have one
@@ -109,6 +115,8 @@ public struct GlobalSettings: Codable, Equatable, Sendable {
             try container.decodeIfPresent(Double.self, forKey: .minimumNoteLength) ?? defaults.minimumNoteLength
         minimumConfidence =
             try container.decodeIfPresent(Double.self, forKey: .minimumConfidence) ?? defaults.minimumConfidence
+        showsPitchCurves =
+            try container.decodeIfPresent(Bool.self, forKey: .showsPitchCurves) ?? defaults.showsPitchCurves
         hiddenRecentProjects =
             try container.decodeIfPresent([String].self, forKey: .hiddenRecentProjects)
             ?? defaults.hiddenRecentProjects

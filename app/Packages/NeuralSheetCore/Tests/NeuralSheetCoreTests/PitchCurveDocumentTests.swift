@@ -156,3 +156,16 @@ private func curves(_ batch: EditBatch) -> [[Float]?] {
     #expect(merged[0].pitchCurve == curve)
     #expect(merged[0].endTime == 0.3)
 }
+
+@Test func showPitchCurvesDefaultsOnRoundTripsAndFallsBackForAnOlderFile() throws {
+    #expect(GlobalSettings().showsPitchCurves)
+
+    var settings = GlobalSettings()
+    settings.showsPitchCurves = false
+    let encoder = PropertyListEncoder()
+    let decoded = try PropertyListDecoder().decode(GlobalSettings.self, from: encoder.encode(settings))
+    #expect(!decoded.showsPitchCurves)
+
+    let plist = #"<?xml version="1.0" encoding="UTF-8"?><plist version="1.0"><dict><key>separateStems</key><true/></dict></plist>"#
+    #expect(try PropertyListDecoder().decode(GlobalSettings.self, from: Data(plist.utf8)).showsPitchCurves)
+}
