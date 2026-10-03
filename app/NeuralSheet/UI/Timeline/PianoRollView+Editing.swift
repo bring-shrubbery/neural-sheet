@@ -213,7 +213,8 @@ extension PianoRollView {
         return nil
     }
 
-    /// One note: its fill at its velocity, the onset marker, and the selection outline.
+    /// One note: its fill at its velocity, the onset marker, its syllable (`+Lyrics`), and the
+    /// selection outline.
     func drawNote(_ note: NoteEvent, in rect: CGRect, selected: Bool, ctx: CGContext) {
         let k = geometry.scale
         let program = min(max(note.program, 0), NoteEvent.drumProgram)
@@ -243,6 +244,13 @@ extension PianoRollView {
         if showsPitchCurves, let curve = note.pitchCurve, !curve.isEmpty, rect.height >= 6 * k {
             ctx.setAlpha(audible[program] ? highlightAlpha : PianoRollView.mutedNoteAlpha)
             drawPitchCurve(curve, of: note, in: rect, colour: curveColours[program], ctx: ctx)
+        }
+
+        // The words at full strength, as faint as a muted note like the curve (markers and
+        // lyrics design §2).
+        if let lyric = note.lyric {
+            ctx.setAlpha(audible[program] ? 1 : PianoRollView.mutedNoteAlpha)
+            drawLyric(lyric, in: rect, ctx: ctx)
         }
 
         ctx.setAlpha(1)

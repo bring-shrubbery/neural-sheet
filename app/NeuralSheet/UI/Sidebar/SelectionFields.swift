@@ -2,8 +2,8 @@ import AppKit
 import NeuralSheetCore
 import SwiftUI
 
-/// The five rows that set the selection (design §6.3): instrument, start, length, pitch and
-/// velocity, then two read-only rows, confidence (confidence design §2) and the largest pitch
+/// The rows that set the selection (design §6.3): instrument, start, length, pitch, velocity
+/// and the lyric (markers and lyrics design §2), then two read-only rows, confidence (confidence design §2) and the largest pitch
 /// curve deviation (pitch curves design §2). Every commit is one batch
 /// over the whole selection; a field whose notes disagree shows "—". The sidebar's inspector and
 /// the roll's note card both show these.
@@ -55,6 +55,13 @@ struct SelectionFields: View {
             }
             row("Pitch") { pitchControl(notes: notes) }
             row("Velocity") { velocityControl(notes: notes) }
+            row("Lyric") {
+                // One note's syllable at a time: words are entered note by note, so a selection
+                // of several shows "—" and the field waits for one.
+                LyricField(text: notes.count == 1 ? notes[0].lyric?.typed ?? "" : (notes.isEmpty ? "" : "—"),
+                           width: s(120), scale: k) { model.setSelectedLyric($0) }
+                    .disabled(notes.count != 1)
+            }
             row("Confidence") {
                 Text(SelectionFields.confidenceText(notes))
                     .font(Fonts.mono(10, weight: 500, scale: k))
@@ -217,6 +224,43 @@ struct SelectionFields: View {
         return PitchField(text: pitches.isEmpty || mixed(pitches) ? "—" : TimeFormat.pitchName(pitches[0]), width: s(72), scale: k) { pitch in
             commit(audible: true) { $0.setPitch(model.editor.selection, pitch: pitch) }
         }
+    }
+}
+
+/// The lyric field (markers and lyrics design §2): the syllable as the lyric card shows it, a
+/// trailing "-" carrying the word on and "_" holding it. Return or the focus leaving commits;
+/// Return gives the keyboard back, as the pitch field does.
+struct LyricField: View {
+    let text: String
+    let width: CGFloat
+    let scale: CGFloat
+    let onCommit: (String) -> Void
+
+    @State private var draft = ""
+    @FocusState private var isFocused: Bool
+
+    var body: some View {
+        TextField("", text: $draft)
+            .textFieldStyle(.plain)
+            .font(Fonts.meta(scale))
+            .foregroundStyle(Theme.textStrong)
+            .focused($isFocused)
+            .padding(.horizontal, 6 * scale)
+            .frame(width: width, height: NumberField.height * scale)
+            .background(RoundedRectangle(cornerRadius: NumberField.corner * scale, style: .circular).fill(Theme.bgControlAlt))
+            .overlay(RoundedRectangle(cornerRadius: NumberField.corner * scale, style: .circular)
+                .strokeBorder(isFocused ? Theme.accent : Theme.divStrong, lineWidth: scale))
+            .onAppear { draft = text }
+            .onChange(of: text) { _, new in if !isFocused { draft = new } }
+            .onChange(of: isFocused) { _, focused in if !focused { commit() } }
+            .onSubmit { isFocused = false }
+    }
+
+    /// The focus loss Return causes commits once; an unchanged entry commits nothing.
+    private func commit() {
+        guard draft != text else { return }
+
+        onCommit(draft)
     }
 }
 
