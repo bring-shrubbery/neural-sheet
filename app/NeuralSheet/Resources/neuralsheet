@@ -1,0 +1,12 @@
+#!/bin/sh
+# The neuralsheet command-line tool: the app's own binary, run headless (batch and CLI design §2).
+# /usr/local/bin/neuralsheet is a symlink to this file, so the link is followed to find the bundle.
+self="$0"
+while [ -L "$self" ]; do
+    link=$(readlink "$self")
+    case "$link" in
+        /*) self="$link" ;;
+        *) self="$(dirname "$self")/$link" ;;
+    esac
+done
+exec "$(dirname "$self")/../MacOS/NeuralSheet" --headless "$@"

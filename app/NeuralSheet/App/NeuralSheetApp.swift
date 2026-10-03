@@ -2,7 +2,7 @@ import AppKit
 import NeuralSheetCore
 import SwiftUI
 
-@main
+/// The app. Started from `main.swift`, which serves the command-line tool first when asked to.
 struct NeuralSheetApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
 
