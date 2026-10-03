@@ -10,17 +10,48 @@ public struct ProjectTranscription: Codable, Equatable, Sendable {
     public var sourceSampleCount: Int
     public var rawNotes: [NoteEvent]
     public var document: NoteDocument
+    /// The saved versions of the notes, oldest first (versions design §2). Not the "Transcription"
+    /// entry, which is `rawNotes` presented as one. Additive: a file from before versions has no
+    /// key and reads back empty, and an empty list writes no key.
+    public var versions: [NoteVersion]
 
-    public init(sourceSampleCount: Int, rawNotes: [NoteEvent], document: NoteDocument) {
+    public init(sourceSampleCount: Int, rawNotes: [NoteEvent], document: NoteDocument, versions: [NoteVersion] = []) {
         self.sourceSampleCount = sourceSampleCount
         self.rawNotes = rawNotes
         self.document = document
+        self.versions = versions
+    }
+
+    // MARK: - Codable
+
+    private enum CodingKeys: String, CodingKey {
+        case sourceSampleCount, rawNotes, document, versions
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        sourceSampleCount = try container.decode(Int.self, forKey: .sourceSampleCount)
+        rawNotes = try container.decode([NoteEvent].self, forKey: .rawNotes)
+        document = try container.decode(NoteDocument.self, forKey: .document)
+        versions = try container.decodeIfPresent([NoteVersion].self, forKey: .versions) ?? []
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(sourceSampleCount, forKey: .sourceSampleCount)
+        try container.encode(rawNotes, forKey: .rawNotes)
+        try container.encode(document, forKey: .document)
+
+        if !versions.isEmpty {
+            try container.encode(versions, forKey: .versions)
+        }
     }
 
     // MARK: - Equatable
 
-    /// Two transcriptions are the same when their notes are: `sourceSampleCount`, `rawNotes` and
-    /// `document.notes`.
+    /// Two transcriptions are the same when their notes are: `sourceSampleCount`, `rawNotes`,
+    /// `document.notes` and the versions (a saved, renamed or deleted version is a change to the
+    /// project, versions design §2).
     ///
     /// Hand-written because the synthesized `==` would reach into ``NoteDocument``'s undo and redo
     /// stacks and its id allocator, none of which say anything about what the user would lose. The
@@ -35,6 +66,7 @@ public struct ProjectTranscription: Codable, Equatable, Sendable {
         lhs.sourceSampleCount == rhs.sourceSampleCount
             && lhs.rawNotes == rhs.rawNotes
             && lhs.document.notes == rhs.document.notes
+            && lhs.versions == rhs.versions
     }
 
     // MARK: - Files
