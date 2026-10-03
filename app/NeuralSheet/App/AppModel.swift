@@ -138,7 +138,7 @@ import UniformTypeIdentifiers
     /// A reference so the empty case is stable across reads.
     @ObservationIgnored private let emptyPeaks = WaveformPeaks()
 
-    // MARK: - Transcription
+    // MARK: - Transcription (AppModel+Transcription.swift)
 
     var transcription = TranscriptionState()
 
@@ -281,7 +281,7 @@ import UniformTypeIdentifiers
         self.workspace = workspace
     }
 
-    // MARK: - Instrument selection and mix
+    // MARK: - Instrument selection and mix (AppModel+Mix.swift)
 
     /// The instrument groups to restrict the next run to, in enumerator order. Empty means
     /// Automatic: the model chooses. Whoever sets it passes a list through
@@ -293,7 +293,7 @@ import UniformTypeIdentifiers
     // Internal setter: written from AppModel+Mix.swift.
     var mixer = InstrumentMixerState()
 
-    // MARK: - Transport
+    // MARK: - Transport (AppModel+Playback.swift)
 
     /// Mirrors the engine, refreshed by the display-link tick and on every transport command.
     // Internal setter: AppModel+Loading.swift and AppModel+Playback.swift write it.
@@ -453,7 +453,7 @@ import UniformTypeIdentifiers
     /// view opens it once the dialogs are installed.
     @ObservationIgnored var pendingOpenURL: URL?
 
-    // MARK: - Models
+    // MARK: - Models (AppModel+Models.swift)
 
     /// Re-scanned at 10 Hz by ``modelPollTimer`` and whenever a download changes phase.
     // Internal setter: written from AppModel+Models.swift.
@@ -478,7 +478,7 @@ import UniformTypeIdentifiers
     /// The Sparkle updater; the menu item follows its ``Updates/canCheckForUpdates``.
     let updates = Updates()
 
-    // MARK: - Audio failures
+    // MARK: - Audio failures (AppModel+Devices.swift)
 
     /// Set once the launch's start failure has been shown, so a view appearing twice does not
     /// show it twice.
@@ -493,7 +493,7 @@ import UniformTypeIdentifiers
     /// Which take the tap-start check belongs to, so a check from an earlier take does nothing.
     @ObservationIgnored var tapStartGeneration = 0
 
-    // MARK: - Meters
+    // MARK: - Meters (AppModel+Meters.swift)
 
     /// The master meter after ballistics and the staleness rule (§2.5).
     // Internal setter: written from AppModel+Meters.swift.
