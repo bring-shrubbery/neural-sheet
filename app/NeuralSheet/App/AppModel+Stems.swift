@@ -45,7 +45,7 @@ extension AppModel {
     /// The groups each stem is decoded with (design §2): the drums as Drums, the bass as the two
     /// basses, the vocals as Voice, and the rest with the selection less those three, or every
     /// other named group when the selection is Automatic.
-    static func stemGroups(stem: Int, selected: [InstrumentGroup]) -> [InstrumentGroup] {
+    nonisolated static func stemGroups(stem: Int, selected: [InstrumentGroup]) -> [InstrumentGroup] {
         let reserved: Set<InstrumentGroup> = [.drums, .acousticBass, .electricBass, .voice]
 
         switch stem {
