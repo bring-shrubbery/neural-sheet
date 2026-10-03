@@ -2,7 +2,8 @@
 # Fails when a German or Spanish string has no translation (accessibility and localization
 # design §2). Exports the de and es localizations the way a translator would receive them and
 # counts the <trans-unit>s without a <target>: a key added in code but not translated in
-# app/NeuralSheet/*.xcstrings shows up here as one.
+# app/NeuralSheet/*.xcstrings shows up here as one. The export syncs the catalogs with the code
+# first, as Xcode does, so a run can rewrite them into Xcode's own form: commit what it writes.
 #
 # Extra arguments are passed to xcodebuild as build settings, e.g. to build unsigned on CI:
 #   Scripts/check-localizations.sh CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
