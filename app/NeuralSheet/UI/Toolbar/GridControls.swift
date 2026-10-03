@@ -3,8 +3,9 @@ import NeuralSheetCore
 import SwiftUI
 
 /// The grid and the key, shared by the Edit and Score toolbars (arrangement design §6): the
-/// TEMPO and BEAT 1 AT fields with ⌖, Tap and Detect (tempo design §5), then the KEY tonic and
-/// mode (key design §5) with their menus. Two groups at the toolbar's group gap, so they sit in
+/// TEMPO field and the TIME menus for the segment under the playhead (tempo map design §4), BEAT
+/// 1 AT with ⌖, Tap and Detect (tempo design §5), then the KEY tonic and mode (key design §5)
+/// with their menus. Two groups at the toolbar's group gap, so they sit in
 /// either row exactly as they did in the Edit toolbar alone.
 struct GridControls: View {
     let model: AppModel
@@ -23,11 +24,7 @@ struct GridControls: View {
 
         HStack(spacing: s(Metrics.groupGap)) {
             HStack(spacing: s(6)) {
-                ToolbarControls.pillLabel(k: k, "TEMPO")
-                NumberField(value: editor.grid.bpm, range: TempoGrid.minBpm ... TempoGrid.maxBpm, decimals: 0, width: 46) {
-                    model.setGridBpm($0)
-                }
-                .tooltip("Project tempo, also the export tempo")
+                SegmentControls(model: model)
 
                 ToolbarControls.pillLabel(k: k, "BEAT 1 AT")
                 NumberField(value: editor.grid.offsetSeconds, range: 0 ... 36_000, decimals: 3, step: 0.01, width: 62) {
@@ -113,6 +110,30 @@ struct GridControls: View {
                     model.setKeyMode(mode)
                 }
             }
+        }
+    }
+}
+
+/// TEMPO and TIME for the segment under the playhead: a view of its own, so following the
+/// playhead redraws these and not the whole row.
+private struct SegmentControls: View {
+    let model: AppModel
+
+    @Environment(\.uiScale) private var k
+
+    var body: some View {
+        let s = Scaled(k: k)
+        let segment = model.playheadSegment
+
+        HStack(spacing: s(6)) {
+            ToolbarControls.pillLabel(k: k, "TEMPO")
+            NumberField(value: segment.bpm, range: TempoGrid.minBpm ... TempoGrid.maxBpm, decimals: 1, width: 50) {
+                model.setGridBpm($0)
+            }
+            .tooltip("Tempo at the playhead, in quarter notes a minute")
+
+            ToolbarControls.pillLabel(k: k, "TIME")
+            TimeSignatureMenus(meter: segment.timeSignature) { model.setTimeSignature($0) }
         }
     }
 }
