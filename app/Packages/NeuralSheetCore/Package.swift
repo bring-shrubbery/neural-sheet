@@ -3,7 +3,7 @@ import PackageDescription
 
 let package = Package(
     name: "NeuralSheetCore",
-    platforms: [.macOS(.v26)],
+    platforms: [.macOS(.v26), .iOS(.v26)],
     products: [.library(name: "NeuralSheetCore", targets: ["NeuralSheetCore"])],
     targets: [
         // Optimised in Debug as well: the resampler and the tempo and key estimators are

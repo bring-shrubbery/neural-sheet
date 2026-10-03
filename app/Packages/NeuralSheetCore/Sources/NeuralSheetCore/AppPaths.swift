@@ -34,7 +34,12 @@ public struct AppPaths: Sendable {
 
     public static let standard: AppPaths = {
         let fileManager = FileManager.default
+        #if os(macOS)
         let home = fileManager.homeDirectoryForCurrentUser
+        #else
+        // iOS has no user home outside the app's container; the fallbacks below land in it.
+        let home = URL.homeDirectory
+        #endif
         let library =
             fileManager.urls(for: .libraryDirectory, in: .userDomainMask).first
             ?? home.appendingPathComponent("Library", isDirectory: true)
