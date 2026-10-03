@@ -184,10 +184,8 @@ extension AppModel {
     func nudgeSelection(steps: Int, semitones: Int) {
         guard let document, !editor.selection.isEmpty else { return }
 
-        let earliest = document.notes.filter { editor.selection.contains($0.id) }.map(\.note.startTime).min() ?? playheadSeconds
-        let seconds = Double(steps) * (editor.snapEnabled ? editor.grid.step(atSeconds: earliest) : 0.010)
-
-        commit(document.move(editor.selection, deltaSeconds: seconds, deltaSemitones: semitones))
+        commit(EditingCommands.nudge(in: document, editor: editor, steps: steps, semitones: semitones,
+                                     playheadSeconds: playheadSeconds))
         auditionSelection()
     }
 
@@ -315,9 +313,7 @@ extension AppModel {
     func quantizeSelectionOrAll() {
         guard let document else { return }
 
-        let ids = editor.selection.isEmpty ? Set(document.notes.map(\.id)) : editor.selection
-
-        commit(document.quantize(ids, grid: editor.grid, lengths: false))
+        commit(EditingCommands.quantize(in: document, editor: editor))
     }
 
     // MARK: - Key
@@ -348,11 +344,9 @@ extension AppModel {
     /// Edit → Snap to Scale: the selection, or everything when nothing is selected, onto the
     /// key's scale; nothing without a key.
     func snapSelectionOrAllToScale() {
-        guard let document, let key = editor.key else { return }
+        guard let document, let batch = EditingCommands.snapToScale(in: document, editor: editor) else { return }
 
-        let ids = editor.selection.isEmpty ? Set(document.notes.map(\.id)) : editor.selection
-
-        commit(document.snapToScale(ids, key: key))
+        commit(batch)
         auditionSelection()
     }
 }
