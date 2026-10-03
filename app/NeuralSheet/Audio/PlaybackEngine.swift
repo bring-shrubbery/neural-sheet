@@ -124,6 +124,9 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
     // Internal setter: written from PlaybackEngine+Lifecycle.swift.
     var lastIOBufferError: OSStatus?
 
+    // The HAL's device choice, aggregate and process tap are the Mac's alone
+    // (`PlaybackEngine+Devices.swift`); on iOS the audio session picks the route.
+    #if os(macOS)
     /// The devices the I/O units were last pointed at successfully, so a rejected switch has
     /// something to fall back to when the unit cannot name what it is on.
     var lastAppliedOutputDevice: AudioDevice?
@@ -133,14 +136,17 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
     /// stands for and the process tap inside it, if any. Ours to destroy -- the aggregate, then
     /// its tap -- and reused for as long as that pair does not change.
     var aggregate: Aggregate?
+    #endif
 
     /// Set once by ``shutDown()``: from then on nothing starts the engine or makes an aggregate
     /// or a tap again.
     var isShutDown = false
 
+    #if os(macOS)
     /// Called on the main queue when the app a take is tapping has quit (system audio design §2),
     /// outside the HAL's listener callback. The take is the model's to end.
     var onTappedProcessExited: (() -> Void)?
+    #endif
 
     /// Called on the main queue when the playhead reaches the end. The transport has already been
     /// stopped and rewound by then.
@@ -163,6 +169,7 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
     /// Reading it also instantiates the input node, which is what asks for microphone access.
     var inputFormat: AVAudioFormat { engine.inputNode.outputFormat(forBus: 0) }
 
+    #if os(macOS)
     var outputDevice: AudioDevice? {
         didSet {
             guard !isRevertingDevice, outputDevice != oldValue else { return }
@@ -179,6 +186,7 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
             reconfigureDevices()
         }
     }
+    #endif
 
     /// The equal-power crossfade between the source audio and the synth, 0…1. Under
     /// ``stereoSplit`` only its ends mean anything: exactly 0 or 1 is a hold on that side alone.
@@ -236,8 +244,10 @@ nonisolated final class PlaybackEngine: @unchecked Sendable {
         if meterTapInstalled { engine.mainMixerNode.removeTap(onBus: 0) }
         if inputTapInstalled { engine.inputNode.removeTap(onBus: 0) }
         engine.stop()
+        #if os(macOS)
         // The aggregate, then the tap in it.
         aggregate?.destroy()
+        #endif
     }
 
     // MARK: - Error text
