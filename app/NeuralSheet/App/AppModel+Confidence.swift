@@ -56,12 +56,3 @@ extension AppModel {
         setSelection(doubtfulNoteIDs)
     }
 }
-
-extension NoteEvent {
-    /// The run's notes with the After transcription settings applied: what lands, at each of the
-    /// three landings (a full run, a stems run, a region). Never notes already in the document.
-    nonisolated static func landing(_ notes: [NoteEvent], settings: GlobalSettings) -> [NoteEvent] {
-        NoteFilter.apply(
-            notes, minimumLength: settings.minimumNoteLength, minimumConfidence: settings.minimumConfidence)
-    }
-}

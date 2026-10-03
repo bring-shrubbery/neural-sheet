@@ -323,7 +323,7 @@ nonisolated final class HeadlessTranscription: @unchecked Sendable {
             // A stem too short for the model contributes nothing rather than failing the run.
             guard samples.count >= Self.minimumSamples else { continue }
 
-            let groups = AppModel.stemGroups(stem: index, selected: request.instruments)
+            let groups = TranscriptionPlan.stemGroups(stem: index, selected: request.instruments)
 
             switch await runEngine(samples: samples, groups: groups, modelPath: modelPath, isCancelled: isCancelled,
                                    onProgress: { fraction in

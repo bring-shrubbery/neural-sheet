@@ -40,24 +40,6 @@ extension AppModel {
     /// The status bar's caption reads SEPARATING while this is true.
     var isSeparatingStems: Bool { stemsJob?.phase == .separating }
 
-    // MARK: - The instruments per stem
-
-    /// The groups each stem is decoded with (design §2): the drums as Drums, the bass as the two
-    /// basses, the vocals as Voice, and the rest with the selection less those three, or every
-    /// other named group when the selection is Automatic.
-    nonisolated static func stemGroups(stem: Int, selected: [InstrumentGroup]) -> [InstrumentGroup] {
-        let reserved: Set<InstrumentGroup> = [.drums, .acousticBass, .electricBass, .voice]
-
-        switch stem {
-        case 0: return [.drums]
-        case 1: return [.acousticBass, .electricBass]
-        case 3: return [.voice]
-        default:
-            let pool = selected.isEmpty ? InstrumentGroup.allCases : selected
-            return pool.filter { !reserved.contains($0) }
-        }
-    }
-
     // MARK: - Launch
 
     /// Step 9 of the launch, the stems way: the separator first, the engine four times after.
@@ -79,7 +61,8 @@ extension AppModel {
                     guard self.stemsJob?.id == jobID else { return }
 
                     // The separation is the first half of the bar.
-                    self.transcription.progress = max(self.transcription.progress, progress * 0.5)
+                    self.transcription.progress = max(self.transcription.progress,
+                                                      TranscriptionPlan.separationProgress(progress))
                 }
             },
             completion: { [weak self] result in
@@ -122,24 +105,24 @@ extension AppModel {
         stemsJob = job
 
         let jobID = job.id
-        let groups = AppModel.stemGroups(stem: index, selected: selectedGroups).map(\.rawValue)
+        let pass = TranscriptionPass(stem: index, groups: TranscriptionPlan.stemGroups(stem: index, selected: selectedGroups))
         let staging = self.staging
         let samples = stems.all[index]
 
         // A stem too short for the model contributes nothing rather than failing the run.
-        guard samples.count >= 16_000 else {
+        guard samples.count >= TranscriptionPlan.minimumSamples else {
             handleStemFinished(.success([]), stem: index, jobID: jobID)
             return
         }
 
         transcriber.run(
             modelPath: job.modelPath,
-            groups: groups,
+            groups: pass.engineGroups,
             samples16k: samples,
             onUpdate: { update in
                 // The runs are the second half of the bar, a quarter each.
                 var scaled = update
-                scaled.progress = 0.5 + (Float(index) + update.progress) / 8
+                scaled.progress = pass.overallProgress(update.progress)
                 staging.stage(scaled)
                 return true
             },
