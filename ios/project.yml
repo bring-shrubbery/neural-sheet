@@ -143,11 +143,35 @@ targets:
               public.filename-extension:
                 - neuralsheet
 
+  # The document round trip and whatever else needs the app's own types (sub-issue C), hosted by
+  # the app and run on the simulator.
+  NeuralSheetTests:
+    type: bundle.unit-test
+    platform: iOS
+    deploymentTarget: "26.0"
+    sources:
+      - path: NeuralSheetTests
+    dependencies:
+      - target: NeuralSheet
+      - package: NeuralSheetCore
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.quassum.neuralsheet.ios.tests
+        DEVELOPMENT_TEAM: 6WCYZER5LX
+        CODE_SIGN_STYLE: Automatic
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_HOST: $(BUILT_PRODUCTS_DIR)/NeuralSheet.app/NeuralSheet
+        BUNDLE_LOADER: $(TEST_HOST)
+
 schemes:
   NeuralSheet:
     build:
       targets:
         NeuralSheet: all
+    test:
+      config: Debug
+      targets:
+        - NeuralSheetTests
     run:
       config: Debug
     archive:

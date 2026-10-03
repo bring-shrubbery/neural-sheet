@@ -124,6 +124,14 @@ jobs:
             echo "::error::warnings in NeuralSheet sources"; exit 1
           fi
           echo "no warnings in NeuralSheet sources"
+      - name: Test (simulator)
+        working-directory: ios
+        run: |
+          set -o pipefail
+          xcodebuild -project NeuralSheet-iOS.xcodeproj -scheme NeuralSheet \
+            -destination 'platform=iOS Simulator,name=iPhone 18 Pro' \
+            CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO \
+            test 2>&1 | tail -40
 
   web:
     name: Website

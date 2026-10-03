@@ -20,6 +20,7 @@
 		2D725B746393001147BAA6A2 /* PlaybackEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = C34A7F7AC3AC1E37BE06C65D /* PlaybackEngine.swift */; };
 		3469BE535358830F044B2EBA /* NeuralSheetCore in Frameworks */ = {isa = PBXBuildFile; productRef = 29C282FB9AA070942A5DC935 /* NeuralSheetCore */; };
 		381BD0A16355F8DA13E272F7 /* test-take.wav in Resources */ = {isa = PBXBuildFile; fileRef = CD631BA6F930D903BF159E74 /* test-take.wav */; };
+		38E44DAA2AB0C27C9DF9C425 /* NeuralSheetCore in Frameworks */ = {isa = PBXBuildFile; productRef = 4F10A6EC8C2E4948AFE2DA02 /* NeuralSheetCore */; };
 		4D6D9EC86F2A45D1B9F5DF07 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D020775408B048B92C1AE276 /* Assets.xcassets */; };
 		58C2CA72644510B3246DEE71 /* SynthInstrument.swift in Sources */ = {isa = PBXBuildFile; fileRef = 640D8C9858F603029AEC4018 /* SynthInstrument.swift */; };
 		65AFDED09D5E33BB8F728E9B /* Recorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6D12E5EF025B8AD7A8F7FA5 /* Recorder.swift */; };
@@ -32,6 +33,7 @@
 		8543EED6DF64204777288DBF /* PlaybackEngine+Poll.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A0074BE848C7BBDC9A95571 /* PlaybackEngine+Poll.swift */; };
 		98AA275FBFA73CFE5A0BD466 /* InstrumentSynthBank+Click.swift in Sources */ = {isa = PBXBuildFile; fileRef = 165C904AE00B7E1F9478BD74 /* InstrumentSynthBank+Click.swift */; };
 		9D5A00ABCDF9C49058FF2BBB /* PlaybackEngine+Input.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AD76373CFC75212E1F958FC /* PlaybackEngine+Input.swift */; };
+		A0E64666191562BA7D72D2CD /* DocumentRoundTripTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 762F74E4F478407AFC0A3FCF /* DocumentRoundTripTests.swift */; };
 		AE5D81C82C0E6008C0F6EF5F /* InstrumentSynthBank+SoundBank.swift in Sources */ = {isa = PBXBuildFile; fileRef = 052243AAB4D027C196C04FF2 /* InstrumentSynthBank+SoundBank.swift */; };
 		B562B23A8E356262AFF58C8D /* VideoAudioExtractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F42D8FAD397C447B517DDA2 /* VideoAudioExtractor.swift */; };
 		C5B75F665C784700508A030D /* OfflineRenderer+Source.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C6ACB6DFC02527238869F51 /* OfflineRenderer+Source.swift */; };
@@ -50,11 +52,22 @@
 		FFA74B58B25AC53052DB2A44 /* Recorder+Files.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1607585F612B7640B5D91B3 /* Recorder+Files.swift */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		B7449C88720090175289BA2B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 492061A242D07609A8A3CE77 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = C22D53D5FD5EAC4331A1EEF8;
+			remoteInfo = NeuralSheet;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		01DF1504F6115B749D70B214 /* TranscriptionEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptionEngine.swift; sourceTree = "<group>"; };
 		0372A709F93BFA81CA9CABDF /* PlaybackEngine+Mix.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PlaybackEngine+Mix.swift"; sourceTree = "<group>"; };
 		03BAAB8E7B6DAC10B47FBA96 /* NeuralSheetApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NeuralSheetApp.swift; sourceTree = "<group>"; };
 		052243AAB4D027C196C04FF2 /* InstrumentSynthBank+SoundBank.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "InstrumentSynthBank+SoundBank.swift"; sourceTree = "<group>"; };
+		087728EC95200F77CD217785 /* NeuralSheetTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = NeuralSheetTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		095BC9A28A419B144985653A /* AudioProof.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioProof.swift; sourceTree = "<group>"; };
 		0C6ACB6DFC02527238869F51 /* OfflineRenderer+Source.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OfflineRenderer+Source.swift"; sourceTree = "<group>"; };
 		165C904AE00B7E1F9478BD74 /* InstrumentSynthBank+Click.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "InstrumentSynthBank+Click.swift"; sourceTree = "<group>"; };
@@ -76,6 +89,7 @@
 		640D8C9858F603029AEC4018 /* SynthInstrument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SynthInstrument.swift; sourceTree = "<group>"; };
 		64AFE2DF14117775CB15A796 /* stb_vorbis.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = stb_vorbis.h; sourceTree = "<group>"; };
 		72F94013657929EFE3833174 /* NeuralSheetDocument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NeuralSheetDocument.swift; sourceTree = "<group>"; };
+		762F74E4F478407AFC0A3FCF /* DocumentRoundTripTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentRoundTripTests.swift; sourceTree = "<group>"; };
 		7A415DC1264328088E2DD2A2 /* PlaybackEngine+Session.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PlaybackEngine+Session.swift"; sourceTree = "<group>"; };
 		7E2FF7355546FE6E86E6F168 /* StemSeparator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StemSeparator.swift; sourceTree = "<group>"; };
 		897641DEB991F9073B52C67C /* PlaybackEngine+Lifecycle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PlaybackEngine+Lifecycle.swift"; sourceTree = "<group>"; };
@@ -100,6 +114,14 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		0BFCADDF98A90EA50E1EB838 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				38E44DAA2AB0C27C9DF9C425 /* NeuralSheetCore in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		C34E53C1B18087C87DDFDA7B /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -116,6 +138,7 @@
 			isa = PBXGroup;
 			children = (
 				4B149A6B93FC14D59A40B663 /* NeuralSheet.app */,
+				087728EC95200F77CD217785 /* NeuralSheetTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -151,6 +174,7 @@
 			children = (
 				12C5103528E1838BF112B5F4 /* neural-sheet */,
 				2BD5675C191DEC69F37EEC4E /* NeuralSheet */,
+				70301ED2D66DC9241419B61A /* NeuralSheetTests */,
 				C992E487CDD65C0DB420C4DD /* Packages */,
 				0B0C06A4EEC7BAFB1526B72C /* Products */,
 			);
@@ -208,6 +232,14 @@
 				72F94013657929EFE3833174 /* NeuralSheetDocument.swift */,
 			);
 			path = Documents;
+			sourceTree = "<group>";
+		};
+		70301ED2D66DC9241419B61A /* NeuralSheetTests */ = {
+			isa = PBXGroup;
+			children = (
+				762F74E4F478407AFC0A3FCF /* DocumentRoundTripTests.swift */,
+			);
+			path = NeuralSheetTests;
 			sourceTree = "<group>";
 		};
 		74EE18680DC1608AF2E8BBA0 /* NeuralSheet */ = {
@@ -280,6 +312,26 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		48722AEF8CD8163E35AFDB15 /* NeuralSheetTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 756E92D939C4563DA12A500E /* Build configuration list for PBXNativeTarget "NeuralSheetTests" */;
+			buildPhases = (
+				EFFF664F7EF67C92867D0D21 /* Sources */,
+				0BFCADDF98A90EA50E1EB838 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				179339330DB3306721E280F3 /* PBXTargetDependency */,
+			);
+			name = NeuralSheetTests;
+			packageProductDependencies = (
+				4F10A6EC8C2E4948AFE2DA02 /* NeuralSheetCore */,
+			);
+			productName = NeuralSheetTests;
+			productReference = 087728EC95200F77CD217785 /* NeuralSheetTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		C22D53D5FD5EAC4331A1EEF8 /* NeuralSheet */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = A04DB60C19961CF5B540E6E1 /* Build configuration list for PBXNativeTarget "NeuralSheet" */;
@@ -311,6 +363,10 @@
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
+					48722AEF8CD8163E35AFDB15 = {
+						DevelopmentTeam = 6WCYZER5LX;
+						ProvisioningStyle = Automatic;
+					};
 					C22D53D5FD5EAC4331A1EEF8 = {
 						DevelopmentTeam = 6WCYZER5LX;
 						ProvisioningStyle = Automatic;
@@ -336,6 +392,7 @@
 			projectRoot = "";
 			targets = (
 				C22D53D5FD5EAC4331A1EEF8 /* NeuralSheet */,
+				48722AEF8CD8163E35AFDB15 /* NeuralSheetTests */,
 			);
 		};
 /* End PBXProject section */
@@ -419,7 +476,23 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		EFFF664F7EF67C92867D0D21 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A0E64666191562BA7D72D2CD /* DocumentRoundTripTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		179339330DB3306721E280F3 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = C22D53D5FD5EAC4331A1EEF8 /* NeuralSheet */;
+			targetProxy = B7449C88720090175289BA2B /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		335BE42F9C80EE51DA7D8B6F /* Release */ = {
@@ -486,6 +559,26 @@
 				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
+		};
+		34B94D535F1B4129789D15AF /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 6WCYZER5LX;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.quassum.neuralsheet.ios.tests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/NeuralSheet.app/NeuralSheet";
+			};
+			name = Debug;
 		};
 		57C9CFCD22E54BB09FFA4DD5 /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -558,6 +651,26 @@
 				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
+		};
+		86CAE9F0FF9B2BE51B259C0E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 6WCYZER5LX;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.quassum.neuralsheet.ios.tests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/NeuralSheet.app/NeuralSheet";
+			};
+			name = Release;
 		};
 		B6D75A738ADE5E276580D434 /* Release */ = {
 			isa = XCBuildConfiguration;
@@ -638,6 +751,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		756E92D939C4563DA12A500E /* Build configuration list for PBXNativeTarget "NeuralSheetTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				34B94D535F1B4129789D15AF /* Debug */,
+				86CAE9F0FF9B2BE51B259C0E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
 		A04DB60C19961CF5B540E6E1 /* Build configuration list for PBXNativeTarget "NeuralSheet" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -675,6 +797,10 @@
 			productName = NeuralSheetEngine;
 		};
 		29C282FB9AA070942A5DC935 /* NeuralSheetCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = NeuralSheetCore;
+		};
+		4F10A6EC8C2E4948AFE2DA02 /* NeuralSheetCore */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = NeuralSheetCore;
 		};
