@@ -87,6 +87,20 @@ targets:
       - path: ../app/NeuralSheet/UI/Timeline/WaveformView+Drawing.swift
       - path: ../app/NeuralSheet/UI/Timeline/KeyboardView+Drawing.swift
       - path: ../app/NeuralSheet/UI/Timeline/ChordLaneView+Drawing.swift
+      # The score's drawing, shared with the Mac by path (sub-issue G): the renderer and its
+      # extensions, the glyphs, the view layout, the painter and the PDF pages, all CoreGraphics
+      # and CoreText. The NSViews, their VoiceOver and the floating cards stay on the Mac; the
+      # iPhone and iPad score over the same painter is in NeuralSheet/Score.
+      - path: ../app/NeuralSheet/UI/Score/ScoreRenderer.swift
+      - path: ../app/NeuralSheet/UI/Score/ScoreRenderer+Chords.swift
+      - path: ../app/NeuralSheet/UI/Score/ScoreRenderer+Harmony.swift
+      - path: ../app/NeuralSheet/UI/Score/ScoreRenderer+Page.swift
+      - path: ../app/NeuralSheet/UI/Score/ScoreRenderer+Tab.swift
+      - path: ../app/NeuralSheet/UI/Score/ScoreRenderer+Text.swift
+      - path: ../app/NeuralSheet/UI/Score/ScoreGlyphs.swift
+      - path: ../app/NeuralSheet/UI/Score/ScoreLayout.swift
+      - path: ../app/NeuralSheet/UI/Score/ScoreView+Drawing.swift
+      - path: ../app/NeuralSheet/UI/Score/ScorePDF.swift
       # The editing commands' arithmetic, shared with the Mac by path (iOS app design §3, item 3;
       # sub-issue F): each works out a batch from the document and the editor state, which
       # MobileModel commits as AppModel does.
