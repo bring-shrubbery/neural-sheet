@@ -14,11 +14,6 @@ extension AppModel {
     /// From Audio also needs a take to measure.
     var canVelocityFromAudio: Bool { canBulkEdit && source != nil }
 
-    /// The notes a bulk command acts on: what ``quantizeSelectionOrAll()`` picks.
-    private func selectionOrAll(in document: NoteDocument) -> Set<NoteID> {
-        editor.selection.isEmpty ? Set(document.notes.map(\.id)) : editor.selection
-    }
-
     // MARK: - Transpose
 
     /// Edit → Transpose: the melodic notes by `semitones`, the set kept together at the pitch
@@ -28,10 +23,7 @@ extension AppModel {
 
         _ = dragCanceller?()
 
-        let ids = selectionOrAll(in: document).filter { id in document.note(id).map { !$0.note.isDrum } ?? false }
-        var batch = document.move(ids, deltaSeconds: 0, deltaSemitones: semitones)
-        batch.title = String(localized: "Transpose", comment: "Undo title: notes moved up or down")
-        commit(batch)
+        commit(EditingCommands.transpose(in: document, selection: editor.selection, semitones: semitones))
     }
 
     /// Transpose → By Interval…: asks for −24…+24 semitones, starting from the last answer.
@@ -71,10 +63,7 @@ extension AppModel {
 
         _ = dragCanceller?()
 
-        let factor = Double(percent) / 100
-        commit(document.setVelocities(selectionOrAll(in: document), title: String(localized: "Scale Velocity", comment: "Undo title: velocities scaled")) {
-            Int((Double($0) * factor).rounded())
-        })
+        commit(EditingCommands.scaleVelocity(in: document, selection: editor.selection, percent: percent))
     }
 
     /// Velocity → From Audio: each note's velocity from the take's loudness at its onset, mapped
@@ -85,12 +74,7 @@ extension AppModel {
 
         _ = dragCanceller?()
 
-        let ids = selectionOrAll(in: document)
-        let targets = document.notes.filter { ids.contains($0.id) }
-        let velocities = OnsetLoudness.velocities(forOnsets: targets.map(\.note.startTime), mono16k: source.mono16k)
-        let byID = Dictionary(uniqueKeysWithValues: zip(targets.map(\.id), velocities))
-
-        commit(document.setVelocities(byID, title: String(localized: "Velocity from Audio", comment: "Undo title: velocities set from the audio's loudness")))
+        commit(EditingCommands.velocityFromAudio(in: document, selection: editor.selection, mono16k: source.mono16k))
     }
 
     // MARK: - Lengths
@@ -100,7 +84,7 @@ extension AppModel {
         guard canBulkEdit, let document else { return }
 
         _ = dragCanceller?()
-        commit(document.legato(selectionOrAll(in: document)))
+        commit(EditingCommands.legato(in: document, selection: editor.selection))
     }
 
     /// Edit → Join Notes: same-pitch runs whose gaps are at most 50 ms, or a grid step at the
@@ -109,12 +93,7 @@ extension AppModel {
         guard canBulkEdit, let document else { return }
 
         _ = dragCanceller?()
-
-        let ids = selectionOrAll(in: document)
-        let earliest = document.notes.first { ids.contains($0.id) }?.note.startTime ?? playheadSeconds
-        let step = editor.snapEnabled ? editor.grid.step(atSeconds: earliest) : 0
-
-        commit(document.join(ids, gap: max(0.05, step)))
+        commit(EditingCommands.join(in: document, editor: editor, playheadSeconds: playheadSeconds))
     }
 
     /// Edit → Split at Playhead: every affected note the playhead crosses, in two; the halves
@@ -127,7 +106,7 @@ extension AppModel {
 
         _ = dragCanceller?()
 
-        let (batch, halves) = document.split(selectionOrAll(in: document), at: playheadSeconds)
+        let (batch, halves) = EditingCommands.split(in: &document, selection: editor.selection, at: playheadSeconds)
 
         guard !batch.isEmpty else { return }
 
@@ -145,7 +124,7 @@ extension AppModel {
         _ = dragCanceller?()
 
         var generator = SystemRandomNumberGenerator()
-        commit(document.humanize(selectionOrAll(in: document), timing: 0.012, velocity: 8, using: &generator))
+        commit(EditingCommands.humanize(in: document, selection: editor.selection, using: &generator))
     }
 
     // MARK: - Swing
