@@ -15,7 +15,7 @@ final class TimelineDocumentView: NSView {
     override var isFlipped: Bool { true }
 }
 
-/// The drop target for audio files: the whole timeline, as `CombinedAudioMidiRegion` was a
+/// The drop target for audio and MIDI files: the whole timeline, as `CombinedAudioMidiRegion` was a
 /// `FileDragAndDropTarget` for everything inside its viewport (§2.2). Registered on the container
 /// rather than on the document, so a file let go over the Load button or the Transcribe
 /// call-to-action — which sit over the bands, outside the scroll view — lands too.
@@ -43,6 +43,12 @@ extension TimelineContainerView {
         AudioFileLoader.acceptedExtensions.contains(url.pathExtension.lowercased())
     }
 
+    /// A MIDI file lights the zone only when there is a take to import it over; without one it
+    /// is still accepted, so the drop can say why it was refused (MIDI import design §2).
+    private func lightsUp(_ url: URL) -> Bool {
+        AppModel.isMIDI(url) ? model.canImportMIDI : TimelineContainerView.isSupported(url)
+    }
+
     override func draggingEntered(_ sender: NSDraggingInfo) -> NSDragOperation {
         draggingUpdated(sender)
     }
@@ -55,7 +61,7 @@ extension TimelineContainerView {
 
         // The zone lights up for a file that can be loaded; an unsupported one is still accepted,
         // so the drop can say why it was refused (`fileDragEnter` / `filesDropped`).
-        waveform.isFileOver = TimelineContainerView.isSupported(url)
+        waveform.isFileOver = lightsUp(url)
 
         return .copy
     }
@@ -73,8 +79,13 @@ extension TimelineContainerView {
 
         guard acceptsDrops, isOverBands(sender), let url = droppedURL(sender) else { return false }
 
+        // MIDI goes over the take rather than replacing it; `importMIDI` refuses without one.
         // `loadAudio` refuses an unsupported extension with the "Could not load the file." message.
-        model.loadAudio(url: url)
+        if AppModel.isMIDI(url) {
+            model.importMIDI(url: url)
+        } else {
+            model.loadAudio(url: url)
+        }
 
         return true
     }
