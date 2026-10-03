@@ -67,6 +67,17 @@ private func measures(_ markers: [Marker], notes: [NoteEvent] = sung) -> [ScoreR
     #expect(layout.systems[0].rows[0].lyricsBelow)
 }
 
+@Test func aScoreWithRehearsalMarksGivesEverySystemRoomForThem() {
+    let sp: CGFloat = 8
+    let plain = ScoreDocument.build(notes: sung, grid: grid, key: nil)
+    let marked = ScoreDocument.build(notes: sung, grid: grid, key: nil, markers: [Marker(seconds: 0, name: "Intro")])
+    let plainLayout = ScoreSystemLayout(document: plain, arrangement: ScoreArrangement(), width: 2000, sp: sp)
+    let markedLayout = ScoreSystemLayout(document: marked, arrangement: ScoreArrangement(), width: 2000, sp: sp)
+
+    #expect(markedLayout.systems[0].frame.height == plainLayout.systems[0].frame.height + ScoreSystemLayout.rehearsalRoom * sp)
+    #expect(markedLayout.systems[0].rows[0].bottomLineY == plainLayout.systems[0].rows[0].bottomLineY + ScoreSystemLayout.rehearsalRoom * sp)
+}
+
 // MARK: - MusicXML
 
 @Test func musicXMLWritesTheRehearsalMarkInItsMeasureOnTheFirstPart() throws {

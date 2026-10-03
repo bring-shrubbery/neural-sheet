@@ -142,6 +142,10 @@ public struct ScoreSystemLayout: Sendable {
     /// The lyric line under a part's bottom staff, added to the gap below it when the part has
     /// words (markers and lyrics design §2).
     public static let lyricLine: CGFloat = 2.5
+    /// Room over every system of a score with rehearsal marks, which stand above the measure
+    /// number, the tempo and the chord symbols (markers and lyrics design §2), so a mark clears
+    /// the words of the system above it.
+    public static let rehearsalRoom: CGFloat = 2
     public static let systemGap: CGFloat = 8
     public static let clefWidth: CGFloat = 3.6
     public static let accidentalWidth: CGFloat = 1.0
@@ -200,6 +204,7 @@ public struct ScoreSystemLayout: Sendable {
 
         // Lay them out.
         let systemHeight = ScoreSystemLayout.systemHeight(for: document, arrangement: arrangement, sp: sp)
+        let markRoom = document.rehearsalMarks.isEmpty ? 0 : ScoreSystemLayout.rehearsalRoom * sp
         var y = ScoreSystemLayout.topMargin * sp
         let x0 = ScoreSystemLayout.leftMargin * sp
 
@@ -228,13 +233,13 @@ public struct ScoreSystemLayout: Sendable {
                 x += boxWidth
             }
 
-            let rows = ScoreSystemLayout.rows(for: document, top: y, sp: sp)
+            let rows = ScoreSystemLayout.rows(for: document, top: y + markRoom, sp: sp)
 
-            systems.append(System(frame: CGRect(x: x0, y: y, width: x - x0, height: systemHeight),
+            systems.append(System(frame: CGRect(x: x0, y: y, width: x - x0, height: systemHeight + markRoom),
                                   rows: rows, measures: measures, showsTimeSignature: showsMeter[range.lowerBound],
                                   isFirst: systemIndex == 0))
 
-            y += systemHeight + ScoreSystemLayout.systemGap * sp
+            y += systemHeight + markRoom + ScoreSystemLayout.systemGap * sp
         }
 
         totalHeight = y - ScoreSystemLayout.systemGap * sp + ScoreSystemLayout.bottomMargin * sp
