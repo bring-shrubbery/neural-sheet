@@ -15,7 +15,6 @@ import Foundation
 public enum MusicXMLWriter {
     /// Units per quarter note: enough for 32nds and every dotted value between.
     public static let divisions = 24
-    public static let barUnits = divisions * 4 // TEMP
 
     /// `quarterBeats` in units, to the nearest.
     static func units(quarterBeats: Double) -> Int {
