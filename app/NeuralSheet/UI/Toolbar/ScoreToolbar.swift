@@ -23,50 +23,54 @@ struct ScoreToolbar: View {
         let arrangement = model.arrangement
 
         VStack(spacing: 0) {
-            HStack(spacing: s(Metrics.groupGap)) {
-                HStack(spacing: s(2)) {
-                    segment(String(localized: "Continuous", comment: "Score toolbar: the systems in one column"), isOn: arrangement.layout == .continuous) { model.setScoreLayout(.continuous) }
-                    segment(String(localized: "Pages", comment: "Score toolbar: the systems on printed pages"), isOn: arrangement.layout == .pages) { model.setScoreLayout(.pages) }
-                }
-                .padding(s(2))
-                .background(RoundedRectangle(cornerRadius: s(Metrics.corner), style: .circular).fill(Theme.bgControlAlt))
+            // In an `OverflowRow`, so a narrow window scrolls the row rather than pushing the
+            // sidebar out.
+            OverflowRow {
+                HStack(spacing: s(Metrics.groupGap)) {
+                    HStack(spacing: s(2)) {
+                        segment(String(localized: "Continuous", comment: "Score toolbar: the systems in one column"), isOn: arrangement.layout == .continuous) { model.setScoreLayout(.continuous) }
+                        segment(String(localized: "Pages", comment: "Score toolbar: the systems on printed pages"), isOn: arrangement.layout == .pages) { model.setScoreLayout(.pages) }
+                    }
+                    .padding(s(2))
+                    .background(RoundedRectangle(cornerRadius: s(Metrics.corner), style: .circular).fill(Theme.bgControlAlt))
 
-                HStack(spacing: s(2)) {
-                    ForEach(PageSize.allCases, id: \.self) { size in
-                        segment(size.localizedName, isOn: arrangement.pageSize == size, isEnabled: arrangement.layout == .pages) {
-                            model.setPageSize(size)
+                    HStack(spacing: s(2)) {
+                        ForEach(PageSize.allCases, id: \.self) { size in
+                            segment(size.localizedName, isOn: arrangement.pageSize == size, isEnabled: arrangement.layout == .pages) {
+                                model.setPageSize(size)
+                            }
                         }
                     }
+                    .padding(s(2))
+                    .background(RoundedRectangle(cornerRadius: s(Metrics.corner), style: .circular).fill(Theme.bgControlAlt))
+
+                    // A hidden part loses its name on the page, which is the only way to its card;
+                    // this menu is how it comes back.
+                    ToolbarControls.labelButton(k: k, "Parts", tooltip: "Show or hide a part", isEnabled: !model.mixer.entries.isEmpty) {
+                        showPartsMenu()
+                    }
+                    .background(AnchorCatcher { partsAnchor = $0 })
+
+                    GridControls(model: model)
+
+                    Spacer(minLength: 0)
+
+                    ToolbarControls.labelButton(k: k, "Sheet…", tooltip: "Title, subtitle, composer, arranger, copyright") {
+                        showSheetCard()
+                    }
+                    .background(AnchorCatcher { sheetAnchor = $0 })
+
+                    ToolbarControls.labelButton(k: k, "Export PDF", tooltip: "Write the pages as a PDF (⌥⇧⌘P)",
+                                                isEnabled: model.canExport, action: model.exportPDF)
+
+                    // The drag-out, at the trailing end (MIDI out design §2).
+                    MidiDragChip(model: model)
                 }
-                .padding(s(2))
-                .background(RoundedRectangle(cornerRadius: s(Metrics.corner), style: .circular).fill(Theme.bgControlAlt))
-
-                // A hidden part loses its name on the page, which is the only way to its card;
-                // this menu is how it comes back.
-                ToolbarControls.labelButton(k: k, "Parts", tooltip: "Show or hide a part", isEnabled: !model.mixer.entries.isEmpty) {
-                    showPartsMenu()
-                }
-                .background(AnchorCatcher { partsAnchor = $0 })
-
-                GridControls(model: model)
-
-                Spacer(minLength: 0)
-
-                ToolbarControls.labelButton(k: k, "Sheet…", tooltip: "Title, subtitle, composer, arranger, copyright") {
-                    showSheetCard()
-                }
-                .background(AnchorCatcher { sheetAnchor = $0 })
-
-                ToolbarControls.labelButton(k: k, "Export PDF", tooltip: "Write the pages as a PDF (⌥⇧⌘P)",
-                                            isEnabled: model.canExport, action: model.exportPDF)
-
-                // The drag-out, at the trailing end (MIDI out design §2).
-                MidiDragChip(model: model)
+                .frame(height: s(Metrics.buttonHeight))
+                .padding(.top, s(7))
+                .padding(.bottom, s(8))
+                .padding(.horizontal, s(Metrics.paddingSide))
             }
-            .frame(height: s(Metrics.buttonHeight))
-            .padding(.top, s(7))
-            .padding(.bottom, s(8))
-            .padding(.horizontal, s(Metrics.paddingSide))
 
             Rectangle()
                 .fill(Theme.divSoft)

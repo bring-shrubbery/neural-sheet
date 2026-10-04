@@ -35,31 +35,34 @@ struct Toolbar: View {
 
         VStack(spacing: 0) {
             // The buttons sit at y 7 in the 43 px row above the border, as `withSizeKeepingCentre`
-            // rounds them there.
-            HStack(spacing: s(Metrics.groupGap)) {
-                if let name = model.droppedFileName {
-                    // Nothing at all when there is no file: the waveform's drop zone right below
-                    // already says the window is empty.
-                    Text(name)
-                        .font(Fonts.filename(k))
-                        .foregroundStyle(Theme.textFile)
-                        .lineLimit(1)
-                        .truncationMode(.tail)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                } else {
-                    Spacer(minLength: 0)
+            // rounds them there. In an `OverflowRow`, so a narrow window scrolls the row rather
+            // than pushing the sidebar out.
+            OverflowRow {
+                HStack(spacing: s(Metrics.groupGap)) {
+                    if let name = model.droppedFileName {
+                        // Nothing at all when there is no file: the waveform's drop zone right below
+                        // already says the window is empty.
+                        Text(name)
+                            .font(Fonts.filename(k))
+                            .foregroundStyle(Theme.textFile)
+                            .lineLimit(1)
+                            .truncationMode(.tail)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    } else {
+                        Spacer(minLength: 0)
+                    }
+
+                    stemsToggle
+
+                    // The same Re-transcribe the Edit toolbar has: a range can be marked in either tab.
+                    RetranscribeButton(model: model)
+                    clearButton(canClear: canClear)
                 }
-
-                stemsToggle
-
-                // The same Re-transcribe the Edit toolbar has: a range can be marked in either tab.
-                RetranscribeButton(model: model)
-                clearButton(canClear: canClear)
+                .frame(height: s(Metrics.buttonHeight))
+                .padding(.top, s(7))
+                .padding(.bottom, s(8))
+                .padding(.horizontal, s(Metrics.paddingSide))
             }
-            .frame(height: s(Metrics.buttonHeight))
-            .padding(.top, s(7))
-            .padding(.bottom, s(8))
-            .padding(.horizontal, s(Metrics.paddingSide))
 
             Rectangle()
                 .fill(Theme.divSoft)

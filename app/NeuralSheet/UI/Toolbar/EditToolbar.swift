@@ -23,51 +23,55 @@ struct EditToolbar: View {
         let editor = model.editor
 
         VStack(spacing: 0) {
-            HStack(spacing: s(Metrics.groupGap)) {
-                toolSwitcher(editor.tool)
+            // In an `OverflowRow`: the row is the busiest of the three and must never push the
+            // sidebar out of a narrow window.
+            OverflowRow {
+                HStack(spacing: s(Metrics.groupGap)) {
+                    toolSwitcher(editor.tool)
 
-                HStack(spacing: s(4)) {
-                    ToolbarControls.iconButton(k: k, isOn: editor.snapEnabled, tooltip: String(localized: "Snap to grid"),
-                                               label: Text(AccessibilityText.snapToGrid),
-                                               action: { model.setSnapEnabled(!editor.snapEnabled) }) {
-                        Icons.MagnetStroked()
+                    HStack(spacing: s(4)) {
+                        ToolbarControls.iconButton(k: k, isOn: editor.snapEnabled, tooltip: String(localized: "Snap to grid"),
+                                                   label: Text(AccessibilityText.snapToGrid),
+                                                   action: { model.setSnapEnabled(!editor.snapEnabled) }) {
+                            Icons.MagnetStroked()
+                        }
+
+                        ToolbarControls.labelButton(k: k, editor.grid.division.label, tooltip: "Grid division",
+                                                    label: Text(AccessibilityText.gridDivision)) {
+                            showDivisionMenu()
+                        }
+                        .background(AnchorCatcher { divisionAnchor = $0 })
+
+                        swingField(editor.grid)
                     }
 
-                    ToolbarControls.labelButton(k: k, editor.grid.division.label, tooltip: "Grid division",
-                                                label: Text(AccessibilityText.gridDivision)) {
-                        showDivisionMenu()
-                    }
-                    .background(AnchorCatcher { divisionAnchor = $0 })
+                    GridControls(model: model)
 
-                    swingField(editor.grid)
+                    ToolbarControls.labelButton(k: k, "Quantize", tooltip: "Quantize selection (⌘U)", action: model.quantizeSelectionOrAll)
+
+                    RetranscribeButton(model: model)
+
+                    Spacer(minLength: 0)
+
+                    HStack(spacing: s(4)) {
+                        ToolbarControls.iconButton(k: k, isOn: false, isEnabled: model.canUndo, tooltip: model.undoMenuTitle,
+                                                   label: Text(AccessibilityText.undo), action: model.undo) {
+                            Icons.UndoStroked()
+                        }
+                        ToolbarControls.iconButton(k: k, isOn: false, isEnabled: model.canRedo, tooltip: model.redoMenuTitle,
+                                                   label: Text(AccessibilityText.redo), action: model.redo) {
+                            Icons.RedoStroked()
+                        }
+                    }
+
+                    // The drag-out, at the trailing end (MIDI out design §2).
+                    MidiDragChip(model: model)
                 }
-
-                GridControls(model: model)
-
-                ToolbarControls.labelButton(k: k, "Quantize", tooltip: "Quantize selection (⌘U)", action: model.quantizeSelectionOrAll)
-
-                RetranscribeButton(model: model)
-
-                Spacer(minLength: 0)
-
-                HStack(spacing: s(4)) {
-                    ToolbarControls.iconButton(k: k, isOn: false, isEnabled: model.canUndo, tooltip: model.undoMenuTitle,
-                                               label: Text(AccessibilityText.undo), action: model.undo) {
-                        Icons.UndoStroked()
-                    }
-                    ToolbarControls.iconButton(k: k, isOn: false, isEnabled: model.canRedo, tooltip: model.redoMenuTitle,
-                                               label: Text(AccessibilityText.redo), action: model.redo) {
-                        Icons.RedoStroked()
-                    }
-                }
-
-                // The drag-out, at the trailing end (MIDI out design §2).
-                MidiDragChip(model: model)
+                .frame(height: s(Metrics.buttonHeight))
+                .padding(.top, s(7))
+                .padding(.bottom, s(8))
+                .padding(.horizontal, s(Metrics.paddingSide))
             }
-            .frame(height: s(Metrics.buttonHeight))
-            .padding(.top, s(7))
-            .padding(.bottom, s(8))
-            .padding(.horizontal, s(Metrics.paddingSide))
 
             Rectangle()
                 .fill(Theme.divSoft)
