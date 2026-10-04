@@ -24,21 +24,11 @@ final class NeuralSheetAUViewController: AUViewController, AUAudioUnitFactory {
 
     private func connect(_ unit: NeuralSheetAudioUnit) {
         let model = self.model
+        model.connect(unit)
         // KVO may call back on the thread that changed the format; the model is the main actor's.
         formatObservation = unit.outputBusses[0].observe(\.format, options: [.initial, .new]) { bus, _ in
             let rate = bus.format.sampleRate
             Task { @MainActor in model.sampleRate = rate }
         }
     }
-}
-
-/// What the view shows. Main actor.
-@Observable final class PluginViewModel {
-    /// The output's sample rate, nil until the host has made the unit.
-    var sampleRate: Double?
-
-    let version: String = {
-        let info = Bundle(for: NeuralSheetAUViewController.self).infoDictionary
-        return info?["CFBundleShortVersionString"] as? String ?? ""
-    }()
 }

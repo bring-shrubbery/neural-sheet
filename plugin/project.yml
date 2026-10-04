@@ -78,6 +78,17 @@ targets:
       - path: PluginCore
       # The app's take, which a capture becomes (sub-issue B), shared by path as the iOS app does.
       - path: ../app/NeuralSheet/Audio/SourceAudio.swift
+      # The waveform's drawing, shared with the Mac and iOS by path (sub-issue B): the painter
+      # over the timeline geometry, the palette and text, the theme and the type ramp. The plugin's
+      # NSView over it is NeuralSheetAU/TakeWaveformView.swift.
+      - path: ../app/NeuralSheet/UI/Theme.swift
+      - path: ../app/NeuralSheet/UI/Theme+Accommodations.swift
+      - path: ../app/NeuralSheet/UI/Accessibility/Accommodations.swift
+      - path: ../app/NeuralSheet/UI/Fonts.swift
+      - path: ../app/NeuralSheet/UI/Localization/Formats.swift
+      - path: ../app/NeuralSheet/UI/Timeline/TimelineGeometry.swift
+      - path: ../app/NeuralSheet/UI/Timeline/TimelineDrawing.swift
+      - path: ../app/NeuralSheet/UI/Timeline/WaveformView+Drawing.swift
     dependencies:
       - package: NeuralSheetCore
       - package: NeuralSheetEngine
