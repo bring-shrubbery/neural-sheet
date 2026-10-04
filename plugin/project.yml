@@ -92,6 +92,16 @@ targets:
       - path: ../app/NeuralSheet/UI/Timeline/TimelineGeometry.swift
       - path: ../app/NeuralSheet/UI/Timeline/TimelineDrawing.swift
       - path: ../app/NeuralSheet/UI/Timeline/WaveformView+Drawing.swift
+      # The transcription (sub-issue C), compiled unchanged as the iOS app compiles it: the
+      # engine wrapper over the NeuralSheetEngine package, the run's staging and landing, and the
+      # stem separator with its C++ bridge to demucs.cpp (libdemucs.a, built for the Mac by the
+      # pre-build script below, the same archive the app links).
+      - path: ../app/NeuralSheet/Engine/TranscriptionEngine.swift
+      - path: ../app/NeuralSheet/Engine/TranscriptionRun.swift
+      - path: ../app/NeuralSheet/Engine/StemSeparator.swift
+      - path: ../app/NeuralSheet/Audio/StemFiles.swift
+      - path: ../app/NeuralSheet/Engine/nsheet_stems.h
+      - path: ../app/NeuralSheet/Engine/nsheet_stems.cpp
     dependencies:
       - package: NeuralSheetCore
       - package: NeuralSheetEngine
@@ -103,11 +113,27 @@ targets:
       base:
         PRODUCT_NAME: NeuralSheetAU
         PRODUCT_BUNDLE_IDENTIFIER: com.quassum.neuralsheet.plugin.au
+        SWIFT_OBJC_BRIDGING_HEADER: NeuralSheetAU/NeuralSheetAU-Bridging-Header.h
+        HEADER_SEARCH_PATHS:
+          - $(SRCROOT)/../app/ThirdParty/demucs.cpp/src
+          - $(SRCROOT)/../app/ThirdParty/demucs.cpp/vendor/eigen
+        LIBRARY_SEARCH_PATHS: $(SRCROOT)/../app/build/engine/lib
+        OTHER_LDFLAGS:
+          - -ldemucs
+          - -framework Metal
+          - -framework Accelerate
         ENABLE_APP_SANDBOX: YES
         CODE_SIGN_ENTITLEMENTS: NeuralSheetAU/NeuralSheetAU.entitlements
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_CFBundleDisplayName: NeuralSheet
         SKIP_INSTALL: YES
+    # The stem separation library for the Mac, as the app's own build phase makes it; a no-op
+    # once built for the submodule's commit (app/Scripts/build-engine.sh).
+    preBuildScripts:
+      - name: Build engine
+        basedOnDependencyAnalysis: false
+        script: |
+          "$SRCROOT/../app/Scripts/build-engine.sh" macos
     info:
       path: NeuralSheetAU/Info.plist
       properties:

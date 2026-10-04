@@ -19,6 +19,23 @@ import os
     /// Set when Open NeuralSheet found no app to open.
     private(set) var appMissing = false
 
+    /// The run over the take and the notes it found (sub-issue C).
+    let transcription = PluginTranscription()
+
+    /// The model picked in the view; nil follows the app's setting.
+    var pickedSize: ModelSize?
+
+    /// The instruments the decoder is held to; empty is Automatic.
+    var selectedGroups: [InstrumentGroup] = []
+
+    /// Separate the take into stems first, when the Demucs weights are installed. Starts as the
+    /// app's Transcribe toolbar left it.
+    var separateStems: Bool
+
+    /// The app's settings, shared through the group: the model size, the Stems toggle and the
+    /// After transcription filter. Read again at every run.
+    @ObservationIgnored private var settings: GlobalSettings
+
     /// The paths inside the extension's sandbox: the models and the settings in the group
     /// container (Audio Unit design §2, "Models and settings").
     @ObservationIgnored let paths: AppPaths
@@ -36,12 +53,12 @@ import os
     init(paths: AppPaths = .standard) {
         self.paths = paths
         models = PluginModels(store: ModelStore(paths: paths))
+        settings = GlobalSettings.load(from: paths.globalSettings)
+        separateStems = settings.separateStems
 
         let installed = models.transcription.map(\.rawValue) + (models.stemsInstalled ? ["stems"] : [])
-        Self.log.info("models in \(paths.models.path, privacy: .public): \(installed, privacy: .public)")
+        PluginLog.logger.info("models in \(paths.models.path, privacy: .public): \(installed, privacy: .public)")
     }
-
-    static let log = Logger(subsystem: "com.quassum.neuralsheet.plugin.au", category: "plugin")
 
     func connect(_ unit: NeuralSheetAudioUnit) {
         self.unit = unit
@@ -50,11 +67,18 @@ import os
 
     // MARK: - Capture
 
+    /// A new take replaces the notes of the last.
     func record() {
+        guard !transcription.isRunning else { return }
+
+        transcription.clear()
         unit?.startCapture()
     }
 
     func arm() {
+        guard !transcription.isRunning else { return }
+
+        transcription.clear()
         unit?.arm()
     }
 
@@ -63,7 +87,58 @@ import os
     }
 
     func clear() {
+        transcription.clear()
         capture?.clear()
+    }
+
+    // MARK: - Transcription
+
+    /// The size Transcribe runs with.
+    var size: ModelSize? { models.size(picked: pickedSize, preferred: settings.modelSize) }
+
+    /// Whether Stems is offered and on.
+    var stemsChosen: Bool { separateStems && models.stemsInstalled }
+
+    /// A take of a second or more, a model, and nothing else under way.
+    var canTranscribe: Bool {
+        guard !transcription.isRunning, size != nil, let capture, capture.phase == .idle,
+              let take = capture.capturedTake
+        else { return false }
+
+        return take.mono16k.count >= TranscriptionPlan.minimumSamples
+    }
+
+    func transcribe() {
+        refreshModels()
+        settings = GlobalSettings.load(from: paths.globalSettings)
+
+        let store = ModelStore(paths: paths)
+
+        guard canTranscribe, let take = capture?.capturedTake, let size, let modelPath = store.installedPath(for: size)
+        else { return }
+
+        transcription.start(source: take, modelPath: modelPath,
+                            stemsPath: stemsChosen ? store.installedPath(for: .stems) : nil,
+                            groups: selectedGroups, settings: settings)
+    }
+
+    func cancelTranscription() {
+        transcription.cancel()
+    }
+
+    /// Automatic, or one instrument more or less.
+    func toggle(_ group: InstrumentGroup?) {
+        guard let group else {
+            selectedGroups = []
+            return
+        }
+
+        if let index = selectedGroups.firstIndex(of: group) {
+            selectedGroups.remove(at: index)
+        } else {
+            selectedGroups.append(group)
+            selectedGroups.sort { $0.rawValue < $1.rawValue }
+        }
     }
 
     // MARK: - Models
