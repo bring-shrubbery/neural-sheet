@@ -2,8 +2,8 @@
 # Builds the plugin's container app (Release, into a temporary DerivedData), registers the Audio
 # Unit extension it embeds with pluginkit, runs `auval -v aufx NSht Qssm`, and unregisters it
 # again (Audio Unit design §2, "Validation"). Exits non-zero when the build fails, when our own
-# sources warn, when the component's version disagrees with MARKETING_VERSION, or when auval
-# does not pass.
+# sources warn, when the plugin's version is not the Mac app's or the component's integer
+# version disagrees with it (Scripts/check-version.sh), or when auval does not pass.
 #
 #   NS_PLUGIN_SKIP_AUVAL=1   build and check only; no registration, no auval (for machines
 #                            without a login session, where pluginkit cannot register)
@@ -17,6 +17,11 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 component=(aufx NSht Qssm)
+
+# The plugin carries the Mac app's version; a disagreement fails before the build.
+echo "== version"
+Scripts/check-version.sh
+
 derived=$(mktemp -d "${TMPDIR:-/tmp}/neuralsheet-plugin.XXXXXX")
 appex=""
 
