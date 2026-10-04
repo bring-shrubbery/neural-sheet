@@ -47,6 +47,10 @@ nonisolated final class MidiOutSender: @unchecked Sendable {
 
     private let port: MIDIPortRef
 
+    /// The output's own virtual source, 0 for none: a list for it is received on it
+    /// (`MIDIReceivedEventList`) rather than sent through ``port``.
+    private let source: MIDIEndpointRef
+
     /// `DispatchSemaphore.signal()` never blocks and does not allocate: the one call the render
     /// thread makes here besides the ring push.
     private let wake = DispatchSemaphore(value: 0)
@@ -62,9 +66,10 @@ nonisolated final class MidiOutSender: @unchecked Sendable {
 
     private var thread: Thread?
 
-    init(port: MIDIPortRef, ring: MidiOutRing) {
+    init(port: MIDIPortRef, ring: MidiOutRing, source: MIDIEndpointRef = 0) {
         self.port = port
         self.ring = ring
+        self.source = source
 
         listStorage = UnsafeMutableRawPointer.allocate(
             byteCount: MidiOutSender.listBytes, alignment: MemoryLayout<MIDIEventList>.alignment)
@@ -288,7 +293,11 @@ nonisolated final class MidiOutSender: @unchecked Sendable {
 
     private func flush() {
         if listCount > 0, destination != 0 {
-            MIDISendEventList(port, destination, list)
+            if destination == source {
+                MIDIReceivedEventList(source, list)
+            } else {
+                MIDISendEventList(port, destination, list)
+            }
         }
 
         begin()

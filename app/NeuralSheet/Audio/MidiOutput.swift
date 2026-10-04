@@ -31,6 +31,10 @@ nonisolated final class MidiOutput: @unchecked Sendable {
     private var client: MIDIClientRef = 0
     private var port: MIDIPortRef = 0
 
+    /// The virtual source this output publishes on (``init(virtualSourceNamed:)``), 0 for an
+    /// output that sends to a destination.
+    private var source: MIDIEndpointRef = 0
+
     /// False for the offline renderer's bank (audio export design §2): no client, no port, no
     /// sender thread, and no destination can be chosen, so ``sending`` stays false and the render
     /// thread's push is one load that finds nothing to do.
@@ -77,6 +81,26 @@ nonisolated final class MidiOutput: @unchecked Sendable {
         self.port = port
         sender = MidiOutSender(port: port, ring: ring)
         relay.output = self
+        sender.start()
+    }
+
+    /// An output that publishes on a virtual CoreMIDI source of its own named `name`, rather than
+    /// sending to a destination: the Audio Unit's (Audio Unit design §2, "MIDI to host"), which a
+    /// host's MIDI track records from. Nothing is sent until ``setSourceEnabled(_:)``. No setup
+    /// notifications: a source does not care which devices come and go.
+    init(virtualSourceNamed name: String) {
+        isConnected = true
+
+        var client: MIDIClientRef = 0
+        var source: MIDIEndpointRef = 0
+
+        if MIDIClientCreateWithBlock(name as CFString, &client, nil) == noErr {
+            MIDISourceCreateWithProtocol(client, name as CFString, ._1_0, &source)
+        }
+
+        self.client = client
+        self.source = source
+        sender = MidiOutSender(port: 0, ring: ring, source: source)
         sender.start()
     }
 
@@ -137,6 +161,21 @@ nonisolated final class MidiOutput: @unchecked Sendable {
     }
 
     var isSending: Bool { sending.load(ordering: .relaxed) }
+
+    /// Whether ``init(virtualSourceNamed:)`` made its source.
+    var hasVirtualSource: Bool { source != 0 }
+
+    /// Publishes on the virtual source from now on, or stops, as ``setDestination(_:)`` does for
+    /// a destination: turning it off silences everything sounding first, turning it on sends the
+    /// channels' programs and controllers. Main thread; nothing without a source.
+    func setSourceEnabled(_ enabled: Bool) {
+        guard source != 0 else { return }
+
+        sender.enqueue(.setDestination(enabled ? source : 0))
+        sending.store(enabled, ordering: .relaxed)
+
+        if enabled { resendControls() }
+    }
 
     // MARK: - What is sent
 
@@ -219,6 +258,11 @@ nonisolated final class MidiOutput: @unchecked Sendable {
         if port != 0 {
             MIDIPortDispose(port)
             port = 0
+        }
+
+        if source != 0 {
+            MIDIEndpointDispose(source)
+            source = 0
         }
 
         if client != 0 {
