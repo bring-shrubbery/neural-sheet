@@ -7,13 +7,6 @@ import UniformTypeIdentifiers
 /// the take, as the transcription when there is none yet, or as one undoable edit when there is.
 /// A project is a take plus its notes, so there is always a take underneath.
 extension AppModel {
-    /// The extensions the drop routes here rather than to ``loadAudio(url:)``.
-    static let midiExtensions: Set<String> = ["mid", "midi"]
-
-    static func isMIDI(_ url: URL) -> Bool {
-        midiExtensions.contains(url.pathExtension.lowercased())
-    }
-
     /// A take to lay the notes over, and nothing in flight that owns the notes or the take.
     var canImportMIDI: Bool {
         (state == .audioLoaded || state == .populated) && !jobActive && regionJob == nil && importJob == nil
@@ -43,8 +36,7 @@ extension AppModel {
     func importMIDI(url: URL) {
         guard state == .audioLoaded || state == .populated else {
             if state == .empty, importJob == nil {
-                showError(AppModel.midiImportFailedTitle, String(localized: "Load or record audio first, then import a MIDI file over it.",
-                                                                     comment: "Alert body: a MIDI file dropped with no take"))
+                showError(MIDIImportCommands.failedTitle, MIDIImportCommands.needsTakeMessage)
             }
             return
         }
@@ -53,20 +45,10 @@ extension AppModel {
 
         let file: MidiFile
 
-        do {
-            file = try MidiFileReader.read(url: url)
-        } catch MidiFileReader.Error.unsupportedFormat(let format) {
-            showError(AppModel.midiImportFailedTitle,
-                      String(localized: "The file is a format \(format) MIDI file. NeuralSheet reads formats 0 and 1.",
-                             comment: "Alert body: a type 2 MIDI file"))
-            return
-        } catch {
-            showError(AppModel.midiImportFailedTitle, String(localized: "The file is not a MIDI file, or it is damaged.", comment: "Alert body: an unreadable MIDI file"))
-            return
-        }
-
-        guard !file.allNotes.isEmpty else {
-            showError(AppModel.midiImportFailedTitle, String(localized: "The file has no notes.", comment: "Alert body: a MIDI file without notes"))
+        switch MIDIImportCommands.read(url: url) {
+        case let .success(read): file = read
+        case let .failure(refusal):
+            showError(MIDIImportCommands.failedTitle, refusal.message)
             return
         }
 
@@ -83,10 +65,6 @@ extension AppModel {
 
             landAsEdit(file.allNotes, replacing: choice == .replace)
         }
-    }
-
-    private static var midiImportFailedTitle: String {
-        String(localized: "Could not import the MIDI file.", comment: "Alert title: File → Import MIDI… failed")
     }
 
     // MARK: - Landings
@@ -119,12 +97,9 @@ extension AppModel {
         setSelection(Set(batch.inserted.map(\.id)))
     }
 
-    /// The file's tempo and meter, or its whole map, become the grid's, but only over a grid
-    /// nobody has set (MIDI import design §2): a project's own tempo is never overwritten. Tick 0
-    /// is the start of the audio, so bar 1 is too.
     private func adoptGrid(from file: MidiFile) {
-        guard editor.grid == TempoGrid(), let segments = file.gridSegments() else { return }
+        guard let grid = MIDIImportCommands.adoptedGrid(from: file, over: editor.grid) else { return }
 
-        editor.grid.replaceMap(segments, offsetSeconds: 0)
+        editor.grid = grid
     }
 }

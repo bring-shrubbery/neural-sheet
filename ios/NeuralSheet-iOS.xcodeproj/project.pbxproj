@@ -127,6 +127,7 @@
 		DF13B2D359B325857457991F /* ScoreRenderer+Text.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC74A58475AA4FCBECA35DD4 /* ScoreRenderer+Text.swift */; };
 		DF56ABE40398FFF5AEA90999 /* InstrumentSynthBank+DefaultBank.swift in Sources */ = {isa = PBXBuildFile; fileRef = C11A1EB5870C27BF3292450E /* InstrumentSynthBank+DefaultBank.swift */; };
 		DFCC3D99822AAAEF4A02FF08 /* PlaybackEngine+Source.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20811F454A56C430BC95FF13 /* PlaybackEngine+Source.swift */; };
+		E0351CB0AF2D59D2344EE098 /* MIDIImportCommands.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E22DFF1441690E9F7D671A0 /* MIDIImportCommands.swift */; };
 		E1090709BA8A5C75A14D5228 /* ArrangementCommands.swift in Sources */ = {isa = PBXBuildFile; fileRef = 798D3512FDA82AAB46AAE465 /* ArrangementCommands.swift */; };
 		E558AAA303918EA7DDAAAB08 /* SoundBankLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D74D81D9AD509671F328290 /* SoundBankLibrary.swift */; };
 		E634D3B49814BD56B667B8E0 /* OfflineRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D7934C2ACB2C3E53B28135E /* OfflineRenderer.swift */; };
@@ -258,6 +259,7 @@
 		7A415DC1264328088E2DD2A2 /* PlaybackEngine+Session.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PlaybackEngine+Session.swift"; sourceTree = "<group>"; };
 		7AD1B0C795C0352D2D6E5CA2 /* MobileModel+Commands.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MobileModel+Commands.swift"; sourceTree = "<group>"; };
 		7B712EDFBCD5818D0297F721 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		7E22DFF1441690E9F7D671A0 /* MIDIImportCommands.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MIDIImportCommands.swift; sourceTree = "<group>"; };
 		7E2FF7355546FE6E86E6F168 /* StemSeparator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StemSeparator.swift; sourceTree = "<group>"; };
 		7ED8B70ABC0F6D185F5EE0A7 /* TranscriptionRunTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptionRunTests.swift; sourceTree = "<group>"; };
 		897641DEB991F9073B52C67C /* PlaybackEngine+Lifecycle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PlaybackEngine+Lifecycle.swift"; sourceTree = "<group>"; };
@@ -404,6 +406,7 @@
 				4B6D648F3475516796672E5F /* ExportCommands+Audio.swift */,
 				385C6E3CBC3680FE4C13A151 /* ExportCommands+Stems.swift */,
 				A9409A1FFBA294F91460D9C6 /* MeterLevels.swift */,
+				7E22DFF1441690E9F7D671A0 /* MIDIImportCommands.swift */,
 				39D036290F75C5C0BEDF5FDF /* PartDisplayText.swift */,
 				EE651DD37E16F8D6D713A5FC /* SelectionText.swift */,
 				07513FB404ABE5B065BF894B /* TransportCommands.swift */,
@@ -905,6 +908,7 @@
 				718018CDD69D85F167A439DB /* InstrumentSynthBank.swift in Sources */,
 				378A3F76F8F966110952970D /* InstrumentsSheet.swift in Sources */,
 				A0C293F3A5075397F1612FE0 /* KeyboardView+Drawing.swift in Sources */,
+				E0351CB0AF2D59D2344EE098 /* MIDIImportCommands.swift in Sources */,
 				29D638314B8BBD9239331E9D /* MeterLevels.swift in Sources */,
 				114B5FE575AE9F7158D0D55A /* MidiOutput+iOS.swift in Sources */,
 				19F417E960A23A6F92500968 /* MobileModel+Arrangement.swift in Sources */,

@@ -46,7 +46,7 @@ extension TimelineContainerView {
     /// A MIDI file lights the zone only when there is a take to import it over; without one it
     /// is still accepted, so the drop can say why it was refused (MIDI import design §2).
     private func lightsUp(_ url: URL) -> Bool {
-        AppModel.isMIDI(url) ? model.canImportMIDI : TimelineContainerView.isSupported(url)
+        MIDIImportCommands.isMIDI(url) ? model.canImportMIDI : TimelineContainerView.isSupported(url)
     }
 
     override func draggingEntered(_ sender: NSDraggingInfo) -> NSDragOperation {
@@ -81,7 +81,7 @@ extension TimelineContainerView {
 
         // MIDI goes over the take rather than replacing it; `importMIDI` refuses without one.
         // `loadAudio` refuses an unsupported extension with the "Could not load the file." message.
-        if AppModel.isMIDI(url) {
+        if MIDIImportCommands.isMIDI(url) {
             model.importMIDI(url: url)
         } else {
             model.loadAudio(url: url)
