@@ -24,6 +24,10 @@ extension TimelineTouchView {
         var zoomLevel: Double = 1
         var verticalZoom: Double = -1
         var transportRunning = false
+        /// The playhead while the transport is still, and Go to Start's count (sub-issue H): a
+        /// seek or a rewind from the transport bar moves the playhead and scrolls back.
+        var stillPlayhead: Double = 0
+        var goToStart = 0
         var canEdit = false
         var comparedVersionID: UUID?
     }
@@ -49,6 +53,8 @@ extension TimelineTouchView {
                         zoomLevel: model.zoomLevel,
                         verticalZoom: model.verticalZoom,
                         transportRunning: model.isTransportRunning,
+                        stillPlayhead: model.playheadSeconds,
+                        goToStart: model.goToStartGeneration,
                         canEdit: model.canEdit,
                         comparedVersionID: model.comparedVersion?.id)
     }
@@ -151,6 +157,11 @@ extension TimelineTouchView {
         }
 
         setZoom(geometry.zoom, keepingSecondsAtX: nil)
+
+        if !first, new.goToStart != old.goToStart {
+            scrollView.contentOffset.x = 0
+        }
+
         placeOverlays()
         updatePlayhead()
         wakeDisplayLink()

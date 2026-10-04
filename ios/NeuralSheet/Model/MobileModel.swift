@@ -6,7 +6,8 @@ import Observation
 /// the Mac's `AppModel` -- the playback engine, the take, the note document, the editor state and
 /// the project fields `project.json` keeps. It installs that state from a package and snapshots it
 /// back; the take comes in through `+Imports` and `+Recording`, the notes through
-/// `+Transcription` (sub-issue D); the editing commands come with sub-issue F.
+/// `+Transcription` (sub-issue D); the editing commands come with sub-issue F, the transport, the
+/// mix and the strips with sub-issue H (`+Transport`, `+Mix`).
 ///
 /// The field list and the two directions follow `AppModel+Project.swift` and
 /// `AppModel+ProjectOpen.swift`, so a package the Mac saved reads back field for field and one
@@ -23,7 +24,14 @@ final class MobileModel {
 
     /// The take, or nil for a project without audio.
     private(set) var source: SourceAudio? {
-        didSet { if oldValue !== source { sourceGeneration &+= 1 } }
+        didSet {
+            guard oldValue !== source else { return }
+
+            sourceGeneration &+= 1
+            // The take's length is what the loop spans without a range and the click covers.
+            applyLoop()
+            refreshClickTrack()
+        }
     }
 
     /// Bumped whenever ``source`` becomes a different take, so a save can tell the take it opened
@@ -48,16 +56,79 @@ final class MobileModel {
 
     // MARK: - Project state
 
-    /// The tool, selection, target instrument, snap, grid, key, chords and markers.
-    var editor = EditorState()
-    /// The instrument groups the next run transcribes; empty is automatic.
-    var selectedGroups: [InstrumentGroup] = []
-    /// The mix, keyed by program.
+    /// The tool, selection, target instrument, snap, grid, key, chords and markers. The range is
+    /// what the loop repeats and the grid what the click plays, as the Mac's `didSet` has it.
+    var editor = EditorState() {
+        didSet {
+            if editor.range != oldValue.range { applyLoop() }
+            if editor.grid != oldValue.grid { refreshClickTrack() }
+        }
+    }
+    /// The instrument groups the next run transcribes; empty is automatic. Their strips show as
+    /// placeholders until they have notes.
+    var selectedGroups: [InstrumentGroup] = [] {
+        didSet { refreshMixerEntries() }
+    }
+    /// The strips: the instruments in the notes and the selection, and each one's fader, mute,
+    /// solo and pan, keyed by program. `+Mix` is its writer.
     var mixer = InstrumentMixerState()
     /// How the Score tab shows the transcription (arrangement design §3.1).
     var arrangement = ScoreArrangement()
-    var clickEnabled = false
-    var clickGainDb = ProjectState.defaultClickGainDb
+    /// CLICK: the metronome on the grid's beats during playback. Per project.
+    var clickEnabled = false {
+        didSet { applyClickEnabled() }
+    }
+    /// The click's fader, −36 (silence) … +6 dB. Per project.
+    var clickGainDb = ProjectState.defaultClickGainDb {
+        didSet { engine.synthBank.setClickGain(db: clickGainDb) }
+    }
+
+    // MARK: - Transport and mix (sub-issue H; not saved, as on the Mac)
+
+    /// The engine's playhead, mirrored by the 30 Hz poll while it moves: what the transport's
+    /// position reads. ``playheadSeconds`` changes only on a seek, a pause or a stop.
+    var positionSeconds: Double = 0
+    /// Bumped by Go to Start, so the timeline scrolls back to its left edge.
+    var goToStartGeneration = 0
+    /// The equal-power crossfade, 0 = the take only, 1 = the MIDI only.
+    var mix = 0.5 {
+        didSet { applyMix() }
+    }
+    /// The take in the left ear and the MIDI in the right, nothing mixed.
+    var stereoSplit = false {
+        didSet { applyMix() }
+    }
+    /// The crossfade held while ORIG or MIDI is pressed, nil otherwise; never written to ``mix``.
+    var mixHold: Double? {
+        didSet { applyMix() }
+    }
+    /// How fast the take plays, pitch held, the MIDI on the same clock: 0.5 … 1.5.
+    var playbackSpeed = 1.0 {
+        didSet {
+            let clamped = TransportCommands.clampedSpeed(playbackSpeed)
+
+            if clamped != playbackSpeed { playbackSpeed = clamped }
+
+            engine.speed = clamped
+        }
+    }
+    /// Loop: the marked range repeats, or the whole take without one.
+    var loopEnabled = false {
+        didSet { applyLoop() }
+    }
+    /// The output level, −36 (silence) … +6 dB, and MUTE.
+    var masterGainDb = 0.0 {
+        didSet { engine.masterGainDb = masterGainDb }
+    }
+    var outputMuted = false {
+        didSet { engine.muted = outputMuted }
+    }
+    /// The meters after ballistics: the output's, and each strip's by program (`+Mix`).
+    var masterLevelDb = MeterScale.minDb
+    var instrumentLevels: [Int: Double] = [:]
+    @ObservationIgnored var meterLevels = MeterLevels()
+    /// The strips' settings as a fader or pan drag found them, for its one undo entry.
+    @ObservationIgnored var mixBeforeDrag: MixSnapshot?
 
     // MARK: - View state (saved, never an edit)
 
@@ -127,6 +198,21 @@ final class MobileModel {
 
     init(engine: PlaybackEngine = PlaybackEngine()) {
         self.engine = engine
+        meterLevels = MeterLevels(renderedFrames: engine.synthBank.renderedFrames)
+
+        engine.mix = mix
+        engine.masterGainDb = masterGainDb
+        engine.muted = outputMuted
+        engine.synthBank.setClickGain(db: clickGainDb)
+
+        // The engine's 30 Hz poll on the main queue: the position, the end of the take, the
+        // meters (the Mac's display-link tick).
+        engine.onPoll = { [weak self] in
+            self?.transportTick()
+        }
+        engine.onPlayheadWrapped = { [weak self] in
+            self?.syncTransport()
+        }
     }
 
     // MARK: - Install
@@ -147,9 +233,10 @@ final class MobileModel {
     func install(_ package: ProjectPackage, audio: SourceAudio?, transcriptionUnreadable: Bool) -> Bool {
         let saved = package.state
 
-        selectedGroups = MobileModel.normalised(saved.selectedGroups.compactMap(InstrumentGroup.init(rawValue:)))
+        // The mix before the selection, whose `didSet` derives the strips from both.
         mixer = InstrumentMixerState()
         mixer.settings = saved.mixer
+        selectedGroups = MobileModel.normalised(saved.selectedGroups.compactMap(InstrumentGroup.init(rawValue:)))
         clickEnabled = saved.clickEnabled
         clickGainDb = min(max(saved.clickGainDb, InstrumentMixerState.minGainDb), InstrumentMixerState.maxGainDb)
 
@@ -277,7 +364,8 @@ final class MobileModel {
         undoManager.setActionName(actionName)
     }
 
-    /// The document's notes to the synths and the scheduler, as the Mac's `publishNotes` does;
+    /// The document's notes to the synths, the strips and the scheduler, as the Mac's
+    /// `publishNotes` does;
     /// while a run streams, what it has found so far.
     func publishNotes() {
         let notes = document?.events ?? streamedNotes
@@ -287,89 +375,7 @@ final class MobileModel {
         }
 
         engine.synthBank.scheduler.swap(notes: notes)
+        refreshMixerEntries()
         engine.refreshGains()
-    }
-
-    // MARK: - Snapshots
-
-    /// The transcription as it stands, or nil without one.
-    func transcriptionSnapshot() -> ProjectTranscription? {
-        guard let document, let source else { return nil }
-
-        return ProjectTranscription(sourceSampleCount: source.mono16k.count,
-                                    rawNotes: rawNotes,
-                                    document: document,
-                                    versions: versions)
-    }
-
-    /// Everything `project.json` holds, field for field as the Mac's `projectState(audioFileName:)`.
-    func projectState(audioFileName: String) -> ProjectState {
-        var state = ProjectState()
-        state.audioFileName = audioFileName
-        state.audioDisplayName = droppedFileName
-        state.selectedGroups = selectedGroups.map(\.rawValue)
-        state.mixer = mixer.settings
-        state.exportTempo = exportTempo
-        state.gridOffsetSeconds = editor.grid.offsetSeconds
-        state.gridDivision = editor.grid.division
-        state.gridSegments = editor.grid.segments
-        state.gridSwing = editor.grid.swing
-        state.snapEnabled = editor.snapEnabled
-        state.targetProgram = editor.targetProgram
-        state.key = editor.key
-        state.chords = editor.chords
-        state.chordsEdited = editor.chordsEdited
-        state.markers = editor.markers
-        state.clickEnabled = clickEnabled
-        state.clickGainDb = clickGainDb
-        state.arrangement = arrangement
-        state.workspace = workspace.savedWorkspace
-        state.playheadSeconds = playheadSeconds
-        state.playheadCentered = followPlayhead
-        state.zoomLevel = zoomLevel
-        state.verticalZoom = verticalZoom
-
-        return state
-    }
-
-    /// The package a save writes: the state and the transcription.
-    func projectPackage(audioFileName: String) -> ProjectPackage {
-        ProjectPackage(state: projectState(audioFileName: audioFileName), transcription: transcriptionSnapshot())
-    }
-
-    // MARK: - Instrument selection
-
-    /// Adds or removes one group, as the Mac's `setSelected`. Not while a run is in flight: the
-    /// run has its own copy, and a change would only mislead.
-    func setSelected(_ group: InstrumentGroup, _ on: Bool) {
-        guard run == nil else { return }
-
-        var groups = selectedGroups
-
-        if on {
-            groups.append(group)
-        } else {
-            groups.removeAll { $0 == group }
-        }
-
-        let normalised = MobileModel.normalised(groups)
-
-        if normalised != selectedGroups {
-            selectedGroups = normalised
-        }
-    }
-
-    /// Back to Automatic.
-    func clearSelection() {
-        guard run == nil, !selectedGroups.isEmpty else { return }
-
-        selectedGroups = []
-    }
-
-    /// Enumerator order, duplicates dropped, as the Mac keeps ``selectedGroups``.
-    static func normalised(_ groups: [InstrumentGroup]) -> [InstrumentGroup] {
-        let chosen = Set(groups)
-
-        return InstrumentGroup.allCases.filter(chosen.contains)
     }
 }

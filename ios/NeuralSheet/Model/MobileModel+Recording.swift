@@ -208,12 +208,10 @@ extension MobileModel {
     /// After a take or a cancelled count-in: the click back on the transport, the project's
     /// switch and the project's beats.
     private func endRecordingClick() {
-        let bank = engine.synthBank
-
-        bank.stopClickClock()
+        engine.synthBank.stopClickClock()
         countInBeats = []
-        bank.clickEnabled = clickEnabled
-        bank.setClickEvents(ClickTrack.events(grid: editor.grid, duration: duration))
+        applyClickEnabled()
+        refreshClickTrack()
     }
 
     private func presentMicrophoneDenied() {

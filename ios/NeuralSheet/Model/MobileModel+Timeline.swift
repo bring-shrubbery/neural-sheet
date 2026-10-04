@@ -2,9 +2,8 @@ import Foundation
 import NeuralSheetCore
 
 /// The timeline's side of the model (sub-issue E): what the touch roll draws, and what its
-/// gestures ask for -- seek, select, audition, mark a range, zoom -- plus the placeholder
-/// transport's play and pause until sub-issue H brings the real one. The rules are the Mac's
-/// (`AppModel+Playback`, `+Editing`), without the window.
+/// gestures ask for -- select, audition, mark a range, zoom; the seek is the transport's
+/// (`+Transport`). The rules are the Mac's (`AppModel+Playback`, `+Editing`), without the window.
 extension MobileModel {
     /// The notes the roll draws: the document's, or while a run streams what it has found so far,
     /// under placeholder ids nothing hit-tests (as the Mac's roll does).
@@ -21,34 +20,6 @@ extension MobileModel {
     var canPlay: Bool { source != nil && recording == nil }
 
     var isPlaying: Bool { engine.isPlaying }
-
-    // MARK: - Transport (placeholder until sub-issue H)
-
-    /// Play or pause, starting the engine first if it is not running.
-    func togglePlay() {
-        guard canPlay else { return }
-
-        if engine.isPlaying {
-            engine.pause()
-            isTransportRunning = false
-            playheadSeconds = engine.playheadSeconds
-            return
-        }
-
-        guard startEngineIfNeeded() else { return }
-
-        engine.play()
-        isTransportRunning = true
-    }
-
-    /// A tap on the roll's empty lanes, the ruler or the waveform: the playhead there, as the
-    /// Mac's click does. Ignored past the end of the take, as the engine ignores it.
-    func seek(toSeconds seconds: Double) {
-        guard canPlay else { return }
-
-        engine.seek(seconds: seconds)
-        playheadSeconds = engine.playheadSeconds
-    }
 
     // MARK: - Selection and audition
 
@@ -122,7 +93,7 @@ extension MobileModel {
 
     // MARK: - Engine
 
-    private func startEngineIfNeeded() -> Bool {
+    func startEngineIfNeeded() -> Bool {
         guard !engine.isRunning else { return true }
 
         do {
