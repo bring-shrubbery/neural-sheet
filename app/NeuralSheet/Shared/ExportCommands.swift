@@ -50,11 +50,4 @@ nonisolated enum ExportCommands {
         MusicXMLWriter.data(notes: notes, ids: ids, grid: editor.grid, key: editor.key, arrangement: arrangement,
                             takeName: droppedFileName, chords: editor.chords, markers: editor.markers)
     }
-
-    /// The score's pages, whatever the Score tab shows, laid out as the Mac prints them; nil when
-    /// a PDF context cannot be made.
-    @MainActor
-    static func pdfData(document: ScoreDocument, arrangement: ScoreArrangement, takeName droppedFileName: String?) -> Data? {
-        ScorePDF.data(document: document, arrangement: arrangement, takeName: droppedFileName)
-    }
 }

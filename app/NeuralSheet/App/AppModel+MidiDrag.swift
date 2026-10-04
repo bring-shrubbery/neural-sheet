@@ -17,10 +17,10 @@ extension AppModel {
         return (midiExportFileName(), { [weak self] in self?.midiData() })
     }
 
-    /// `temporaryDirectory/NeuralSheet`: each drag writes into a folder of its own here, removed
-    /// once the drop is done (issue #21 requirement 9).
+    /// `temporaryDirectory/NeuralSheet`, where each drag writes into a folder of its own
+    /// (``MidiPromiseWriter/scratchFolder``).
     nonisolated static var dragScratchFolder: URL {
-        FileManager.default.temporaryDirectory.appendingPathComponent("NeuralSheet", isDirectory: true)
+        MidiPromiseWriter.scratchFolder
     }
 
     /// Whatever a drag left behind -- one whose promise the receiver never asked for -- when the
