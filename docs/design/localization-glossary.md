@@ -11,6 +11,14 @@ undo titles — looked up at display time), `InfoPlist.xcstrings` and `AppShortc
 Every key carries a comment saying where it is shown. `app/Scripts/check-localizations.sh` fails
 on any unit without a translation.
 
+The iPhone and iPad app ([issue #38](https://github.com/bring-shrubbery/neural-sheet/issues/38))
+has its own `ios/NeuralSheet/Localizable.xcstrings` and `InfoPlist.xcstrings`, and
+`ios/NeuralSheetWidgets/Localizable.xcstrings` for the Live Activity; it shares `Core.xcstrings`
+by path. A target holds one `Localizable` table, and an iOS export would rewrite a shared Mac
+file, so a string both apps show is in both catalogs: the check script fails when the iOS
+catalog translates such a key differently from the Mac's. iOS's own words follow iOS's German
+and Spanish, as the Mac's follow macOS's.
+
 ## Conventions
 
 | | German | Spanish |
@@ -110,6 +118,15 @@ on any unit without a translation.
 | Settings | Einstellungen | Ajustes | The app's window; the system's is *Systemeinstellungen* / *Ajustes del Sistema* |
 | tooltip | Tooltip | descripción emergente | |
 | VoiceOver: note (role) | Note | nota | |
+| note card | Notenkarte | ficha de la nota | The Mac's *Open Note Card*; on iOS a sheet or a popover |
+| part card | Stimmenkarte | ficha de la parte | |
+| Share… (iOS) | Teilen … | Compartir… | The system's share sheet |
+| Save to Files… (iOS) | In „Dateien“ sichern … | Guardar en Archivos… | As iOS names the Files app in each |
+| Files, Photos (the iOS apps) | Dateien, Fotos | Archivos, Fotos | |
+| Live Activity (iOS) | Live-Aktivität | Actividad en directo | The Lock Screen and Dynamic Island card |
+| fallback tone (iOS) | Ersatzklang | tono de reserva | The synth's own sound with no sound bank |
+| roll (the iOS tab) | Pianorolle | Piano roll | The tab and screen with the piano roll |
+| strips (the iOS mixer) | Instrumente | instrumentos | Shown as *Instruments*; not translated as a technical term |
 
 ## Reviewing
 
