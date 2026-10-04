@@ -21,6 +21,16 @@ class TimelineBandView: UIView {
         nil
     }
 
+    /// What VoiceOver finds inside the band -- the roll's notes, the lane's chords -- asked of the
+    /// timeline, which owns the model (`TimelineTouchView+Accessibility`). Nil for a band
+    /// VoiceOver does not enter.
+    var accessibilityProvider: (() -> [Any])?
+
+    override var accessibilityElements: [Any]? {
+        get { accessibilityProvider?() }
+        set {}
+    }
+
     /// The current CoreGraphics context and the exposed part of the band.
     func context(for rect: CGRect) -> (CGContext, CGRect)? {
         guard let ctx = UIGraphicsGetCurrentContext() else { return nil }
@@ -43,6 +53,7 @@ final class RollBandView: TimelineBandView {
         painter = RollPainter(geometry: geometry)
         super.init(geometry: geometry)
         accessibilityLabel = String(localized: "Piano roll", comment: "VoiceOver: the piano roll, which holds the notes")
+        accessibilityContainerType = .semanticGroup
 
         // The order the Mac stacks them in, over the lanes and the notes.
         for overlay in [wash, frontierShade, frontierLine, rangeBand] as [CALayer] {
@@ -186,6 +197,8 @@ final class ChordLaneBandView: TimelineBandView {
 
     override init(geometry: TimelineGeometry) {
         super.init(geometry: geometry)
+        accessibilityLabel = String(localized: "Chords", comment: "VoiceOver: the chord lane above the piano roll")
+        accessibilityContainerType = .semanticGroup
         playhead.drawsTriangle = false
         layer.addSublayer(playhead)
     }
@@ -205,17 +218,6 @@ final class ChordLaneBandView: TimelineBandView {
 final class KeyboardBandView: TimelineBandView {
     var isDimmed = false
     var key: MusicalKey?
-
-    override init(geometry: TimelineGeometry) {
-        super.init(geometry: geometry)
-        isAccessibilityElement = true
-        accessibilityLabel = String(localized: "Keyboard", comment: "VoiceOver: the piano keys left of the piano roll")
-        accessibilityTraits = .allowsDirectInteraction
-    }
-
-    required init?(coder: NSCoder) {
-        nil
-    }
 
     override func draw(_ rect: CGRect) {
         guard let (ctx, dirty) = context(for: rect) else { return }

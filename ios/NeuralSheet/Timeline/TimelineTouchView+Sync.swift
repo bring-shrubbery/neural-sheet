@@ -82,6 +82,7 @@ extension TimelineTouchView {
             roll.painter.canPlay = new.canPlay
             ruler.painter.canPlay = new.canPlay
             repaintAll()
+            invalidateAccessibilityElements(notesChanged: false)
         }
 
         if first || new.peaksIdentity != old.peaksIdentity {
@@ -95,12 +96,17 @@ extension TimelineTouchView {
             roll.painter.buckets = RollPainter.secondBuckets(new.notes)
             roll.painter.refreshPreviewIndices()
             roll.setNeedsDisplay()
+            invalidateAccessibilityElements(notesChanged: true)
         }
 
         if first || new.selection != old.selection || new.canEdit != old.canEdit {
             roll.painter.selection = new.selection
             roll.showsHandles = new.canEdit
             roll.setNeedsDisplay()
+
+            if !first, new.selection != old.selection {
+                accessibilitySelectionDidChange()
+            }
         }
 
         // Compare With: the version's notes ghosted behind the roll (versions design §2).
@@ -138,6 +144,7 @@ extension TimelineTouchView {
             chordLane.labels = new.chords.map { $0.text(in: new.key) }
             geometry.chordLaneHeight = new.chords.isEmpty ? 0 : ChordLanePainter.height
             chordLane.setNeedsDisplay()
+            invalidateAccessibilityElements(notesChanged: false)
             gutter.setNeedsDisplay()
             setNeedsLayout()
         }

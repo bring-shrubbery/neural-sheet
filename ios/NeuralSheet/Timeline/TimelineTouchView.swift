@@ -57,6 +57,17 @@ final class TimelineTouchView: UIView, UIScrollViewDelegate {
     let marquee = UIView()
     var onNoteCard: ((CGRect) -> Void)?
 
+    /// VoiceOver's elements (`+Accessibility`): the ruler and the keys, made once; the notes in the
+    /// band in reading order and the chords, nil until asked or after a change; the last notes
+    /// made, kept so a note's element outlives a rebuild; and each note's place in the roll.
+    lazy var accessibilityRuler = makeAccessibilityRuler()
+    lazy var accessibilityKeyboard = makeAccessibilityKeyboard()
+    var accessibilityNotes: [(id: NoteID, element: DrawnTouchElement)]?
+    var accessibilityNotesKept: [(id: NoteID, element: DrawnTouchElement)] = []
+    var accessibilityChords: [DrawnTouchElement]?
+    var accessibilityNoteIndex: [NoteID: Int] = [:]
+    var accessibilityNoteIndexIsStale = true
+
     /// The display link and how many quiet frames it has seen (`+Playhead`).
     var displayLink: CADisplayLink?
     var idleTicks = 0
@@ -98,6 +109,7 @@ final class TimelineTouchView: UIView, UIScrollViewDelegate {
 
         installGestures()
         installEditingGestures()
+        installAccessibility()
 
         accommodationsObserver = NotificationCenter.default.addObserver(
             forName: Accommodations.didChange, object: nil, queue: .main
@@ -208,6 +220,7 @@ final class TimelineTouchView: UIView, UIScrollViewDelegate {
 
         if moved {
             placeOverlays()
+            invalidateAccessibilityElements(notesChanged: false)
         }
     }
 

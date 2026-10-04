@@ -55,6 +55,9 @@ final class ScoreTouchView: UIView, UIScrollViewDelegate {
     /// The display link that moves the cursor while the take plays (`+Sync`).
     var displayLink: CADisplayLink?
 
+    /// VoiceOver's systems and notes (`+Accessibility`), nil until asked or after a relayout.
+    var accessibilityScoreElements: [DrawnTouchElement]?
+
     init(model: MobileModel) {
         self.model = model
         super.init(frame: .zero)
@@ -85,9 +88,7 @@ final class ScoreTouchView: UIView, UIScrollViewDelegate {
         let pinch = UIPinchGestureRecognizer(target: self, action: #selector(handlePinch(_:)))
         addGestureRecognizer(pinch)
 
-        isAccessibilityElement = false
-        scrollView.accessibilityLabel = String(localized: "Score", comment: "Tab: the score")
-        scrollView.accessibilityIdentifier = "score"
+        installAccessibility()
     }
 
     required init?(coder: NSCoder) {
@@ -141,6 +142,7 @@ final class ScoreTouchView: UIView, UIScrollViewDelegate {
         guard width > 0, let inputs else {
             canvas.painter.layout = nil
             canvas.setNeedsDisplay()
+            invalidateAccessibilityElements()
             return
         }
 
@@ -170,6 +172,7 @@ final class ScoreTouchView: UIView, UIScrollViewDelegate {
         cursorSystemIndex = nil
         layoutCanvas()
         updateCursor()
+        invalidateAccessibilityElements()
     }
 
     /// Slides the canvas to cover the viewport with room around it, repainting only when it

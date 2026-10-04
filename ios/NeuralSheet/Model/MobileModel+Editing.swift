@@ -202,6 +202,16 @@ extension MobileModel {
         audition(note)
     }
 
+    /// The Mac's arrow keys, which VoiceOver's Move actions stand in for on touch: the selection
+    /// `steps` grid divisions later and `semitones` higher, then heard.
+    func nudgeSelection(steps: Int, semitones: Int) {
+        guard canEdit, let document, !editor.selection.isEmpty else { return }
+
+        commit(EditingCommands.nudge(in: document, editor: editor, steps: steps, semitones: semitones,
+                                     playheadSeconds: playheadSeconds))
+        auditionSelection()
+    }
+
     func deleteSelection() {
         guard let document, !editor.selection.isEmpty else { return }
 

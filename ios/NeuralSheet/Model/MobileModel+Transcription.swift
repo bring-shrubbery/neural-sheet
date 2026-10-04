@@ -363,6 +363,7 @@ extension MobileModel {
             registerUndo(finished.runName, before: before)
             lastRunSeconds = Date().timeIntervalSince(finished.startedAt)
             runSupport?.finish(status: String(localized: "Done", comment: "Live Activity: the run has finished"), progress: 1)
+            Announcement.post(Announcement.runFinished(notes: document?.notes.count ?? 0))
 
             print("NeuralSheet run: \(document?.notes.count ?? 0) notes from \(final.count) raw in "
                   + String(format: "%.2f s", lastRunSeconds ?? 0)
@@ -372,6 +373,7 @@ extension MobileModel {
             restore(before)
             runSupport?.finish(status: String(localized: "Cancelled", comment: "Live Activity: the run was cancelled"),
                                progress: progress)
+            Announcement.post(String(localized: "Cancelled", comment: "Live Activity: the run was cancelled"))
             print("NeuralSheet run: cancelled")
 
         case let .failed(reason):
