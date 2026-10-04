@@ -141,7 +141,10 @@ jobs:
     runs-on: macos-26
     timeout-minutes: 45
     steps:
+      # demucs.cpp, which the extension links for Stems (sub-issue C).
       - uses: actions/checkout@v7
+        with:
+          submodules: recursive
       - name: Select the newest installed Xcode
         run: |
           # shellcheck disable=SC2012
