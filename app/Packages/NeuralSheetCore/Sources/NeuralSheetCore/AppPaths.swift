@@ -9,14 +9,33 @@ func fileByteSize(_ url: URL) -> Int64 {
 /// Where the app keeps its own files.
 ///
 /// Every path is injected, so tests never touch the real home directory.
+///
+/// On the Mac the models and `global.settings` live in the App Group container
+/// ``appGroupIdentifier`` (Audio Unit design §2, "Models and settings"), so the plugin's
+/// sandboxed extension reads the same checkpoints and settings the app downloaded and wrote. The
+/// recordings stay under ``root``. iOS keeps everything in its own container (no group).
 public struct AppPaths: Sendable {
+    /// The App Group the Mac app and the Audio Unit extension share. Prefixed with the team
+    /// rather than `group.`: macOS lets a team-prefixed group in on the code signature alone,
+    /// while a `group.` one needs a provisioning profile that names it, which the Developer ID
+    /// release (signed without a profile) does not carry; without it the app is kept out of the
+    /// container. Both entitlements files name this string.
+    public static let appGroupIdentifier = "6WCYZER5LX.com.quassum.neuralsheet"
+
     /// `~/Library/NeuralSheet` on the Mac, `Library/Application Support/NeuralSheet` in the iOS
     /// app's container.
     public var root: URL
+    /// `<group>/Models` when there is a group container, `<root>/models` otherwise.
     public var models: URL
     public var recordings: URL
-    /// `global.settings`, beside the projects rather than inside any one of them.
+    /// `global.settings`: `<group>/global.settings` when there is a group container, beside the
+    /// projects (`<root>`) otherwise.
     public var globalSettings: URL
+
+    /// `~/Library/Group Containers/6WCYZER5LX.com.quassum.neuralsheet` on the Mac; nil on iOS, in
+    /// a Mac build the system keeps out of the container, and in tests that do not ask for one,
+    /// where the models and the settings stay under ``root``.
+    public var groupContainer: URL?
 
     /// `~/Library/NeuralNote/models`: checkpoints an earlier NeuralNote installed, read-only.
     public var secondaryModels: URL
@@ -24,11 +43,24 @@ public struct AppPaths: Sendable {
     /// Where a MIDI export lands by default.
     public var musicFolder: URL
 
-    public init(root: URL, secondaryModels: URL, music: URL) {
+    /// Where the models were before the group container (`<root>/models`), what
+    /// ``migrateToGroupContainer()`` moves from.
+    public var legacyModels: URL { root.appendingPathComponent("models", isDirectory: true) }
+
+    /// Where `global.settings` was before the group container.
+    public var legacyGlobalSettings: URL { root.appendingPathComponent("global.settings") }
+
+    public init(root: URL, secondaryModels: URL, music: URL, groupContainer: URL? = nil) {
         self.root = root
-        models = root.appendingPathComponent("models", isDirectory: true)
+        self.groupContainer = groupContainer
+        if let groupContainer {
+            models = groupContainer.appendingPathComponent("Models", isDirectory: true)
+            globalSettings = groupContainer.appendingPathComponent("global.settings")
+        } else {
+            models = root.appendingPathComponent("models", isDirectory: true)
+            globalSettings = root.appendingPathComponent("global.settings")
+        }
         recordings = root.appendingPathComponent("recordings", isDirectory: true)
-        globalSettings = root.appendingPathComponent("global.settings")
         self.secondaryModels = secondaryModels
         musicFolder = music
     }
@@ -46,6 +78,7 @@ public struct AppPaths: Sendable {
             ?? home.appendingPathComponent("Library", isDirectory: true)
         #if os(macOS)
         let root = library.appendingPathComponent("NeuralSheet", isDirectory: true)
+        let group = AppPaths.usableGroupContainer()
         #else
         // The app's own Application Support (iOS app design §2): the models, the settings and the
         // takes in progress belong to the app, not to the user's documents.
@@ -53,13 +86,15 @@ public struct AppPaths: Sendable {
             fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
             ?? library.appendingPathComponent("Application Support", isDirectory: true)
         let root = support.appendingPathComponent("NeuralSheet", isDirectory: true)
+        let group: URL? = nil
         #endif
 
         return AppPaths(
             root: root,
             secondaryModels: library.appendingPathComponent("NeuralNote/models", isDirectory: true),
             music: fileManager.urls(for: .musicDirectory, in: .userDomainMask).first
-                ?? home.appendingPathComponent("Music", isDirectory: true))
+                ?? home.appendingPathComponent("Music", isDirectory: true),
+            groupContainer: group)
     }()
 
     /// Creates the directories the app writes to. The secondary models directory belongs to another
