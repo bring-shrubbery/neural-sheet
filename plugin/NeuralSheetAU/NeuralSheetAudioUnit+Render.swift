@@ -1,8 +1,10 @@
 import AudioToolbox
 import Foundation
+import Synchronization
 
-/// What the render block owns: the buffers it pulls the host's input into. A plain struct behind
-/// a pointer, so the block reads it with ordinary loads and nothing is reference counted.
+/// What the render block owns: the buffers it pulls the host's input into and the ring it captures
+/// into. A plain struct behind a pointer, so the block reads it with ordinary loads and nothing is
+/// reference counted.
 ///
 /// Written only by ``NeuralSheetAudioUnit/allocateRenderResources()`` and
 /// ``NeuralSheetAudioUnit/deallocateRenderResources()``, between which hosts render and outside
@@ -17,6 +19,11 @@ nonisolated struct PassthroughScratch {
 
     var channels = 0
     var maxFrames = 0
+
+    /// The capture ring, unretained: the unit holds it strongly and replaces it only in
+    /// `allocateRenderResources`, outside rendering, so the block borrows it without touching its
+    /// reference count.
+    var ring: Unmanaged<CaptureRing>?
 
     mutating func allocate(channels: Int, maxFrames: Int) {
         let buffers = AudioBufferList.allocate(maximumBuffers: channels)
@@ -42,10 +49,12 @@ nonisolated struct PassthroughScratch {
     }
 }
 
-/// The render block: pulls the input and hands it to the output, nothing else. Render thread.
+/// The render block: pulls the input, hands it to the output and, while a capture runs, copies it
+/// into the ring (Audio Unit design §2, "Audio path"). Render thread.
 ///
 /// It captures only `scratch`, a pointer (a trivial value: no retain, no release), and touches
-/// nothing but the C structs it points at and the ones the host passes in.
+/// nothing but the C structs it points at, the ones the host passes in, and the ring's atomics and
+/// preallocated storage.
 nonisolated func makePassthroughRenderBlock(
     _ scratch: UnsafeMutablePointer<PassthroughScratch>
 ) -> AUInternalRenderBlock {
@@ -92,6 +101,17 @@ nonisolated func makePassthroughRenderBlock(
                 memcpy(destination, source, Int(byteSize))
             }
             output[channel].mDataByteSize = byteSize
+        }
+
+        // The capture: one acquiring load while idle. While capturing, the first cycle's host
+        // sample time (a relaxed load and store) and the input copied into the ring (two atomic
+        // loads, a memmove per channel, a releasing store). Borrowed, not retained: the unit
+        // keeps the ring alive while the host renders.
+        resources.ring?._withUnsafeGuaranteedRef { ring in
+            if ring.capturing.load(ordering: .acquiring) {
+                ring.noteStart(sampleTime: timestamp.pointee.mSampleTime)
+                ring.push(frames: frames, from: input)
+            }
         }
 
         return noErr

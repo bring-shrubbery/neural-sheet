@@ -1,11 +1,13 @@
 import AVFoundation
 import AudioToolbox
 import Foundation
+import Synchronization
 
 /// The NeuralSheet effect (Audio Unit design §2, "Audio path"): one stereo input, one stereo
 /// output, any sample rate, no parameters yet.
 ///
-/// In sub-issue A the audio passes through untouched. The render block is written against the
+/// The audio passes through untouched and, while a capture runs, is copied into a
+/// ``CaptureRing`` (sub-issue B; `+Capture` is the main thread's side). The render block is written against the
 /// render-thread rules (CLAUDE.md): it does not allocate, lock, call an Objective-C property or
 /// grow an array. Everything it touches is reached through ``scratch``, a plain pointer captured
 /// by value, so it never retains, releases or reaches through `self`.
@@ -24,6 +26,16 @@ nonisolated final class NeuralSheetAudioUnit: AUAudioUnit, @unchecked Sendable {
 
     /// The render block's whole world, allocated with the unit and freed in `deinit`.
     private let scratch = UnsafeMutablePointer<PassthroughScratch>.allocate(capacity: 1)
+
+    /// The capture ring, made in `allocateRenderResources` for the host's format and kept across
+    /// a deallocation, so a host that stops rendering for a moment does not lose a take. Locked
+    /// because the host allocates on a thread of its own while the main thread drains; the
+    /// render block never takes this lock, it borrows the ring through ``scratch``.
+    private let ringLock = Mutex<CaptureRing?>(nil)
+
+    /// The ring the main thread starts, drains and stops captures on; nil before the host has
+    /// allocated render resources.
+    var captureRing: CaptureRing? { ringLock.withLock { $0 } }
 
     override init(
         componentDescription: AudioComponentDescription, options: AudioComponentInstantiationOptions = []
@@ -86,6 +98,25 @@ nonisolated final class NeuralSheetAudioUnit: AUAudioUnit, @unchecked Sendable {
 
         scratch.pointee.release()
         scratch.pointee.allocate(channels: Int(output.channelCount), maxFrames: Int(maximumFramesToRender))
+        scratch.pointee.ring = Unmanaged.passUnretained(ring(for: output))
+    }
+
+    /// The ring for `format`: the current one when the rate and channels are unchanged, otherwise
+    /// a new one, which ends any capture running on the old (the main thread sees the swap and
+    /// stops with what it drained).
+    private func ring(for format: AVAudioFormat) -> CaptureRing {
+        let rate = format.sampleRate
+        let channels = Int(format.channelCount)
+
+        return ringLock.withLock { current in
+            if let current, current.sampleRate == rate, current.channels == channels { return current }
+
+            current?.capturing.store(false, ordering: .releasing)
+            let ring = CaptureRing(capacityFrames: CaptureRing.capacityFrames(for: rate), channels: channels,
+                                   sampleRate: rate)
+            current = ring
+            return ring
+        }
     }
 
     override func deallocateRenderResources() {
