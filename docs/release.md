@@ -135,3 +135,102 @@ not a failure — the next run covers its commits.
   download button is stale. Re-run the build from the Worker's *Builds* page in the
   Cloudflare dashboard (re-running the Release workflow prints "no code changes" and
   does nothing).
+
+## iOS (TestFlight)
+
+`.github/workflows/ios-testflight.yml` archives NeuralSheet for iPhone and iPad on
+every push to `main` that changes something other than `docs/`, `web/`, `*.md`,
+`LICENSE` or `NOTICE`, and on **Run workflow** from the Actions tab. It builds the
+committed `ios/NeuralSheet-iOS.xcodeproj` (nothing is regenerated), checks that the
+archive holds the app and its widget extension, and fails on warnings in our sources.
+
+With all eight secrets below present, and only on `main`, it also signs the archive
+for App Store distribution, exports `NeuralSheet.ipa` and uploads it to App Store
+Connect with `xcrun altool --upload-app`. Without them (a fork, or before they are
+added) it archives unsigned, uploads nothing and stays green; a partial set is a
+warning naming the missing ones.
+
+The upload is all the workflow does. Giving a build to testers (TestFlight → a group →
+add the build), answering export compliance, and submitting a version for App Store
+review are the maintainer's actions in App Store Connect.
+
+### Versions and build numbers
+
+- The version is `MARKETING_VERSION` in `ios/project.yml` (both targets). To ship a
+  new one, change it in both targets, run `make -C ios project`, and commit the spec
+  and the project together. Once a version is released on the App Store, App Store
+  Connect refuses further builds of it, so raise it then.
+- The build number (`CURRENT_PROJECT_VERSION`) is this workflow's run number, set on
+  the command line, so builds only climb. It is independent of the Mac's build
+  number (the Release workflow's run). Re-running a run whose upload succeeded fails
+  with a duplicate build number; start a new run instead.
+
+### Signing settings
+
+The `Release` configuration (the archive) of the app and the widget extension signs
+by hand: `CODE_SIGN_STYLE = Manual`, `CODE_SIGN_IDENTITY = Apple Distribution`, and
+`PROVISIONING_PROFILE_SPECIFIER` read from `NS_APP_STORE_PROFILE` and
+`NS_WIDGETS_APP_STORE_PROFILE`. Their defaults are `NeuralSheet iOS App Store` and
+`NeuralSheet iOS Widgets App Store`; the workflow overrides both with the names in
+the installed profiles. `Debug` stays automatic, so local builds need only the team.
+
+### One-time setup
+
+Four secrets are the Mac release's and are reused as they are: `APPLE_TEAM_ID`,
+`ASC_API_KEY_P8`, `ASC_API_KEY_ID` and `ASC_API_ISSUER_ID` (above). The key needs
+**Developer** access or higher to upload builds, which the Mac's `NeuralSheet CI`
+key has. Four are new:
+
+| Secret | What it is |
+| --- | --- |
+| `APPLE_DIST_CERT_P12_BASE64` | The Apple Distribution certificate and its private key, `.p12`, base64 |
+| `APPLE_DIST_CERT_PASSWORD` | That `.p12`'s password |
+| `IOS_APP_PROFILE_BASE64` | The App Store Connect profile for `com.quassum.neuralsheet.ios`, base64 |
+| `IOS_WIDGET_PROFILE_BASE64` | The App Store Connect profile for `com.quassum.neuralsheet.ios.widgets`, base64 |
+
+1. **The app record.** App Store Connect → Apps → **+** → New App: platform iOS,
+   name NeuralSheet, bundle ID `com.quassum.neuralsheet.ios`. Uploads fail until it
+   exists. If the bundle ID is not offered, register it first (step 3).
+2. **The distribution certificate.** Xcode → Settings → Accounts → the Quassum MB
+   team → Manage Certificates → **+** → Apple Distribution. Then Keychain Access →
+   My Certificates → `Apple Distribution: Quassum MB (6WCYZER5LX)` → Export as
+   `.p12` with a password:
+
+   ```sh
+   gh secret set APPLE_DIST_CERT_P12_BASE64 < <(base64 -i distribution.p12)
+   gh secret set APPLE_DIST_CERT_PASSWORD        # paste the .p12 password
+   rm distribution.p12
+   ```
+
+3. **The identifiers.** https://developer.apple.com/account → Certificates,
+   Identifiers & Profiles → Identifiers: `com.quassum.neuralsheet.ios` and
+   `com.quassum.neuralsheet.ios.widgets` as explicit App IDs (Xcode's automatic
+   signing may already have made them). No capabilities are needed.
+4. **The profiles.** Profiles → **+** → Distribution → **App Store Connect**, the
+   App ID, the certificate from step 2. Name them `NeuralSheet iOS App Store` and
+   `NeuralSheet iOS Widgets App Store` (any name works; the workflow reads it from
+   the file). Download both:
+
+   ```sh
+   gh secret set IOS_APP_PROFILE_BASE64 < <(base64 -i NeuralSheet_iOS_App_Store.mobileprovision)
+   gh secret set IOS_WIDGET_PROFILE_BASE64 < <(base64 -i NeuralSheet_iOS_Widgets_App_Store.mobileprovision)
+   ```
+
+The certificate and the profiles expire after a year. Renew them the same way and
+replace the secrets; a renewed certificate needs new profiles too.
+
+### When it fails
+
+- **missing repository secrets** (a warning) — the run archived unsigned; add the
+  named secrets and run the workflow again.
+- **not an Apple Distribution identity of team …** — the `.p12` holds another
+  certificate (a Developer ID or Apple Development one) or lacks the private key.
+- **profile … is for …, expected …** or **lists devices** — the profile secret holds
+  the other target's profile, or an Ad Hoc or Development profile.
+- **No profile for team … matching …** at archive or export — the profile was not
+  made with the certificate in `APPLE_DIST_CERT_P12_BASE64`; regenerate it.
+- **The bundle version must be higher than the previously uploaded version** — a
+  re-run of an uploaded build; start a new run.
+- **No suitable application records were found** — the app record (step 1) is missing.
+- The build uploads but is **Missing Compliance** in TestFlight — answer the export
+  compliance question for it in App Store Connect.
