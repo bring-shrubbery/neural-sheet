@@ -2,8 +2,8 @@ import NeuralSheetCore
 import SwiftUI
 
 /// A project's screens (iOS app design §2): tabs on iPhone -- Transcribe, Roll, Score, Settings --
-/// and on iPad a split view whose sidebar lists the screens and the take's instruments (their
-/// strips come with sub-issue H) beside the chosen screen, the roll first.
+/// and on iPad a split view whose sidebar lists the screens and the take's instrument strips
+/// (sub-issue H) beside the chosen screen, the roll first.
 struct ProjectScreens: View {
     let model: MobileModel
 
@@ -70,8 +70,8 @@ private struct ProjectTabs: View {
     }
 }
 
-/// iPad: the screens and the instruments in the sidebar, the chosen screen beside it. Tapping an
-/// instrument singles it out on the roll, as a strip click does on the Mac; again lets it go.
+/// iPad: the screens and the instrument strips in the sidebar, the chosen screen beside it.
+/// Tapping a strip's name singles it out on the roll, as a strip click does on the Mac.
 private struct ProjectSplitView: View {
     let model: MobileModel
 
@@ -87,56 +87,11 @@ private struct ProjectSplitView: View {
                     }
                 }
 
-                Section {
-                    ForEach(instruments, id: \.program) { row in
-                        instrumentRow(row)
-                    }
-                } header: {
-                    Text("Instruments", comment: "iPad sidebar: the take's instruments")
-                }
+                InstrumentStripsSection(model: model)
             }
             .navigationTitle(Text(verbatim: "NeuralSheet"))
         } detail: {
             (selection ?? .roll).view(model)
         }
-    }
-
-    private struct InstrumentRow {
-        var program: Int
-        var name: String
-        var colour: NeuralSheetCore.RGBA
-        var count: Int
-    }
-
-    /// The instruments the notes use, in program order, with their note counts.
-    private var instruments: [InstrumentRow] {
-        let counts = Dictionary(grouping: model.timelineNotes, by: \.note.program).mapValues(\.count)
-
-        return counts.keys.sorted().map { program in
-            let info = Instruments.info(forProgram: program)
-
-            return InstrumentRow(program: program, name: info.localizedName, colour: info.colour, count: counts[program] ?? 0)
-        }
-    }
-
-    private func instrumentRow(_ row: InstrumentRow) -> some View {
-        let highlighted = model.highlightedProgram == row.program
-
-        return Button {
-            model.highlightedProgram = highlighted ? nil : row.program
-        } label: {
-            HStack(spacing: 10) {
-                Circle()
-                    .fill(Color(.sRGB, red: row.colour.r, green: row.colour.g, blue: row.colour.b, opacity: row.colour.a))
-                    .frame(width: 12, height: 12)
-                Text(row.name)
-                Spacer()
-                Text(row.count, format: .number)
-                    .foregroundStyle(.secondary)
-                    .monospacedDigit()
-            }
-            .fontWeight(highlighted ? .semibold : .regular)
-        }
-        .accessibilityAddTraits(highlighted ? .isSelected : [])
     }
 }

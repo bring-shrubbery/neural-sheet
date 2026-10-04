@@ -1,8 +1,8 @@
 import NeuralSheetCore
 import SwiftUI
 
-/// The score screen (iOS app design §2, sub-issue G): the touch score under the placeholder
-/// transport, with the Sheet button that opens the title block and the layout. Read-only, as the
+/// The score screen (iOS app design §2, sub-issue G): the touch score under the transport bar,
+/// with the Sheet button that opens the title block and the layout. Read-only, as the
 /// design says: a tap seeks, a tap on a part's name opens its display sheet, a pinch scales.
 struct ScoreScreen: View {
     let model: MobileModel
@@ -12,7 +12,7 @@ struct ScoreScreen: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            TransportPlaceholder(model: model) {
+            TransportBar(model: model) {
                 Button {
                     isSheetShown = true
                 } label: {

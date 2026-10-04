@@ -30,6 +30,12 @@ struct TranscribeScreen: View {
             settingsSection
             runSection
         }
+        // Once there is a take to play: the transport, the mix and the strips (sub-issue H).
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            if model.canPlay {
+                TransportBar(model: model)
+            }
+        }
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button { showsSettings = true } label: {

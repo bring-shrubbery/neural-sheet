@@ -1,9 +1,8 @@
 import NeuralSheetCore
 import SwiftUI
 
-/// The roll screen (iOS app design §2, sub-issues E and F): the touch timeline under a
-/// placeholder transport -- Play/Pause, the position and the commands menu -- until sub-issue H
-/// brings the real one; under the roll the status line and the bottom bar with the tools, Undo,
+/// The roll screen (iOS app design §2, sub-issues E, F and H): the touch timeline under the
+/// transport bar, with the commands menu at its end; under the roll the status line and the bottom bar with the tools, Undo,
 /// Redo, the note card and Delete. The card is a sheet on iPhone and a popover on the note on
 /// iPad.
 struct RollScreen: View {
@@ -16,7 +15,7 @@ struct RollScreen: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            TransportPlaceholder(model: model) {
+            TransportBar(model: model) {
                 RollCommandsMenu(model: model)
             }
 
@@ -133,42 +132,5 @@ private struct EditBar: View {
         .disabled(!enabled)
         .accessibilityLabel(Text(verbatim: label))
         .accessibilityIdentifier(id)
-    }
-}
-
-/// Play/Pause and where the playhead is, polled from the engine while the screen shows, with the
-/// screen's own controls at the trailing end.
-struct TransportPlaceholder<Trailing: View>: View {
-    let model: MobileModel
-    @ViewBuilder let trailing: () -> Trailing
-
-    var body: some View {
-        SwiftUI.TimelineView(.periodic(from: .now, by: 1.0 / 15)) { _ in
-            let playing = model.isPlaying
-
-            HStack(spacing: 14) {
-                Button { model.togglePlay() } label: {
-                    Image(systemName: playing ? "pause.fill" : "play.fill")
-                        .font(.title2)
-                        .frame(width: 44, height: 44)
-                }
-                .disabled(!model.canPlay)
-                .accessibilityLabel(playing ? Text("Pause", comment: "Transport: pause playback")
-                                            : Text("Play", comment: "Transport: start playback"))
-                .accessibilityIdentifier("play")
-
-                Text(verbatim: "\(TimeFormat.transport(model.engine.playheadSeconds)) / \(TimeFormat.transport(model.duration))")
-                    .font(.system(.subheadline, design: .monospaced))
-                    .foregroundStyle(.secondary)
-                    .accessibilityLabel(Text("Position", comment: "Transport: the playhead's time"))
-
-                Spacer()
-
-                trailing()
-            }
-            .padding(.horizontal, 12)
-        }
-        .frame(height: 52)
-        .background(.bar)
     }
 }
