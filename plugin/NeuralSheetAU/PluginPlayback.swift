@@ -79,6 +79,19 @@ import Observation
         unit?.setMidiOverflowMode(mode)
     }
 
+    /// The mix, the master and the strips a host's saved state brought back, before its notes
+    /// arrive (the strips keep their settings when the notes come), and Send MIDI to host.
+    func restore(mix: Double, masterGainDb: Double, mixer settings: [Int: InstrumentChannelSettings], sendsMIDI: Bool) {
+        self.mix = min(max(mix, 0), 1)
+        self.masterGainDb = min(max(masterGainDb, InstrumentMixerState.minGainDb), InstrumentMixerState.maxGainDb)
+        mixer.settings = settings
+        unit?.setPlaybackMixer(mixer)
+
+        if sendsMIDI != self.sendsMIDI {
+            setSendsMIDI(sendsMIDI)
+        }
+    }
+
     // MARK: - Strips
 
     func setGain(program: Int, db: Double) {

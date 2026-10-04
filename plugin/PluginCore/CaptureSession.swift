@@ -111,6 +111,23 @@ import Synchronization
         take = nil
     }
 
+    /// The take a host's saved state brought back (Audio Unit design §2, "State"), in place of
+    /// whatever there was: a capture or an arm under way ends without a take of its own.
+    func restore(_ restored: CapturedTake?) {
+        stopTimer()
+
+        if let active {
+            active.capturing.store(false, ordering: .releasing)
+            active.releaseMemory()
+        }
+
+        active = nil
+        channels = []
+        capturedFrames = 0
+        phase = .idle
+        take = restored
+    }
+
     // MARK: - Polling
 
     /// One poll: the transport's edge while armed or following it, the drain while capturing.

@@ -148,6 +148,13 @@ import os
         summary = nil
     }
 
+    /// The notes a host's saved state brought back (Audio Unit design §2, "State"): the document
+    /// as it was saved, with no run and no summary. A run in flight is cancelled first.
+    func restore(_ restored: NoteDocument?) {
+        clear()
+        document = restored
+    }
+
     /// Returns once no run is in flight: at once when none is, else when the current one lands.
     func waitUntilIdle() async {
         guard run != nil else { return }

@@ -95,6 +95,10 @@ private struct StatusLine: View {
             Spacer()
 
             if let take = capture.capturedTake, capture.phase == .idle {
+                if model.takeWasCut {
+                    Text("Saved with its first 10 minutes only")
+                        .help("The host's project keeps up to 10 minutes of the take.")
+                }
                 Text("Take: \(TimeFormat.transport(take.duration))")
                 Button("Clear", action: model.clear)
                     .disabled(model.transcription.isRunning)

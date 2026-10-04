@@ -62,6 +62,13 @@ nonisolated final class NeuralSheetAudioUnit: AUAudioUnit, @unchecked Sendable {
     /// own deallocation.
     let pollBox = MainActorBox<PluginTransportPoll>()
 
+    /// What `fullState` hands the host (`+State`): locked because hosts save and restore on
+    /// threads of their own while the main thread pushes the session.
+    let savedState = Mutex(SavedStateStore())
+
+    /// Where a restore lands for the view model (`+State`). Main thread only.
+    let restoreInbox = RestoreInbox()
+
     override init(
         componentDescription: AudioComponentDescription, options: AudioComponentInstantiationOptions = []
     ) throws {

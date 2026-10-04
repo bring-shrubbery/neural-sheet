@@ -44,7 +44,11 @@ import os
     /// container (Audio Unit design §2, "Models and settings").
     @ObservationIgnored let paths: AppPaths
 
-    @ObservationIgnored private weak var unit: NeuralSheetAudioUnit?
+    @ObservationIgnored weak var unit: NeuralSheetAudioUnit?
+
+    /// The take a host's saved state brought back was longer than ten minutes and was kept cut
+    /// there (`+State`); cleared by the next take.
+    var takeWasCut = false
 
     /// The host's name for the track the plugin is on, when it gives one.
     var trackName: String? { unit?.contextName }
@@ -76,12 +80,22 @@ import os
         playback.connect(unit)
         playback.setOverflowMode(settings.midiOverflowMode)
 
-        // The take and the notes reach the playback as they change, view or no view.
+        // The take and the notes reach the playback, and the take the saved state, as they
+        // change, view or no view.
         let playback = playback
-        unit.capture.onTakeChanged = { take in playback.setTake(take) }
+        unit.capture.onTakeChanged = { [weak unit] take in
+            playback.setTake(take)
+            unit?.setSavedTake(take)
+        }
         transcription.onNotesChanged = { notes in playback.setNotes(notes) }
         playback.setTake(unit.capture.take)
         playback.setNotes(transcription.notes)
+
+        // A host's saved state, now if it was restored before the connection, and from now on;
+        // then the session is kept current on the unit for the host's next save.
+        unit.onRestore { [weak self] restored in self?.apply(restored) }
+        unit.setSavedTake(unit.capture.take)
+        trackSavedSession()
     }
 
     // MARK: - Capture
@@ -90,6 +104,7 @@ import os
     func record() {
         guard !transcription.isRunning else { return }
 
+        takeWasCut = false
         transcription.clear()
         unit?.startCapture()
     }
@@ -97,6 +112,7 @@ import os
     func arm() {
         guard !transcription.isRunning else { return }
 
+        takeWasCut = false
         transcription.clear()
         unit?.arm()
     }
@@ -106,6 +122,7 @@ import os
     }
 
     func clear() {
+        takeWasCut = false
         transcription.clear()
         capture?.clear()
     }

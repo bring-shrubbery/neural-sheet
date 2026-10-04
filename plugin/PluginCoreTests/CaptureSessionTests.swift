@@ -170,3 +170,29 @@ import Testing
     #expect(CapturedTake.make(channels: [[], []], sampleRate: 48_000, startSampleTime: 0) == nil)
     #expect(CapturedTake.make(channels: [[1]], sampleRate: 0, startSampleTime: 0) == nil)
 }
+
+@MainActor @Test func aRestoredTakeEndsTheCaptureAndReplacesTheTake() throws {
+    let host = FakeHost()
+    var reported: [Int?] = []
+    host.session.onTakeChanged = { reported.append($0?.frameCount) }
+    let restored = try #require(CapturedTake.make(channels: [numbered(0..<4800), numbered(0..<4800, sign: -1)],
+                                                  sampleRate: 48_000, startSampleTime: 96))
+
+    #expect(host.session.start())
+    host.render(480)
+    host.session.restore(restored)
+
+    #expect(host.session.phase == .idle)
+    #expect(host.session.capturedFrames == 0)
+    #expect(host.session.take?.frameCount == 4800)
+    #expect(host.session.take?.startSampleTime == 96)
+    #expect(try #require(host.ring).capturing.load(ordering: .acquiring) == false)
+    // Nothing more is captured, and Stop has no take of its own to give.
+    host.render(480)
+    #expect(host.session.stop() == nil)
+    #expect(host.session.take?.frameCount == 4800)
+
+    host.session.restore(nil)
+    #expect(host.session.capturedTake == nil)
+    #expect(reported == [nil, 4800, nil])
+}
