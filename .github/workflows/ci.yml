@@ -149,6 +149,11 @@ jobs:
           name: ios-test-results
           path: ~/Library/Developer/Xcode/DerivedData/NeuralSheet-iOS-*/Logs/Test/*.xcresult
           retention-days: 7
+      - name: Build the engine for iOS devices
+        # The localization export builds for a device whatever SDK it is given, so it needs the
+        # device's demucs archive as well as the simulator's.
+        working-directory: app
+        run: Scripts/build-engine.sh ios
       - name: Every string translated
         working-directory: app
         run: Scripts/check-localizations.sh --ios CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
