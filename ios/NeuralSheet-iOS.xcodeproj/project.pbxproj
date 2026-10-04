@@ -938,7 +938,9 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				Base,
+				de,
 				en,
+				es,
 			);
 			mainGroup = 323CE07C7D3A82F3AB5F4749;
 			minimizedProjectReferenceProxies = 1;

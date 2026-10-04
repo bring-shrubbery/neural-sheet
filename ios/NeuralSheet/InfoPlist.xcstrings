@@ -3,15 +3,41 @@
   "strings" : {
     "Audio or Video" : {
       "comment" : "The audio and video document type the app opens from the share sheet, as Files names it",
-      "extractionState" : "stale"
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Audio oder Video"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Audio o vídeo"
+          }
+        }
+      }
     },
     "CFBundleDisplayName" : {
       "comment" : "Bundle display name",
       "extractionState" : "extracted_with_value",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "NeuralSheet"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "new",
+            "value" : "NeuralSheet"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
             "value" : "NeuralSheet"
           }
         }
@@ -21,25 +47,63 @@
       "comment" : "Bundle name",
       "extractionState" : "extracted_with_value",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "NeuralSheet"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "new",
+            "value" : "NeuralSheet"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
             "value" : "NeuralSheet"
           }
         }
       }
     },
     "NeuralSheet Project" : {
-      "comment" : "The project document type, as Files names it"
+      "comment" : "The project document type, as Files names it",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "NeuralSheet-Projekt"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Proyecto de NeuralSheet"
+          }
+        }
+      }
     },
     "NSMicrophoneUsageDescription" : {
       "comment" : "Privacy - Microphone Usage Description: why the app asks for the microphone",
       "extractionState" : "extracted_with_value",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "NeuralSheet nimmt über das Mikrofon auf, um zu transkribieren, was du spielst."
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "new",
             "value" : "NeuralSheet records from the microphone to transcribe what you play."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "NeuralSheet graba desde el micrófono para transcribir lo que tocas."
           }
         }
       }

@@ -5,9 +5,21 @@
       "comment" : "Bundle display name: the widget extension, a product name",
       "extractionState" : "extracted_with_value",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "NeuralSheet"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "new",
+            "value" : "NeuralSheet"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
             "value" : "NeuralSheet"
           }
         }
@@ -17,9 +29,21 @@
       "comment" : "Bundle name: the widget extension, a product name",
       "extractionState" : "extracted_with_value",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "NeuralSheetWidgets"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "new",
+            "value" : "NeuralSheetWidgets"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
             "value" : "NeuralSheetWidgets"
           }
         }
