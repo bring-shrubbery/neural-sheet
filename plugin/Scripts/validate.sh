@@ -66,7 +66,7 @@ if [ "$status" -ne 0 ]; then
     exit 1
 fi
 
-if grep -E "/(plugin/(Container|NeuralSheetAU|PluginCore)|app/Packages)/.*warning:" "$derived/build.log" | sort -u; then
+if grep -E "/(plugin/(Container|NeuralSheetAU|PluginCore)|app/(Packages|NeuralSheet))/.*warning:" "$derived/build.log" | sort -u; then
     echo "error: warnings in NeuralSheet sources" >&2
     exit 1
 fi
