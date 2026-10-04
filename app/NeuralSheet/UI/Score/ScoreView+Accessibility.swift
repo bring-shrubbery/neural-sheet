@@ -77,7 +77,7 @@ extension ScoreView: KeyboardFocusableView {
                 for piece in measures[box.index].pieces {
                     let x = box.x(forUnits: Double(piece.startUnits))
                     let frame = CGRect(x: x - sp, y: row.topLineY - 2 * sp, width: 2.5 * sp, height: row.height + 4 * sp)
-                    let label = Self.speech(piece, part: CoreNames.localized(part.name), bar: box.index + document.firstBar + 1)
+                    let label = ScoreSpeech.description(of: piece, part: CoreNames.localized(part.name), bar: box.index + document.firstBar + 1)
                     let element = DrawnElement(in: self, role: .button,
                                                roleDescription: piece.isRest
                                                    ? String(localized: "rest", comment: "VoiceOver: what a rest in the score is")
@@ -100,39 +100,6 @@ extension ScoreView: KeyboardFocusableView {
         }
 
         return placed.sorted { $0.x != $1.x ? $0.x < $1.x : $0.row < $1.row }.map(\.element)
-    }
-
-    /// "E4 G4, dotted quarter note, Piano, bar 5", or "quarter rest, Piano, bar 5".
-    static func speech(_ piece: ScorePiece, part: String, bar: Int) -> String {
-        let value = noteValue(piece)
-
-        if piece.isRest {
-            return String(localized: "\(value) rest, \(part), bar \(bar)",
-                          comment: "VoiceOver: a rest in the score, e.g. \"quarter rest, Piano, bar 5\"; the first value is a note value such as \"quarter\"")
-        }
-
-        let pitches = piece.notes.map { TimeFormat.pitchName($0.pitch) }.joined(separator: " ")
-
-        return String(localized: "\(pitches), \(value) note, \(part), bar \(bar)",
-                      comment: "VoiceOver: a note or chord in the score, e.g. \"E4 G4, quarter note, Piano, bar 5\"; the second value is a note value such as \"quarter\"")
-    }
-
-    /// "quarter", "dotted eighth": the value as a musician names it.
-    static func noteValue(_ piece: ScorePiece) -> String {
-        let name: String =
-            switch piece.type {
-            case "whole": String(localized: "whole", comment: "VoiceOver: a note value, as in \"whole note\"")
-            case "half": String(localized: "half", comment: "VoiceOver: a note value, as in \"half note\"")
-            case "quarter": String(localized: "quarter", comment: "VoiceOver: a note value, as in \"quarter note\"")
-            case "eighth": String(localized: "eighth", comment: "VoiceOver: a note value, as in \"eighth note\"")
-            case "16th": String(localized: "sixteenth", comment: "VoiceOver: a note value, as in \"sixteenth note\"")
-            case "32nd": String(localized: "thirty-second", comment: "VoiceOver: a note value, as in \"thirty-second note\"")
-            default: piece.type
-            }
-
-        guard piece.dots > 0 else { return name }
-
-        return String(localized: "dotted \(name)", comment: "VoiceOver: a dotted note value, e.g. \"dotted quarter\"")
     }
 
     // MARK: - Keyboard focus
