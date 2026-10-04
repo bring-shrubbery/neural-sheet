@@ -62,11 +62,12 @@ extension MobileModel {
         }
     }
 
-    /// The engine's 30 Hz poll: the transport's mirrors -- the take running out included -- and
-    /// the meters.
+    /// The engine's 30 Hz poll: the transport's mirrors -- the take running out included -- the
+    /// meters, and a sound bank changed in Settings.
     func transportTick() {
         syncTransport()
         advanceMeters(dt: 1.0 / 30)
+        reloadSoundBankIfChanged()
         logMetersIfAsked()
     }
 

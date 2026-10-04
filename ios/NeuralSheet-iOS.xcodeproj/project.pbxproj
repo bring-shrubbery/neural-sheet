@@ -106,6 +106,7 @@
 		C46EDB7091F44BF5D5901BED /* MobileModel+Timeline.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D1641679D89D9E3047C06C8 /* MobileModel+Timeline.swift */; };
 		C5B75F665C784700508A030D /* OfflineRenderer+Source.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C6ACB6DFC02527238869F51 /* OfflineRenderer+Source.swift */; };
 		C6695BD73416E4C4B0B93519 /* NeuralSheetApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03BAAB8E7B6DAC10B47FBA96 /* NeuralSheetApp.swift */; };
+		C8DBB3710CC2310164C62D92 /* SettingsSections.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3C6560F145D15B4600BEF26 /* SettingsSections.swift */; };
 		CBA4B91928F94EE55786E815 /* MobileModel+Recording.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C71304975BAABA1121D286A /* MobileModel+Recording.swift */; };
 		CBBD115ECF29F7FF6A76C117 /* PlaybackEngine+Session.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A415DC1264328088E2DD2A2 /* PlaybackEngine+Session.swift */; };
 		CD5FC76DC204CC7546623F61 /* PlaybackEngine+Mix.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0372A709F93BFA81CA9CABDF /* PlaybackEngine+Mix.swift */; };
@@ -124,6 +125,7 @@
 		DF56ABE40398FFF5AEA90999 /* InstrumentSynthBank+DefaultBank.swift in Sources */ = {isa = PBXBuildFile; fileRef = C11A1EB5870C27BF3292450E /* InstrumentSynthBank+DefaultBank.swift */; };
 		DFCC3D99822AAAEF4A02FF08 /* PlaybackEngine+Source.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20811F454A56C430BC95FF13 /* PlaybackEngine+Source.swift */; };
 		E1090709BA8A5C75A14D5228 /* ArrangementCommands.swift in Sources */ = {isa = PBXBuildFile; fileRef = 798D3512FDA82AAB46AAE465 /* ArrangementCommands.swift */; };
+		E558AAA303918EA7DDAAAB08 /* SoundBankLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D74D81D9AD509671F328290 /* SoundBankLibrary.swift */; };
 		E634D3B49814BD56B667B8E0 /* OfflineRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D7934C2ACB2C3E53B28135E /* OfflineRenderer.swift */; };
 		E6BF12F2ADD406EEB8E50A4E /* Theme+Accommodations.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC68C0279E4BD71648B2E904 /* Theme+Accommodations.swift */; };
 		E72856A77B2DFD69E8CFE133 /* MobileModelEditingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA27E56C67F72D123BAC9C1A /* MobileModelEditingTests.swift */; };
@@ -193,6 +195,7 @@
 		19D6B4362888485E52324D7A /* MobileModelTransportTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MobileModelTransportTests.swift; sourceTree = "<group>"; };
 		1BCB5A67EA3E14C98A455F1E /* EditingCommands+Bulk.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EditingCommands+Bulk.swift"; sourceTree = "<group>"; };
 		1C40529D0A5621BA354D5A49 /* Inter-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Inter-Medium.ttf"; sourceTree = "<group>"; };
+		1D74D81D9AD509671F328290 /* SoundBankLibrary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundBankLibrary.swift; sourceTree = "<group>"; };
 		1D97F4156AEA1F63D150D296 /* RunControl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunControl.swift; sourceTree = "<group>"; };
 		1FC36307604DB1A338B4F2CA /* MidiOutput+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MidiOutput+iOS.swift"; sourceTree = "<group>"; };
 		20811F454A56C430BC95FF13 /* PlaybackEngine+Source.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PlaybackEngine+Source.swift"; sourceTree = "<group>"; };
@@ -284,6 +287,7 @@
 		C11A1EB5870C27BF3292450E /* InstrumentSynthBank+DefaultBank.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "InstrumentSynthBank+DefaultBank.swift"; sourceTree = "<group>"; };
 		C11E44D05A875579EC6C168C /* ScoreLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScoreLayout.swift; sourceTree = "<group>"; };
 		C34A7F7AC3AC1E37BE06C65D /* PlaybackEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaybackEngine.swift; sourceTree = "<group>"; };
+		C3C6560F145D15B4600BEF26 /* SettingsSections.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsSections.swift; sourceTree = "<group>"; };
 		C504E8A84783EF5AD04BCBB1 /* ScoreView+Drawing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ScoreView+Drawing.swift"; sourceTree = "<group>"; };
 		C7C123AE23F2E16F5AEE0388 /* Inter-SemiBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Inter-SemiBold.ttf"; sourceTree = "<group>"; };
 		C8D61AE0375913B1C49C793D /* ChordLaneView+Drawing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ChordLaneView+Drawing.swift"; sourceTree = "<group>"; };
@@ -487,6 +491,7 @@
 				D611CBDDE3E03699D43CA513 /* MobileModel+Transport.swift */,
 				1D97F4156AEA1F63D150D296 /* RunControl.swift */,
 				69C482CD1E1CC5D1F37F16EE /* RunSupport.swift */,
+				1D74D81D9AD509671F328290 /* SoundBankLibrary.swift */,
 				4E41DDEEC25F0BD885D4D905 /* ThermalGate.swift */,
 			);
 			path = Model;
@@ -629,6 +634,7 @@
 				77537D31C4FF432E3A8D649F /* ScoreScreen.swift */,
 				646BFAC8E1571F22BE390DE0 /* ScoreSheets.swift */,
 				1278FD1456FACEB3B4205379 /* SettingsScreen.swift */,
+				C3C6560F145D15B4600BEF26 /* SettingsSections.swift */,
 				E1252AA71F6A76830C6C9606 /* TranscribeScreen.swift */,
 				A52BE9D92189839BBB910EFE /* TransportBar.swift */,
 				D8C8D283E1ED68D29366544F /* WaveformStrip.swift */,
@@ -944,6 +950,8 @@
 				5459BDB55DFBDF394C8790DA /* ScoreView+Drawing.swift in Sources */,
 				FCFE025F833851428869DA03 /* SelectionText.swift in Sources */,
 				8E3ED701546F7ACB3F3AEB89 /* SettingsScreen.swift in Sources */,
+				C8DBB3710CC2310164C62D92 /* SettingsSections.swift in Sources */,
+				E558AAA303918EA7DDAAAB08 /* SoundBankLibrary.swift in Sources */,
 				FDEEFB38C39830F68867BA4F /* SourceAudio.swift in Sources */,
 				D38354151E799A8FC30615C1 /* StemFiles.swift in Sources */,
 				1AFA0BBB7E6B34D6451D5FD5 /* StemSeparator.swift in Sources */,

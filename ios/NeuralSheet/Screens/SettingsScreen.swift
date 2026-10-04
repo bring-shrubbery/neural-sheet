@@ -1,10 +1,12 @@
 import NeuralSheetCore
 import SwiftUI
 
-/// The settings (iOS app design §2, Screens), reached from the gear on the Transcribe screen.
-/// The models for now, as the Mac's Settings → Model lists them: each size with its trade-off and
-/// download size, downloaded with progress and resumed from where it stopped; tapping an installed
-/// size makes it the one runs use. Sub-issue H adds the sound bank, the count-in and the audio.
+/// The settings (iOS app design §2, Screens), reached from the gear on the Transcribe screen and
+/// the Settings tab. The models, as the Mac's Settings → Model lists them: each size with its
+/// trade-off and download size, downloaded with progress and resumed from where it stopped;
+/// tapping an installed size makes it the one runs use. Then (sub-issue H, `SettingsSections`)
+/// the sound bank, the count-in and the click while recording, the After transcription filters,
+/// and About.
 struct SettingsScreen: View {
     @Environment(\.dismiss) private var dismiss
 
@@ -41,11 +43,10 @@ struct SettingsScreen: View {
                     .font(.footnote)
                 }
 
-                Section {
-                } footer: {
-                    Text(SettingsScreen.version)
-                        .frame(maxWidth: .infinity)
-                }
+                SoundBankSection()
+                RecordingSection()
+                AfterTranscriptionSection()
+                AboutSection()
             }
             .navigationTitle(Text("Settings", comment: "The settings screen's title"))
             .navigationBarTitleDisplayMode(.inline)

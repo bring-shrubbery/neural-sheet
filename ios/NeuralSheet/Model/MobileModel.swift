@@ -129,6 +129,8 @@ final class MobileModel {
     @ObservationIgnored var meterLevels = MeterLevels()
     /// The strips' settings as a fader or pan drag found them, for its one undo entry.
     @ObservationIgnored var mixBeforeDrag: MixSnapshot?
+    /// The sound bank library's generation these synths last loaded (`SoundBankLibrary`).
+    @ObservationIgnored var appliedSoundBankGeneration = 0
 
     // MARK: - View state (saved, never an edit)
 
