@@ -1,0 +1,562 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		00CCCACC0FF86B5E526C2855 /* CaptureRing.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6C517E72478E7B6DF8BF5E1 /* CaptureRing.swift */; };
+		0B6892B9D4B93F7CD762F05D /* PluginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58A0C918ABD1BB7F03465D29 /* PluginView.swift */; };
+		176011C69199E4DCBFE73CB6 /* NeuralSheetPluginApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6F36F9E4C9E02AB0637C09B /* NeuralSheetPluginApp.swift */; };
+		4A520D3C436B6C55E0D971A2 /* AVFAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7A8D7D6BEC222AB0E40F1F51 /* AVFAudio.framework */; };
+		621E89089EB09EC166B04905 /* NeuralSheetCore in Frameworks */ = {isa = PBXBuildFile; productRef = 0176CF166642A3E08DB66DAE /* NeuralSheetCore */; };
+		69D46A2E5485D257604D7698 /* NeuralSheetAudioUnit+Render.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7718B7149DE135BEBB3A6FE /* NeuralSheetAudioUnit+Render.swift */; };
+		713ED346DECD9D56A43FC14E /* NeuralSheetAUViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C02A1CF1EBCE53AC14933731 /* NeuralSheetAUViewController.swift */; };
+		9B22A689CA9A027749154F74 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C55ED0455CA212595E587130 /* AudioToolbox.framework */; };
+		B0AEEAE4CCD78ED1617E371B /* NeuralSheetAudioUnit.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF2F2AD02FEE354DDFAD7721 /* NeuralSheetAudioUnit.swift */; };
+		BF24E5EBB7090B12FD9E7F9D /* ContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D29223D1C1679E98C34FCEA /* ContainerView.swift */; };
+		C9877CF5CF20AF151987902B /* NeuralSheetEngine in Frameworks */ = {isa = PBXBuildFile; productRef = FDAD2A66C6858EB6D1A4522B /* NeuralSheetEngine */; };
+		EA7990315216367243A29C4B /* CoreAudioKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DEAF591D6867E3E52A9F7239 /* CoreAudioKit.framework */; };
+		FA582FE060AC8CEE058BF85C /* NeuralSheetAU.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = D0C5B9F14DDBB2F6D7E6F7B7 /* NeuralSheetAU.appex */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		620857ED5A887A3B3207CD5E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 96247D01CFA4AD44A9C52DFF /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 5EF8F3FF4988D448A51F3ECA;
+			remoteInfo = NeuralSheetAU;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		36292A7DC9228FB8B5A45017 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				FA582FE060AC8CEE058BF85C /* NeuralSheetAU.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		0A02A10ABDAD4CD0150BD1A5 /* NeuralSheet Plugin.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "NeuralSheet Plugin.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		0D29223D1C1679E98C34FCEA /* ContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContainerView.swift; sourceTree = "<group>"; };
+		49A0F2CDCBD3AC593B551FD8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		58A0C918ABD1BB7F03465D29 /* PluginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PluginView.swift; sourceTree = "<group>"; };
+		73248F56E00C45416ADDD91F /* NeuralSheetEngine */ = {isa = PBXFileReference; lastKnownFileType = folder; name = NeuralSheetEngine; path = ../app/Packages/NeuralSheetEngine; sourceTree = SOURCE_ROOT; };
+		7A8D7D6BEC222AB0E40F1F51 /* AVFAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFAudio.framework; path = System/Library/Frameworks/AVFAudio.framework; sourceTree = SDKROOT; };
+		8FEE9C7FD8E1D7347A14F24C /* NeuralSheetCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = NeuralSheetCore; path = ../app/Packages/NeuralSheetCore; sourceTree = SOURCE_ROOT; };
+		A7718B7149DE135BEBB3A6FE /* NeuralSheetAudioUnit+Render.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NeuralSheetAudioUnit+Render.swift"; sourceTree = "<group>"; };
+		C02A1CF1EBCE53AC14933731 /* NeuralSheetAUViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NeuralSheetAUViewController.swift; sourceTree = "<group>"; };
+		C55ED0455CA212595E587130 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
+		D0C5B9F14DDBB2F6D7E6F7B7 /* NeuralSheetAU.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = NeuralSheetAU.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		D6C517E72478E7B6DF8BF5E1 /* CaptureRing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureRing.swift; sourceTree = "<group>"; };
+		DEAF591D6867E3E52A9F7239 /* CoreAudioKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudioKit.framework; path = System/Library/Frameworks/CoreAudioKit.framework; sourceTree = SDKROOT; };
+		E6F36F9E4C9E02AB0637C09B /* NeuralSheetPluginApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NeuralSheetPluginApp.swift; sourceTree = "<group>"; };
+		E8C0C21FD23384E7EE0E20BB /* NeuralSheetAU.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = NeuralSheetAU.entitlements; sourceTree = "<group>"; };
+		FF2F2AD02FEE354DDFAD7721 /* NeuralSheetAudioUnit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NeuralSheetAudioUnit.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		8D70E1A02442600D7AF3836E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				621E89089EB09EC166B04905 /* NeuralSheetCore in Frameworks */,
+				C9877CF5CF20AF151987902B /* NeuralSheetEngine in Frameworks */,
+				9B22A689CA9A027749154F74 /* AudioToolbox.framework in Frameworks */,
+				4A520D3C436B6C55E0D971A2 /* AVFAudio.framework in Frameworks */,
+				EA7990315216367243A29C4B /* CoreAudioKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		561353615EA1F84E11698FDA /* PluginCore */ = {
+			isa = PBXGroup;
+			children = (
+				D6C517E72478E7B6DF8BF5E1 /* CaptureRing.swift */,
+			);
+			path = PluginCore;
+			sourceTree = "<group>";
+		};
+		70F8BC4A070943553881B0CD /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				0A02A10ABDAD4CD0150BD1A5 /* NeuralSheet Plugin.app */,
+				D0C5B9F14DDBB2F6D7E6F7B7 /* NeuralSheetAU.appex */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		834701308F40D2D77626F605 /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				8FEE9C7FD8E1D7347A14F24C /* NeuralSheetCore */,
+				73248F56E00C45416ADDD91F /* NeuralSheetEngine */,
+			);
+			name = Packages;
+			sourceTree = "<group>";
+		};
+		DAA59E306FA1CE8C9FFCF7D5 /* Container */ = {
+			isa = PBXGroup;
+			children = (
+				0D29223D1C1679E98C34FCEA /* ContainerView.swift */,
+				E6F36F9E4C9E02AB0637C09B /* NeuralSheetPluginApp.swift */,
+			);
+			path = Container;
+			sourceTree = "<group>";
+		};
+		E58BAAA10393D2B920E8B078 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				C55ED0455CA212595E587130 /* AudioToolbox.framework */,
+				7A8D7D6BEC222AB0E40F1F51 /* AVFAudio.framework */,
+				DEAF591D6867E3E52A9F7239 /* CoreAudioKit.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		E668B075913A63E0676113B4 /* NeuralSheetAU */ = {
+			isa = PBXGroup;
+			children = (
+				49A0F2CDCBD3AC593B551FD8 /* Info.plist */,
+				E8C0C21FD23384E7EE0E20BB /* NeuralSheetAU.entitlements */,
+				FF2F2AD02FEE354DDFAD7721 /* NeuralSheetAudioUnit.swift */,
+				A7718B7149DE135BEBB3A6FE /* NeuralSheetAudioUnit+Render.swift */,
+				C02A1CF1EBCE53AC14933731 /* NeuralSheetAUViewController.swift */,
+				58A0C918ABD1BB7F03465D29 /* PluginView.swift */,
+			);
+			path = NeuralSheetAU;
+			sourceTree = "<group>";
+		};
+		F693A4DEAF726E74D61BE2DD = {
+			isa = PBXGroup;
+			children = (
+				DAA59E306FA1CE8C9FFCF7D5 /* Container */,
+				E668B075913A63E0676113B4 /* NeuralSheetAU */,
+				834701308F40D2D77626F605 /* Packages */,
+				561353615EA1F84E11698FDA /* PluginCore */,
+				E58BAAA10393D2B920E8B078 /* Frameworks */,
+				70F8BC4A070943553881B0CD /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		29DC2595633C1F61B21E17C2 /* NeuralSheet Plugin */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C1AB6869CD256DCB0EDE17F7 /* Build configuration list for PBXNativeTarget "NeuralSheet Plugin" */;
+			buildPhases = (
+				7DCD57763F5E5AF149A55FBB /* Sources */,
+				36292A7DC9228FB8B5A45017 /* Embed Foundation Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				130FC6A8AAB34449AF8F391E /* PBXTargetDependency */,
+			);
+			name = "NeuralSheet Plugin";
+			packageProductDependencies = (
+			);
+			productName = "NeuralSheet Plugin";
+			productReference = 0A02A10ABDAD4CD0150BD1A5 /* NeuralSheet Plugin.app */;
+			productType = "com.apple.product-type.application";
+		};
+		5EF8F3FF4988D448A51F3ECA /* NeuralSheetAU */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 8D05D28D13F79054EAACA122 /* Build configuration list for PBXNativeTarget "NeuralSheetAU" */;
+			buildPhases = (
+				1846903524DE489567701484 /* Sources */,
+				8D70E1A02442600D7AF3836E /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = NeuralSheetAU;
+			packageProductDependencies = (
+				0176CF166642A3E08DB66DAE /* NeuralSheetCore */,
+				FDAD2A66C6858EB6D1A4522B /* NeuralSheetEngine */,
+			);
+			productName = NeuralSheetAU;
+			productReference = D0C5B9F14DDBB2F6D7E6F7B7 /* NeuralSheetAU.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		96247D01CFA4AD44A9C52DFF /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					29DC2595633C1F61B21E17C2 = {
+						DevelopmentTeam = 6WCYZER5LX;
+						ProvisioningStyle = Automatic;
+					};
+					5EF8F3FF4988D448A51F3ECA = {
+						DevelopmentTeam = 6WCYZER5LX;
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = 416F2797E5295172809FF364 /* Build configuration list for PBXProject "NeuralSheet-Plugin" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = F693A4DEAF726E74D61BE2DD;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				4EBBF57D493AED4B3D012C6E /* XCLocalSwiftPackageReference "../app/Packages/NeuralSheetCore" */,
+				1084BEE725CAAAFD03658B75 /* XCLocalSwiftPackageReference "../app/Packages/NeuralSheetEngine" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 70F8BC4A070943553881B0CD /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				29DC2595633C1F61B21E17C2 /* NeuralSheet Plugin */,
+				5EF8F3FF4988D448A51F3ECA /* NeuralSheetAU */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		1846903524DE489567701484 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				00CCCACC0FF86B5E526C2855 /* CaptureRing.swift in Sources */,
+				713ED346DECD9D56A43FC14E /* NeuralSheetAUViewController.swift in Sources */,
+				69D46A2E5485D257604D7698 /* NeuralSheetAudioUnit+Render.swift in Sources */,
+				B0AEEAE4CCD78ED1617E371B /* NeuralSheetAudioUnit.swift in Sources */,
+				0B6892B9D4B93F7CD762F05D /* PluginView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		7DCD57763F5E5AF149A55FBB /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BF24E5EBB7090B12FD9E7F9D /* ContainerView.swift in Sources */,
+				176011C69199E4DCBFE73CB6 /* NeuralSheetPluginApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		130FC6A8AAB34449AF8F391E /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 5EF8F3FF4988D448A51F3ECA /* NeuralSheetAU */;
+			targetProxy = 620857ED5A887A3B3207CD5E /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		330706AB81CAD2E910FE316F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_APP_SANDBOX = NO;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "NeuralSheet Plugin";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.music";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 Quassum. Apache License 2.0.";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.quassum.neuralsheet.plugin;
+				PRODUCT_MODULE_NAME = NeuralSheetPlugin;
+				PRODUCT_NAME = "NeuralSheet Plugin";
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		60A9BAC0E37CDAF4C13896B6 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = arm64;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "c++23";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = 6WCYZER5LX;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 1.1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		89421E3D439BF3A7B7EA76A0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = arm64;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "c++23";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = 6WCYZER5LX;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 1.1.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		A2754DD8134AB702BF2AAFBE /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = NeuralSheetAU/NeuralSheetAU.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_APP_SANDBOX = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = NeuralSheetAU/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = NeuralSheet;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.quassum.neuralsheet.plugin.au;
+				PRODUCT_NAME = NeuralSheetAU;
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+			};
+			name = Debug;
+		};
+		BCCFFD33DD20BF95B8761D2E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = NeuralSheetAU/NeuralSheetAU.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_APP_SANDBOX = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = NeuralSheetAU/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = NeuralSheet;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.quassum.neuralsheet.plugin.au;
+				PRODUCT_NAME = NeuralSheetAU;
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+			};
+			name = Release;
+		};
+		E5972ADA739E43B0CC16D8D1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_APP_SANDBOX = NO;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "NeuralSheet Plugin";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.music";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 Quassum. Apache License 2.0.";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.quassum.neuralsheet.plugin;
+				PRODUCT_MODULE_NAME = NeuralSheetPlugin;
+				PRODUCT_NAME = "NeuralSheet Plugin";
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		416F2797E5295172809FF364 /* Build configuration list for PBXProject "NeuralSheet-Plugin" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				60A9BAC0E37CDAF4C13896B6 /* Debug */,
+				89421E3D439BF3A7B7EA76A0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		8D05D28D13F79054EAACA122 /* Build configuration list for PBXNativeTarget "NeuralSheetAU" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A2754DD8134AB702BF2AAFBE /* Debug */,
+				BCCFFD33DD20BF95B8761D2E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		C1AB6869CD256DCB0EDE17F7 /* Build configuration list for PBXNativeTarget "NeuralSheet Plugin" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				330706AB81CAD2E910FE316F /* Debug */,
+				E5972ADA739E43B0CC16D8D1 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		1084BEE725CAAAFD03658B75 /* XCLocalSwiftPackageReference "../app/Packages/NeuralSheetEngine" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../app/Packages/NeuralSheetEngine;
+		};
+		4EBBF57D493AED4B3D012C6E /* XCLocalSwiftPackageReference "../app/Packages/NeuralSheetCore" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../app/Packages/NeuralSheetCore;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		0176CF166642A3E08DB66DAE /* NeuralSheetCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = NeuralSheetCore;
+		};
+		FDAD2A66C6858EB6D1A4522B /* NeuralSheetEngine */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = NeuralSheetEngine;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 96247D01CFA4AD44A9C52DFF /* Project object */;
+}
