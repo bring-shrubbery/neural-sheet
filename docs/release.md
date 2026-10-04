@@ -3,8 +3,10 @@
 Releases are automatic. Every push to `main` that passes CI and changes
 something other than documentation is built, signed, notarized and published as
 `NeuralSheet-vX.Y.Z-macos-arm64.dmg` (and a zip of the app) on a GitHub
-release tagged `vX.Y.Z`. Installed copies update themselves from the
-`appcast.xml` each release publishes (Sparkle).
+release tagged `vX.Y.Z`, with the Audio Unit plugin beside it as
+`NeuralSheet-Plugin-vX.Y.Z-macos-arm64.dmg` (see [Audio Unit](#audio-unit)).
+Installed copies of the app update themselves from the `appcast.xml` each
+release publishes (Sparkle); the plugin does not update itself.
 
 ## Versions
 
@@ -23,7 +25,8 @@ Add the release's notes to `CHANGELOG.md` yourself. The GitHub release body and
 the notes the update prompt shows are the commit subjects since the previous tag
 (`app/Scripts/release-notes.sh`): the `area:` prefix is dropped and `docs:`,
 `web:` and `ci:` commits are left out, so write every subject as the line a user
-will read.
+will read. A `plugin:` subject reads "Audio Unit: …" and an `ios:` one "iOS: …",
+so they are not taken for changes to the Mac app.
 
 ## One-time setup: the secrets
 
@@ -141,17 +144,120 @@ system keeps out (signed ad hoc or by another team) falls back to
   yet released. Usually `SPARKLE_PRIVATE_KEY` is missing or not the exported key
   (44 base64 characters). Fix the secret and re-run; nothing was tagged.
 - **The tag exists** — a previous run tagged but failed to publish. The notarized
-  DMG and zip are attached to that run as artifacts (the run page, *Artifacts*).
-  Publish all three — the DMG, the zip **and `appcast.xml`** — or installed copies
-  will find no feed until the next release. Either publish them by hand as
+  DMG and zip are attached to that run as artifacts (the run page, *Artifacts*), the
+  plugin's DMG as an artifact of its own. Publish all four — the DMG, the zip, the
+  plugin's DMG **and `appcast.xml`** — or installed copies will find no feed until
+  the next release. Either publish them by hand as
   release `vX.Y.Z`, or delete the tag
   (`git push origin :refs/tags/vX.Y.Z`) and the release if one was created,
   then re-run. Re-running without deleting the tag prints "no code changes
   since vX.Y.Z" and releases nothing.
+- **check-version.sh: plugin/project.yml MARKETING_VERSION is …** — the app's
+  `MARKETING_VERSION` was raised without the plugin's. Set `MARKETING_VERSION` and the
+  component's `version` in `plugin/project.yml`, run `make -C plugin project`, commit.
+- **does not fit the component's version integer** — the release's minor or patch
+  passed 255; raise `MARKETING_VERSION` (app and plugin) to the next minor.
+- **the plugin's notarization ended with status Invalid**, or *Package the Audio Unit
+  plugin* failed — the app is notarized but nothing is tagged yet; fix and re-run, as
+  for the appcast step.
 - **Rebuild the website failed** — the release is already published; only the site's
   download button is stale. Re-run the build from the Worker's *Builds* page in the
   Cloudflare dashboard (re-running the Release workflow prints "no code changes" and
   does nothing).
+
+## Audio Unit
+
+The plugin (`plugin/`, design: `docs/design/2026-10-03-audio-unit-design.md`) is
+released by the same run as the app, from the same commit, with the same version.
+
+### What ships
+
+`NeuralSheet-Plugin-vX.Y.Z-macos-arm64.dmg` holds `NeuralSheet Plugin.app`, a small
+container whose only jobs are to carry the extension and to show one window with the
+version and an Open NeuralSheet button, and a link to Applications. Inside it,
+`Contents/PlugIns/NeuralSheetAU.appex` is the AUv3 effect (`aufx` / `NSht` / `Qssm`,
+listed by hosts as "Quassum: NeuralSheet"). There is no zip and no appcast: the plugin
+does not update itself; the user installs each release's image over the last one.
+
+### How it is built and signed
+
+After the app's appcast is written, the job runs `plugin/Scripts/package.sh`, which:
+
+1. runs `plugin/Scripts/check-version.sh`: `MARKETING_VERSION` in `plugin/project.yml`
+   (and the generated project) must be the app's, and the component's integer
+   `version` must be that packed as `major << 16 | minor << 8 | patch`. CI runs the
+   same check in the plugin job (`Scripts/validate.sh`), so a drift fails before a
+   release. Raise both with the app's `MARKETING_VERSION` (`make -C plugin project`).
+2. archives the committed `plugin/NeuralSheet-Plugin.xcodeproj` (nothing is
+   regenerated) with the app's flags: arm64, Manual signing with
+   `MACOS_SIGNING_IDENTITY`, `MARKETING_VERSION` the release's, the build number the
+   run number;
+3. writes the release's packed version into the built extension's `AudioComponents`
+   (an integer cannot be a build setting; hosts compare it to decide whether a cached
+   scan is stale) and signs the extension and then the app again, hardened runtime,
+   secure timestamp, keeping the entitlements Xcode signed them with;
+4. checks both bundles' versions, the Developer ID authority, the runtime, the
+   timestamp, the App Group on both and the sandbox on the extension, and
+   `codesign --verify --deep --strict`;
+5. builds the disk image with `create-dmg` (as the app's, retrying without the Finder
+   layout) and signs it.
+
+*Notarize and staple the plugin* then submits the image with the same App Store
+Connect key, staples it and checks it with `spctl`. The image is kept as a run
+artifact of its own (`NeuralSheet-Plugin-vX.Y.Z-macos-arm64`) and attached to the
+release. No secret is added: the plugin uses the app's certificate and key.
+
+On a Mac with the Developer ID certificate the same steps run without a release, up
+to notarization:
+
+```sh
+cd plugin
+Scripts/package.sh --version 1.1.1 --build 1 \
+  --identity "Developer ID Application: Quassum MB (6WCYZER5LX)" --team 6WCYZER5LX \
+  --out /tmp/neuralsheet-plugin
+```
+
+`spctl` rejects that image as "Unnotarized Developer ID", as it should. Xcode registers
+the archive's copy of the extension with the system; unregister it afterwards
+(`pluginkit -r <…>/ArchiveIntermediates/…/NeuralSheetAU.appex`) so hosts do not load a
+copy with a higher version than your development build.
+
+### The App Group
+
+The extension is sandboxed, as every app extension must be, and reads the models and
+`global.settings` from the App Group container the app keeps them in (§5 above). Both
+targets' entitlements name `6WCYZER5LX.com.quassum.neuralsheet`; because the group is
+team-prefixed, the Developer ID signature alone admits the extension, with no
+provisioning profile, exactly as for the app. A copy signed by anyone else cannot read
+the group and finds no models.
+
+### Validation in CI
+
+The `plugin` job in `ci.yml` builds the project warning-free, runs `PluginCoreTests`,
+and runs `plugin/Scripts/validate.sh`: the version check, a Release build signed ad hoc,
+`pluginkit -a`, `auval -v aufx NSht Qssm`, `pluginkit -r`. auval must pass with no
+warning but the one the system's version 3 bridge prints for every AUv3 (the
+deprecated CurrentPreset property). A red plugin job keeps CI red, so nothing releases.
+
+Hosts are not driven in CI. `plugin/HOSTS.md` is the maintainer's checklist for Logic
+Pro, GarageBand, Ableton Live, Reaper and MainStage; run it against a release's image
+and file what fails.
+
+### Installing and removing it (what to tell users)
+
+1. Install NeuralSheet and download a model in NeuralSheet → Settings → Model; the
+   plugin downloads nothing and uses the app's models.
+2. Open `NeuralSheet-Plugin-vX.Y.Z-macos-arm64.dmg` and drag NeuralSheet Plugin into
+   Applications.
+3. Open NeuralSheet Plugin once. That registers the extension; the window can be
+   closed. Hosts that cache their scan (Logic Pro, Live, Reaper) may need a rescan.
+4. In the host, insert "Quassum: NeuralSheet" as an effect on an audio track.
+
+To update, install the new image over the old app and open it once. To remove it, quit
+the hosts, move `/Applications/NeuralSheet Plugin.app` to the Bin and empty it; the
+system drops the extension with its app (hosts forget it at their next scan). The
+extension's sandbox container, `~/Library/Containers/com.quassum.neuralsheet.plugin.au`,
+can be deleted too. The App Group container is the app's and stays.
 
 ## iOS (TestFlight)
 
