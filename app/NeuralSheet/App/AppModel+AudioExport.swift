@@ -47,11 +47,8 @@ extension AppModel {
         settings.audioExportMarkedRange = choice.markedRange
         settings.audioExportFormat = choice.format
 
-        let whole = 0 ... max(source.duration, 0)
-        let range = choice.markedRange ? marked.map { $0.lowerBound ... $0.upperBound } ?? whole : whole
-
         // As heard is what the engine is told now: the hold or the split's middle included.
-        let job = OfflineRenderer.Job(spec: RenderSpec(what: choice.what, range: range, format: choice.format),
+        let job = OfflineRenderer.Job(spec: ExportCommands.renderSpec(choice, marked: marked, duration: source.duration),
                                       take: source, notes: notes, mixer: mixer,
                                       soundBankURL: engine.synthBank.soundBankURL, mix: engine.mix,
                                       masterGainDb: engine.masterGainDb, stereoSplit: engine.stereoSplit)
@@ -75,7 +72,7 @@ extension AppModel {
         let renderID = render.id
 
         render.task = Task.detached(priority: .userInitiated) { [weak self] in
-            let failure = AppModel.renderAudio(job, to: destination) { [weak self] fraction in
+            let failure = ExportCommands.renderAudio(job, to: destination) { [weak self] fraction in
                 guard let model = self else { return }
 
                 Task { @MainActor in
@@ -87,43 +84,6 @@ extension AppModel {
         }
 
         audioRender = render
-    }
-
-    /// Off the main actor: renders into a scratch folder on the destination's volume and moves the
-    /// file over the destination once whole. Nil on success or cancel.
-    nonisolated private static func renderAudio(_ job: OfflineRenderer.Job, to destination: URL,
-                                                progress: @escaping @Sendable (Double) -> Void) -> Error? {
-        let manager = FileManager.default
-
-        do {
-            let scratchFolder = try manager.url(for: .itemReplacementDirectory, in: .userDomainMask,
-                                                appropriateFor: destination, create: true)
-            defer { try? manager.removeItem(at: scratchFolder) }
-
-            let scratch = scratchFolder.appendingPathComponent(destination.lastPathComponent)
-
-            // A hop per percent, not per block.
-            var reported = -1
-            let finished = try OfflineRenderer.render(job, to: scratch, progress: { fraction in
-                let percent = Int(fraction * 100)
-                if percent != reported {
-                    reported = percent
-                    progress(fraction)
-                }
-            })
-
-            guard finished, !Task.isCancelled else { return nil }
-
-            if manager.fileExists(atPath: destination.path) {
-                _ = try manager.replaceItemAt(destination, withItemAt: scratch)
-            } else {
-                try manager.moveItem(at: scratch, to: destination)
-            }
-
-            return nil
-        } catch {
-            return Task.isCancelled ? nil : error
-        }
     }
 
     private func setAudioRenderProgress(_ progress: Double, renderID: UUID) {

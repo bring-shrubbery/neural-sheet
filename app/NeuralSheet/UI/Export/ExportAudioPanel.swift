@@ -8,11 +8,7 @@ import UniformTypeIdentifiers
 /// *Range* and *Format*. Changing the format changes the name's extension and the type the panel
 /// allows. Synchronous, like the other exports' panels: it returns the choice and the URL, or nil.
 @MainActor enum ExportAudioPanel {
-    struct Choice: Equatable {
-        var what: AudioExportWhat
-        var markedRange: Bool
-        var format: AudioExportFormat
-    }
+    typealias Choice = ExportCommands.AudioChoice
 
     /// - Parameters:
     ///   - hasRange: A range is marked; otherwise *Marked range* is offered but disabled.
@@ -20,9 +16,7 @@ import UniformTypeIdentifiers
     ///     chosen.
     static func run(takeName: String, directory: URL, initial: Choice, hasRange: Bool,
                     hasNotes: Bool) -> (Choice, URL)? {
-        var start = initial
-        if !hasNotes { start.what = .original }
-        if !hasRange { start.markedRange = false }
+        let start = initial.starting(hasRange: hasRange, hasNotes: hasNotes)
 
         let options = ExportAudioOptions(choice: start, hasRange: hasRange, hasNotes: hasNotes)
         let panel = NSSavePanel()
