@@ -71,6 +71,7 @@ struct RollScreen: View {
             if let status = model.statusLine {
                 Text(verbatim: status)
                     .font(.caption.monospacedDigit())
+                    .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
                     .foregroundStyle(Color(cgColor: TimelinePalette.textPrimary).opacity(0.7))
                     .lineLimit(1)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -142,7 +143,10 @@ private struct EditBar: View {
                       enabled: model.canEdit && !selection.isEmpty) { model.deleteSelection() }
         }
         .padding(.horizontal, 8)
-        .frame(height: 52)
+        .frame(minHeight: 52)
+        // A bar of icons: they stop growing at the largest standard size, and a long press shows
+        // one in the Large Content Viewer (sub-issue J).
+        .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
         .background(.bar)
     }
 
@@ -155,6 +159,10 @@ private struct EditBar: View {
         }
         .disabled(!enabled)
         .accessibilityLabel(Text(verbatim: label))
+        .accessibilityShowsLargeContentViewer {
+            Image(systemName: systemImage)
+            Text(verbatim: label)
+        }
         .accessibilityIdentifier(id)
     }
 }

@@ -31,7 +31,8 @@ enum ProjectFixture {
     /// Dynamic Type is left out: the audit flags the system's own toolbar buttons, list buttons,
     /// links and switches as "partially unsupported"; the app's text sizes are checked by
     /// photographing every screen at XXXL and AX5 (`LocalizedScreenshotTests`).
-    static let auditTypes: XCUIAccessibilityAuditType = [.elementDetection, .hitRegion, .sufficientElementDescription, .trait]
+    static let auditTypes: XCUIAccessibilityAuditType = [.elementDetection, .hitRegion, .sufficientElementDescription,
+                                                         .textClipped, .trait]
 
     /// Optional extra launch arguments, from the runner's environment: `TEST_RUNNER_NS_LANG=de`
     /// on the xcodebuild command line arrives here as `NS_LANG`.

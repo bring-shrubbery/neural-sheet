@@ -6,11 +6,17 @@ import SwiftUI
 /// the length; the ORIG / MIDI mix with its holds and the stereo split; SPEED, Loop and CLICK;
 /// the output level and MUTE (the Mac's master panel) in a popover; and on iPhone the strips in
 /// a sheet (on iPad they are in the sidebar). One row on a regular width, two on a compact one.
+///
+/// Dynamic Type (sub-issue J): above the default text size the bar wraps onto three rows, the
+/// position on a row of its own, whatever the width; its text and icons stop growing at the
+/// largest standard size, as the system's bars do, and a long press shows a button in the Large
+/// Content Viewer instead.
 struct TransportBar<Trailing: View>: View {
     let model: MobileModel
     @ViewBuilder let trailing: () -> Trailing
 
     @Environment(\.horizontalSizeClass) private var sizeClass
+    @Environment(\.dynamicTypeSize) private var typeSize
     @State private var showsStrips = false
 
     init(model: MobileModel, @ViewBuilder trailing: @escaping () -> Trailing) {
@@ -20,7 +26,36 @@ struct TransportBar<Trailing: View>: View {
 
     var body: some View {
         Group {
-            if sizeClass == .regular {
+            if typeSize > .large {
+                VStack(spacing: 0) {
+                    HStack(spacing: 0) {
+                        goToStartButton
+                        playButton
+                        Spacer(minLength: 0)
+                        practice
+                        trailing()
+                    }
+                    .frame(minHeight: 48)
+
+                    HStack(spacing: 4) {
+                        PositionText(model: model)
+                            .padding(.leading, 8)
+                        Spacer(minLength: 4)
+                        SpeedButton(model: model)
+                    }
+                    .frame(minHeight: 44)
+
+                    HStack(spacing: 4) {
+                        MixControl(model: model)
+                        OutputButton(model: model)
+
+                        if sizeClass != .regular {
+                            stripsButton
+                        }
+                    }
+                    .frame(minHeight: 44)
+                }
+            } else if sizeClass == .regular {
                 HStack(spacing: 8) {
                     transport
                     Spacer(minLength: 8)
@@ -53,6 +88,7 @@ struct TransportBar<Trailing: View>: View {
             }
         }
         .padding(.horizontal, 8)
+        .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
         .background(.bar)
         .sheet(isPresented: $showsStrips) {
             NavigationStack {
@@ -70,22 +106,28 @@ struct TransportBar<Trailing: View>: View {
 
     @ViewBuilder
     private var transport: some View {
-        let playing = model.isTransportRunning
+        goToStartButton
+        playButton
+        PositionText(model: model)
+    }
 
+    private var goToStartButton: some View {
         TransportIconButton(systemImage: "backward.end.fill", id: "go-to-start",
                             label: Text(AccessibilityText.goToStart)) {
             model.goToStart()
         }
         .disabled(!model.canPlay)
+    }
 
-        TransportIconButton(systemImage: playing ? "pause.fill" : "play.fill", id: "play",
-                            label: playing ? Text(AccessibilityText.pause) : Text(AccessibilityText.play)) {
+    private var playButton: some View {
+        let playing = model.isTransportRunning
+
+        return TransportIconButton(systemImage: playing ? "pause.fill" : "play.fill", id: "play",
+                                   label: playing ? Text(AccessibilityText.pause) : Text(AccessibilityText.play)) {
             model.togglePlay()
         }
         .font(.title2)
         .disabled(!model.canPlay)
-
-        PositionText(model: model)
     }
 
     @ViewBuilder
@@ -131,6 +173,10 @@ private struct TransportIconButton: View {
                 .frame(width: 44, height: 44)
         }
         .accessibilityLabel(label)
+        .accessibilityShowsLargeContentViewer {
+            Image(systemName: systemImage)
+            label
+        }
         .accessibilityIdentifier(id)
     }
 }
@@ -156,6 +202,10 @@ private struct TransportToggle: View {
         .accessibilityValue(Text(AccessibilityText.onOff(isOn)))
         .accessibilityHint(hint ?? Text(verbatim: ""))
         .accessibilityAddTraits(isOn ? .isSelected : [])
+        .accessibilityShowsLargeContentViewer {
+            Image(systemName: systemImage)
+            label
+        }
         .accessibilityIdentifier(id)
     }
 }
@@ -235,6 +285,7 @@ private struct MixHoldLabel: View {
         Text(verbatim: text)
             .font(.caption2.weight(.semibold))
             .foregroundStyle(isHeld ? Color.primary : Color.secondary)
+            .fixedSize()
             .frame(minWidth: 36, minHeight: 44)
             .contentShape(Rectangle())
             .gesture(
@@ -441,7 +492,8 @@ struct GainSlider: View {
                 .accessibilityHidden(true)
                 .font(.caption.monospacedDigit())
                 .foregroundStyle(.secondary)
-                .frame(width: 52, alignment: .trailing)
+                .fixedSize()
+                .frame(minWidth: 52, alignment: .trailing)
         }
     }
 

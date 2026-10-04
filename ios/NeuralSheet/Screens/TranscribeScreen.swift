@@ -13,6 +13,7 @@ struct TranscribeScreen: View {
     @State private var pickedVideo: PhotosPickerItem?
     @State private var showsInstruments = false
     @State private var showsSettings = false
+    @Environment(\.dynamicTypeSize) private var typeSize
 
     private var library: ModelLibrary { .shared }
 
@@ -108,7 +109,9 @@ struct TranscribeScreen: View {
                     .foregroundStyle(.secondary)
             }
 
-            HStack(spacing: 12) {
+            // Side by side, or one above the other at the accessibility sizes, where a word no
+            // longer fits half the width.
+            (typeSize.isAccessibilitySize ? AnyLayout(VStackLayout(spacing: 12)) : AnyLayout(HStackLayout(spacing: 12))) {
                 recordButton
 
                 Menu {

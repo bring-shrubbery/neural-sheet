@@ -76,11 +76,16 @@ private struct ModelRow: View {
     let isChosen: Bool
     let onChoose: (() -> Void)?
 
+    @Environment(\.dynamicTypeSize) private var typeSize
+
     private var installed: Bool { library.installed.contains(size) }
     private var spec: ModelSpec { library.store.spec(for: size) }
 
     var body: some View {
-        HStack(spacing: 12) {
+        // The download controls under the name at the accessibility sizes, rather than squeezing
+        // it into a column of syllables.
+        (typeSize.isAccessibilitySize ? AnyLayout(VStackLayout(alignment: .leading, spacing: 8))
+                                      : AnyLayout(HStackLayout(spacing: 12))) {
             VStack(alignment: .leading, spacing: 2) {
                 Text(size.localizedName)
                     .font(.body)
@@ -105,7 +110,9 @@ private struct ModelRow: View {
             .accessibilityAction { if installed { onChoose?() } }
             .accessibilityIdentifier("model-\(size.rawValue)")
 
-            Spacer()
+            if !typeSize.isAccessibilitySize {
+                Spacer()
+            }
 
             trailing
         }
