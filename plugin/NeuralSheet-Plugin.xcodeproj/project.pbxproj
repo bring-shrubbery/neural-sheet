@@ -11,14 +11,17 @@
 		0B6892B9D4B93F7CD762F05D /* PluginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58A0C918ABD1BB7F03465D29 /* PluginView.swift */; };
 		176011C69199E4DCBFE73CB6 /* NeuralSheetPluginApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6F36F9E4C9E02AB0637C09B /* NeuralSheetPluginApp.swift */; };
 		4A520D3C436B6C55E0D971A2 /* AVFAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7A8D7D6BEC222AB0E40F1F51 /* AVFAudio.framework */; };
+		61E47B58EFC8538EFDEFE7C4 /* CaptureRingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01BC3A18627F014DF185A378 /* CaptureRingTests.swift */; };
 		621E89089EB09EC166B04905 /* NeuralSheetCore in Frameworks */ = {isa = PBXBuildFile; productRef = 0176CF166642A3E08DB66DAE /* NeuralSheetCore */; };
 		69D46A2E5485D257604D7698 /* NeuralSheetAudioUnit+Render.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7718B7149DE135BEBB3A6FE /* NeuralSheetAudioUnit+Render.swift */; };
 		713ED346DECD9D56A43FC14E /* NeuralSheetAUViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C02A1CF1EBCE53AC14933731 /* NeuralSheetAUViewController.swift */; };
 		9B22A689CA9A027749154F74 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C55ED0455CA212595E587130 /* AudioToolbox.framework */; };
 		B0AEEAE4CCD78ED1617E371B /* NeuralSheetAudioUnit.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF2F2AD02FEE354DDFAD7721 /* NeuralSheetAudioUnit.swift */; };
+		BC5D0171EB89D7517F12C95D /* NeuralSheetCore in Frameworks */ = {isa = PBXBuildFile; productRef = AA2E6339FEC15C3668DF95AD /* NeuralSheetCore */; };
 		BF24E5EBB7090B12FD9E7F9D /* ContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D29223D1C1679E98C34FCEA /* ContainerView.swift */; };
 		C9877CF5CF20AF151987902B /* NeuralSheetEngine in Frameworks */ = {isa = PBXBuildFile; productRef = FDAD2A66C6858EB6D1A4522B /* NeuralSheetEngine */; };
 		EA7990315216367243A29C4B /* CoreAudioKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DEAF591D6867E3E52A9F7239 /* CoreAudioKit.framework */; };
+		EC76D0E9517F9774892FD538 /* CaptureRing.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6C517E72478E7B6DF8BF5E1 /* CaptureRing.swift */; };
 		FA582FE060AC8CEE058BF85C /* NeuralSheetAU.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = D0C5B9F14DDBB2F6D7E6F7B7 /* NeuralSheetAU.appex */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
@@ -47,9 +50,11 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		01BC3A18627F014DF185A378 /* CaptureRingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureRingTests.swift; sourceTree = "<group>"; };
 		0A02A10ABDAD4CD0150BD1A5 /* NeuralSheet Plugin.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "NeuralSheet Plugin.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		0D29223D1C1679E98C34FCEA /* ContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContainerView.swift; sourceTree = "<group>"; };
 		49A0F2CDCBD3AC593B551FD8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		50CBE693C7B30CFE6E857FAE /* PluginCoreTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PluginCoreTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		58A0C918ABD1BB7F03465D29 /* PluginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PluginView.swift; sourceTree = "<group>"; };
 		73248F56E00C45416ADDD91F /* NeuralSheetEngine */ = {isa = PBXFileReference; lastKnownFileType = folder; name = NeuralSheetEngine; path = ../app/Packages/NeuralSheetEngine; sourceTree = SOURCE_ROOT; };
 		7A8D7D6BEC222AB0E40F1F51 /* AVFAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFAudio.framework; path = System/Library/Frameworks/AVFAudio.framework; sourceTree = SDKROOT; };
@@ -66,6 +71,14 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		7AA2CB27999C2CD26257B295 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BC5D0171EB89D7517F12C95D /* NeuralSheetCore in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		8D70E1A02442600D7AF3836E /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -94,6 +107,7 @@
 			children = (
 				0A02A10ABDAD4CD0150BD1A5 /* NeuralSheet Plugin.app */,
 				D0C5B9F14DDBB2F6D7E6F7B7 /* NeuralSheetAU.appex */,
+				50CBE693C7B30CFE6E857FAE /* PluginCoreTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -105,6 +119,14 @@
 				73248F56E00C45416ADDD91F /* NeuralSheetEngine */,
 			);
 			name = Packages;
+			sourceTree = "<group>";
+		};
+		9EEC31A59D879B8ECC6D3D49 /* PluginCoreTests */ = {
+			isa = PBXGroup;
+			children = (
+				01BC3A18627F014DF185A378 /* CaptureRingTests.swift */,
+			);
+			path = PluginCoreTests;
 			sourceTree = "<group>";
 		};
 		DAA59E306FA1CE8C9FFCF7D5 /* Container */ = {
@@ -146,6 +168,7 @@
 				E668B075913A63E0676113B4 /* NeuralSheetAU */,
 				834701308F40D2D77626F605 /* Packages */,
 				561353615EA1F84E11698FDA /* PluginCore */,
+				9EEC31A59D879B8ECC6D3D49 /* PluginCoreTests */,
 				E58BAAA10393D2B920E8B078 /* Frameworks */,
 				70F8BC4A070943553881B0CD /* Products */,
 			);
@@ -193,6 +216,25 @@
 			productReference = D0C5B9F14DDBB2F6D7E6F7B7 /* NeuralSheetAU.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
+		AC2526003F5CFFFB2C79CEE1 /* PluginCoreTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4C044EA804EB854C989CE528 /* Build configuration list for PBXNativeTarget "PluginCoreTests" */;
+			buildPhases = (
+				BB19F02AE0A9AB33190A4180 /* Sources */,
+				7AA2CB27999C2CD26257B295 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = PluginCoreTests;
+			packageProductDependencies = (
+				AA2E6339FEC15C3668DF95AD /* NeuralSheetCore */,
+			);
+			productName = PluginCoreTests;
+			productReference = 50CBE693C7B30CFE6E857FAE /* PluginCoreTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -207,6 +249,10 @@
 						ProvisioningStyle = Automatic;
 					};
 					5EF8F3FF4988D448A51F3ECA = {
+						DevelopmentTeam = 6WCYZER5LX;
+						ProvisioningStyle = Automatic;
+					};
+					AC2526003F5CFFFB2C79CEE1 = {
 						DevelopmentTeam = 6WCYZER5LX;
 						ProvisioningStyle = Automatic;
 					};
@@ -232,6 +278,7 @@
 			targets = (
 				29DC2595633C1F61B21E17C2 /* NeuralSheet Plugin */,
 				5EF8F3FF4988D448A51F3ECA /* NeuralSheetAU */,
+				AC2526003F5CFFFB2C79CEE1 /* PluginCoreTests */,
 			);
 		};
 /* End PBXProject section */
@@ -258,6 +305,15 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		BB19F02AE0A9AB33190A4180 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				EC76D0E9517F9774892FD538 /* CaptureRing.swift in Sources */,
+				61E47B58EFC8538EFDEFE7C4 /* CaptureRingTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -269,6 +325,23 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		157B42B886CD9792FDC97033 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.quassum.neuralsheet.plugin.tests;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
 		330706AB81CAD2E910FE316F /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -437,6 +510,23 @@
 			};
 			name = Release;
 		};
+		98F00F60ACEF08518E1F82D6 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.quassum.neuralsheet.plugin.tests;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
 		A2754DD8134AB702BF2AAFBE /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -516,6 +606,15 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
+		4C044EA804EB854C989CE528 /* Build configuration list for PBXNativeTarget "PluginCoreTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				157B42B886CD9792FDC97033 /* Debug */,
+				98F00F60ACEF08518E1F82D6 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
 		8D05D28D13F79054EAACA122 /* Build configuration list for PBXNativeTarget "NeuralSheetAU" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -549,6 +648,10 @@
 
 /* Begin XCSwiftPackageProductDependency section */
 		0176CF166642A3E08DB66DAE /* NeuralSheetCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = NeuralSheetCore;
+		};
+		AA2E6339FEC15C3668DF95AD /* NeuralSheetCore */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = NeuralSheetCore;
 		};

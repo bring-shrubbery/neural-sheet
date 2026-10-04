@@ -118,12 +118,30 @@ targets:
                 tags:
                   - Effects
 
+  # PluginCore's tests (`xcodebuild test`), compiling its sources directly, as nothing hosts them.
+  PluginCoreTests:
+    type: bundle.unit-test
+    platform: macOS
+    deploymentTarget: "26.0"
+    sources:
+      - path: PluginCoreTests
+      - path: PluginCore
+    dependencies:
+      - package: NeuralSheetCore
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.quassum.neuralsheet.plugin.tests
+        GENERATE_INFOPLIST_FILE: YES
+
 schemes:
   NeuralSheet Plugin:
     build:
       targets:
         NeuralSheet Plugin: all
         NeuralSheetAU: all
+    test:
+      targets:
+        - PluginCoreTests
     run:
       config: Debug
     archive:

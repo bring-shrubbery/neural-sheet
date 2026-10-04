@@ -53,7 +53,20 @@
          </BuildableReference>
       </MacroExpansion>
       <Testables>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "AC2526003F5CFFFB2C79CEE1"
+               BuildableName = "PluginCoreTests.xctest"
+               BlueprintName = "PluginCoreTests"
+               ReferencedContainer = "container:NeuralSheet-Plugin.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
+      <CommandLineArguments>
+      </CommandLineArguments>
    </TestAction>
    <LaunchAction
       buildConfiguration = "Debug"
