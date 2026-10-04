@@ -40,6 +40,12 @@ enum TimelineMetrics {
 ///
 /// Main-thread only; the container owns it and the views only read it.
 final class TimelineGeometry {
+    /// Nonisolated on purpose, with nothing in it: under default main-actor isolation the class
+    /// gets an isolated deinit, and the Swift runtime that ships with Xcode 26 aborts running it
+    /// inline while task-local values are bound (as they are around every XCTest test), which
+    /// crashed the iOS tests on CI. Releasing the stored numbers needs no actor.
+    nonisolated deinit {}
+
     // MARK: - Time axis
 
     var scale: CGFloat = 1
