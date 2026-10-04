@@ -71,7 +71,7 @@ extension AppModel {
 
         guard panel.runModal() == .OK, let folder = panel.url, canExportStems else { return }
 
-        if let kept = stemsFolder, AppModel.hasAllStems(in: kept) {
+        if let kept = stemsFolder, ExportCommands.hasAllStems(in: kept) {
             writeStems(from: kept, to: folder)
         } else {
             runSeparationOnly(into: folder)
@@ -88,12 +88,6 @@ extension AppModel {
         switch job.phase {
         case .separating: separator.cancel()
         case .writing: job.task?.cancel()
-        }
-    }
-
-    private static func hasAllStems(in folder: URL) -> Bool {
-        (0..<StemNames.displayNames.count).allSatisfy {
-            FileManager.default.fileExists(atPath: folder.appendingPathComponent(StemNames.cacheFileName(stem: $0)).path)
         }
     }
 
@@ -171,8 +165,8 @@ extension AppModel {
         var plan: [(source: URL, destination: URL)] = []
         var replaceAll = false
 
-        for stem in StemNames.exportOrder {
-            let target = destination.appendingPathComponent(StemNames.exportFileName(takeName: exportTakeName, stem: stem))
+        for step in ExportCommands.stemPlan(kept: kept, destination: destination, takeName: exportTakeName) {
+            let target = step.destination
 
             if !replaceAll, FileManager.default.fileExists(atPath: target.path) {
                 switch Dialogs.overwrite(fileName: target.lastPathComponent, folderName: destination.lastPathComponent) {
@@ -183,7 +177,7 @@ extension AppModel {
                 }
             }
 
-            plan.append((kept.appendingPathComponent(StemNames.cacheFileName(stem: stem)), target))
+            plan.append(step)
         }
 
         guard !plan.isEmpty else { return }
@@ -196,7 +190,7 @@ extension AppModel {
         let frames = source.frameCount
 
         job.task = Task.detached(priority: .userInitiated) { [weak self] in
-            let outcome = AppModel.convertStems(plan, sampleRate: rate, channels: channels, frameCount: frames) {
+            let outcome = ExportCommands.convertStems(plan, sampleRate: rate, channels: channels, frameCount: frames) {
                 [weak self] done in
                 guard let model = self else { return }
 
@@ -209,51 +203,6 @@ extension AppModel {
         }
 
         stemsExport = job
-    }
-
-    /// Off the main actor: each stem through ``StemFiles/convert(_:to:sampleRate:channels:frameCount:)``
-    /// into a scratch file on the destination's volume, moved over the target only once whole, so
-    /// a failure or a cancel never leaves a half-written file or loses the one it was replacing.
-    /// A cancel removes the files this export already wrote.
-    nonisolated private static func convertStems(_ plan: [(source: URL, destination: URL)], sampleRate: Double,
-                                                 channels: Int, frameCount: Int,
-                                                 progress: @escaping @Sendable (Float) -> Void) -> Error? {
-        let manager = FileManager.default
-        var written: [URL] = []
-
-        for (index, step) in plan.enumerated() {
-            guard !Task.isCancelled else { break }
-
-            do {
-                let scratchFolder = try manager.url(for: .itemReplacementDirectory, in: .userDomainMask,
-                                                    appropriateFor: step.destination, create: true)
-                defer { try? manager.removeItem(at: scratchFolder) }
-
-                let scratch = scratchFolder.appendingPathComponent(step.destination.lastPathComponent)
-
-                try StemFiles.convert(step.source, to: scratch, sampleRate: sampleRate, channels: channels,
-                                      frameCount: frameCount)
-
-                guard !Task.isCancelled else { break }
-
-                if manager.fileExists(atPath: step.destination.path) {
-                    _ = try manager.replaceItemAt(step.destination, withItemAt: scratch)
-                } else {
-                    try manager.moveItem(at: scratch, to: step.destination)
-                }
-
-                written.append(step.destination)
-                progress(Float(index + 1) / Float(plan.count))
-            } catch {
-                return Task.isCancelled ? nil : error
-            }
-        }
-
-        if Task.isCancelled {
-            for url in written { try? manager.removeItem(at: url) }
-        }
-
-        return nil
     }
 
     private func setStemsExportProgress(_ progress: Float, jobID: UUID) {
