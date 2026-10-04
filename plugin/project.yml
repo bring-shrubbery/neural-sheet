@@ -82,8 +82,7 @@ targets:
       # The app's take, which a capture becomes (sub-issue B), shared by path as the iOS app does.
       - path: ../app/NeuralSheet/Audio/SourceAudio.swift
       # The waveform's drawing, shared with the Mac and iOS by path (sub-issue B): the painter
-      # over the timeline geometry, the palette and text, the theme and the type ramp. The plugin's
-      # NSView over it is NeuralSheetAU/TakeWaveformView.swift.
+      # over the timeline geometry, the palette and text, the theme and the type ramp.
       - path: ../app/NeuralSheet/UI/Theme.swift
       - path: ../app/NeuralSheet/UI/Theme+Accommodations.swift
       - path: ../app/NeuralSheet/UI/Accessibility/Accommodations.swift
@@ -92,6 +91,15 @@ targets:
       - path: ../app/NeuralSheet/UI/Timeline/TimelineGeometry.swift
       - path: ../app/NeuralSheet/UI/Timeline/TimelineDrawing.swift
       - path: ../app/NeuralSheet/UI/Timeline/WaveformView+Drawing.swift
+      # The roll (sub-issue C): the ruler's, the keyboard's and the piano roll's painters, the
+      # playhead's layer and view, and the wheel's scaling, as the Mac's timeline draws and reads
+      # them. The plugin's NSViews over them are NeuralSheetAU/PluginRoll*.swift.
+      - path: ../app/NeuralSheet/UI/Timeline/PianoRollView+Drawing.swift
+      - path: ../app/NeuralSheet/UI/Timeline/RulerView+Drawing.swift
+      - path: ../app/NeuralSheet/UI/Timeline/KeyboardView+Drawing.swift
+      - path: ../app/NeuralSheet/UI/Timeline/PlayheadLayer.swift
+      - path: ../app/NeuralSheet/UI/Timeline/PlayheadView.swift
+      - path: ../app/NeuralSheet/UI/Timeline/WheelGesture.swift
       # The transcription (sub-issue C), compiled unchanged as the iOS app compiles it: the
       # engine wrapper over the NeuralSheetEngine package, the run's staging and landing, and the
       # stem separator with its C++ bridge to demucs.cpp (libdemucs.a, built for the Mac by the

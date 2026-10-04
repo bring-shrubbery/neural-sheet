@@ -122,6 +122,14 @@ import os
                             groups: selectedGroups, settings: settings)
     }
 
+    /// What the roll draws: the take, and the stream or the landed notes.
+    var rollContent: PluginRollContent? {
+        guard let take = capture?.capturedTake else { return nil }
+
+        return PluginRollContent(duration: take.duration, peaks: take.peaks, notes: transcription.notes,
+                                 frontier: transcription.run?.finalizedThrough)
+    }
+
     func cancelTranscription() {
         transcription.cancel()
     }

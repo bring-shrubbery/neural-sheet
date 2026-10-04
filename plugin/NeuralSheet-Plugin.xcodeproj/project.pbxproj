@@ -8,15 +8,20 @@
 
 /* Begin PBXBuildFile section */
 		00CCCACC0FF86B5E526C2855 /* CaptureRing.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6C517E72478E7B6DF8BF5E1 /* CaptureRing.swift */; };
+		01C0DDCF004E3E1D28863221 /* WheelGesture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05C6B18963F249136043F899 /* WheelGesture.swift */; };
+		0227C53DC76C47B1509AA5C6 /* PianoRollView+Drawing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FAC35376778F455282895F1 /* PianoRollView+Drawing.swift */; };
+		07C11CCBD607BD49F8F496E7 /* PlayheadLayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D03A3DCDD37C1C5075103F25 /* PlayheadLayer.swift */; };
 		0B6892B9D4B93F7CD762F05D /* PluginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58A0C918ABD1BB7F03465D29 /* PluginView.swift */; };
 		0D3E938C0582671C356C7220 /* Accommodations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DD3D841326A1BACC8CA398C /* Accommodations.swift */; };
 		113F2250804194998924FD3C /* PluginLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4417A9DCFAD8D1F0028F3C6 /* PluginLog.swift */; };
+		1506C97B5511C775E83E9D37 /* PluginRoll.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71F77D4C84BE806B39CEC7A2 /* PluginRoll.swift */; };
 		176011C69199E4DCBFE73CB6 /* NeuralSheetPluginApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6F36F9E4C9E02AB0637C09B /* NeuralSheetPluginApp.swift */; };
 		209566417DDD6DCE687B8D6C /* TranscriptionEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65616340FF4872241BD9F53D /* TranscriptionEngine.swift */; };
 		3817561B55C3A2F8F093F623 /* PluginModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65172D2EB15005E96EC711D0 /* PluginModels.swift */; };
 		456F337C627EB086DFF7ED94 /* CaptureSessionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2374B36820BFD1E2F2C0577 /* CaptureSessionTests.swift */; };
 		4A520D3C436B6C55E0D971A2 /* AVFAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7A8D7D6BEC222AB0E40F1F51 /* AVFAudio.framework */; };
 		4AD41BC8F1B7C7B6A544B1B3 /* SourceAudio.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B89059501CB461984F6F021 /* SourceAudio.swift */; };
+		4DC5CD88B45AD56056A61B74 /* RulerView+Drawing.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB138908F6DD171B561163F0 /* RulerView+Drawing.swift */; };
 		515356776DEA0023B5126A5B /* nsheet_stems.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C17313B3BA074EA1AE855604 /* nsheet_stems.cpp */; };
 		5594FE4EE49F6804A7DA5A42 /* StemFiles.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE625BA50C127BDE421E29E7 /* StemFiles.swift */; };
 		5CCE15B72DC72357F739A58A /* CaptureSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E278E2722F6F1DC4F5E5962 /* CaptureSession.swift */; };
@@ -26,15 +31,18 @@
 		69D46A2E5485D257604D7698 /* NeuralSheetAudioUnit+Render.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7718B7149DE135BEBB3A6FE /* NeuralSheetAudioUnit+Render.swift */; };
 		6B149E9C86F8B856E39E4FD7 /* PluginLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4417A9DCFAD8D1F0028F3C6 /* PluginLog.swift */; };
 		713ED346DECD9D56A43FC14E /* NeuralSheetAUViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C02A1CF1EBCE53AC14933731 /* NeuralSheetAUViewController.swift */; };
-		71FCD405D30834DDCEE2FF84 /* TakeWaveformView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D228CFD93130F172A38943E /* TakeWaveformView.swift */; };
 		73637B732E34662322562165 /* PluginModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65172D2EB15005E96EC711D0 /* PluginModels.swift */; };
 		76DA0137BC9299627A10B47B /* CapturedTake.swift in Sources */ = {isa = PBXBuildFile; fileRef = A95007A769824ED6B2755438 /* CapturedTake.swift */; };
 		7A72FD09943F8630B56CA9EF /* CapturedTake.swift in Sources */ = {isa = PBXBuildFile; fileRef = A95007A769824ED6B2755438 /* CapturedTake.swift */; };
 		892E89BB6E014A7D7FDC6F73 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45AF3F4B97F0EC83E679ED3D /* Theme.swift */; };
 		8C8E477AD04B84F630CC208E /* TranscriptionRun.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F38AD4193E90CC9BF1BE522 /* TranscriptionRun.swift */; };
 		92387CDC0F081B2C3FBB0636 /* TestBuffers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 010D0ADFE38DC5606310995C /* TestBuffers.swift */; };
+		9A67F5EB2C942CBF7878B1E1 /* PluginRollBands.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E62B42F3CD9C6A42B6894B4 /* PluginRollBands.swift */; };
 		9B22A689CA9A027749154F74 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C55ED0455CA212595E587130 /* AudioToolbox.framework */; };
+		9D212FDE78D93839F7385A01 /* PluginRollView+Zoom.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6149E85698307BC5085D3DC /* PluginRollView+Zoom.swift */; };
+		A0D7BB45E27411BC8BCC381A /* KeyboardView+Drawing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EFD0389276D661FB4A28A2A /* KeyboardView+Drawing.swift */; };
 		AB730DD37DE11FD4F9F87D31 /* CaptureSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E278E2722F6F1DC4F5E5962 /* CaptureSession.swift */; };
+		AC47994F8A46364068248A91 /* PluginRollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DCB8196392D1269E3861A34 /* PluginRollView.swift */; };
 		AFBD3083CEFA87F1FFCEA6F1 /* TimelineGeometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 209FB5D262EB3FD83CFFEF76 /* TimelineGeometry.swift */; };
 		B0AEEAE4CCD78ED1617E371B /* NeuralSheetAudioUnit.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF2F2AD02FEE354DDFAD7721 /* NeuralSheetAudioUnit.swift */; };
 		B20A7B50D9D9B2A7F9D69D83 /* PluginTranscription.swift in Sources */ = {isa = PBXBuildFile; fileRef = 942AA6D65B9BA0A173F3DD5D /* PluginTranscription.swift */; };
@@ -45,6 +53,7 @@
 		C511EA6CBD579BE247674538 /* Theme+Accommodations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F16DFE194AF0036ACFC062A /* Theme+Accommodations.swift */; };
 		C9877CF5CF20AF151987902B /* NeuralSheetEngine in Frameworks */ = {isa = PBXBuildFile; productRef = FDAD2A66C6858EB6D1A4522B /* NeuralSheetEngine */; };
 		D0194CA0887A6C0A95D15C57 /* WaveformView+Drawing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B45C9361FF068062BD434EA /* WaveformView+Drawing.swift */; };
+		D15E14DD8DA8D6F221B0E3C2 /* PluginRollView+Playhead.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC97CC6685639A3455799AD4 /* PluginRollView+Playhead.swift */; };
 		D7CF9FCCFA419FCE01D49E7A /* Fonts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AA7E509B6C0E16C11B83C95 /* Fonts.swift */; };
 		D9910B9AD3CF1F307815148D /* PluginModelsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 704A2260EF51F93CD2A9C3FC /* PluginModelsTests.swift */; };
 		DB061A7C8DF1400C8313AA27 /* PluginRunControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD8DB5A7921628F4B86D9348 /* PluginRunControl.swift */; };
@@ -52,6 +61,7 @@
 		EA7990315216367243A29C4B /* CoreAudioKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DEAF591D6867E3E52A9F7239 /* CoreAudioKit.framework */; };
 		EC76D0E9517F9774892FD538 /* CaptureRing.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6C517E72478E7B6DF8BF5E1 /* CaptureRing.swift */; };
 		ED536463A2AD43A797E2BF6D /* TimelineDrawing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56968B269F248243BBBF3820 /* TimelineDrawing.swift */; };
+		EEA9C3253AC6EF510B8155C8 /* PlayheadView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CED3976BF335266868BBA93D /* PlayheadView.swift */; };
 		FA582FE060AC8CEE058BF85C /* NeuralSheetAU.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = D0C5B9F14DDBB2F6D7E6F7B7 /* NeuralSheetAU.appex */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		FC2A748DF2B89B32D7BA7B01 /* Formats.swift in Sources */ = {isa = PBXBuildFile; fileRef = F70B237CAC8D7E4A0ACF35F3 /* Formats.swift */; };
 		FEB9E6765FA610D9060CAFE4 /* StemSeparator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E35E26590B8BF94FB0543AF8 /* StemSeparator.swift */; };
@@ -84,6 +94,7 @@
 /* Begin PBXFileReference section */
 		010D0ADFE38DC5606310995C /* TestBuffers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestBuffers.swift; sourceTree = "<group>"; };
 		01BC3A18627F014DF185A378 /* CaptureRingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureRingTests.swift; sourceTree = "<group>"; };
+		05C6B18963F249136043F899 /* WheelGesture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WheelGesture.swift; sourceTree = "<group>"; };
 		0A02A10ABDAD4CD0150BD1A5 /* NeuralSheet Plugin.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "NeuralSheet Plugin.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		0D29223D1C1679E98C34FCEA /* ContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContainerView.swift; sourceTree = "<group>"; };
 		209FB5D262EB3FD83CFFEF76 /* TimelineGeometry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineGeometry.swift; sourceTree = "<group>"; };
@@ -101,23 +112,30 @@
 		56968B269F248243BBBF3820 /* TimelineDrawing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineDrawing.swift; sourceTree = "<group>"; };
 		58A0C918ABD1BB7F03465D29 /* PluginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PluginView.swift; sourceTree = "<group>"; };
 		5D9E8DFD2CB4E19AA076FD47 /* Container.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Container.entitlements; sourceTree = "<group>"; };
+		5E62B42F3CD9C6A42B6894B4 /* PluginRollBands.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PluginRollBands.swift; sourceTree = "<group>"; };
 		65172D2EB15005E96EC711D0 /* PluginModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PluginModels.swift; sourceTree = "<group>"; };
 		65616340FF4872241BD9F53D /* TranscriptionEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptionEngine.swift; sourceTree = "<group>"; };
 		6B89059501CB461984F6F021 /* SourceAudio.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceAudio.swift; sourceTree = "<group>"; };
+		6EFD0389276D661FB4A28A2A /* KeyboardView+Drawing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "KeyboardView+Drawing.swift"; sourceTree = "<group>"; };
+		6FAC35376778F455282895F1 /* PianoRollView+Drawing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PianoRollView+Drawing.swift"; sourceTree = "<group>"; };
 		704A2260EF51F93CD2A9C3FC /* PluginModelsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PluginModelsTests.swift; sourceTree = "<group>"; };
+		71F77D4C84BE806B39CEC7A2 /* PluginRoll.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PluginRoll.swift; sourceTree = "<group>"; };
 		73248F56E00C45416ADDD91F /* NeuralSheetEngine */ = {isa = PBXFileReference; lastKnownFileType = folder; name = NeuralSheetEngine; path = ../app/Packages/NeuralSheetEngine; sourceTree = SOURCE_ROOT; };
 		7A8D7D6BEC222AB0E40F1F51 /* AVFAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFAudio.framework; path = System/Library/Frameworks/AVFAudio.framework; sourceTree = SDKROOT; };
-		7D228CFD93130F172A38943E /* TakeWaveformView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TakeWaveformView.swift; sourceTree = "<group>"; };
+		8DCB8196392D1269E3861A34 /* PluginRollView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PluginRollView.swift; sourceTree = "<group>"; };
 		8F16DFE194AF0036ACFC062A /* Theme+Accommodations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Theme+Accommodations.swift"; sourceTree = "<group>"; };
 		8FEE9C7FD8E1D7347A14F24C /* NeuralSheetCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = NeuralSheetCore; path = ../app/Packages/NeuralSheetCore; sourceTree = SOURCE_ROOT; };
 		942AA6D65B9BA0A173F3DD5D /* PluginTranscription.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PluginTranscription.swift; sourceTree = "<group>"; };
 		A7718B7149DE135BEBB3A6FE /* NeuralSheetAudioUnit+Render.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NeuralSheetAudioUnit+Render.swift"; sourceTree = "<group>"; };
 		A95007A769824ED6B2755438 /* CapturedTake.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CapturedTake.swift; sourceTree = "<group>"; };
 		B2374B36820BFD1E2F2C0577 /* CaptureSessionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureSessionTests.swift; sourceTree = "<group>"; };
+		B6149E85698307BC5085D3DC /* PluginRollView+Zoom.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PluginRollView+Zoom.swift"; sourceTree = "<group>"; };
 		C02A1CF1EBCE53AC14933731 /* NeuralSheetAUViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NeuralSheetAUViewController.swift; sourceTree = "<group>"; };
 		C17313B3BA074EA1AE855604 /* nsheet_stems.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = nsheet_stems.cpp; sourceTree = "<group>"; };
 		C55ED0455CA212595E587130 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		CE41AADDE9B25660E361AF91 /* PluginViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PluginViewModel.swift; sourceTree = "<group>"; };
+		CED3976BF335266868BBA93D /* PlayheadView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayheadView.swift; sourceTree = "<group>"; };
+		D03A3DCDD37C1C5075103F25 /* PlayheadLayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayheadLayer.swift; sourceTree = "<group>"; };
 		D0C5B9F14DDBB2F6D7E6F7B7 /* NeuralSheetAU.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = NeuralSheetAU.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		D4417A9DCFAD8D1F0028F3C6 /* PluginLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PluginLog.swift; sourceTree = "<group>"; };
 		D6C517E72478E7B6DF8BF5E1 /* CaptureRing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureRing.swift; sourceTree = "<group>"; };
@@ -126,8 +144,10 @@
 		E35E26590B8BF94FB0543AF8 /* StemSeparator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StemSeparator.swift; sourceTree = "<group>"; };
 		E6F36F9E4C9E02AB0637C09B /* NeuralSheetPluginApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NeuralSheetPluginApp.swift; sourceTree = "<group>"; };
 		E8C0C21FD23384E7EE0E20BB /* NeuralSheetAU.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = NeuralSheetAU.entitlements; sourceTree = "<group>"; };
+		EB138908F6DD171B561163F0 /* RulerView+Drawing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RulerView+Drawing.swift"; sourceTree = "<group>"; };
 		EE625BA50C127BDE421E29E7 /* StemFiles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StemFiles.swift; sourceTree = "<group>"; };
 		F70B237CAC8D7E4A0ACF35F3 /* Formats.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Formats.swift; sourceTree = "<group>"; };
+		FC97CC6685639A3455799AD4 /* PluginRollView+Playhead.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PluginRollView+Playhead.swift"; sourceTree = "<group>"; };
 		FDD39A0F7F3BE91D76E001B2 /* NeuralSheetAudioUnit+Capture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NeuralSheetAudioUnit+Capture.swift"; sourceTree = "<group>"; };
 		FF2F2AD02FEE354DDFAD7721 /* NeuralSheetAudioUnit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NeuralSheetAudioUnit.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -270,9 +290,15 @@
 		CB669D1CDA3375BC9895F5D8 /* Timeline */ = {
 			isa = PBXGroup;
 			children = (
+				6EFD0389276D661FB4A28A2A /* KeyboardView+Drawing.swift */,
+				6FAC35376778F455282895F1 /* PianoRollView+Drawing.swift */,
+				D03A3DCDD37C1C5075103F25 /* PlayheadLayer.swift */,
+				CED3976BF335266868BBA93D /* PlayheadView.swift */,
+				EB138908F6DD171B561163F0 /* RulerView+Drawing.swift */,
 				56968B269F248243BBBF3820 /* TimelineDrawing.swift */,
 				209FB5D262EB3FD83CFFEF76 /* TimelineGeometry.swift */,
 				4B45C9361FF068062BD434EA /* WaveformView+Drawing.swift */,
+				05C6B18963F249136043F899 /* WheelGesture.swift */,
 			);
 			path = Timeline;
 			sourceTree = "<group>";
@@ -307,12 +333,16 @@
 				FDD39A0F7F3BE91D76E001B2 /* NeuralSheetAudioUnit+Capture.swift */,
 				A7718B7149DE135BEBB3A6FE /* NeuralSheetAudioUnit+Render.swift */,
 				C02A1CF1EBCE53AC14933731 /* NeuralSheetAUViewController.swift */,
+				71F77D4C84BE806B39CEC7A2 /* PluginRoll.swift */,
+				5E62B42F3CD9C6A42B6894B4 /* PluginRollBands.swift */,
+				8DCB8196392D1269E3861A34 /* PluginRollView.swift */,
+				FC97CC6685639A3455799AD4 /* PluginRollView+Playhead.swift */,
+				B6149E85698307BC5085D3DC /* PluginRollView+Zoom.swift */,
 				DD8DB5A7921628F4B86D9348 /* PluginRunControl.swift */,
 				942AA6D65B9BA0A173F3DD5D /* PluginTranscription.swift */,
 				58A0C918ABD1BB7F03465D29 /* PluginView.swift */,
 				48622B01A7656C7AA20A593F /* PluginView+Transcribe.swift */,
 				CE41AADDE9B25660E361AF91 /* PluginViewModel.swift */,
-				7D228CFD93130F172A38943E /* TakeWaveformView.swift */,
 			);
 			path = NeuralSheetAU;
 			sourceTree = "<group>";
@@ -482,21 +512,30 @@
 				7A72FD09943F8630B56CA9EF /* CapturedTake.swift in Sources */,
 				D7CF9FCCFA419FCE01D49E7A /* Fonts.swift in Sources */,
 				FC2A748DF2B89B32D7BA7B01 /* Formats.swift in Sources */,
+				A0D7BB45E27411BC8BCC381A /* KeyboardView+Drawing.swift in Sources */,
 				713ED346DECD9D56A43FC14E /* NeuralSheetAUViewController.swift in Sources */,
 				61D6C7838F7782B65A8D12AC /* NeuralSheetAudioUnit+Capture.swift in Sources */,
 				69D46A2E5485D257604D7698 /* NeuralSheetAudioUnit+Render.swift in Sources */,
 				B0AEEAE4CCD78ED1617E371B /* NeuralSheetAudioUnit.swift in Sources */,
+				0227C53DC76C47B1509AA5C6 /* PianoRollView+Drawing.swift in Sources */,
+				07C11CCBD607BD49F8F496E7 /* PlayheadLayer.swift in Sources */,
+				EEA9C3253AC6EF510B8155C8 /* PlayheadView.swift in Sources */,
 				113F2250804194998924FD3C /* PluginLog.swift in Sources */,
 				3817561B55C3A2F8F093F623 /* PluginModels.swift in Sources */,
+				1506C97B5511C775E83E9D37 /* PluginRoll.swift in Sources */,
+				9A67F5EB2C942CBF7878B1E1 /* PluginRollBands.swift in Sources */,
+				D15E14DD8DA8D6F221B0E3C2 /* PluginRollView+Playhead.swift in Sources */,
+				9D212FDE78D93839F7385A01 /* PluginRollView+Zoom.swift in Sources */,
+				AC47994F8A46364068248A91 /* PluginRollView.swift in Sources */,
 				DB061A7C8DF1400C8313AA27 /* PluginRunControl.swift in Sources */,
 				B20A7B50D9D9B2A7F9D69D83 /* PluginTranscription.swift in Sources */,
 				E97EFBEFDB50F15DBEDB39AF /* PluginView+Transcribe.swift in Sources */,
 				0B6892B9D4B93F7CD762F05D /* PluginView.swift in Sources */,
 				C2C136B9BFA3BA6311E325C9 /* PluginViewModel.swift in Sources */,
+				4DC5CD88B45AD56056A61B74 /* RulerView+Drawing.swift in Sources */,
 				4AD41BC8F1B7C7B6A544B1B3 /* SourceAudio.swift in Sources */,
 				5594FE4EE49F6804A7DA5A42 /* StemFiles.swift in Sources */,
 				FEB9E6765FA610D9060CAFE4 /* StemSeparator.swift in Sources */,
-				71FCD405D30834DDCEE2FF84 /* TakeWaveformView.swift in Sources */,
 				C511EA6CBD579BE247674538 /* Theme+Accommodations.swift in Sources */,
 				892E89BB6E014A7D7FDC6F73 /* Theme.swift in Sources */,
 				ED536463A2AD43A797E2BF6D /* TimelineDrawing.swift in Sources */,
@@ -504,6 +543,7 @@
 				209566417DDD6DCE687B8D6C /* TranscriptionEngine.swift in Sources */,
 				8C8E477AD04B84F630CC208E /* TranscriptionRun.swift in Sources */,
 				D0194CA0887A6C0A95D15C57 /* WaveformView+Drawing.swift in Sources */,
+				01C0DDCF004E3E1D28863221 /* WheelGesture.swift in Sources */,
 				515356776DEA0023B5126A5B /* nsheet_stems.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

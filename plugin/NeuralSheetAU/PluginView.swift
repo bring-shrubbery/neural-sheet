@@ -3,8 +3,8 @@ import SwiftUI
 
 /// The plugin's window in the host: the name, the version and the rate the host runs it at; the
 /// capture (sub-issue B): Record, Arm and Stop; the transcription (sub-issue C): the model, the
-/// instruments, Stems, Transcribe and its progress; and the take below. The transport and the
-/// MIDI come in the later sub-issues.
+/// instruments, Stems, Transcribe and its progress; and the roll below, the take's waveform with
+/// the notes as they stream in. The transport and the MIDI come in the later sub-issues.
 struct PluginView: View {
     let model: PluginViewModel
 
@@ -153,14 +153,14 @@ private struct NoModelNotice: View {
     }
 }
 
-/// The take, once there is one.
+/// The take and its notes in the roll, once there is a take.
 private struct TakeArea: View {
     let model: PluginViewModel
 
     var body: some View {
-        if let take = model.capture?.capturedTake {
-            TakeWaveform(take: take)
-                .frame(height: 126)
+        if let content = model.rollContent {
+            PluginRoll(content: content)
+                .frame(minHeight: 200, maxHeight: .infinity)
                 .clipShape(.rect(cornerRadius: 6))
         }
     }
