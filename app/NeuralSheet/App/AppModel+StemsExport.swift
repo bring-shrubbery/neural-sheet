@@ -39,7 +39,8 @@ extension AppModel {
 
     /// The take's name in the files: the dropped file's, or the project's for a recorded take.
     var exportTakeName: String {
-        StemNames.sanitized(droppedFileName ?? projectURL?.deletingPathExtension().lastPathComponent ?? "")
+        ExportCommands.takeName(droppedFileName: droppedFileName,
+                                projectName: projectURL?.deletingPathExtension().lastPathComponent)
     }
 
     /// The status bar's caption while the export runs.

@@ -11,18 +11,12 @@ extension AppModel {
     func midiData() -> Data? {
         guard canExport else { return nil }
 
-        // Through the tempo map: a tempo and a meter at each change (tempo map design §2).
-        // The section markers in the conductor track (markers and lyrics design §2).
-        // Each track's pan as CC 10 (click design §2).
-        let pans = mixer.settings.mapValues(\.pan)
-
-        return MidiFileWriter.data(notes: notes, grid: editor.grid, mode: settings.midiOverflowMode, markers: editor.markers,
-                                   pans: pans)
+        return ExportCommands.midiData(notes: notes, editor: editor, mixer: mixer, mode: settings.midiOverflowMode)
     }
 
     /// `<source>_NNTranscription.mid`, or `NNTranscription.mid` for a recorded take.
     func midiExportFileName() -> String {
-        MidiFileWriter.exportFileName(sourceFileNameWithoutExtension: droppedFileName)
+        ExportCommands.midiFileName(takeName: droppedFileName)
     }
 
     /// File → Export MIDI…: the dialog, which then calls ``exportMidi()``.
@@ -64,14 +58,13 @@ extension AppModel {
     func musicXMLData() -> Data? {
         guard canExport else { return nil }
 
-        return MusicXMLWriter.data(notes: notes, ids: document?.notes.map { Optional($0.id) }, grid: editor.grid,
-                                   key: editor.key, arrangement: arrangement, takeName: droppedFileName,
-                                   chords: editor.chords, markers: editor.markers)
+        return ExportCommands.musicXMLData(notes: notes, ids: document?.notes.map { Optional($0.id) }, editor: editor,
+                                           arrangement: arrangement, takeName: droppedFileName)
     }
 
     /// `<source>_NNTranscription.musicxml`, or `NNTranscription.musicxml` for a recorded take.
     func musicXMLExportFileName() -> String {
-        MusicXMLWriter.exportFileName(sourceFileNameWithoutExtension: droppedFileName)
+        ExportCommands.musicXMLFileName(takeName: droppedFileName)
     }
 
     /// File → Export MusicXML…: a save panel titled "Export MusicXML" in the Music folder, the

@@ -147,7 +147,7 @@ extension AppModel {
         guard canExport else { return }
 
         // A PDF context that cannot be made is as much a failure as a file that cannot be written.
-        guard let data = ScorePDF.data(document: scoreDocument(), arrangement: arrangement, takeName: droppedFileName) else {
+        guard let data = ExportCommands.pdfData(document: scoreDocument(), arrangement: arrangement, takeName: droppedFileName) else {
             showError(AppModel.errorTitle, String(localized: "Could not write the PDF file.", comment: "Alert body: File → Export PDF… failed"))
             return
         }
@@ -156,7 +156,7 @@ extension AppModel {
         panel.title = String(localized: "Export PDF", comment: "File → Export PDF…'s save panel")
         panel.message = String(localized: "Export PDF", comment: "File → Export PDF…'s save panel")
         panel.directoryURL = paths.musicFolder
-        panel.nameFieldStringValue = PDFExport.fileName(sourceFileNameWithoutExtension: droppedFileName)
+        panel.nameFieldStringValue = ExportCommands.pdfFileName(takeName: droppedFileName)
         panel.allowedContentTypes = [.pdf]
         panel.canCreateDirectories = true
 

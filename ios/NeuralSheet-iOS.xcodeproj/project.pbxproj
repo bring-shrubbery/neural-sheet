@@ -19,6 +19,7 @@
 		0D482701DF25260DD041B27D /* RunSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69C482CD1E1CC5D1F37F16EE /* RunSupport.swift */; };
 		114B5FE575AE9F7158D0D55A /* MidiOutput+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FC36307604DB1A338B4F2CA /* MidiOutput+iOS.swift */; };
 		19F417E960A23A6F92500968 /* MobileModel+Arrangement.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EB4E9AECD8828EFCC39AF1B /* MobileModel+Arrangement.swift */; };
+		1A6AEEA77E9F5865FBC3E306 /* ExportCommands.swift in Sources */ = {isa = PBXBuildFile; fileRef = DADA77140294259B7EF09A9A /* ExportCommands.swift */; };
 		1AFA0BBB7E6B34D6451D5FD5 /* StemSeparator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E2FF7355546FE6E86E6F168 /* StemSeparator.swift */; };
 		1C3C83F8B7BCD3DEC9C7158A /* NeuralSheetDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72F94013657929EFE3833174 /* NeuralSheetDocument.swift */; };
 		1FC6C114F5EB243883182FF0 /* nsheet_stems.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 23317E8AEEF4AAFE949E2DC7 /* nsheet_stems.cpp */; };
@@ -303,6 +304,7 @@
 		D611CBDDE3E03699D43CA513 /* MobileModel+Transport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MobileModel+Transport.swift"; sourceTree = "<group>"; };
 		D6D8A1F6AE3E8FA641FFEC58 /* PlaybackEngine+Transport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PlaybackEngine+Transport.swift"; sourceTree = "<group>"; };
 		D8C8D283E1ED68D29366544F /* WaveformStrip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaveformStrip.swift; sourceTree = "<group>"; };
+		DADA77140294259B7EF09A9A /* ExportCommands.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportCommands.swift; sourceTree = "<group>"; };
 		DC13C36AB33D1B10DA2FC64E /* PianoRollView+Drawing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PianoRollView+Drawing.swift"; sourceTree = "<group>"; };
 		DD446906F7FC289D9CB240E7 /* TimelineEditingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineEditingTests.swift; sourceTree = "<group>"; };
 		DE9B44AF133E1F43749FBD96 /* ScoreRenderer+Page.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ScoreRenderer+Page.swift"; sourceTree = "<group>"; };
@@ -394,6 +396,7 @@
 				1BCB5A67EA3E14C98A455F1E /* EditingCommands+Bulk.swift */,
 				49AC356522259315262B9336 /* EditingCommands+Lists.swift */,
 				CD3938270620A8B1D5966D53 /* EditingCommands+Versions.swift */,
+				DADA77140294259B7EF09A9A /* ExportCommands.swift */,
 				A9409A1FFBA294F91460D9C6 /* MeterLevels.swift */,
 				39D036290F75C5C0BEDF5FDF /* PartDisplayText.swift */,
 				EE651DD37E16F8D6D713A5FC /* SelectionText.swift */,
@@ -880,6 +883,7 @@
 				398D338BE91284825D1BCBEF /* EditingCommands+Lists.swift in Sources */,
 				5B14EDD946D3CDBD65E6A104 /* EditingCommands+Versions.swift in Sources */,
 				6B3245EDE29166C7263DAE77 /* EditingCommands.swift in Sources */,
+				1A6AEEA77E9F5865FBC3E306 /* ExportCommands.swift in Sources */,
 				81E067A2248F7115B8A1BA48 /* Fonts.swift in Sources */,
 				FEF851913671909CF6383F8B /* Formats.swift in Sources */,
 				EDB0830E30A86E1C9DC7B077 /* IncomingTakes.swift in Sources */,
