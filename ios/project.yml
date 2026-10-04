@@ -155,6 +155,17 @@ targets:
           - -ldemucs
           - -framework Metal
           - -framework Accelerate
+        # The App Store profile's name, which the TestFlight workflow (sub-issue K) overrides on
+        # its command line with the name read from the installed profile. Global command-line
+        # settings reach every target, so each target reads its own variable.
+        NS_APP_STORE_PROFILE: NeuralSheet iOS App Store
+      # Release (the archive) signs by hand for App Store Connect; Debug stays automatic so a
+      # local build or run needs nothing but the team. docs/release.md, "iOS (TestFlight)".
+      configs:
+        Release:
+          CODE_SIGN_STYLE: Manual
+          CODE_SIGN_IDENTITY: Apple Distribution
+          PROVISIONING_PROFILE_SPECIFIER: $(NS_APP_STORE_PROFILE)
     info:
       path: NeuralSheet/Info.plist
       properties:
@@ -223,6 +234,13 @@ targets:
         TARGETED_DEVICE_FAMILY: "1,2"
         GENERATE_INFOPLIST_FILE: YES
         SKIP_INSTALL: YES
+        # As the app's NS_APP_STORE_PROFILE, for the extension's own profile.
+        NS_WIDGETS_APP_STORE_PROFILE: NeuralSheet iOS Widgets App Store
+      configs:
+        Release:
+          CODE_SIGN_STYLE: Manual
+          CODE_SIGN_IDENTITY: Apple Distribution
+          PROVISIONING_PROFILE_SPECIFIER: $(NS_WIDGETS_APP_STORE_PROFILE)
     info:
       path: NeuralSheetWidgets/Info.plist
       properties:

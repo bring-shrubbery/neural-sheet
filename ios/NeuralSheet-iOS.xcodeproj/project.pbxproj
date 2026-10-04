@@ -925,11 +925,9 @@
 					};
 					AD17E762176D0EB27B71E907 = {
 						DevelopmentTeam = 6WCYZER5LX;
-						ProvisioningStyle = Automatic;
 					};
 					C22D53D5FD5EAC4331A1EEF8 = {
 						DevelopmentTeam = 6WCYZER5LX;
-						ProvisioningStyle = Automatic;
 					};
 				};
 			};
@@ -1298,7 +1296,8 @@
 		49420D8897711E576DDE915B /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_IDENTITY = "Apple Distribution";
+				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 6WCYZER5LX;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1310,8 +1309,10 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 1.1.0;
+				NS_WIDGETS_APP_STORE_PROFILE = "NeuralSheet iOS Widgets App Store";
 				PRODUCT_BUNDLE_IDENTIFIER = com.quassum.neuralsheet.ios.widgets;
 				PRODUCT_NAME = NeuralSheetWidgets;
+				PROVISIONING_PROFILE_SPECIFIER = "$(NS_WIDGETS_APP_STORE_PROFILE)";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -1437,8 +1438,8 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_IDENTITY = "Apple Distribution";
+				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 6WCYZER5LX;
 				ENABLE_PREVIEWS = YES;
@@ -1456,6 +1457,7 @@
 				"LIBRARY_SEARCH_PATHS[sdk=iphoneos*]" = "$(SRCROOT)/../app/build/engine/ios/lib";
 				"LIBRARY_SEARCH_PATHS[sdk=iphonesimulator*]" = "$(SRCROOT)/../app/build/engine/iossimulator/lib";
 				MARKETING_VERSION = 1.1.0;
+				NS_APP_STORE_PROFILE = "NeuralSheet iOS App Store";
 				OTHER_LDFLAGS = (
 					"-ldemucs",
 					"-framework Metal",
@@ -1463,6 +1465,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.quassum.neuralsheet.ios;
 				PRODUCT_NAME = NeuralSheet;
+				PROVISIONING_PROFILE_SPECIFIER = "$(NS_APP_STORE_PROFILE)";
 				SDKROOT = iphoneos;
 				SWIFT_OBJC_BRIDGING_HEADER = "NeuralSheet/NeuralSheet-Bridging-Header.h";
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -1484,6 +1487,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 1.1.0;
+				NS_WIDGETS_APP_STORE_PROFILE = "NeuralSheet iOS Widgets App Store";
 				PRODUCT_BUNDLE_IDENTIFIER = com.quassum.neuralsheet.ios.widgets;
 				PRODUCT_NAME = NeuralSheetWidgets;
 				SDKROOT = iphoneos;
@@ -1517,6 +1521,7 @@
 				"LIBRARY_SEARCH_PATHS[sdk=iphoneos*]" = "$(SRCROOT)/../app/build/engine/ios/lib";
 				"LIBRARY_SEARCH_PATHS[sdk=iphonesimulator*]" = "$(SRCROOT)/../app/build/engine/iossimulator/lib";
 				MARKETING_VERSION = 1.1.0;
+				NS_APP_STORE_PROFILE = "NeuralSheet iOS App Store";
 				OTHER_LDFLAGS = (
 					"-ldemucs",
 					"-framework Metal",
