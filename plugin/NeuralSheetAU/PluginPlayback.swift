@@ -30,6 +30,12 @@ import Observation
     /// The host transport's poll, once connected.
     private(set) var poll: PluginTransportPoll?
 
+    /// Send MIDI to host: the transcription on the "NeuralSheet Plugin" source.
+    private(set) var sendsMIDI = false
+
+    /// The source could not be made the last time sending was turned on.
+    private(set) var midiFailed = false
+
     @ObservationIgnored private weak var unit: NeuralSheetAudioUnit?
 
     func connect(_ unit: NeuralSheetAudioUnit) {
@@ -56,6 +62,21 @@ import Observation
     func setTake(_ take: CapturedTake?) {
         unit?.setPlaybackTake(take)
         transportRevision += 1
+    }
+
+    // MARK: - Send MIDI to host
+
+    func setSendsMIDI(_ sending: Bool) {
+        guard let unit else { return }
+
+        let made = unit.setSendsMIDI(sending)
+        sendsMIDI = sending && made
+        midiFailed = sending && !made
+    }
+
+    /// The app's setting for more instruments than channels.
+    func setOverflowMode(_ mode: MidiOverflowMode) {
+        unit?.setMidiOverflowMode(mode)
     }
 
     // MARK: - Strips

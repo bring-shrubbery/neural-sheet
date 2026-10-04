@@ -60,22 +60,49 @@ private struct PlayheadReadout: View {
     }
 }
 
-/// One row per instrument, as the Mac's sidebar has them without pan or meters: the colour, the
-/// name, mute, solo and the fader.
+/// The transcription's ways into the host -- Send MIDI to host -- over one row per instrument, as
+/// the Mac's sidebar has them without pan or meters: the colour, the name, mute, solo and the
+/// fader.
 struct StripList: View {
     let playback: PluginPlayback
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 10) {
-                ForEach(playback.mixer.entries, id: \.program) { entry in
-                    StripRow(playback: playback, entry: entry)
+        VStack(alignment: .leading, spacing: 0) {
+            MidiExits(playback: playback)
+                .padding(10)
+
+            Divider()
+
+            ScrollView {
+                VStack(alignment: .leading, spacing: 10) {
+                    ForEach(playback.mixer.entries, id: \.program) { entry in
+                        StripRow(playback: playback, entry: entry)
+                    }
                 }
+                .padding(10)
             }
-            .padding(10)
         }
         .frame(width: 210)
         .background(.quaternary.opacity(0.5), in: .rect(cornerRadius: 6))
+    }
+}
+
+/// Send MIDI to host, and what went wrong turning it on.
+private struct MidiExits: View {
+    let playback: PluginPlayback
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Toggle("Send MIDI to host", isOn: Binding(get: { playback.sendsMIDI },
+                                                      set: { playback.setSendsMIDI($0) }))
+                .help("Record from the “NeuralSheet Plugin” MIDI source on a MIDI track")
+
+            if playback.midiFailed {
+                Text("The MIDI source could not be created.")
+                    .font(.caption)
+                    .foregroundStyle(.red)
+            }
+        }
     }
 }
 

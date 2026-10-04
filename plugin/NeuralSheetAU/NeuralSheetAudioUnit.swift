@@ -47,6 +47,10 @@ nonisolated final class NeuralSheetAudioUnit: AUAudioUnit, @unchecked Sendable {
     /// the unit and never replaced, so the render block borrows it.
     let transport = PluginTransport()
 
+    /// Send MIDI to host (`PluginMidiOut`): made with the unit, its CoreMIDI source only when
+    /// sending is first turned on; borrowed by the render block as the transport is.
+    let midiOut = PluginMidiOut()
+
     /// The synth's ring for the host's format and the renderer filling it, with the notes and the
     /// mix it plays (`+Playback`). Locked because the host allocates on a thread of its own while
     /// the main thread changes the notes; the render block never takes this lock.
@@ -127,6 +131,7 @@ nonisolated final class NeuralSheetAudioUnit: AUAudioUnit, @unchecked Sendable {
         scratch.pointee.ring = Unmanaged.passUnretained(ring(for: output))
         scratch.pointee.synth = Unmanaged.passUnretained(synthRing)
         scratch.pointee.transport = Unmanaged.passUnretained(transport)
+        scratch.pointee.midi = Unmanaged.passUnretained(midiOut)
 
         startPlayback()
     }

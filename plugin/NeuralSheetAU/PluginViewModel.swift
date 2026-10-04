@@ -67,6 +67,7 @@ import os
         self.unit = unit
         capture = unit.capture
         playback.connect(unit)
+        playback.setOverflowMode(settings.midiOverflowMode)
 
         // The take and the notes reach the playback as they change, view or no view.
         let playback = playback
@@ -122,6 +123,7 @@ import os
     func transcribe() {
         refreshModels()
         settings = GlobalSettings.load(from: paths.globalSettings)
+        playback.setOverflowMode(settings.midiOverflowMode)
 
         let store = ModelStore(paths: paths)
 

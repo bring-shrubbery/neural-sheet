@@ -36,6 +36,7 @@
 		4D99B5648F710B01F46A38A0 /* SynthRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C113E98DA662CB421B568D6 /* SynthRenderer.swift */; };
 		4DC5CD88B45AD56056A61B74 /* RulerView+Drawing.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB138908F6DD171B561163F0 /* RulerView+Drawing.swift */; };
 		4E8C450D53593CD62A135FCE /* InstrumentSynthBank+Click.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8ECFCC58D76ED5EFB367D36 /* InstrumentSynthBank+Click.swift */; };
+		50CBA088969455C84652A072 /* PluginMidiOut.swift in Sources */ = {isa = PBXBuildFile; fileRef = 856E693C24C031A2315C97A6 /* PluginMidiOut.swift */; };
 		515356776DEA0023B5126A5B /* nsheet_stems.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C17313B3BA074EA1AE855604 /* nsheet_stems.cpp */; };
 		5594FE4EE49F6804A7DA5A42 /* StemFiles.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE625BA50C127BDE421E29E7 /* StemFiles.swift */; };
 		5CCE15B72DC72357F739A58A /* CaptureSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E278E2722F6F1DC4F5E5962 /* CaptureSession.swift */; };
@@ -176,6 +177,7 @@
 		7C617BA6FC0D3EF1A6E964C9 /* InstrumentSynthBank+SoundBank.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "InstrumentSynthBank+SoundBank.swift"; sourceTree = "<group>"; };
 		8476B74919797C22823D9888 /* MidiOutput+Sender.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MidiOutput+Sender.swift"; sourceTree = "<group>"; };
 		84A3C408A954B734D12C3E24 /* PluginTransport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PluginTransport.swift; sourceTree = "<group>"; };
+		856E693C24C031A2315C97A6 /* PluginMidiOut.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PluginMidiOut.swift; sourceTree = "<group>"; };
 		8DCB8196392D1269E3861A34 /* PluginRollView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PluginRollView.swift; sourceTree = "<group>"; };
 		8E4D1121D51238A64478BB49 /* InstrumentSynthBank.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstrumentSynthBank.swift; sourceTree = "<group>"; };
 		8F16DFE194AF0036ACFC062A /* Theme+Accommodations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Theme+Accommodations.swift"; sourceTree = "<group>"; };
@@ -421,6 +423,7 @@
 				FFB2AD51190613D06A111FBE /* NeuralSheetAudioUnit+Playback.swift */,
 				A7718B7149DE135BEBB3A6FE /* NeuralSheetAudioUnit+Render.swift */,
 				C02A1CF1EBCE53AC14933731 /* NeuralSheetAUViewController.swift */,
+				856E693C24C031A2315C97A6 /* PluginMidiOut.swift */,
 				F08244879C55D73BF2B1610D /* PluginPlayback.swift */,
 				71F77D4C84BE806B39CEC7A2 /* PluginRoll.swift */,
 				5E62B42F3CD9C6A42B6894B4 /* PluginRollBands.swift */,
@@ -623,6 +626,7 @@
 				07C11CCBD607BD49F8F496E7 /* PlayheadLayer.swift in Sources */,
 				EEA9C3253AC6EF510B8155C8 /* PlayheadView.swift in Sources */,
 				113F2250804194998924FD3C /* PluginLog.swift in Sources */,
+				50CBA088969455C84652A072 /* PluginMidiOut.swift in Sources */,
 				3817561B55C3A2F8F093F623 /* PluginModels.swift in Sources */,
 				F180ECAAA05626041807499B /* PluginPlayback.swift in Sources */,
 				1506C97B5511C775E83E9D37 /* PluginRoll.swift in Sources */,

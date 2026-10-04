@@ -70,16 +70,20 @@ extension NeuralSheetAudioUnit {
 
         renderer?.stop()
 
+        // Whatever the host's MIDI track was sent last is silenced.
         let box = pollBox
+        let midi = midiOut
         DispatchQueue.main.async {
             MainActor.assumeIsolated {
                 box.value?.stop()
+                midi.panic()
             }
         }
     }
 
-    /// The unit is going: the synth's thread is stopped and waited for. No weak references here,
-    /// in `deinit`; the poll's timer lets go of itself once the poll has gone.
+    /// The unit is going: the synth's thread is stopped and waited for, and the MIDI source
+    /// silenced and disposed. No weak references here, in `deinit`; the poll's timer lets go of
+    /// itself once the poll has gone.
     nonisolated func shutDownPlayback() {
         let renderer = synthState.withLock { state -> SynthRenderer? in
             let renderer = state.renderer
@@ -88,6 +92,7 @@ extension NeuralSheetAudioUnit {
         }
 
         renderer?.stop()
+        midiOut.shutDown()
     }
 
     // MARK: - Notes and mix (main actor)
@@ -100,6 +105,8 @@ extension NeuralSheetAudioUnit {
             state.mixer = mixer
             return state.renderer
         }
+
+        midiOut.setNotes(notes, mixer: mixer)
 
         if let renderer {
             renderer.setMixer(mixer)
@@ -118,6 +125,21 @@ extension NeuralSheetAudioUnit {
         }
 
         renderer?.setMixer(mixer)
+        midiOut.setMixer(mixer)
+    }
+
+    // MARK: - Send MIDI to host (main actor)
+
+    /// Sends the transcription on the "NeuralSheet Plugin" source from now on, or stops. False
+    /// when the source could not be made.
+    @MainActor @discardableResult
+    func setSendsMIDI(_ sending: Bool) -> Bool {
+        midiOut.setSending(sending)
+    }
+
+    @MainActor
+    func setMidiOverflowMode(_ mode: MidiOverflowMode) {
+        midiOut.setOverflowMode(mode)
     }
 
     /// The crossfade, the master and the notes' presence, as ``MixLaw`` resolves them.
@@ -177,12 +199,14 @@ extension NeuralSheetAudioUnit {
     func pause() {
         transport.pause()
         transportPoll.refreshOwn()
+        midiOut.panic()
     }
 
     /// Go to start.
     @MainActor
     func goToStart() {
         transport.seek(toFrame: 0)
+        midiOut.panic()
     }
 
     /// The plugin's own transport to `seconds` into the take.
@@ -190,6 +214,7 @@ extension NeuralSheetAudioUnit {
     func seek(toSeconds seconds: Double) {
         let rate = transport.take?.deviceRate ?? 0
         transport.seek(toFrame: Int((seconds * rate).rounded()))
+        midiOut.panic()
     }
 
     /// The roll's playhead, in seconds into the take: the host's position while it plays, the
@@ -210,6 +235,12 @@ extension NeuralSheetAudioUnit {
         let poll = PluginTransportPoll(transport: transport) { [weak self] in
             self?.hostState() ?? PluginTransportPoll.HostState()
         }
+        // The host starting or stopping, or the take's end, leaves nothing sounding on the
+        // host's MIDI track.
+        let midi = midiOut
+        poll.onHostStart = { midi.panic() }
+        poll.onHostStop = { midi.panic() }
+        poll.onOwnStop = { midi.panic() }
         pollBox.value = poll
         return poll
     }

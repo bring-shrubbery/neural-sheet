@@ -33,6 +33,7 @@ nonisolated struct PassthroughScratch {
     var ring: Unmanaged<CaptureRing>?
     var synth: Unmanaged<SynthRing>?
     var transport: Unmanaged<PluginTransport>?
+    var midi: Unmanaged<PluginMidiOut>?
 
     // MARK: The render block's own
 
@@ -76,8 +77,9 @@ nonisolated struct PassthroughScratch {
     }
 }
 
-/// The render block (Audio Unit design §2, "Audio path" and the mix): pulls the input, captures it
-/// while a capture runs, and writes `source × a + synth × b` to the output, where the source is the
+/// The render block (Audio Unit design §2, "Audio path", the mix and "MIDI to host"): pulls the
+/// input, captures it while a capture runs, pushes the cycle's notes to the MIDI source while
+/// sending, and writes `source × a + synth × b` to the output, where the source is the
 /// host's input -- or the take, while the plugin's own transport plays with the host stopped --
 /// and the synth is what the synth thread rendered ahead for this stretch of the timeline. Render
 /// thread.
@@ -184,6 +186,19 @@ nonisolated private func renderPlayback(_ scratch: UnsafeMutablePointer<Passthro
         let wasMoving = resources.lastMode != .idle
         scratch.pointee.lastMode = cycle.mode
         if cycle.mode == .host { scratch.pointee.lastHostEnd = cycle.position + frames }
+
+        // Send MIDI to host: the cycle's stretch of the timeline through the MIDI's scheduler,
+        // pushed with the cycle's host time (`PluginMidiOut`); one acquiring load while nothing
+        // is sent.
+        let rate = resources.sampleRate
+        if rate > 0 {
+            resources.midi?._withUnsafeGuaranteedRef { midi in
+                let start = Double(cycle.position) / rate
+                let end = moving ? Double(cycle.position + frames) / rate : start
+                midi.render(from: start, to: end, stopping: wasMoving && !moving, timestamp: timestamp,
+                            frames: frames, sampleRate: rate)
+            }
+        }
 
         // The synth's frames for this stretch of the timeline, or, on the cycle the transport
         // stops, the stretch it would have played next, faded out. Atomics and copies into the
