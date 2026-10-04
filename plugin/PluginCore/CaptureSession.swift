@@ -40,7 +40,13 @@ import Synchronization
     var elapsed: Double { sampleRate > 0 ? Double(capturedFrames) / sampleRate : 0 }
 
     /// The last take, nil before the first stop and after ``clear()``.
-    private(set) var take: CapturedTake?
+    private(set) var take: CapturedTake? {
+        didSet { onTakeChanged?(take) }
+    }
+
+    /// Called with the take whenever it changes, for the playback, which needs it whether or not
+    /// a view is watching.
+    @ObservationIgnored var onTakeChanged: ((CapturedTake?) -> Void)?
 
     /// The last take as the app's type, what the view draws.
     var capturedTake: SourceAudio? { take?.source }

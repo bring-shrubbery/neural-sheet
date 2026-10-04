@@ -161,13 +161,24 @@ nonisolated final class SynthRenderer: @unchecked Sendable {
 
         commands.withLock { $0.append(.instruments(programs)) }
         bank.scheduler.swap(notes: notes.filter { (0...NoteEvent.drumProgram).contains($0.program) })
-        requestEpoch()
+        renderAgainUnlessMoving()
     }
 
     /// The strips' faders, mutes and solos onto the synths, from the next chunk on.
     func setMixer(_ mixer: InstrumentMixerState) {
         commands.withLock { $0.append(.mixer(mixer)) }
-        wake.signal()
+        renderAgainUnlessMoving()
+    }
+
+    /// A standing transport has the frames ahead rendered again with the change, which costs
+    /// nothing audible. A moving one keeps them: an epoch would be the lead's silence every time
+    /// a run streams a chunk in or a fader moves, and the change is heard within ``aheadFrames``.
+    private func renderAgainUnlessMoving() {
+        if ring.consumerState().moving {
+            wake.signal()
+        } else {
+            requestEpoch()
+        }
     }
 
     /// Renders the frames ahead again: they were rendered with what has just changed.

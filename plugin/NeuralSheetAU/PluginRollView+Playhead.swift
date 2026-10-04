@@ -31,8 +31,8 @@ extension PluginRollView {
     }
 
     /// Wakes the link for anything that moves the playhead or the view: new content, a scroll, a
-    /// zoom, a resize; and, from sub-issue D on, the transport starting. It pauses itself again
-    /// once the playhead stops moving.
+    /// zoom, a resize, a transport command or the host starting. It pauses itself again once the
+    /// playhead stops moving.
     func wakePlayhead() {
         idleTicks = 0
         displayLink?.isPaused = false

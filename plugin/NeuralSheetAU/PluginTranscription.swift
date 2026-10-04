@@ -45,13 +45,21 @@ import os
         case failed(reason: String)
     }
 
-    private(set) var run: Run?
+    private(set) var run: Run? {
+        didSet {
+            if (oldValue == nil) != (run == nil) { notesChanged() }
+        }
+    }
 
     /// The notes streamed so far, merged as the app merges them while a run goes.
-    private(set) var streamedNotes: [NoteEvent] = []
+    private(set) var streamedNotes: [NoteEvent] = [] {
+        didSet { notesChanged() }
+    }
 
     /// The finished run's notes, filtered by the After transcription settings.
-    private(set) var document: NoteDocument?
+    private(set) var document: NoteDocument? {
+        didSet { notesChanged() }
+    }
 
     /// The last run's failure, in the app's words; nil after a success, a cancel or a clear.
     private(set) var failure: String?
@@ -62,6 +70,15 @@ import os
     var notes: [NoteEvent] { run != nil ? streamedNotes : document?.events ?? [] }
 
     var isRunning: Bool { run != nil }
+
+    /// Called with ``notes`` whenever they change, for the synth and the MIDI, which play them
+    /// whether or not a view is watching.
+    @ObservationIgnored var onNotesChanged: (([NoteEvent]) -> Void)?
+
+    /// The run's start and end change which list ``notes`` is, so they report too.
+    private func notesChanged() {
+        onNotesChanged?(notes)
+    }
 
     @ObservationIgnored private let engine = TranscriptionEngine()
     @ObservationIgnored private let separator = StemSeparator()

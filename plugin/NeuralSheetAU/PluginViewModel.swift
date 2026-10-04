@@ -22,6 +22,9 @@ import os
     /// The run over the take and the notes it found (sub-issue C).
     let transcription = PluginTranscription()
 
+    /// The synth, the mix, the strips and the transport (sub-issue D).
+    let playback = PluginPlayback()
+
     /// The model picked in the view; nil follows the app's setting.
     var pickedSize: ModelSize?
 
@@ -63,6 +66,14 @@ import os
     func connect(_ unit: NeuralSheetAudioUnit) {
         self.unit = unit
         capture = unit.capture
+        playback.connect(unit)
+
+        // The take and the notes reach the playback as they change, view or no view.
+        let playback = playback
+        unit.capture.onTakeChanged = { take in playback.setTake(take) }
+        transcription.onNotesChanged = { notes in playback.setNotes(notes) }
+        playback.setTake(unit.capture.take)
+        playback.setNotes(transcription.notes)
     }
 
     // MARK: - Capture
@@ -127,7 +138,8 @@ import os
         guard let take = capture?.capturedTake else { return nil }
 
         return PluginRollContent(duration: take.duration, peaks: take.peaks, notes: transcription.notes,
-                                 frontier: transcription.run?.finalizedThrough)
+                                 frontier: transcription.run?.finalizedThrough,
+                                 muted: Set(playback.mixer.entries.map(\.program).filter { !playback.mixer.isAudible(program: $0) }))
     }
 
     func cancelTranscription() {

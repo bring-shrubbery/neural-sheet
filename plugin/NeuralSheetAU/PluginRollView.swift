@@ -9,11 +9,14 @@ struct PluginRollContent: Equatable {
     var notes: [NoteEvent] = []
     /// While a run streams: every note ending before this has been reported; right of it is shaded.
     var frontier: Double?
+    /// The instruments the strips silence, drawn faded as the Mac's roll draws them.
+    var muted: Set<Int> = []
 
     var isStreaming: Bool { frontier != nil }
 
     static func == (lhs: PluginRollContent, rhs: PluginRollContent) -> Bool {
         lhs.duration == rhs.duration && lhs.peaks === rhs.peaks && lhs.notes == rhs.notes && lhs.frontier == rhs.frontier
+            && lhs.muted == rhs.muted
     }
 }
 
@@ -62,8 +65,8 @@ final class PluginRollView: NSView {
     let displayLinkProxy = PluginDisplayLinkProxy()
     var idleTicks = 0
 
-    /// The transport's position in seconds, read every frame; nil hides the playhead. Sub-issue D
-    /// supplies the host's or the plugin's own transport; until then the take sits at its start.
+    /// The transport's position in seconds, read every frame; nil hides the playhead: the host's
+    /// position while it plays, the plugin's own transport otherwise (`PluginPlayback`).
     var playheadSeconds: () -> Double? = { 0 }
 
     override init(frame frameRect: NSRect) {
@@ -160,6 +163,11 @@ final class PluginRollView: NSView {
             // Placeholder ids: nothing hit-tests or selects in the plugin.
             roll.painter.ids = new.notes.indices.map(NoteID.init)
             roll.painter.buckets = RollPainter.secondBuckets(new.notes)
+            roll.needsDisplay = true
+        }
+
+        if new.muted != old.muted {
+            roll.painter.audible = (0...NoteEvent.drumProgram).map { !new.muted.contains($0) }
             roll.needsDisplay = true
         }
 

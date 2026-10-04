@@ -4,7 +4,8 @@ import SwiftUI
 /// The plugin's window in the host: the name, the version and the rate the host runs it at; the
 /// capture (sub-issue B): Record, Arm and Stop; the transcription (sub-issue C): the model, the
 /// instruments, Stems, Transcribe and its progress; and the roll below, the take's waveform with
-/// the notes as they stream in. The transport and the MIDI come in the later sub-issues.
+/// the notes as they stream in; the playback (sub-issue D): the plugin's own transport, the mix of
+/// the host's audio and the synth, the master, and the strips beside the roll.
 struct PluginView: View {
     let model: PluginViewModel
 
@@ -28,6 +29,8 @@ struct PluginView: View {
                 .controlSize(.large)
 
                 StatusLine(capture: capture, model: model)
+
+                PlaybackBar(playback: model.playback)
             }
 
             if model.models.isEmpty {
@@ -153,15 +156,32 @@ private struct NoModelNotice: View {
     }
 }
 
-/// The take and its notes in the roll, once there is a take.
+/// The take and its notes in the roll, once there is a take, and the strips beside it once there
+/// are notes.
 private struct TakeArea: View {
     let model: PluginViewModel
 
     var body: some View {
         if let content = model.rollContent {
-            PluginRoll(content: content)
-                .frame(minHeight: 200, maxHeight: .infinity)
-                .clipShape(.rect(cornerRadius: 6))
+            let playback = model.playback
+
+            HStack(alignment: .top, spacing: 10) {
+                PluginRoll(content: content, playheadSeconds: { playback.playheadSeconds },
+                           transportState: transportState)
+                    .frame(minHeight: 200, maxHeight: .infinity)
+                    .clipShape(.rect(cornerRadius: 6))
+
+                if !playback.mixer.entries.isEmpty {
+                    StripList(playback: playback)
+                        .frame(maxHeight: .infinity)
+                }
+            }
         }
+    }
+
+    /// Whatever moves the playhead, as one number the roll wakes on.
+    private var transportState: Int {
+        let playback = model.playback
+        return playback.transportRevision * 4 + (playback.isPlaying ? 2 : 0) + (playback.hostPlaying ? 1 : 0)
     }
 }
