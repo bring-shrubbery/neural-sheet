@@ -67,20 +67,38 @@ nonisolated final class SynthRenderer: @unchecked Sendable {
     /// The position the ring holds frames up to, from any thread.
     var renderedThrough: Int { ring.publishedHead }
 
+    /// How far ahead the thread renders for a host whose blocks are at most `maxHostFrames`.
+    static func aheadFrames(maxHostFrames: Int) -> Int {
+        let chunk = chunkFrames
+        return (max(4096, 2 * max(maxHostFrames, 0)) + chunk - 1) / chunk * chunk
+    }
+
+    /// The ring a renderer for such a host needs: twice the frames ahead and a chunk either side,
+    /// so a producer half a ring behind is far behind indeed.
+    static func makeRing(maxHostFrames: Int) -> SynthRing {
+        SynthRing(minimumFrames: 2 * aheadFrames(maxHostFrames: maxHostFrames) + 2 * chunkFrames)
+    }
+
     /// A renderer at `sampleRate` for a host whose blocks are at most `maxHostFrames`, with a ring
-    /// sized for it; nil when the engine cannot be set up. Main thread.
-    init?(sampleRate: Double, maxHostFrames: Int) {
+    /// of its own; nil when the engine cannot be set up. Main thread.
+    convenience init?(sampleRate: Double, maxHostFrames: Int) {
+        self.init(ring: SynthRenderer.makeRing(maxHostFrames: maxHostFrames), sampleRate: sampleRate,
+                  maxHostFrames: maxHostFrames)
+    }
+
+    /// A renderer into `ring` (``makeRing(maxHostFrames:)``), which may already have a consumer:
+    /// the first epoch begins where it stands or reads. Main thread.
+    init?(ring: SynthRing, sampleRate: Double, maxHostFrames: Int) {
         guard sampleRate > 0,
               let format = AVAudioFormat(standardFormatWithSampleRate: sampleRate, channels: 2)
         else { return nil }
 
         let chunk = SynthRenderer.chunkFrames
-        let ahead = max(4096, 2 * max(maxHostFrames, 0))
 
         self.sampleRate = sampleRate
+        self.ring = ring
         leadFrames = (Int((sampleRate * 0.02).rounded(.up)) + chunk - 1) / chunk * chunk
-        aheadFrames = (ahead + chunk - 1) / chunk * chunk
-        ring = SynthRing(minimumFrames: 2 * aheadFrames + 2 * chunk)
+        aheadFrames = SynthRenderer.aheadFrames(maxHostFrames: maxHostFrames)
 
         let engine = AVAudioEngine()
 

@@ -6,8 +6,11 @@ import Synchronization
 /// The NeuralSheet effect (Audio Unit design §2, "Audio path"): one stereo input, one stereo
 /// output, any sample rate, no parameters yet.
 ///
-/// The audio passes through untouched and, while a capture runs, is copied into a
-/// ``CaptureRing`` (sub-issue B; `+Capture` is the main thread's side). The render block is written against the
+/// The audio passes through and, while a capture runs, is copied into a ``CaptureRing``
+/// (sub-issue B; `+Capture` is the main thread's side). Once there are notes, the output is the
+/// mix of the host's audio and the plugin's synth, rendered ahead on a thread of its own into a
+/// ``SynthRing``, and the plugin's own transport can play the take while the host is stopped
+/// (sub-issue D; `+Playback` is the main thread's side). The render block is written against the
 /// render-thread rules (CLAUDE.md): it does not allocate, lock, call an Objective-C property or
 /// grow an array. Everything it touches is reached through ``scratch``, a plain pointer captured
 /// by value, so it never retains, releases or reaches through `self`.
@@ -40,6 +43,21 @@ nonisolated final class NeuralSheetAudioUnit: AUAudioUnit, @unchecked Sendable {
     /// Record, Arm and Stop, and the take (`+Capture`). Made on first use, on the main actor.
     @MainActor private(set) lazy var capture = makeCaptureSession()
 
+    /// The playback state the render block reads: whose transport, the take, the mix. Made with
+    /// the unit and never replaced, so the render block borrows it.
+    let transport = PluginTransport()
+
+    /// The synth's ring for the host's format and the renderer filling it, with the notes and the
+    /// mix it plays (`+Playback`). Locked because the host allocates on a thread of its own while
+    /// the main thread changes the notes; the render block never takes this lock.
+    let synthState = Mutex(SynthState())
+
+    /// The host transport's 30 Hz poll (`+Playback`), made on first use on the main actor and
+    /// only ever touched there; boxed so the host's thread can hand it to the main queue without
+    /// a weak reference to the unit, which `deallocateRenderResources` may run inside the unit's
+    /// own deallocation.
+    let pollBox = MainActorBox<PluginTransportPoll>()
+
     override init(
         componentDescription: AudioComponentDescription, options: AudioComponentInstantiationOptions = []
     ) throws {
@@ -63,6 +81,7 @@ nonisolated final class NeuralSheetAudioUnit: AUAudioUnit, @unchecked Sendable {
     }
 
     deinit {
+        shutDownPlayback()
         scratch.pointee.release()
         scratch.deinitialize(count: 1)
         scratch.deallocate()
@@ -99,9 +118,17 @@ nonisolated final class NeuralSheetAudioUnit: AUAudioUnit, @unchecked Sendable {
 
         try super.allocateRenderResources()
 
+        let maxFrames = Int(maximumFramesToRender)
+        let synthRing = prepareSynth(sampleRate: output.sampleRate, maxFrames: maxFrames)
+
         scratch.pointee.release()
-        scratch.pointee.allocate(channels: Int(output.channelCount), maxFrames: Int(maximumFramesToRender))
+        scratch.pointee.allocate(channels: Int(output.channelCount), maxFrames: maxFrames)
+        scratch.pointee.sampleRate = output.sampleRate
         scratch.pointee.ring = Unmanaged.passUnretained(ring(for: output))
+        scratch.pointee.synth = Unmanaged.passUnretained(synthRing)
+        scratch.pointee.transport = Unmanaged.passUnretained(transport)
+
+        startPlayback()
     }
 
     /// The ring for `format`: the current one when the rate and channels are unchanged, otherwise
@@ -124,6 +151,7 @@ nonisolated final class NeuralSheetAudioUnit: AUAudioUnit, @unchecked Sendable {
 
     override func deallocateRenderResources() {
         scratch.pointee.release()
+        stopPlayback()
         super.deallocateRenderResources()
     }
 

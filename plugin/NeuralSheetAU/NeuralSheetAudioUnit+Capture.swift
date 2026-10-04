@@ -40,7 +40,7 @@ extension NeuralSheetAudioUnit {
     /// Whether the host's transport is moving, through `transportStateBlock`; nil when the host
     /// gives none. Main thread only, from the session's 30 Hz poll: never the render thread's.
     @MainActor
-    private func hostTransportIsMoving() -> Bool? {
+    func hostTransportIsMoving() -> Bool? {
         guard let block = transportStateBlock else { return nil }
 
         var flags = AUHostTransportStateFlags()
