@@ -1,4 +1,5 @@
 import AppKit
+import AudioToolbox
 import Foundation
 import NeuralSheetCore
 import Observation
@@ -44,6 +45,12 @@ import os
     @ObservationIgnored let paths: AppPaths
 
     @ObservationIgnored private weak var unit: NeuralSheetAudioUnit?
+
+    /// The host's name for the track the plugin is on, when it gives one.
+    var trackName: String? { unit?.contextName }
+
+    /// The app's setting for more instruments than channels, for the dragged file and the MIDI.
+    var overflowMode: MidiOverflowMode { settings.midiOverflowMode }
 
     let version: String = {
         let info = Bundle(for: NeuralSheetAUViewController.self).infoDictionary

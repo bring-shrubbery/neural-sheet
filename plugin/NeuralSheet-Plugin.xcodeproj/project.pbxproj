@@ -20,12 +20,14 @@
 		113F2250804194998924FD3C /* PluginLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4417A9DCFAD8D1F0028F3C6 /* PluginLog.swift */; };
 		1506C97B5511C775E83E9D37 /* PluginRoll.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71F77D4C84BE806B39CEC7A2 /* PluginRoll.swift */; };
 		176011C69199E4DCBFE73CB6 /* NeuralSheetPluginApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6F36F9E4C9E02AB0637C09B /* NeuralSheetPluginApp.swift */; };
+		1E15B2C539FFA7BB95429893 /* PluginDragNames.swift in Sources */ = {isa = PBXBuildFile; fileRef = 823A11226FE3830070B462B7 /* PluginDragNames.swift */; };
 		209566417DDD6DCE687B8D6C /* TranscriptionEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65616340FF4872241BD9F53D /* TranscriptionEngine.swift */; };
 		211E555A03815B376BC930BC /* MidiOutput.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A74BED166C5816BFC29D016 /* MidiOutput.swift */; };
 		232F2EC03F9CDCDE49FD39D5 /* PluginTransportPoll.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6972E50F84050575E0D5DB2B /* PluginTransportPoll.swift */; };
 		28E72A1A7D63C685C07EDFBE /* NeuralSheetAudioUnit+Playback.swift in Sources */ = {isa = PBXBuildFile; fileRef = FFB2AD51190613D06A111FBE /* NeuralSheetAudioUnit+Playback.swift */; };
 		323E7BDC45AD6872F165E0E8 /* InstrumentSynthBank+Audition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3921D57815B07801582C9D95 /* InstrumentSynthBank+Audition.swift */; };
 		35EF0D45D2FCC2C008AC4307 /* MidiOutRing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D0C77D1A111793CE038F9DC /* MidiOutRing.swift */; };
+		36954F1136B68A15EF806C72 /* PluginViewModel+Drag.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF7481C8CA176F88AA650A20 /* PluginViewModel+Drag.swift */; };
 		3817561B55C3A2F8F093F623 /* PluginModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65172D2EB15005E96EC711D0 /* PluginModels.swift */; };
 		3E17925CF5277635A877FB98 /* PluginView+Playback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42B7BA7DEDD4E732DAFF738F /* PluginView+Playback.swift */; };
 		4508F7DCC42F1D9BC0C79E34 /* MidiOutRing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D0C77D1A111793CE038F9DC /* MidiOutRing.swift */; };
@@ -39,6 +41,8 @@
 		50CBA088969455C84652A072 /* PluginMidiOut.swift in Sources */ = {isa = PBXBuildFile; fileRef = 856E693C24C031A2315C97A6 /* PluginMidiOut.swift */; };
 		515356776DEA0023B5126A5B /* nsheet_stems.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C17313B3BA074EA1AE855604 /* nsheet_stems.cpp */; };
 		5594FE4EE49F6804A7DA5A42 /* StemFiles.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE625BA50C127BDE421E29E7 /* StemFiles.swift */; };
+		598E6A84C922133E00F42258 /* MidiDragSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCC1F502F5E8CFC4BBE70BF0 /* MidiDragSource.swift */; };
+		5CB28C554E73FD9BF1B06C79 /* DragPromiseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65C8EE9FC4E6C96DC1CE7A34 /* DragPromiseTests.swift */; };
 		5CCE15B72DC72357F739A58A /* CaptureSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E278E2722F6F1DC4F5E5962 /* CaptureSession.swift */; };
 		60EEF062CE823E62BA338792 /* NoteScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = B78ECB3FB9E923B2CF2ECB82 /* NoteScheduler.swift */; };
 		61D6C7838F7782B65A8D12AC /* NeuralSheetAudioUnit+Capture.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDD39A0F7F3BE91D76E001B2 /* NeuralSheetAudioUnit+Capture.swift */; };
@@ -54,6 +58,7 @@
 		7448694C7944E6B50EBCF399 /* InstrumentSynthBank+Render.swift in Sources */ = {isa = PBXBuildFile; fileRef = 164A5C131A48F6D9D89F5ED9 /* InstrumentSynthBank+Render.swift */; };
 		76DA0137BC9299627A10B47B /* CapturedTake.swift in Sources */ = {isa = PBXBuildFile; fileRef = A95007A769824ED6B2755438 /* CapturedTake.swift */; };
 		7A72FD09943F8630B56CA9EF /* CapturedTake.swift in Sources */ = {isa = PBXBuildFile; fileRef = A95007A769824ED6B2755438 /* CapturedTake.swift */; };
+		7A7B065D33AC94516CA1D70B /* MidiDragSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCC1F502F5E8CFC4BBE70BF0 /* MidiDragSource.swift */; };
 		821878A2CE4A1E9C4A02D9A1 /* InstrumentSynthBank+Click.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8ECFCC58D76ED5EFB367D36 /* InstrumentSynthBank+Click.swift */; };
 		831E43D168AA50E7DA56E74E /* PluginTransport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84A3C408A954B734D12C3E24 /* PluginTransport.swift */; };
 		8598562DADCB1E9693D6E4EA /* InstrumentSynthBank+Mix.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3063EF25C05082CE4C957ADC /* InstrumentSynthBank+Mix.swift */; };
@@ -74,10 +79,12 @@
 		AD8199CB8D28F9D84BA9AD88 /* SynthRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C113E98DA662CB421B568D6 /* SynthRenderer.swift */; };
 		AF546874E450BB7107017969 /* InstrumentSynthBank.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E4D1121D51238A64478BB49 /* InstrumentSynthBank.swift */; };
 		AFBD3083CEFA87F1FFCEA6F1 /* TimelineGeometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 209FB5D262EB3FD83CFFEF76 /* TimelineGeometry.swift */; };
+		B051E85CF78B6944601BF693 /* PluginDragNames.swift in Sources */ = {isa = PBXBuildFile; fileRef = 823A11226FE3830070B462B7 /* PluginDragNames.swift */; };
 		B0AEEAE4CCD78ED1617E371B /* NeuralSheetAudioUnit.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF2F2AD02FEE354DDFAD7721 /* NeuralSheetAudioUnit.swift */; };
 		B1FD7B1D81D521CEFC5920BA /* SynthRendererTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CA96DBCECCD5FE9FE02B8D2 /* SynthRendererTests.swift */; };
 		B20A7B50D9D9B2A7F9D69D83 /* PluginTranscription.swift in Sources */ = {isa = PBXBuildFile; fileRef = 942AA6D65B9BA0A173F3DD5D /* PluginTranscription.swift */; };
 		B3CB63F2C7A9E071AF214BD4 /* InstrumentSynthBank+MidiOut.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA0CC7B1AC64A37344537DA6 /* InstrumentSynthBank+MidiOut.swift */; };
+		B7535F96F6F65BE0E80359B7 /* StemFiles.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE625BA50C127BDE421E29E7 /* StemFiles.swift */; };
 		B8DDB60C594F008AF2BD41C1 /* SourceAudio.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B89059501CB461984F6F021 /* SourceAudio.swift */; };
 		BA7EEC76EF4FD052A4B9EE17 /* MidiOutput+Sender.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8476B74919797C22823D9888 /* MidiOutput+Sender.swift */; };
 		BC5D0171EB89D7517F12C95D /* NeuralSheetCore in Frameworks */ = {isa = PBXBuildFile; productRef = AA2E6339FEC15C3668DF95AD /* NeuralSheetCore */; };
@@ -85,9 +92,11 @@
 		C0DF7EBEE18A779D77D5F6B3 /* InstrumentSynthBank+SoundBank.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C617BA6FC0D3EF1A6E964C9 /* InstrumentSynthBank+SoundBank.swift */; };
 		C2C136B9BFA3BA6311E325C9 /* PluginViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE41AADDE9B25660E361AF91 /* PluginViewModel.swift */; };
 		C511EA6CBD579BE247674538 /* Theme+Accommodations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F16DFE194AF0036ACFC062A /* Theme+Accommodations.swift */; };
+		C5CD938B34515A38D403978D /* ExportCommands.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38A01721F672FF52F39B9800 /* ExportCommands.swift */; };
 		C9877CF5CF20AF151987902B /* NeuralSheetEngine in Frameworks */ = {isa = PBXBuildFile; productRef = FDAD2A66C6858EB6D1A4522B /* NeuralSheetEngine */; };
 		CAF15A1E011FF93A51990125 /* InstrumentSynthBank.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E4D1121D51238A64478BB49 /* InstrumentSynthBank.swift */; };
 		CDC62202FF804153EDBF4E7C /* InstrumentSynthBank+Mix.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3063EF25C05082CE4C957ADC /* InstrumentSynthBank+Mix.swift */; };
+		CFF164C709E84FFED755ADAE /* PluginDragChip.swift in Sources */ = {isa = PBXBuildFile; fileRef = C75267962B76379F8A6239F8 /* PluginDragChip.swift */; };
 		D0194CA0887A6C0A95D15C57 /* WaveformView+Drawing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B45C9361FF068062BD434EA /* WaveformView+Drawing.swift */; };
 		D15E14DD8DA8D6F221B0E3C2 /* PluginRollView+Playhead.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC97CC6685639A3455799AD4 /* PluginRollView+Playhead.swift */; };
 		D323F57B10199136806DA6D1 /* CoreMIDI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E0C7298EB3B1A50037663E44 /* CoreMIDI.framework */; };
@@ -104,6 +113,7 @@
 		F180ECAAA05626041807499B /* PluginPlayback.swift in Sources */ = {isa = PBXBuildFile; fileRef = F08244879C55D73BF2B1610D /* PluginPlayback.swift */; };
 		F1E372825D196FA0FD54C7D6 /* SynthRingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF002ED3B266B21496796955 /* SynthRingTests.swift */; };
 		FA582FE060AC8CEE058BF85C /* NeuralSheetAU.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = D0C5B9F14DDBB2F6D7E6F7B7 /* NeuralSheetAU.appex */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		FBC951FAA3F830E1E6846ACB /* ExportCommands.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38A01721F672FF52F39B9800 /* ExportCommands.swift */; };
 		FC2A748DF2B89B32D7BA7B01 /* Formats.swift in Sources */ = {isa = PBXBuildFile; fileRef = F70B237CAC8D7E4A0ACF35F3 /* Formats.swift */; };
 		FCBE9F626FB438336AC7C523 /* InstrumentSynthBank+Render.swift in Sources */ = {isa = PBXBuildFile; fileRef = 164A5C131A48F6D9D89F5ED9 /* InstrumentSynthBank+Render.swift */; };
 		FEB9E6765FA610D9060CAFE4 /* StemSeparator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E35E26590B8BF94FB0543AF8 /* StemSeparator.swift */; };
@@ -147,6 +157,7 @@
 		2E278E2722F6F1DC4F5E5962 /* CaptureSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureSession.swift; sourceTree = "<group>"; };
 		2F2F0CF0EB85C5EA7D7A0DC7 /* NeuralSheetAU-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NeuralSheetAU-Bridging-Header.h"; sourceTree = "<group>"; };
 		3063EF25C05082CE4C957ADC /* InstrumentSynthBank+Mix.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "InstrumentSynthBank+Mix.swift"; sourceTree = "<group>"; };
+		38A01721F672FF52F39B9800 /* ExportCommands.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportCommands.swift; sourceTree = "<group>"; };
 		3921D57815B07801582C9D95 /* InstrumentSynthBank+Audition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "InstrumentSynthBank+Audition.swift"; sourceTree = "<group>"; };
 		42B7BA7DEDD4E732DAFF738F /* PluginView+Playback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PluginView+Playback.swift"; sourceTree = "<group>"; };
 		45AF3F4B97F0EC83E679ED3D /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
@@ -164,6 +175,7 @@
 		5E62B42F3CD9C6A42B6894B4 /* PluginRollBands.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PluginRollBands.swift; sourceTree = "<group>"; };
 		65172D2EB15005E96EC711D0 /* PluginModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PluginModels.swift; sourceTree = "<group>"; };
 		65616340FF4872241BD9F53D /* TranscriptionEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptionEngine.swift; sourceTree = "<group>"; };
+		65C8EE9FC4E6C96DC1CE7A34 /* DragPromiseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DragPromiseTests.swift; sourceTree = "<group>"; };
 		6972E50F84050575E0D5DB2B /* PluginTransportPoll.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PluginTransportPoll.swift; sourceTree = "<group>"; };
 		6B89059501CB461984F6F021 /* SourceAudio.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceAudio.swift; sourceTree = "<group>"; };
 		6D0C77D1A111793CE038F9DC /* MidiOutRing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MidiOutRing.swift; sourceTree = "<group>"; };
@@ -175,6 +187,7 @@
 		79A8E1E689337C004F0E61FD /* SynthRing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SynthRing.swift; sourceTree = "<group>"; };
 		7A8D7D6BEC222AB0E40F1F51 /* AVFAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFAudio.framework; path = System/Library/Frameworks/AVFAudio.framework; sourceTree = SDKROOT; };
 		7C617BA6FC0D3EF1A6E964C9 /* InstrumentSynthBank+SoundBank.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "InstrumentSynthBank+SoundBank.swift"; sourceTree = "<group>"; };
+		823A11226FE3830070B462B7 /* PluginDragNames.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PluginDragNames.swift; sourceTree = "<group>"; };
 		8476B74919797C22823D9888 /* MidiOutput+Sender.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MidiOutput+Sender.swift"; sourceTree = "<group>"; };
 		84A3C408A954B734D12C3E24 /* PluginTransport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PluginTransport.swift; sourceTree = "<group>"; };
 		856E693C24C031A2315C97A6 /* PluginMidiOut.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PluginMidiOut.swift; sourceTree = "<group>"; };
@@ -194,6 +207,7 @@
 		C02A1CF1EBCE53AC14933731 /* NeuralSheetAUViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NeuralSheetAUViewController.swift; sourceTree = "<group>"; };
 		C17313B3BA074EA1AE855604 /* nsheet_stems.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = nsheet_stems.cpp; sourceTree = "<group>"; };
 		C55ED0455CA212595E587130 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
+		C75267962B76379F8A6239F8 /* PluginDragChip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PluginDragChip.swift; sourceTree = "<group>"; };
 		CE41AADDE9B25660E361AF91 /* PluginViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PluginViewModel.swift; sourceTree = "<group>"; };
 		CED3976BF335266868BBA93D /* PlayheadView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayheadView.swift; sourceTree = "<group>"; };
 		D03A3DCDD37C1C5075103F25 /* PlayheadLayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayheadLayer.swift; sourceTree = "<group>"; };
@@ -203,6 +217,7 @@
 		DC7AD07583AD1F184FDAE680 /* SynthInstrument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SynthInstrument.swift; sourceTree = "<group>"; };
 		DD8DB5A7921628F4B86D9348 /* PluginRunControl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PluginRunControl.swift; sourceTree = "<group>"; };
 		DEAF591D6867E3E52A9F7239 /* CoreAudioKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudioKit.framework; path = System/Library/Frameworks/CoreAudioKit.framework; sourceTree = SDKROOT; };
+		DF7481C8CA176F88AA650A20 /* PluginViewModel+Drag.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PluginViewModel+Drag.swift"; sourceTree = "<group>"; };
 		E0C7298EB3B1A50037663E44 /* CoreMIDI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMIDI.framework; path = System/Library/Frameworks/CoreMIDI.framework; sourceTree = SDKROOT; };
 		E35E26590B8BF94FB0543AF8 /* StemSeparator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StemSeparator.swift; sourceTree = "<group>"; };
 		E6F36F9E4C9E02AB0637C09B /* NeuralSheetPluginApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NeuralSheetPluginApp.swift; sourceTree = "<group>"; };
@@ -213,6 +228,7 @@
 		F08244879C55D73BF2B1610D /* PluginPlayback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PluginPlayback.swift; sourceTree = "<group>"; };
 		F70B237CAC8D7E4A0ACF35F3 /* Formats.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Formats.swift; sourceTree = "<group>"; };
 		FC97CC6685639A3455799AD4 /* PluginRollView+Playhead.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PluginRollView+Playhead.swift"; sourceTree = "<group>"; };
+		FCC1F502F5E8CFC4BBE70BF0 /* MidiDragSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MidiDragSource.swift; sourceTree = "<group>"; };
 		FDD39A0F7F3BE91D76E001B2 /* NeuralSheetAudioUnit+Capture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NeuralSheetAudioUnit+Capture.swift"; sourceTree = "<group>"; };
 		FF2F2AD02FEE354DDFAD7721 /* NeuralSheetAudioUnit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NeuralSheetAudioUnit.swift; sourceTree = "<group>"; };
 		FFB2AD51190613D06A111FBE /* NeuralSheetAudioUnit+Playback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NeuralSheetAudioUnit+Playback.swift"; sourceTree = "<group>"; };
@@ -245,6 +261,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		042191AF1DA9126B300B653B /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				38A01721F672FF52F39B9800 /* ExportCommands.swift */,
+			);
+			path = Shared;
+			sourceTree = "<group>";
+		};
 		1D00CDA0EA287591B86FE41D /* app */ = {
 			isa = PBXGroup;
 			children = (
@@ -288,6 +312,7 @@
 				A95007A769824ED6B2755438 /* CapturedTake.swift */,
 				D6C517E72478E7B6DF8BF5E1 /* CaptureRing.swift */,
 				2E278E2722F6F1DC4F5E5962 /* CaptureSession.swift */,
+				823A11226FE3830070B462B7 /* PluginDragNames.swift */,
 				D4417A9DCFAD8D1F0028F3C6 /* PluginLog.swift */,
 				65172D2EB15005E96EC711D0 /* PluginModels.swift */,
 				84A3C408A954B734D12C3E24 /* PluginTransport.swift */,
@@ -343,6 +368,7 @@
 			children = (
 				01BC3A18627F014DF185A378 /* CaptureRingTests.swift */,
 				B2374B36820BFD1E2F2C0577 /* CaptureSessionTests.swift */,
+				65C8EE9FC4E6C96DC1CE7A34 /* DragPromiseTests.swift */,
 				704A2260EF51F93CD2A9C3FC /* PluginModelsTests.swift */,
 				8F5BD7070C5326D7E250858B /* PluginTransportTests.swift */,
 				2CA96DBCECCD5FE9FE02B8D2 /* SynthRendererTests.swift */,
@@ -350,6 +376,14 @@
 				010D0ADFE38DC5606310995C /* TestBuffers.swift */,
 			);
 			path = PluginCoreTests;
+			sourceTree = "<group>";
+		};
+		AF3EE7282FD985A6C2625345 /* Toolbar */ = {
+			isa = PBXGroup;
+			children = (
+				FCC1F502F5E8CFC4BBE70BF0 /* MidiDragSource.swift */,
+			);
+			path = Toolbar;
 			sourceTree = "<group>";
 		};
 		BF32BDF7BC2441D17A272AF2 /* UI */ = {
@@ -361,6 +395,7 @@
 				F4BE586A5A4BDEE06D03E511 /* Accessibility */,
 				364D37990CAEBF5F9720E99D /* Localization */,
 				CB669D1CDA3375BC9895F5D8 /* Timeline */,
+				AF3EE7282FD985A6C2625345 /* Toolbar */,
 			);
 			path = UI;
 			sourceTree = "<group>";
@@ -370,6 +405,7 @@
 			children = (
 				8645E37EB029419555EFDA27 /* Audio */,
 				2591CC6E70A38B65893D0037 /* Engine */,
+				042191AF1DA9126B300B653B /* Shared */,
 				BF32BDF7BC2441D17A272AF2 /* UI */,
 			);
 			path = NeuralSheet;
@@ -423,6 +459,7 @@
 				FFB2AD51190613D06A111FBE /* NeuralSheetAudioUnit+Playback.swift */,
 				A7718B7149DE135BEBB3A6FE /* NeuralSheetAudioUnit+Render.swift */,
 				C02A1CF1EBCE53AC14933731 /* NeuralSheetAUViewController.swift */,
+				C75267962B76379F8A6239F8 /* PluginDragChip.swift */,
 				856E693C24C031A2315C97A6 /* PluginMidiOut.swift */,
 				F08244879C55D73BF2B1610D /* PluginPlayback.swift */,
 				71F77D4C84BE806B39CEC7A2 /* PluginRoll.swift */,
@@ -436,6 +473,7 @@
 				42B7BA7DEDD4E732DAFF738F /* PluginView+Playback.swift */,
 				48622B01A7656C7AA20A593F /* PluginView+Transcribe.swift */,
 				CE41AADDE9B25660E361AF91 /* PluginViewModel.swift */,
+				DF7481C8CA176F88AA650A20 /* PluginViewModel+Drag.swift */,
 			);
 			path = NeuralSheetAU;
 			sourceTree = "<group>";
@@ -603,6 +641,7 @@
 				00CCCACC0FF86B5E526C2855 /* CaptureRing.swift in Sources */,
 				AB730DD37DE11FD4F9F87D31 /* CaptureSession.swift in Sources */,
 				7A72FD09943F8630B56CA9EF /* CapturedTake.swift in Sources */,
+				C5CD938B34515A38D403978D /* ExportCommands.swift in Sources */,
 				D7CF9FCCFA419FCE01D49E7A /* Fonts.swift in Sources */,
 				FC2A748DF2B89B32D7BA7B01 /* Formats.swift in Sources */,
 				323E7BDC45AD6872F165E0E8 /* InstrumentSynthBank+Audition.swift in Sources */,
@@ -613,6 +652,7 @@
 				0A0751FCEC6F4A339D620A56 /* InstrumentSynthBank+SoundBank.swift in Sources */,
 				CAF15A1E011FF93A51990125 /* InstrumentSynthBank.swift in Sources */,
 				A0D7BB45E27411BC8BCC381A /* KeyboardView+Drawing.swift in Sources */,
+				598E6A84C922133E00F42258 /* MidiDragSource.swift in Sources */,
 				35EF0D45D2FCC2C008AC4307 /* MidiOutRing.swift in Sources */,
 				DFDC33870E637383667A544D /* MidiOutput+Sender.swift in Sources */,
 				211E555A03815B376BC930BC /* MidiOutput.swift in Sources */,
@@ -625,6 +665,8 @@
 				0227C53DC76C47B1509AA5C6 /* PianoRollView+Drawing.swift in Sources */,
 				07C11CCBD607BD49F8F496E7 /* PlayheadLayer.swift in Sources */,
 				EEA9C3253AC6EF510B8155C8 /* PlayheadView.swift in Sources */,
+				CFF164C709E84FFED755ADAE /* PluginDragChip.swift in Sources */,
+				1E15B2C539FFA7BB95429893 /* PluginDragNames.swift in Sources */,
 				113F2250804194998924FD3C /* PluginLog.swift in Sources */,
 				50CBA088969455C84652A072 /* PluginMidiOut.swift in Sources */,
 				3817561B55C3A2F8F093F623 /* PluginModels.swift in Sources */,
@@ -641,6 +683,7 @@
 				3E17925CF5277635A877FB98 /* PluginView+Playback.swift in Sources */,
 				E97EFBEFDB50F15DBEDB39AF /* PluginView+Transcribe.swift in Sources */,
 				0B6892B9D4B93F7CD762F05D /* PluginView.swift in Sources */,
+				36954F1136B68A15EF806C72 /* PluginViewModel+Drag.swift in Sources */,
 				C2C136B9BFA3BA6311E325C9 /* PluginViewModel.swift in Sources */,
 				4DC5CD88B45AD56056A61B74 /* RulerView+Drawing.swift in Sources */,
 				4AD41BC8F1B7C7B6A544B1B3 /* SourceAudio.swift in Sources */,
@@ -679,6 +722,8 @@
 				5CCE15B72DC72357F739A58A /* CaptureSession.swift in Sources */,
 				456F337C627EB086DFF7ED94 /* CaptureSessionTests.swift in Sources */,
 				76DA0137BC9299627A10B47B /* CapturedTake.swift in Sources */,
+				5CB28C554E73FD9BF1B06C79 /* DragPromiseTests.swift in Sources */,
+				FBC951FAA3F830E1E6846ACB /* ExportCommands.swift in Sources */,
 				92EA1B71527CB4894F24B709 /* InstrumentSynthBank+Audition.swift in Sources */,
 				821878A2CE4A1E9C4A02D9A1 /* InstrumentSynthBank+Click.swift in Sources */,
 				B3CB63F2C7A9E071AF214BD4 /* InstrumentSynthBank+MidiOut.swift in Sources */,
@@ -686,10 +731,12 @@
 				FCBE9F626FB438336AC7C523 /* InstrumentSynthBank+Render.swift in Sources */,
 				C0DF7EBEE18A779D77D5F6B3 /* InstrumentSynthBank+SoundBank.swift in Sources */,
 				AF546874E450BB7107017969 /* InstrumentSynthBank.swift in Sources */,
+				7A7B065D33AC94516CA1D70B /* MidiDragSource.swift in Sources */,
 				4508F7DCC42F1D9BC0C79E34 /* MidiOutRing.swift in Sources */,
 				BA7EEC76EF4FD052A4B9EE17 /* MidiOutput+Sender.swift in Sources */,
 				46E3EE916C9C97953073BC07 /* MidiOutput.swift in Sources */,
 				9A0858C3646EF6F56E792623 /* NoteScheduler.swift in Sources */,
+				B051E85CF78B6944601BF693 /* PluginDragNames.swift in Sources */,
 				6B149E9C86F8B856E39E4FD7 /* PluginLog.swift in Sources */,
 				73637B732E34662322562165 /* PluginModels.swift in Sources */,
 				D9910B9AD3CF1F307815148D /* PluginModelsTests.swift in Sources */,
@@ -697,6 +744,7 @@
 				6A61ACBD7B1F0C1AAC94B33F /* PluginTransportPoll.swift in Sources */,
 				8B0D34D1843516CA8BA12F22 /* PluginTransportTests.swift in Sources */,
 				B8DDB60C594F008AF2BD41C1 /* SourceAudio.swift in Sources */,
+				B7535F96F6F65BE0E80359B7 /* StemFiles.swift in Sources */,
 				0A843B47B6B017052CE423C9 /* SynthInstrument.swift in Sources */,
 				AD8199CB8D28F9D84BA9AD88 /* SynthRenderer.swift in Sources */,
 				B1FD7B1D81D521CEFC5920BA /* SynthRendererTests.swift in Sources */,

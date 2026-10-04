@@ -25,17 +25,21 @@ struct PlaybackBar: View {
 
             HStack(spacing: 6) {
                 Text("ORIG")
+                    .fixedSize()
                 Slider(value: $playback.mix, in: 0...1)
-                    .frame(width: 110)
+                    .frame(width: 90)
                     .help("The host's audio against the synth")
                 Text("MIDI")
+                    .fixedSize()
             }
 
             HStack(spacing: 6) {
                 Text("Master")
+                    .fixedSize()
                 Slider(value: $playback.masterGainDb, in: InstrumentMixerState.minGainDb...InstrumentMixerState.maxGainDb)
-                    .frame(width: 90)
+                    .frame(width: 70)
                 Text(DecibelText.text(playback.masterGainDb))
+                    .fixedSize()
                     .frame(width: 52, alignment: .trailing)
             }
         }
@@ -60,15 +64,18 @@ private struct PlayheadReadout: View {
     }
 }
 
-/// The transcription's ways into the host -- Send MIDI to host -- over one row per instrument, as
+/// The transcription's ways into the host -- the MIDI chip and Send MIDI to host -- over one row
+/// per instrument, as
 /// the Mac's sidebar has them without pan or meters: the colour, the name, mute, solo and the
 /// fader.
 struct StripList: View {
-    let playback: PluginPlayback
+    let model: PluginViewModel
+
+    private var playback: PluginPlayback { model.playback }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            MidiExits(playback: playback)
+            MidiExits(model: model)
                 .padding(10)
 
             Divider()
@@ -87,12 +94,15 @@ struct StripList: View {
     }
 }
 
-/// Send MIDI to host, and what went wrong turning it on.
+/// The MIDI chip, Send MIDI to host, and what went wrong turning it on.
 private struct MidiExits: View {
-    let playback: PluginPlayback
+    let model: PluginViewModel
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        let playback = model.playback
+
+        VStack(alignment: .leading, spacing: 6) {
+            PluginDragChip(model: model)
             Toggle("Send MIDI to host", isOn: Binding(get: { playback.sendsMIDI },
                                                       set: { playback.setSendsMIDI($0) }))
                 .help("Record from the “NeuralSheet Plugin” MIDI source on a MIDI track")

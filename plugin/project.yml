@@ -122,6 +122,9 @@ targets:
       - path: ../app/NeuralSheet/Audio/MidiOutput.swift
       - path: ../app/NeuralSheet/Audio/MidiOutput+Sender.swift
       - path: ../app/NeuralSheet/Audio/MidiOutRing.swift
+      # The MIDI chip's drag (sub-issue D): the app's file promise and the export's writers.
+      - path: ../app/NeuralSheet/UI/Toolbar/MidiDragSource.swift
+      - path: ../app/NeuralSheet/Shared/ExportCommands.swift
       - path: ../app/NeuralSheet/Engine/nsheet_stems.h
       - path: ../app/NeuralSheet/Engine/nsheet_stems.cpp
     dependencies:
@@ -206,6 +209,10 @@ targets:
       - path: ../app/NeuralSheet/Audio/MidiOutput.swift
       - path: ../app/NeuralSheet/Audio/MidiOutput+Sender.swift
       - path: ../app/NeuralSheet/Audio/MidiOutRing.swift
+      # The drag's file promise and bytes, for the promise test.
+      - path: ../app/NeuralSheet/UI/Toolbar/MidiDragSource.swift
+      - path: ../app/NeuralSheet/Shared/ExportCommands.swift
+      - path: ../app/NeuralSheet/Audio/StemFiles.swift
     dependencies:
       - package: NeuralSheetCore
       - sdk: AVFAudio.framework

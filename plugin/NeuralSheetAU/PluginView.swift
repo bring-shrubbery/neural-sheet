@@ -172,7 +172,7 @@ private struct TakeArea: View {
                     .clipShape(.rect(cornerRadius: 6))
 
                 if !playback.mixer.entries.isEmpty {
-                    StripList(playback: playback)
+                    StripList(model: model)
                         .frame(maxHeight: .infinity)
                 }
             }
