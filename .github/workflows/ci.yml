@@ -160,10 +160,20 @@ jobs:
       - name: Fail on warnings in our own sources
         working-directory: plugin
         run: |
-          if grep -E "/(plugin/(Container|NeuralSheetAU|PluginCore)|app/Packages)/.*warning:" build.log; then
+          if grep -E "/(plugin/(Container|NeuralSheetAU|PluginCore)|app/(Packages|NeuralSheet))/.*warning:" build.log; then
             echo "::error::warnings in NeuralSheet sources"; exit 1
           fi
           echo "no warnings in NeuralSheet sources"
+      # PluginCore's tests (the capture ring and session), signed ad hoc as there is no
+      # certificate on the runner.
+      - name: Test PluginCore
+        working-directory: plugin
+        run: |
+          set -o pipefail
+          xcodebuild -project NeuralSheet-Plugin.xcodeproj -scheme "NeuralSheet Plugin" \
+            -destination 'platform=macOS,arch=arm64' \
+            CODE_SIGN_IDENTITY=- CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM= PROVISIONING_PROFILE_SPECIFIER= \
+            test 2>&1 | tail -40
       # Release, signed ad hoc (no certificate on the runner), registered with pluginkit, auval,
       # unregistered. Should the runner's session ever refuse the registration, set
       # NS_PLUGIN_SKIP_AUVAL: 1 here and say "build only" in the job's name.
