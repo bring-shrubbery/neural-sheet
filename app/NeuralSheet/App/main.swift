@@ -1,5 +1,11 @@
 import Foundation
+import NeuralSheetCore
 import SwiftUI
+
+// Before anything reads a model or the settings, the app and the command line alike: the one-time
+// move of `~/Library/NeuralSheet/models` and `global.settings` into the App Group container the
+// Audio Unit shares (Audio Unit design §2, "Models and settings"). Quiet once done.
+AppPaths.standard.migrateToGroupContainer()
 
 // The process's entry point (batch and CLI design §2). `neuralsheet`, the launcher script in the
 // bundle's Resources, runs this binary with `--headless` first: the command line is then served
