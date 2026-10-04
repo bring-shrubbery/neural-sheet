@@ -206,6 +206,13 @@ final class MobileModel {
     /// timeline, called before anything changes the notes under it (the Mac's `dragCanceller`).
     @ObservationIgnored var dragCanceller: (() -> Bool)?
 
+    /// Nonisolated on purpose. Under the target's default main-actor isolation the compiler gives
+    /// the class an isolated deinit, and the Swift runtime that ships with Xcode 26 aborts running
+    /// it inline on the main thread (`swift_task_deinitOnExecutorImpl` frees a task-local scope it
+    /// never allocated). There is nothing here that needs the main actor: the stored properties
+    /// are only released, and the model is released on the main thread in practice anyway.
+    nonisolated deinit {}
+
     init(engine: PlaybackEngine = PlaybackEngine()) {
         self.engine = engine
         meterLevels = MeterLevels(renderedFrames: engine.synthBank.renderedFrames)
