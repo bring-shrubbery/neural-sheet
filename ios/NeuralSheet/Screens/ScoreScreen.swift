@@ -9,6 +9,7 @@ struct ScoreScreen: View {
 
     @State private var part: PartSelection?
     @State private var isSheetShown = false
+    @Environment(\.horizontalSizeClass) private var sizeClass
 
     var body: some View {
         VStack(spacing: 0) {
@@ -22,6 +23,11 @@ struct ScoreScreen: View {
                 }
                 .accessibilityLabel(Text("Sheet", comment: "Score sheet: its title"))
                 .accessibilityIdentifier("sheet")
+
+                ExportMenu(model: model)
+                if sizeClass == .regular {
+                    ExportDragChip(model: model)
+                }
             }
 
             ScoreView(model: model) { program in

@@ -12,11 +12,18 @@ struct RollScreen: View {
     /// coordinates, or nil for the bar's button, which points from the timeline's bottom edge.
     @State private var isCardShown = false
     @State private var cardAnchor: CGRect?
+    /// A file is being dragged over the roll (iPad).
+    @State private var isDropTargeted = false
+    @Environment(\.horizontalSizeClass) private var sizeClass
 
     var body: some View {
         VStack(spacing: 0) {
             TransportBar(model: model) {
                 RollCommandsMenu(model: model)
+                ExportMenu(model: model)
+                if sizeClass == .regular {
+                    ExportDragChip(model: model)
+                }
             }
 
             TimelineView(model: model) { rect in
@@ -45,6 +52,18 @@ struct RollScreen: View {
                         .presentationDetents([.medium, .large])
                 }
                 .accessibilityIdentifier("timeline")
+                // A .mid or a take dropped from another app (sub-issue I): the MIDI import, or a
+                // new take.
+                .onDrop(of: MobileModel.droppableContentTypes, isTargeted: $isDropTargeted) { providers in
+                    model.acceptDrop(providers)
+                }
+                .overlay {
+                    if isDropTargeted {
+                        RoundedRectangle(cornerRadius: 8)
+                            .strokeBorder(Color.accentColor, lineWidth: 3)
+                            .allowsHitTesting(false)
+                    }
+                }
 
             if let status = model.statusLine {
                 Text(verbatim: status)

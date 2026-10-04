@@ -19,9 +19,11 @@ struct ContentView: View {
         ProjectScreens(model: model)
             .onAppear {
                 model.undoManager = undoManager
+                model.exports.projectName = fileURL?.deletingPathExtension().lastPathComponent
                 print("NeuralSheet: \(SettingsScreen.version); showing \"\(title)\"")
             }
             .onChange(of: undoManager) { _, manager in model.undoManager = manager }
+            .onChange(of: fileURL) { _, url in model.exports.projectName = url?.deletingPathExtension().lastPathComponent }
             .onChange(of: scenePhase) { _, phase in
                 if phase == .active { model.sceneBecameActive() }
             }

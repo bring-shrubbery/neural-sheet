@@ -3,17 +3,24 @@ import SwiftUI
 
 /// A project's screens (iOS app design §2): tabs on iPhone -- Transcribe, Roll, Score, Settings --
 /// and on iPad a split view whose sidebar lists the screens and the take's instrument strips
-/// (sub-issue H) beside the chosen screen, the roll first.
+/// (sub-issue H) beside the chosen screen, the roll first. Over every screen: the model's
+/// message box, and the export sheet whichever screen's Export menu opened it (sub-issue I).
 struct ProjectScreens: View {
     let model: MobileModel
 
     @Environment(\.horizontalSizeClass) private var sizeClass
 
     var body: some View {
-        if sizeClass == .regular {
-            ProjectSplitView(model: model)
-        } else {
-            ProjectTabs(model: model)
+        Group {
+            if sizeClass == .regular {
+                ProjectSplitView(model: model)
+            } else {
+                ProjectTabs(model: model)
+            }
+        }
+        .exportPresentation(model)
+        .alert(item: Binding(get: { model.alert }, set: { model.alert = $0 })) { alert in
+            Alert(title: Text(alert.title), message: alert.message.isEmpty ? nil : Text(alert.message))
         }
     }
 }

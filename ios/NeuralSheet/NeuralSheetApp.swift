@@ -10,6 +10,8 @@ struct NeuralSheetApp: App {
         // A take lives in the recordings only until its project saves it into the package, so
         // anything there at launch is left over, as on the Mac.
         AppPaths.standard.sweepRecordings()
+        // Likewise an export's or a drag's files, which live only while their sheet is up.
+        MobileModel.sweepExportScratch()
         // The timeline's faces, which its labels are drawn in by PostScript name.
         FontRegistry.registerBundledFonts()
     }

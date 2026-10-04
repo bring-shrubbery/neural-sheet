@@ -37,6 +37,13 @@ struct TranscribeScreen: View {
             }
         }
         .toolbar {
+            // Once there are notes: the exports, as on the Roll and Score screens (sub-issue I).
+            if model.document != nil {
+                ToolbarItem(placement: .primaryAction) {
+                    ExportMenu(model: model)
+                }
+            }
+
             ToolbarItem(placement: .primaryAction) {
                 Button { showsSettings = true } label: {
                     Image(systemName: "gearshape")
@@ -61,9 +68,6 @@ struct TranscribeScreen: View {
         }
         .sheet(isPresented: $showsSettings) {
             SettingsScreen()
-        }
-        .alert(item: $model.alert) { alert in
-            Alert(title: Text(alert.title), message: alert.message.isEmpty ? nil : Text(alert.message))
         }
     }
 

@@ -33,6 +33,7 @@
 		29D638314B8BBD9239331E9D /* MeterLevels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9409A1FFBA294F91460D9C6 /* MeterLevels.swift */; };
 		2BD59409898A5D8E3FB8B13C /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BDBD8C6418D4D1437B4EDA6 /* Theme.swift */; };
 		2CDBCC4E01D492D06DA56354 /* ScoreScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77537D31C4FF432E3A8D649F /* ScoreScreen.swift */; };
+		2D686DEBADDDB37F86FD38B6 /* ExportSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 619E4A5CEF9BC622B374123B /* ExportSheet.swift */; };
 		2D725B746393001147BAA6A2 /* PlaybackEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = C34A7F7AC3AC1E37BE06C65D /* PlaybackEngine.swift */; };
 		32731F30E7B43A2498D8743C /* TimelineGeometryPortTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE3FE572A1D29D9470FC8260 /* TimelineGeometryPortTests.swift */; };
 		3469BE535358830F044B2EBA /* NeuralSheetCore in Frameworks */ = {isa = PBXBuildFile; productRef = 29C282FB9AA070942A5DC935 /* NeuralSheetCore */; };
@@ -84,6 +85,7 @@
 		8A58626AF17AD52AAA84DD99 /* EditingCommands+Bulk.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1BCB5A67EA3E14C98A455F1E /* EditingCommands+Bulk.swift */; };
 		8D1BDD47840F8CA8252B0DE6 /* Inter-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AE1874F7C1CF681CF5F64EE5 /* Inter-Bold.ttf */; };
 		8E3ED701546F7ACB3F3AEB89 /* SettingsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1278FD1456FACEB3B4205379 /* SettingsScreen.swift */; };
+		90A39B44B1A4E51237A67599 /* ExportMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFD4142B8CAF19BCD8600F0F /* ExportMenu.swift */; };
 		96901D8A448669E84A31BDEA /* NeuralSheetWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA1E02AF3C448FD8C12755D8 /* NeuralSheetWidgets.swift */; };
 		96DE81688364DBA827B5E436 /* TimelineTouchView+Editing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 281CBB975C8CF4846A2C39AE /* TimelineTouchView+Editing.swift */; };
 		97D7B68BCFAFBFB5D3132D43 /* MobileModel+Editing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B6063449B8C47775921AC6C /* MobileModel+Editing.swift */; };
@@ -249,6 +251,7 @@
 		5840E21D604FF51AA596945E /* IncomingTakes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IncomingTakes.swift; sourceTree = "<group>"; };
 		5A45FCF8143DFA90E81E264A /* InstrumentSynthBank+Mix.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "InstrumentSynthBank+Mix.swift"; sourceTree = "<group>"; };
 		5EB84C173F4AC695378C49EC /* ScoreGlyphs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScoreGlyphs.swift; sourceTree = "<group>"; };
+		619E4A5CEF9BC622B374123B /* ExportSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportSheet.swift; sourceTree = "<group>"; };
 		640D8C9858F603029AEC4018 /* SynthInstrument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SynthInstrument.swift; sourceTree = "<group>"; };
 		646BFAC8E1571F22BE390DE0 /* ScoreSheets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScoreSheets.swift; sourceTree = "<group>"; };
 		64AFE2DF14117775CB15A796 /* stb_vorbis.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = stb_vorbis.h; sourceTree = "<group>"; };
@@ -299,6 +302,7 @@
 		BC384ED7A2F2116E5237427C /* ThermalGateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThermalGateTests.swift; sourceTree = "<group>"; };
 		BC48D300B57BD8077795CBB6 /* InstrumentSynthBank+Audition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "InstrumentSynthBank+Audition.swift"; sourceTree = "<group>"; };
 		BCD0F72ADCCB8DA3424E830B /* MobileModel+MIDIImport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MobileModel+MIDIImport.swift"; sourceTree = "<group>"; };
+		BFD4142B8CAF19BCD8600F0F /* ExportMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportMenu.swift; sourceTree = "<group>"; };
 		C058476950C2B3A57121699C /* Accommodations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Accommodations.swift; sourceTree = "<group>"; };
 		C11A1EB5870C27BF3292450E /* InstrumentSynthBank+DefaultBank.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "InstrumentSynthBank+DefaultBank.swift"; sourceTree = "<group>"; };
 		C11E44D05A875579EC6C168C /* ScoreLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScoreLayout.swift; sourceTree = "<group>"; };
@@ -655,6 +659,8 @@
 		B3B772C47ADEB41483CDD60D /* Screens */ = {
 			isa = PBXGroup;
 			children = (
+				BFD4142B8CAF19BCD8600F0F /* ExportMenu.swift */,
+				619E4A5CEF9BC622B374123B /* ExportSheet.swift */,
 				337D0658549051C7A9BB13AA /* InstrumentsSheet.swift */,
 				40A3BE7B4003A287F8EE5F74 /* InstrumentStrips.swift */,
 				BB9146F6635CB96F830598CF /* NoteCard.swift */,
@@ -913,6 +919,8 @@
 				726ECAA4F9BE75C3E979AF1C /* ExportCommands+Audio.swift in Sources */,
 				60CC1377733C2DD1C9A986AA /* ExportCommands+Stems.swift in Sources */,
 				1A6AEEA77E9F5865FBC3E306 /* ExportCommands.swift in Sources */,
+				90A39B44B1A4E51237A67599 /* ExportMenu.swift in Sources */,
+				2D686DEBADDDB37F86FD38B6 /* ExportSheet.swift in Sources */,
 				81E067A2248F7115B8A1BA48 /* Fonts.swift in Sources */,
 				FEF851913671909CF6383F8B /* Formats.swift in Sources */,
 				EDB0830E30A86E1C9DC7B077 /* IncomingTakes.swift in Sources */,
