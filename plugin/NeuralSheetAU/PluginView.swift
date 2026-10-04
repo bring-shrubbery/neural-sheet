@@ -21,10 +21,15 @@ struct PluginView: View {
             if let capture = model.capture {
                 CaptureControls(capture: capture, model: model)
             }
+
+            if model.models.isEmpty {
+                NoModelNotice(model: model)
+            }
         }
         .padding(24)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(.background)
+        .onAppear(perform: model.refreshModels)
     }
 
     private var rateText: String {
@@ -90,5 +95,29 @@ private struct CaptureControls: View {
         case .capturing:
             return "Recording \(TimeFormat.transport(capture.elapsed))"
         }
+    }
+}
+
+/// No transcription model in the group container: the plugin downloads nothing itself, so it
+/// says where the app downloads them and opens the app.
+private struct NoModelNotice: View {
+    let model: PluginViewModel
+
+    var body: some View {
+        VStack(spacing: 8) {
+            Text("Download models in NeuralSheet › Settings › Model")
+                .font(.headline)
+            HStack(spacing: 8) {
+                Button("Open NeuralSheet", action: model.openApp)
+                Button("Check Again", action: model.refreshModels)
+            }
+            if model.appMissing {
+                Text("NeuralSheet is not installed.")
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .padding(12)
+        .frame(maxWidth: 720)
+        .background(.quaternary, in: .rect(cornerRadius: 8))
     }
 }

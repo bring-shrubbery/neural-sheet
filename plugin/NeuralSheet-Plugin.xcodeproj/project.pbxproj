@@ -11,6 +11,7 @@
 		0B6892B9D4B93F7CD762F05D /* PluginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58A0C918ABD1BB7F03465D29 /* PluginView.swift */; };
 		0D3E938C0582671C356C7220 /* Accommodations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DD3D841326A1BACC8CA398C /* Accommodations.swift */; };
 		176011C69199E4DCBFE73CB6 /* NeuralSheetPluginApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6F36F9E4C9E02AB0637C09B /* NeuralSheetPluginApp.swift */; };
+		3817561B55C3A2F8F093F623 /* PluginModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65172D2EB15005E96EC711D0 /* PluginModels.swift */; };
 		456F337C627EB086DFF7ED94 /* CaptureSessionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2374B36820BFD1E2F2C0577 /* CaptureSessionTests.swift */; };
 		4A520D3C436B6C55E0D971A2 /* AVFAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7A8D7D6BEC222AB0E40F1F51 /* AVFAudio.framework */; };
 		4AD41BC8F1B7C7B6A544B1B3 /* SourceAudio.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B89059501CB461984F6F021 /* SourceAudio.swift */; };
@@ -21,6 +22,7 @@
 		69D46A2E5485D257604D7698 /* NeuralSheetAudioUnit+Render.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7718B7149DE135BEBB3A6FE /* NeuralSheetAudioUnit+Render.swift */; };
 		713ED346DECD9D56A43FC14E /* NeuralSheetAUViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C02A1CF1EBCE53AC14933731 /* NeuralSheetAUViewController.swift */; };
 		71FCD405D30834DDCEE2FF84 /* TakeWaveformView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D228CFD93130F172A38943E /* TakeWaveformView.swift */; };
+		73637B732E34662322562165 /* PluginModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65172D2EB15005E96EC711D0 /* PluginModels.swift */; };
 		76DA0137BC9299627A10B47B /* CapturedTake.swift in Sources */ = {isa = PBXBuildFile; fileRef = A95007A769824ED6B2755438 /* CapturedTake.swift */; };
 		7A72FD09943F8630B56CA9EF /* CapturedTake.swift in Sources */ = {isa = PBXBuildFile; fileRef = A95007A769824ED6B2755438 /* CapturedTake.swift */; };
 		892E89BB6E014A7D7FDC6F73 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45AF3F4B97F0EC83E679ED3D /* Theme.swift */; };
@@ -37,6 +39,7 @@
 		C9877CF5CF20AF151987902B /* NeuralSheetEngine in Frameworks */ = {isa = PBXBuildFile; productRef = FDAD2A66C6858EB6D1A4522B /* NeuralSheetEngine */; };
 		D0194CA0887A6C0A95D15C57 /* WaveformView+Drawing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B45C9361FF068062BD434EA /* WaveformView+Drawing.swift */; };
 		D7CF9FCCFA419FCE01D49E7A /* Fonts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AA7E509B6C0E16C11B83C95 /* Fonts.swift */; };
+		D9910B9AD3CF1F307815148D /* PluginModelsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 704A2260EF51F93CD2A9C3FC /* PluginModelsTests.swift */; };
 		EA7990315216367243A29C4B /* CoreAudioKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DEAF591D6867E3E52A9F7239 /* CoreAudioKit.framework */; };
 		EC76D0E9517F9774892FD538 /* CaptureRing.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6C517E72478E7B6DF8BF5E1 /* CaptureRing.swift */; };
 		ED536463A2AD43A797E2BF6D /* TimelineDrawing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56968B269F248243BBBF3820 /* TimelineDrawing.swift */; };
@@ -83,7 +86,10 @@
 		50CBE693C7B30CFE6E857FAE /* PluginCoreTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PluginCoreTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		56968B269F248243BBBF3820 /* TimelineDrawing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineDrawing.swift; sourceTree = "<group>"; };
 		58A0C918ABD1BB7F03465D29 /* PluginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PluginView.swift; sourceTree = "<group>"; };
+		5D9E8DFD2CB4E19AA076FD47 /* Container.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Container.entitlements; sourceTree = "<group>"; };
+		65172D2EB15005E96EC711D0 /* PluginModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PluginModels.swift; sourceTree = "<group>"; };
 		6B89059501CB461984F6F021 /* SourceAudio.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceAudio.swift; sourceTree = "<group>"; };
+		704A2260EF51F93CD2A9C3FC /* PluginModelsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PluginModelsTests.swift; sourceTree = "<group>"; };
 		73248F56E00C45416ADDD91F /* NeuralSheetEngine */ = {isa = PBXFileReference; lastKnownFileType = folder; name = NeuralSheetEngine; path = ../app/Packages/NeuralSheetEngine; sourceTree = SOURCE_ROOT; };
 		7A8D7D6BEC222AB0E40F1F51 /* AVFAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFAudio.framework; path = System/Library/Frameworks/AVFAudio.framework; sourceTree = SDKROOT; };
 		7D228CFD93130F172A38943E /* TakeWaveformView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TakeWaveformView.swift; sourceTree = "<group>"; };
@@ -160,6 +166,7 @@
 				A95007A769824ED6B2755438 /* CapturedTake.swift */,
 				D6C517E72478E7B6DF8BF5E1 /* CaptureRing.swift */,
 				2E278E2722F6F1DC4F5E5962 /* CaptureSession.swift */,
+				65172D2EB15005E96EC711D0 /* PluginModels.swift */,
 			);
 			path = PluginCore;
 			sourceTree = "<group>";
@@ -196,6 +203,7 @@
 			children = (
 				01BC3A18627F014DF185A378 /* CaptureRingTests.swift */,
 				B2374B36820BFD1E2F2C0577 /* CaptureSessionTests.swift */,
+				704A2260EF51F93CD2A9C3FC /* PluginModelsTests.swift */,
 				010D0ADFE38DC5606310995C /* TestBuffers.swift */,
 			);
 			path = PluginCoreTests;
@@ -236,6 +244,7 @@
 		DAA59E306FA1CE8C9FFCF7D5 /* Container */ = {
 			isa = PBXGroup;
 			children = (
+				5D9E8DFD2CB4E19AA076FD47 /* Container.entitlements */,
 				0D29223D1C1679E98C34FCEA /* ContainerView.swift */,
 				E6F36F9E4C9E02AB0637C09B /* NeuralSheetPluginApp.swift */,
 			);
@@ -414,6 +423,7 @@
 				61D6C7838F7782B65A8D12AC /* NeuralSheetAudioUnit+Capture.swift in Sources */,
 				69D46A2E5485D257604D7698 /* NeuralSheetAudioUnit+Render.swift in Sources */,
 				B0AEEAE4CCD78ED1617E371B /* NeuralSheetAudioUnit.swift in Sources */,
+				3817561B55C3A2F8F093F623 /* PluginModels.swift in Sources */,
 				0B6892B9D4B93F7CD762F05D /* PluginView.swift in Sources */,
 				C2C136B9BFA3BA6311E325C9 /* PluginViewModel.swift in Sources */,
 				4AD41BC8F1B7C7B6A544B1B3 /* SourceAudio.swift in Sources */,
@@ -444,6 +454,8 @@
 				5CCE15B72DC72357F739A58A /* CaptureSession.swift in Sources */,
 				456F337C627EB086DFF7ED94 /* CaptureSessionTests.swift in Sources */,
 				76DA0137BC9299627A10B47B /* CapturedTake.swift in Sources */,
+				73637B732E34662322562165 /* PluginModels.swift in Sources */,
+				D9910B9AD3CF1F307815148D /* PluginModelsTests.swift in Sources */,
 				B8DDB60C594F008AF2BD41C1 /* SourceAudio.swift in Sources */,
 				92387CDC0F081B2C3FBB0636 /* TestBuffers.swift in Sources */,
 			);
@@ -481,6 +493,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Container/Container.entitlements;
 				COMBINE_HIDPI_IMAGES = YES;
 				ENABLE_APP_SANDBOX = NO;
 				ENABLE_PREVIEWS = YES;
@@ -710,6 +723,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Container/Container.entitlements;
 				COMBINE_HIDPI_IMAGES = YES;
 				ENABLE_APP_SANDBOX = NO;
 				ENABLE_PREVIEWS = YES;
