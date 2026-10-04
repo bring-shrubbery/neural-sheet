@@ -1,0 +1,256 @@
+name: iOS TestFlight
+
+# Every push to main archives the iOS app for the device (iOS app design §2, CI row; sub-issue K).
+# With the signing and App Store Connect secrets present, on main, the archive is signed for App
+# Store distribution, exported as an .ipa and uploaded to App Store Connect, where it appears in
+# TestFlight as build <run number> of MARKETING_VERSION in ios/project.yml. Without them (a fork,
+# or before the maintainer has added them) the archive is built unsigned, which proves it builds,
+# and the run stays green. Handing a build to testers and any App Store release are the
+# maintainer's actions in App Store Connect. docs/release.md, "iOS (TestFlight)", lists the
+# secrets and how to make them.
+#
+# The committed ios/NeuralSheet-iOS.xcodeproj is the source; nothing is regenerated here.
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'docs/**'
+      - 'web/**'
+      - '**/*.md'
+      - 'LICENSE'
+      - 'NOTICE'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Uploads queue rather than race; each run's build number is its own.
+concurrency:
+  group: ios-testflight
+  cancel-in-progress: false
+
+jobs:
+  archive:
+    name: Archive and upload
+    runs-on: macos-26
+    env:
+      ARCHIVE: build/NeuralSheet.xcarchive
+      EXPORT: build/export
+      APP_BUNDLE_ID: com.quassum.neuralsheet.ios
+      WIDGETS_BUNDLE_ID: com.quassum.neuralsheet.ios.widgets
+    steps:
+      - name: Check the signing secrets
+        id: secrets
+        env:
+          APPLE_DIST_CERT_P12_BASE64: ${{ secrets.APPLE_DIST_CERT_P12_BASE64 }}
+          APPLE_DIST_CERT_PASSWORD: ${{ secrets.APPLE_DIST_CERT_PASSWORD }}
+          IOS_APP_PROFILE_BASE64: ${{ secrets.IOS_APP_PROFILE_BASE64 }}
+          IOS_WIDGET_PROFILE_BASE64: ${{ secrets.IOS_WIDGET_PROFILE_BASE64 }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          ASC_API_KEY_P8: ${{ secrets.ASC_API_KEY_P8 }}
+          ASC_API_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
+          ASC_API_ISSUER_ID: ${{ secrets.ASC_API_ISSUER_ID }}
+        run: |
+          echo "KEYCHAIN=$RUNNER_TEMP/ios-signing.keychain-db" >> "$GITHUB_ENV"
+          names=(APPLE_DIST_CERT_P12_BASE64 APPLE_DIST_CERT_PASSWORD IOS_APP_PROFILE_BASE64
+                 IOS_WIDGET_PROFILE_BASE64 APPLE_TEAM_ID ASC_API_KEY_P8 ASC_API_KEY_ID ASC_API_ISSUER_ID)
+          missing=()
+          for name in "${names[@]}"; do
+            [ -n "${!name}" ] || missing+=("$name")
+          done
+          if [ "${#missing[@]}" -eq "${#names[@]}" ]; then
+            echo "no signing secrets; archiving unsigned and uploading nothing (docs/release.md)"
+            echo "signed=false" >> "$GITHUB_OUTPUT"
+          elif [ "${#missing[@]}" -gt 0 ]; then
+            echo "::warning::missing repository secrets: ${missing[*]}; archiving unsigned and uploading nothing (docs/release.md)"
+            echo "signed=false" >> "$GITHUB_OUTPUT"
+          elif [ "$GITHUB_REF" != "refs/heads/main" ]; then
+            echo "::notice::only main uploads to TestFlight; archiving $GITHUB_REF unsigned"
+            echo "signed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "all signing secrets present; this run uploads build $GITHUB_RUN_NUMBER"
+            echo "signed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v7
+        with:
+          submodules: recursive
+      - name: Select the newest installed Xcode
+        run: |
+          # shellcheck disable=SC2012
+          XCODE=$(ls -d /Applications/Xcode_*.app | sort -V | tail -1)
+          echo "using $XCODE"
+          sudo xcode-select -s "$XCODE"
+          xcodebuild -version
+      - name: Cache the engine build
+        uses: actions/cache@v6
+        with:
+          path: app/build/engine/ios
+          key: engine-ios-${{ runner.os }}-${{ hashFiles('.gitmodules') }}-${{ hashFiles('app/Scripts/build-engine.sh') }}
+
+      - name: Import the distribution certificate and profiles
+        id: signing
+        if: steps.secrets.outputs.signed == 'true'
+        env:
+          P12: ${{ secrets.APPLE_DIST_CERT_P12_BASE64 }}
+          P12_PASSWORD: ${{ secrets.APPLE_DIST_CERT_PASSWORD }}
+          APP_PROFILE: ${{ secrets.IOS_APP_PROFILE_BASE64 }}
+          WIDGET_PROFILE: ${{ secrets.IOS_WIDGET_PROFILE_BASE64 }}
+          TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          set -euo pipefail
+          trap 'rm -f "$RUNNER_TEMP/dist.p12"' EXIT
+          printf '%s' "$P12" | base64 --decode > "$RUNNER_TEMP/dist.p12"
+          password=$(uuidgen)
+          security create-keychain -p "$password" "$KEYCHAIN"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN"
+          security unlock-keychain -p "$password" "$KEYCHAIN"
+          security import "$RUNNER_TEMP/dist.p12" -k "$KEYCHAIN" -P "$P12_PASSWORD" -f pkcs12 \
+            -T /usr/bin/codesign -T /usr/bin/security
+          security set-key-partition-list -S apple-tool:,apple: -s -k "$password" "$KEYCHAIN" > /dev/null
+          # Xcode finds identities on the user search list; keep the login keychain on it.
+          # shellcheck disable=SC2046
+          security list-keychains -d user -s "$KEYCHAIN" $(security list-keychains -d user | tr -d '"')
+          if ! security find-identity -v -p codesigning "$KEYCHAIN" | tee /dev/stderr \
+              | grep -q "Apple Distribution: .*($TEAM_ID)"; then
+            echo "::error::the certificate is not an Apple Distribution identity of team $TEAM_ID"; exit 1
+          fi
+
+          # Xcode 16 and later read profiles from UserData; older tools from MobileDevice.
+          dirs=("$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles"
+                "$HOME/Library/MobileDevice/Provisioning Profiles")
+          mkdir -p "${dirs[@]}"
+          install_profile() { # base64, expected bundle id, output name
+            local file="$RUNNER_TEMP/$3.mobileprovision" plist="$RUNNER_TEMP/$3.plist"
+            printf '%s' "$1" | base64 --decode > "$file"
+            security cms -D -i "$file" > "$plist"
+            local name uuid appid
+            name=$(plutil -extract Name raw "$plist")
+            uuid=$(plutil -extract UUID raw "$plist")
+            appid=$(plutil -extract Entitlements.application-identifier raw "$plist")
+            if [ "$appid" != "$TEAM_ID.$2" ]; then
+              echo "::error::profile '$name' is for $appid, expected $TEAM_ID.$2"; exit 1
+            fi
+            if plutil -extract ProvisionedDevices raw "$plist" > /dev/null 2>&1; then
+              echo "::error::profile '$name' lists devices; it must be an App Store Connect profile"; exit 1
+            fi
+            for dir in "${dirs[@]}"; do
+              cp "$file" "$dir/$uuid.mobileprovision"
+              echo "$dir/$uuid.mobileprovision" >> "$RUNNER_TEMP/installed-profiles"
+            done
+            rm -f "$file" "$plist"
+            echo "installed '$name' ($uuid) for $2" >&2
+            echo "$3=$name" >> "$GITHUB_OUTPUT"
+          }
+          install_profile "$APP_PROFILE" "$APP_BUNDLE_ID" app_profile
+          install_profile "$WIDGET_PROFILE" "$WIDGETS_BUNDLE_ID" widgets_profile
+
+      - name: Archive
+        working-directory: ios
+        env:
+          SIGNED: ${{ steps.secrets.outputs.signed }}
+          TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APP_PROFILE_NAME: ${{ steps.signing.outputs.app_profile }}
+          WIDGETS_PROFILE_NAME: ${{ steps.signing.outputs.widgets_profile }}
+        run: |
+          set -o pipefail
+          # The build number is the run number, so TestFlight's builds of a version only climb.
+          args=(-project NeuralSheet-iOS.xcodeproj -scheme NeuralSheet -configuration Release
+                -destination 'generic/platform=iOS' -archivePath "$ARCHIVE"
+                CURRENT_PROJECT_VERSION="$GITHUB_RUN_NUMBER")
+          if [ "$SIGNED" = "true" ]; then
+            # Release signs by hand (ios/project.yml); each target reads its profile's name from
+            # its own variable, since a command-line setting reaches every target.
+            args+=(DEVELOPMENT_TEAM="$TEAM_ID"
+                   NS_APP_STORE_PROFILE="$APP_PROFILE_NAME"
+                   NS_WIDGETS_APP_STORE_PROFILE="$WIDGETS_PROFILE_NAME"
+                   OTHER_CODE_SIGN_FLAGS="--keychain $KEYCHAIN")
+          else
+            args+=(CODE_SIGNING_ALLOWED=NO)
+          fi
+          xcodebuild "${args[@]}" archive 2>&1 | tee build.log | tail -40
+
+          APP="$ARCHIVE/Products/Applications/NeuralSheet.app"
+          APPEX="$APP/PlugIns/NeuralSheetWidgets.appex"
+          for bundle in "$APP" "$APPEX"; do
+            if [ ! -d "$bundle" ]; then echo "::error::the archive has no $bundle"; exit 1; fi
+            built=$(plutil -extract CFBundleVersion raw "$bundle/Info.plist")
+            if [ "$built" != "$GITHUB_RUN_NUMBER" ]; then
+              echo "::error::$bundle has build $built, expected $GITHUB_RUN_NUMBER"; exit 1
+            fi
+          done
+          echo "archived $(plutil -extract CFBundleShortVersionString raw "$APP/Info.plist") ($GITHUB_RUN_NUMBER)"
+      - name: Fail on warnings in our own sources
+        working-directory: ios
+        run: |
+          if grep -E "/(ios/NeuralSheet|app/NeuralSheet|app/Packages)/.*warning:" build.log; then
+            echo "::error::warnings in NeuralSheet sources"; exit 1
+          fi
+          echo "no warnings in NeuralSheet sources"
+
+      - name: Export the .ipa
+        if: steps.secrets.outputs.signed == 'true'
+        working-directory: ios
+        env:
+          TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APP_PROFILE_NAME: ${{ steps.signing.outputs.app_profile }}
+          WIDGETS_PROFILE_NAME: ${{ steps.signing.outputs.widgets_profile }}
+        run: |
+          set -o pipefail
+          OPTIONS="$RUNNER_TEMP/ExportOptions.plist"
+          plutil -create xml1 "$OPTIONS"
+          plutil -insert method -string app-store-connect "$OPTIONS"
+          plutil -insert destination -string export "$OPTIONS"
+          plutil -insert signingStyle -string manual "$OPTIONS"
+          plutil -insert signingCertificate -string "Apple Distribution" "$OPTIONS"
+          plutil -insert teamID -string "$TEAM_ID" "$OPTIONS"
+          plutil -insert uploadSymbols -bool YES "$OPTIONS"
+          plutil -insert manageAppVersionAndBuildNumber -bool NO "$OPTIONS"
+          plutil -insert provisioningProfiles -json \
+            "{\"$APP_BUNDLE_ID\": \"$APP_PROFILE_NAME\", \"$WIDGETS_BUNDLE_ID\": \"$WIDGETS_PROFILE_NAME\"}" "$OPTIONS"
+          plutil -lint "$OPTIONS"
+          xcodebuild -exportArchive -archivePath "$ARCHIVE" -exportPath "$EXPORT" \
+            -exportOptionsPlist "$OPTIONS" 2>&1 | tail -20
+          ls -l "$EXPORT"
+          test -f "$EXPORT/NeuralSheet.ipa"
+
+      - name: Upload to App Store Connect
+        if: steps.secrets.outputs.signed == 'true'
+        working-directory: ios
+        env:
+          ASC_API_KEY_P8: ${{ secrets.ASC_API_KEY_P8 }}
+          ASC_API_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
+          ASC_API_ISSUER_ID: ${{ secrets.ASC_API_ISSUER_ID }}
+        run: |
+          set -o pipefail
+          KEY="$RUNNER_TEMP/AuthKey.p8"
+          trap 'rm -f "$KEY"' EXIT
+          printf '%s\n' "$ASC_API_KEY_P8" > "$KEY"
+          xcrun altool --upload-app -f "$EXPORT/NeuralSheet.ipa" -t ios \
+            --api-key "$ASC_API_KEY_ID" --api-issuer "$ASC_API_ISSUER_ID" --p8-file-path "$KEY" \
+            --show-progress
+
+      - name: Remove the signing keychain and profiles
+        if: always() && steps.secrets.outputs.signed == 'true'
+        run: |
+          security delete-keychain "$KEYCHAIN" || true
+          if [ -f "$RUNNER_TEMP/installed-profiles" ]; then
+            while IFS= read -r profile; do rm -f "$profile"; done < "$RUNNER_TEMP/installed-profiles"
+          fi
+
+      - name: Summary
+        if: always()
+        env:
+          SIGNED: ${{ steps.secrets.outputs.signed }}
+        run: |
+          {
+            echo "## NeuralSheet for iOS, build $GITHUB_RUN_NUMBER"
+            echo
+            echo "- commit \`$GITHUB_SHA\`"
+            if [ "$SIGNED" = "true" ]; then
+              echo "- signed and uploaded to App Store Connect; it shows in TestFlight once Apple has processed it"
+            else
+              echo "- archived unsigned; nothing uploaded (docs/release.md, \"iOS (TestFlight)\")"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
