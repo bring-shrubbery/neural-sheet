@@ -137,7 +137,11 @@ jobs:
           xcodebuild -project NeuralSheet-iOS.xcodeproj -scheme NeuralSheet \
             -destination "platform=iOS Simulator,id=$SIM" \
             CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO \
-            test 2>&1 | tail -40
+            test 2>&1 | tee "$RUNNER_TEMP/ios-test.log" | tail -40 || {
+              # The names alone do not say why: the assertion lines do.
+              grep -E "error: -\[|: error: |XCTAssert" "$RUNNER_TEMP/ios-test.log" | head -80
+              exit 1
+            }
       - name: Every string translated
         working-directory: app
         run: Scripts/check-localizations.sh --ios CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
