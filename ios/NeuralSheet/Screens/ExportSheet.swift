@@ -78,18 +78,23 @@ struct ExportSheet: View {
                 }
             }
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button { model.dismissExport() } label: {
-                        if exports.ready != nil || exports.failure != nil {
-                            Text("Done", comment: "The export sheet: close it")
-                        } else {
-                            Text("Cancel", comment: "A dialog's cancel button")
+                // While working, the bar's own Cancel is the one, as on the Mac's sheet.
+                if exports.audioRender == nil, exports.stemsExport == nil {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button { model.dismissExport() } label: {
+                            if exports.ready != nil || exports.failure != nil {
+                                Text("Done", comment: "The export sheet: close it")
+                            } else {
+                                Text("Cancel", comment: "A dialog's cancel button")
+                            }
                         }
+                        .accessibilityIdentifier("export-close")
                     }
-                    .accessibilityIdentifier("export-close")
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
+            // The document's own Back would otherwise show in the sheet's bar.
+            .navigationBarBackButtonHidden()
         }
         .interactiveDismissDisabled(exports.audioRender != nil || exports.stemsExport != nil)
     }
@@ -162,7 +167,6 @@ private struct AudioExportForm: View {
             } label: {
                 Text("Range:")
             }
-            .pickerStyle(.segmented)
 
             Picker(selection: $choice.format) {
                 ForEach(AudioExportFormat.allCases, id: \.self) { format in

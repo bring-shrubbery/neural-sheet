@@ -56,7 +56,7 @@ struct ExportMenu: View {
     }
 }
 
-/// The iPad's MIDI chip beside the Export menu: dragged into Files or a DAW as the `.mid` Export
+/// The iPad's MIDI chip in the corner of the roll and the score: dragged into Files or a DAW as the `.mid` Export
 /// MIDI writes, or -- chosen from its long-press menu, the Mac's ⌥ -- as the `.musicxml`.
 struct ExportDragChip: View {
     let model: MobileModel
@@ -73,7 +73,7 @@ struct ExportDragChip: View {
         }
         .padding(.horizontal, 10)
         .frame(minHeight: 44)
-        .background(Capsule().fill(Color(.tertiarySystemFill)))
+        .background(Capsule().fill(.regularMaterial))
         .opacity(enabled ? 1 : 0.4)
         .onDrag {
             model.dragItemProvider(musicXML: dragsMusicXML) ?? NSItemProvider()

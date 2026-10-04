@@ -21,9 +21,6 @@ struct RollScreen: View {
             TransportBar(model: model) {
                 RollCommandsMenu(model: model)
                 ExportMenu(model: model)
-                if sizeClass == .regular {
-                    ExportDragChip(model: model)
-                }
             }
 
             TimelineView(model: model) { rect in
@@ -56,6 +53,12 @@ struct RollScreen: View {
                 // new take.
                 .onDrop(of: MobileModel.droppableContentTypes, isTargeted: $isDropTargeted) { providers in
                     model.acceptDrop(providers)
+                }
+                // The iPad's MIDI chip, over the roll's corner rather than in the full bar.
+                .overlay(alignment: .bottomTrailing) {
+                    if sizeClass == .regular {
+                        ExportDragChip(model: model).padding(12)
+                    }
                 }
                 .overlay {
                     if isDropTargeted {

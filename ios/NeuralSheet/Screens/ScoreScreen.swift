@@ -25,13 +25,16 @@ struct ScoreScreen: View {
                 .accessibilityIdentifier("sheet")
 
                 ExportMenu(model: model)
-                if sizeClass == .regular {
-                    ExportDragChip(model: model)
-                }
             }
 
             ScoreView(model: model) { program in
                 part = PartSelection(program: program)
+            }
+            // The iPad's MIDI chip, over the score's corner rather than in the full bar.
+            .overlay(alignment: .bottomTrailing) {
+                if sizeClass == .regular, model.document != nil {
+                    ExportDragChip(model: model).padding(12)
+                }
             }
             .overlay {
                 if model.document == nil, model.streamedNotes.isEmpty {
