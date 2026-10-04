@@ -108,6 +108,20 @@ targets:
       - path: ../app/NeuralSheet/Engine/TranscriptionRun.swift
       - path: ../app/NeuralSheet/Engine/StemSeparator.swift
       - path: ../app/NeuralSheet/Audio/StemFiles.swift
+      # The synth (sub-issue D): the bank and its scheduler as the app's offline renderer builds
+      # them, and the MIDI output whose ring and sender thread feed the virtual source.
+      - path: ../app/NeuralSheet/Audio/NoteScheduler.swift
+      - path: ../app/NeuralSheet/Audio/SynthInstrument.swift
+      - path: ../app/NeuralSheet/Audio/InstrumentSynthBank.swift
+      - path: ../app/NeuralSheet/Audio/InstrumentSynthBank+Render.swift
+      - path: ../app/NeuralSheet/Audio/InstrumentSynthBank+Mix.swift
+      - path: ../app/NeuralSheet/Audio/InstrumentSynthBank+Audition.swift
+      - path: ../app/NeuralSheet/Audio/InstrumentSynthBank+Click.swift
+      - path: ../app/NeuralSheet/Audio/InstrumentSynthBank+SoundBank.swift
+      - path: ../app/NeuralSheet/Audio/InstrumentSynthBank+MidiOut.swift
+      - path: ../app/NeuralSheet/Audio/MidiOutput.swift
+      - path: ../app/NeuralSheet/Audio/MidiOutput+Sender.swift
+      - path: ../app/NeuralSheet/Audio/MidiOutRing.swift
       - path: ../app/NeuralSheet/Engine/nsheet_stems.h
       - path: ../app/NeuralSheet/Engine/nsheet_stems.cpp
     dependencies:
@@ -117,6 +131,7 @@ targets:
       - sdk: AudioToolbox.framework
       - sdk: AVFAudio.framework
       - sdk: CoreAudioKit.framework
+      - sdk: CoreMIDI.framework
     settings:
       base:
         PRODUCT_NAME: NeuralSheetAU
@@ -177,8 +192,24 @@ targets:
       - path: PluginCoreTests
       - path: PluginCore
       - path: ../app/NeuralSheet/Audio/SourceAudio.swift
+      # The synth (sub-issue D), for SynthRenderer: the bank and its scheduler as the app's offline renderer builds
+      # them, and the MIDI output whose ring and sender thread feed the virtual source.
+      - path: ../app/NeuralSheet/Audio/NoteScheduler.swift
+      - path: ../app/NeuralSheet/Audio/SynthInstrument.swift
+      - path: ../app/NeuralSheet/Audio/InstrumentSynthBank.swift
+      - path: ../app/NeuralSheet/Audio/InstrumentSynthBank+Render.swift
+      - path: ../app/NeuralSheet/Audio/InstrumentSynthBank+Mix.swift
+      - path: ../app/NeuralSheet/Audio/InstrumentSynthBank+Audition.swift
+      - path: ../app/NeuralSheet/Audio/InstrumentSynthBank+Click.swift
+      - path: ../app/NeuralSheet/Audio/InstrumentSynthBank+SoundBank.swift
+      - path: ../app/NeuralSheet/Audio/InstrumentSynthBank+MidiOut.swift
+      - path: ../app/NeuralSheet/Audio/MidiOutput.swift
+      - path: ../app/NeuralSheet/Audio/MidiOutput+Sender.swift
+      - path: ../app/NeuralSheet/Audio/MidiOutRing.swift
     dependencies:
       - package: NeuralSheetCore
+      - sdk: AVFAudio.framework
+      - sdk: CoreMIDI.framework
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.quassum.neuralsheet.plugin.tests
