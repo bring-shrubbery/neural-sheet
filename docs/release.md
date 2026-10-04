@@ -109,6 +109,23 @@ that stops at the secrets check; that is expected. Quick successive pushes
 queue; GitHub keeps one pending run per queue, so a run marked *cancelled* is
 not a failure — the next run covers its commits.
 
+### 5. The App Group (models and settings)
+
+The app keeps its models and `global.settings` in the App Group container
+`~/Library/Group Containers/6WCYZER5LX.com.quassum.neuralsheet`, which the Audio
+Unit plugin's sandboxed extension reads too (Audio Unit design §2). Both
+entitlements files name the group, and the Archive step signs the app with
+`NeuralSheet/NeuralSheet.entitlements`, so nothing needs adding.
+
+The group is prefixed with the team ID on purpose: macOS admits a
+team-prefixed group on the Developer ID signature alone, while a `group.` group
+needs a provisioning profile naming it, which this workflow does not embed.
+Renaming the group to `group.…` means registering it in the developer account
+and embedding a Developer ID provisioning profile in the app and the plugin;
+without the profile, macOS keeps the app out of the container. A copy the
+system keeps out (signed ad hoc or by another team) falls back to
+`~/Library/NeuralSheet/models` and its settings there.
+
 ## When it fails
 
 - **missing repository secrets** — the first step names them; add and re-run.
