@@ -90,8 +90,13 @@ private func melodic(_ start: Double, _ end: Double, pitch: Int = 69) -> NoteEve
     let chord = [261.63, 329.63, 392.0]
     let samples = (0..<Int(rate)).map { index -> Float in
         let t = Double(index) / rate
-        let triad = chord.reduce(0.0) { sum, f in
-            sum + (1...5).reduce(0.0) { $0 + 0.3 / Double($1) * sin(2 * Double.pi * Double($1) * f * t) }
+        // Spelled out loop by loop: as one nested reduce, Xcode 26.6's type checker gives up.
+        var triad = 0.0
+        for f in chord {
+            for harmonic in 1...5 {
+                let h = Double(harmonic)
+                triad += 0.3 / h * sin(2 * Double.pi * h * f * t)
+            }
         }
         return Float(triad + 0.1 * sin(2 * Double.pi * 440 * t))
     }
