@@ -28,6 +28,8 @@ final class MobileModel {
             guard oldValue !== source else { return }
 
             sourceGeneration &+= 1
+            // A kept separation is the old take's.
+            dropKeptStems()
             // The take's length is what the loop spans without a range and the click covers.
             applyLoop()
             refreshClickTrack()
@@ -163,6 +165,12 @@ final class MobileModel {
     var isImporting = false
     /// The message box the screen shows, or nil.
     var alert: MobileAlert?
+
+    // MARK: - Exports (sub-issue I)
+
+    /// The render or separation in flight, the files ready to share, the MIDI file waiting on
+    /// Replace or Add, and the take's kept stems (`+Export`, `+AudioExport`, `+StemsExport`).
+    var exports = ExportState()
 
     // MARK: - Editing (sub-issue F)
 

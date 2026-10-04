@@ -110,13 +110,19 @@ extension MobileModel {
         print("NeuralSheet run: \(size.rawValue) model, \(passes.count) pass(es), groups \(selectedGroups.map(\.rawValue)), "
               + String(format: "%.2f s of audio", source.duration))
 
-        runTask = Task { [weak self, transcriber, separator, staging] in
-            let outcome = await Self.perform(source: source, passes: passes, modelPath: modelPath, stemsPath: stemsPath,
-                                             engine: transcriber, separator: separator, staging: staging, control: control,
-                                             onPhase: { phase in
-                                                 Task { @MainActor in self?.setPhase(phase) }
-                                             })
+        // A stems run keeps its separation for the take, so Export Stems… need not run it again.
+        let keepStems = stemsPath != nil ? newStemsFolder() : nil
 
+        runTask = Task { [weak self, transcriber, separator, staging] in
+            let (outcome, kept) = await Self.perform(source: source, passes: passes, modelPath: modelPath, stemsPath: stemsPath,
+                                                     keepStems: keepStems, engine: transcriber, separator: separator,
+                                                     staging: staging, control: control,
+                                                     onPhase: { phase in
+                                                         Task { @MainActor in self?.setPhase(phase) }
+                                                     })
+
+            // The separation is the take's whatever became of the transcription after it.
+            if let kept { self?.adoptStemsFolder(kept) }
             self?.land(outcome, modelPath: modelPath)
         }
     }
@@ -148,6 +154,7 @@ extension MobileModel {
         resumeRunWhenActive = false
         cancelTranscription()
         cancelRecording()
+        closeExports()
         engine.stop()
     }
 
@@ -167,23 +174,37 @@ extension MobileModel {
 
     /// The separator if there is one, then each pass through the engine, awaited in turn. The
     /// engine and the separator call back on their own threads; nothing here touches the model.
+    /// With the outcome, the folder the separation kept its stems in, if it did.
     nonisolated private static func perform(source: SourceAudio, passes: [TranscriptionPass], modelPath: URL,
-                                            stemsPath: URL?, engine: TranscriptionEngine, separator: StemSeparator,
-                                            staging: TranscriptionStaging, control: RunControl,
-                                            onPhase: @escaping @Sendable (RunState.Phase) -> Void) async -> RunOutcome {
+                                            stemsPath: URL?, keepStems: URL?, engine: TranscriptionEngine,
+                                            separator: StemSeparator, staging: TranscriptionStaging, control: RunControl,
+                                            onPhase: @escaping @Sendable (RunState.Phase) -> Void) async -> (RunOutcome, URL?) {
         var inputs: [[Float]] = [source.mono16k]
+        var kept: URL?
 
         if let stemsPath {
-            switch await separate(source, modelPath: stemsPath, separator: separator, staging: staging, control: control) {
+            switch await separate(source, modelPath: stemsPath, keepTo: keepStems, separator: separator, staging: staging,
+                                  control: control) {
             case let .success(stems):
                 inputs = stems.all
+                kept = stems.keptFolder
             case .failure(.cancelled):
-                return .cancelled
+                return (.cancelled, nil)
             case let .failure(.failed(message)):
-                return .failed(reason: String(localized: "the stems could not be separated: \(message)",
-                                              comment: "The reason in a failed transcription's alert, after \"could not be loaded or run:\""))
+                return (.failed(reason: String(localized: "the stems could not be separated: \(message)",
+                                               comment: "The reason in a failed transcription's alert, after \"could not be loaded or run:\"")), nil)
             }
         }
+
+        return (await transcribe(inputs, passes: passes, modelPath: modelPath, engine: engine, staging: staging,
+                                 control: control, onPhase: onPhase), kept)
+    }
+
+    /// Each pass through the engine over its input, the take or a stem.
+    nonisolated private static func transcribe(_ inputs: [[Float]], passes: [TranscriptionPass], modelPath: URL,
+                                               engine: TranscriptionEngine, staging: TranscriptionStaging,
+                                               control: RunControl,
+                                               onPhase: @escaping @Sendable (RunState.Phase) -> Void) async -> RunOutcome {
 
         var notes: [EngineNote] = []
 
@@ -231,7 +252,7 @@ extension MobileModel {
 
     /// The separator, awaited. The library cannot be stopped, so a cancel abandons the run: its
     /// completion is dropped and the wait ends at once.
-    nonisolated private static func separate(_ source: SourceAudio, modelPath: URL, separator: StemSeparator,
+    nonisolated private static func separate(_ source: SourceAudio, modelPath: URL, keepTo: URL?, separator: StemSeparator,
                                              staging: TranscriptionStaging,
                                              control: RunControl) async -> Result<StemSeparator.Stems, SeparationFailure> {
         let wait = SeparationWait()
@@ -243,6 +264,7 @@ extension MobileModel {
             separator.run(
                 modelPath: modelPath,
                 source: source,
+                keepTo: keepTo,
                 onProgress: { progress in
                     // The separation is the first half of the bar.
                     staging.stage(EngineUpdate(newNotes: [], finalizedThrough: 0,
