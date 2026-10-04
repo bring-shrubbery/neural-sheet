@@ -30,7 +30,9 @@ jobs:
         working-directory: app/Packages/NeuralSheetCore
         run: |
           set -o pipefail
-          swift test 2>&1 | tail -30
+          # The whole log, not its tail: a crash before the first test prints its reason above
+          # the last thirty lines.
+          swift test 2>&1
 
   engine-tests:
     name: Engine package tests
@@ -128,8 +130,12 @@ jobs:
         working-directory: ios
         run: |
           set -o pipefail
+          # The runner's Xcode has its own simulators (not the iPhone 18 Pro a local Xcode 27
+          # has), so the first available iPhone is picked by id rather than by name.
+          SIM=$(xcrun simctl list devices available | grep -m1 -oE 'iPhone[^(]*\(([0-9A-F-]{36})\)' | grep -oE '[0-9A-F-]{36}')
+          echo "testing on simulator $SIM"
           xcodebuild -project NeuralSheet-iOS.xcodeproj -scheme NeuralSheet \
-            -destination 'platform=iOS Simulator,name=iPhone 18 Pro' \
+            -destination "platform=iOS Simulator,id=$SIM" \
             CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO \
             test 2>&1 | tail -40
       - name: Every string translated
