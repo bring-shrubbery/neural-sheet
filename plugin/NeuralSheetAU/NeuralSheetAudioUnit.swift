@@ -37,6 +37,9 @@ nonisolated final class NeuralSheetAudioUnit: AUAudioUnit, @unchecked Sendable {
     /// allocated render resources.
     var captureRing: CaptureRing? { ringLock.withLock { $0 } }
 
+    /// Record, Arm and Stop, and the take (`+Capture`). Made on first use, on the main actor.
+    @MainActor private(set) lazy var capture = makeCaptureSession()
+
     override init(
         componentDescription: AudioComponentDescription, options: AudioComponentInstantiationOptions = []
     ) throws {

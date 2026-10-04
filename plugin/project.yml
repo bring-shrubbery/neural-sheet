@@ -76,6 +76,8 @@ targets:
       - path: NeuralSheetAU
       # Free of AU types (design §3) so a wrapper for another plugin format remains possible.
       - path: PluginCore
+      # The app's take, which a capture becomes (sub-issue B), shared by path as the iOS app does.
+      - path: ../app/NeuralSheet/Audio/SourceAudio.swift
     dependencies:
       - package: NeuralSheetCore
       - package: NeuralSheetEngine
@@ -126,6 +128,7 @@ targets:
     sources:
       - path: PluginCoreTests
       - path: PluginCore
+      - path: ../app/NeuralSheet/Audio/SourceAudio.swift
     dependencies:
       - package: NeuralSheetCore
     settings:
