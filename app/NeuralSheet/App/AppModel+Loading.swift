@@ -172,7 +172,7 @@ extension AppModel {
 
         refreshMixerEntries()
         instrumentLevels = [:]
-        instrumentBallistics = [:]
+        meterLevels.resetInstruments()
 
         playheadSeconds = 0
         isPlaying = false

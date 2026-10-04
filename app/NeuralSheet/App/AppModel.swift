@@ -502,15 +502,9 @@ import UniformTypeIdentifiers
     // Internal: AppModel+Meters.swift writes it, AppModel+Loading.swift's resetTranscription empties it.
     var instrumentLevels: [Int: Double] = [:]
 
-    // Internal: written from AppModel+Meters.swift.
-    @ObservationIgnored var masterBallistics = MeterBallistics()
-    // Internal: AppModel+Meters.swift writes it, AppModel+Loading.swift's resetTranscription empties it.
-    @ObservationIgnored var instrumentBallistics: [Int: MeterBallistics] = [:]
-
-    /// The render counter as of the last tick, and how long it has stood still.
-    // Internal: written from AppModel+Meters.swift.
-    @ObservationIgnored var lastRenderedFrames: UInt64 = 0
-    @ObservationIgnored var renderStaleSeconds = 0.0
+    /// The ballistics and the render counter's staleness between ticks (`Shared/MeterLevels`).
+    // Internal: AppModel+Meters.swift advances it, AppModel+Loading.swift's resetTranscription resets it.
+    @ObservationIgnored var meterLevels = MeterLevels()
 
     // MARK: - Init
 
@@ -532,7 +526,7 @@ import UniformTypeIdentifiers
         paths.sweepRecordings()
 
         installedModels = modelStore.installed()
-        lastRenderedFrames = engine.synthBank.renderedFrames
+        meterLevels = MeterLevels(renderedFrames: engine.synthBank.renderedFrames)
 
         engine.mix = effectiveMix
         engine.masterGainDb = masterGainDb
