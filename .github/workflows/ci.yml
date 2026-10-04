@@ -88,7 +88,7 @@ jobs:
           echo "no warnings in NeuralSheet sources"
       - name: Every string translated
         working-directory: app
-        run: Scripts/check-localizations.sh CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
+        run: Scripts/check-localizations.sh --mac CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
 
   ios:
     name: Build the iOS app
@@ -132,6 +132,9 @@ jobs:
             -destination 'platform=iOS Simulator,name=iPhone 18 Pro' \
             CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO \
             test 2>&1 | tail -40
+      - name: Every string translated
+        working-directory: app
+        run: Scripts/check-localizations.sh --ios CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
 
   web:
     name: Website
