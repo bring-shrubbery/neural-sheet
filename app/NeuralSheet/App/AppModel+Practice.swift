@@ -19,7 +19,7 @@ extension AppModel {
     /// range through `editor`'s `didSet`, the take through `duration`'s -- and only written to
     /// the engine when it differs, since the duration ticks up throughout a recording.
     func applyLoop() {
-        let loop: Range<Double>? = loopEnabled && duration > 0 ? (editor.range ?? 0 ..< duration) : nil
+        let loop = TransportCommands.loopWindow(enabled: loopEnabled, duration: duration, range: editor.range)
 
         if engine.loop != loop {
             engine.loop = loop
@@ -28,18 +28,9 @@ extension AppModel {
 
     // MARK: - Speed
 
-    /// What the SPEED pill spans: half speed to one and a half, the take's own in the middle.
-    static let speedRange = 0.5 ... 1.5
-
-    /// What one press of `-` or `=` and one notch of the slider move the speed by.
-    static let speedStep = 0.05
-
-    /// The keys: a step slower (`steps < 0`) or faster, landing on multiples of the step so a
-    /// few presses from wherever the slider was left reach round numbers.
+    /// The keys: a step slower (`steps < 0`) or faster (`TransportCommands.nudgedSpeed`).
     func nudgeSpeed(steps: Int) {
-        let notches = ((playbackSpeed + Double(steps) * AppModel.speedStep) / AppModel.speedStep).rounded()
-
-        playbackSpeed = min(max(notches * AppModel.speedStep, AppModel.speedRange.lowerBound), AppModel.speedRange.upperBound)
+        playbackSpeed = TransportCommands.nudgedSpeed(playbackSpeed, steps: steps)
     }
 
     /// The slider's double-click: the take's own speed.

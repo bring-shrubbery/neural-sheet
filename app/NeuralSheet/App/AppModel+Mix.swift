@@ -14,18 +14,12 @@ extension AppModel {
     /// The programs the selection stands for, which the sidebar shows as placeholders (§3.3).
     var selectedPrograms: [Int] { selectedGroups.map(Instruments.program(for:)) }
 
-    /// What one press of `[` or `]` moves the crossfade by.
-    static let mixStep = 0.1
-
-    /// The keys: a tenth toward the source (`steps < 0`) or the synth, landing on tenths so a
-    /// few presses from wherever the slider was left reach either end exactly. Nothing to move
-    /// while the split is on.
+    /// The keys: a tenth toward the source (`steps < 0`) or the synth
+    /// (`TransportCommands.nudgedMix`). Nothing to move while the split is on.
     func nudgeMix(steps: Int) {
         guard !stereoSplit else { return }
 
-        let tenths = ((mix + Double(steps) * AppModel.mixStep) / AppModel.mixStep).rounded()
-
-        mix = min(max(tenths * AppModel.mixStep, 0), 1)
+        mix = TransportCommands.nudgedMix(mix, steps: steps)
     }
 
     /// What the slider shows: the hold while there is one, the set mix otherwise.
@@ -34,7 +28,7 @@ extension AppModel {
     /// What the engine is told. Under the split the set mix means nothing -- both sides play at
     /// full -- so it gets the middle, or a hold's end to silence the other ear.
     // Internal: the mix's didSets in AppModel.swift read it.
-    var engineMix: Double { stereoSplit ? (mixHold ?? 0.5) : effectiveMix }
+    var engineMix: Double { TransportCommands.engineMix(mix: mix, hold: mixHold, stereoSplit: stereoSplit) }
 
     enum MixSide {
         case source

@@ -31,8 +31,8 @@ struct SpeedPill: View {
             PillCaption(text: "SPEED", colour: Theme.textMuted)
 
             PillSlider(value: $model.playbackSpeed,
-                       range: AppModel.speedRange,
-                       step: AppModel.speedStep,
+                       range: TransportCommands.speedRange,
+                       step: TransportCommands.speedStep,
                        width: s(Self.trackWidth),
                        fill: Theme.volumeFill,
                        track: Theme.faderTrackTop,

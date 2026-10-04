@@ -323,11 +323,10 @@ import UniformTypeIdentifiers
 
     /// The SPEED pill: how fast the take plays, its pitch unchanged, the MIDI on the same clock
     /// (speed design §5). 1 is the take's own. Transient, like the loop. Clamped to
-    /// ``speedRange``.
+    /// `TransportCommands.speedRange`.
     var playbackSpeed: Double = 1 {
         didSet {
-            let clamped = playbackSpeed.isFinite
-                ? min(max(playbackSpeed, AppModel.speedRange.lowerBound), AppModel.speedRange.upperBound) : 1
+            let clamped = TransportCommands.clampedSpeed(playbackSpeed)
 
             if clamped != playbackSpeed {
                 playbackSpeed = clamped
