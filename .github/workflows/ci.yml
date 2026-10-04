@@ -142,6 +142,13 @@ jobs:
               grep -E "error: -\[|: error: |XCTAssert" "$RUNNER_TEMP/ios-test.log" | head -80
               exit 1
             }
+      - name: Keep the iOS test results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-test-results
+          path: ~/Library/Developer/Xcode/DerivedData/NeuralSheet-iOS-*/Logs/Test/*.xcresult
+          retention-days: 7
       - name: Every string translated
         working-directory: app
         run: Scripts/check-localizations.sh --ios CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
