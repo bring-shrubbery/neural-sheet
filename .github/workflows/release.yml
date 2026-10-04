@@ -2,7 +2,8 @@ name: Release
 
 # Every code change that lands on main and passes CI becomes a patch release:
 # a signed, notarized NeuralSheet-vX.Y.Z-macos-arm64.dmg (and zip) on a GitHub
-# release, tagged vX.Y.Z. The version is the higher of MARKETING_VERSION in the
+# release, tagged vX.Y.Z, with the Audio Unit plugin beside it as
+# NeuralSheet-Plugin-vX.Y.Z-macos-arm64.dmg. The version is the higher of MARKETING_VERSION in the
 # Xcode project and the last release tag's patch + 1; raise MARKETING_VERSION in
 # Xcode to ship a minor or major. Changes to docs/, web/, *.md, LICENSE, NOTICE and
 # .github/ (except the workflows) do not release. docs/release.md explains the
@@ -291,6 +292,47 @@ jobs:
           xmllint --noout build/appcast.xml
           cat build/appcast.xml
 
+      # The Audio Unit plugin (Audio Unit design §2, "Project"): the container app and the
+      # sandboxed extension it embeds, archived with the same Developer ID and the release's
+      # version, on a disk image of its own, notarized and published beside the app's.
+      - name: Package the Audio Unit plugin
+        working-directory: plugin
+        env:
+          IDENTITY: ${{ secrets.MACOS_SIGNING_IDENTITY }}
+          TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          Scripts/package.sh --version "$VERSION" --build "$GITHUB_RUN_NUMBER" \
+            --identity "$IDENTITY" --team "$TEAM_ID" --out build
+
+      - name: Notarize and staple the plugin
+        working-directory: plugin
+        env:
+          ASC_API_KEY_P8: ${{ secrets.ASC_API_KEY_P8 }}
+          ASC_API_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
+          ASC_API_ISSUER_ID: ${{ secrets.ASC_API_ISSUER_ID }}
+        run: |
+          set -o pipefail
+          DMG="build/NeuralSheet-Plugin-$TAG-macos-arm64.dmg"
+          KEY="$RUNNER_TEMP/AuthKey.p8"
+          trap 'rm -f "$KEY"' EXIT
+          printf '%s\n' "$ASC_API_KEY_P8" > "$KEY"
+
+          if ! xcrun notarytool submit "$DMG" --key "$KEY" --key-id "$ASC_API_KEY_ID" \
+            --issuer "$ASC_API_ISSUER_ID" --wait --timeout 45m --output-format json \
+            | tee build/notarize.json; then
+            echo "::warning::notarytool exited non-zero; reading its status"
+          fi
+          status=$(python3 -c 'import json,sys; print(json.load(sys.stdin).get("status", ""))' < build/notarize.json)
+          if [ "$status" != "Accepted" ]; then
+            id=$(python3 -c 'import json,sys; print(json.load(sys.stdin).get("id", ""))' < build/notarize.json)
+            [ -n "$id" ] && xcrun notarytool log "$id" --key "$KEY" --key-id "$ASC_API_KEY_ID" --issuer "$ASC_API_ISSUER_ID" || true
+            echo "::error::the plugin's notarization ended with status '${status:-unknown}'"
+            exit 1
+          fi
+
+          xcrun stapler staple "$DMG"
+          spctl --assess --type open --context context:primary-signature --verbose=2 "$DMG"
+
       - name: Keep the assets as run artifacts
         uses: actions/upload-artifact@v7
         with:
@@ -299,6 +341,13 @@ jobs:
             app/build/NeuralSheet-${{ env.TAG }}-macos-arm64.dmg
             app/build/NeuralSheet-${{ env.TAG }}-macos-arm64.zip
             app/build/appcast.xml
+          if-no-files-found: error
+      # An artifact of its own, so the app's keeps its flat layout.
+      - name: Keep the plugin's disk image as a run artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: NeuralSheet-Plugin-${{ env.TAG }}-macos-arm64
+          path: plugin/build/NeuralSheet-Plugin-${{ env.TAG }}-macos-arm64.dmg
           if-no-files-found: error
 
       - name: Remove the signing keychain
@@ -324,6 +373,7 @@ jobs:
             app/build/NeuralSheet-${{ env.TAG }}-macos-arm64.dmg
             app/build/NeuralSheet-${{ env.TAG }}-macos-arm64.zip
             app/build/appcast.xml
+            plugin/build/NeuralSheet-Plugin-${{ env.TAG }}-macos-arm64.dmg
 
       - name: Rebuild the website
         env:
