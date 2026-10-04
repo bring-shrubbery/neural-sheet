@@ -3,6 +3,9 @@
 # commit subject, oldest first, with its `area:` prefix dropped and the first letter raised.
 # Commits to the documentation, the website and CI (`docs:`, `web:`, `ci:`) change nothing
 # in the app and are left out. A release with nothing left says "Maintenance release."
+# The Audio Unit plugin and the iOS app ship from the same commits, so their commits stay
+# in, named for what they change (`plugin:` reads "Audio Unit: …", `ios:` reads "iOS: …")
+# rather than passing for a change to the Mac app.
 #
 #   release-notes.sh v1.0.2 --html       an <ul> for the appcast's <description>
 #   release-notes.sh v1.0.2 --markdown   a list for the GitHub release body
@@ -31,19 +34,22 @@ subjects() {
     fi
 }
 
-# The subject without its area, capitalised; nothing for a commit the app never sees.
+# The subject without its area, capitalised; nothing for a commit the app never sees; the
+# product's name before a plugin or iOS change.
 entry() {
-    local subject=$1 area="" rest
+    local subject=$1 area="" rest product=""
     case "$subject" in
         *:\ *) area=${subject%%:*}; rest=${subject#*: } ;;
         *) rest=$subject ;;
     esac
     case "$area" in
         docs|web|ci) return 0 ;;
+        plugin) product="Audio Unit: " ;;
+        ios) product="iOS: " ;;
     esac
     rest=${rest#"${rest%%[![:space:]]*}"}
     [ -n "$rest" ] || return 0
-    printf '%s\n' "$(printf '%s' "${rest:0:1}" | tr '[:lower:]' '[:upper:]')${rest:1}"
+    printf '%s\n' "$product$(printf '%s' "${rest:0:1}" | tr '[:lower:]' '[:upper:]')${rest:1}"
 }
 
 escape_html() {

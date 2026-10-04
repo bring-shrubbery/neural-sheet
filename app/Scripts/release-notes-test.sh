@@ -28,6 +28,10 @@ check "documentation, website and ci commits are left out" --markdown \
     "docs: the design|web: node 24|ci: run on node 24|audio: an audition is heard|chore: the release signs the zip" \
     "- An audition is heard${nl}- The release signs the zip"
 
+check "plugin and ios commits name their product" --markdown \
+    "plugin: drag the MIDI out of the plugin|ios: the screens follow the text size|ui: a card" \
+    "- Audio Unit: Drag the MIDI out of the plugin${nl}- iOS: The screens follow the text size${nl}- A card"
+
 check "a subject without an area is kept as it is" --markdown \
     "initial import" \
     "- Initial import"
