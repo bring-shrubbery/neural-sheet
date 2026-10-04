@@ -63,6 +63,7 @@
 		5459BDB55DFBDF394C8790DA /* ScoreView+Drawing.swift in Sources */ = {isa = PBXBuildFile; fileRef = C504E8A84783EF5AD04BCBB1 /* ScoreView+Drawing.swift */; };
 		58C2CA72644510B3246DEE71 /* SynthInstrument.swift in Sources */ = {isa = PBXBuildFile; fileRef = 640D8C9858F603029AEC4018 /* SynthInstrument.swift */; };
 		591B8488A216B670AB91F552 /* ThermalGate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E41DDEEC25F0BD885D4D905 /* ThermalGate.swift */; };
+		5A09BCC462A6E4755459FBCF /* HandoffURL.swift in Sources */ = {isa = PBXBuildFile; fileRef = 030B2F5C81D98D5E7A5FFF09 /* HandoffURL.swift */; };
 		5A4F4D606E7654693DBB59B0 /* ScoreRenderer+Harmony.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6ADD6FE4C04C412A5DF25AF0 /* ScoreRenderer+Harmony.swift */; };
 		5B14EDD946D3CDBD65E6A104 /* EditingCommands+Versions.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD3938270620A8B1D5966D53 /* EditingCommands+Versions.swift */; };
 		5D835207C6DC9585DF4C4DC4 /* ScoreTouchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 296FA281463132567140B1FC /* ScoreTouchView.swift */; };
@@ -214,6 +215,7 @@
 
 /* Begin PBXFileReference section */
 		01DF1504F6115B749D70B214 /* TranscriptionEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptionEngine.swift; sourceTree = "<group>"; };
+		030B2F5C81D98D5E7A5FFF09 /* HandoffURL.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HandoffURL.swift; sourceTree = "<group>"; };
 		0372A709F93BFA81CA9CABDF /* PlaybackEngine+Mix.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PlaybackEngine+Mix.swift"; sourceTree = "<group>"; };
 		03BAAB8E7B6DAC10B47FBA96 /* NeuralSheetApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NeuralSheetApp.swift; sourceTree = "<group>"; };
 		042ACB547540D231945936A3 /* ProjectScreens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectScreens.swift; sourceTree = "<group>"; };
@@ -465,6 +467,7 @@
 				4B6D648F3475516796672E5F /* ExportCommands+Audio.swift */,
 				B34BF30EC8BE5EE469E63953 /* ExportCommands+PDF.swift */,
 				385C6E3CBC3680FE4C13A151 /* ExportCommands+Stems.swift */,
+				030B2F5C81D98D5E7A5FFF09 /* HandoffURL.swift */,
 				A9409A1FFBA294F91460D9C6 /* MeterLevels.swift */,
 				7E22DFF1441690E9F7D671A0 /* MIDIImportCommands.swift */,
 				39D036290F75C5C0BEDF5FDF /* PartDisplayText.swift */,
@@ -1044,6 +1047,7 @@
 				2D686DEBADDDB37F86FD38B6 /* ExportSheet.swift in Sources */,
 				81E067A2248F7115B8A1BA48 /* Fonts.swift in Sources */,
 				FEF851913671909CF6383F8B /* Formats.swift in Sources */,
+				5A09BCC462A6E4755459FBCF /* HandoffURL.swift in Sources */,
 				EDB0830E30A86E1C9DC7B077 /* IncomingTakes.swift in Sources */,
 				FED7E98D78AE0109954DBDF5 /* InstrumentStrips.swift in Sources */,
 				2335EEB90EFA3D99F0D270B4 /* InstrumentSynthBank+Audition.swift in Sources */,

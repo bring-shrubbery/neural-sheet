@@ -524,6 +524,8 @@ import UniformTypeIdentifiers
         // go at launch.
         paths.deleteLegacySessionFiles()
         paths.sweepRecordings()
+        // An Audio Unit handoff the app never received (Audio Unit design §2).
+        paths.sweepHandoff()
 
         installedModels = modelStore.installed()
         meterLevels = MeterLevels(renderedFrames: engine.synthBank.renderedFrames)

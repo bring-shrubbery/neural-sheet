@@ -34,10 +34,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     /// A double-click on a `.neuralsheet` in the Finder, or a drop on the Dock icon. Opened at
     /// once when a window can show a failure; parked on the model until then (a launch by
     /// double-click), for the main view to pick up.
+    ///
+    /// The Audio Unit's *Open in NeuralSheet* arrives here too, as a `neuralsheet://open` URL: the
+    /// package it names is moved into the Music folder first and then opened like any other.
     func application(_ application: NSApplication, open urls: [URL]) {
-        guard let model = Self.model,
-            let url = urls.first(where: { $0.pathExtension.lowercased() == "neuralsheet" })
-        else { return }
+        guard let model = Self.model else { return }
+
+        let projects = urls.compactMap { url -> URL? in
+            if url.scheme?.lowercased() == HandoffURL.scheme { return model.adoptHandoff(url) }
+            return url.pathExtension.lowercased() == "neuralsheet" ? url : nil
+        }
+
+        guard let url = projects.first else { return }
 
         if let show = model.showProjectWindow, model.presentError != nil {
             model.openProject(url: url)

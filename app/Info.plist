@@ -31,6 +31,21 @@
 			</array>
 		</dict>
 	</array>
+	<!-- The Audio Unit's Open in NeuralSheet: neuralsheet://open?path=<a package in the App
+	     Group container's Handoff folder> (Audio Unit design §2; HandoffURL.swift). -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.quassum.neuralsheet.open</string>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>neuralsheet</string>
+			</array>
+		</dict>
+	</array>
 	<key>UTExportedTypeDeclarations</key>
 	<array>
 		<dict>
