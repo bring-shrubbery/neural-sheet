@@ -51,5 +51,6 @@ extension PluginViewModel {
         transcription.restore(restored.take != nil ? state.transcription?.document : nil)
         capture?.restore(restored.take)
         takeWasCut = state.take?.truncated ?? false
+        handoff = .idle
     }
 }

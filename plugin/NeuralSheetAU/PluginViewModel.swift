@@ -50,6 +50,9 @@ import os
     /// there (`+State`); cleared by the next take.
     var takeWasCut = false
 
+    /// Open in NeuralSheet (`+Handoff`).
+    var handoff = HandoffPhase.idle
+
     /// The host's name for the track the plugin is on, when it gives one.
     var trackName: String? { unit?.contextName }
 
@@ -105,6 +108,7 @@ import os
         guard !transcription.isRunning else { return }
 
         takeWasCut = false
+        handoff = .idle
         transcription.clear()
         unit?.startCapture()
     }
@@ -113,6 +117,7 @@ import os
         guard !transcription.isRunning else { return }
 
         takeWasCut = false
+        handoff = .idle
         transcription.clear()
         unit?.arm()
     }
@@ -123,6 +128,7 @@ import os
 
     func clear() {
         takeWasCut = false
+        handoff = .idle
         transcription.clear()
         capture?.clear()
     }

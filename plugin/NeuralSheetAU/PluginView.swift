@@ -30,6 +30,8 @@ struct PluginView: View {
 
                 StatusLine(capture: capture, model: model)
 
+                HandoffNotice(model: model)
+
                 PlaybackBar(playback: model.playback)
             }
 
@@ -102,6 +104,9 @@ private struct StatusLine: View {
                 Text("Take: \(TimeFormat.transport(take.duration))")
                 Button("Clear", action: model.clear)
                     .disabled(model.transcription.isRunning)
+                Button("Open in NeuralSheet", systemImage: "arrow.up.forward.app", action: model.openInNeuralSheet)
+                    .disabled(!model.canOpenInNeuralSheet)
+                    .help("Open the take and its notes as a project in NeuralSheet")
             }
         }
         .monospacedDigit()
@@ -132,6 +137,31 @@ private struct StatusLine: View {
             return "Armed: recording starts when the host plays."
         case .capturing:
             return "Recording \(TimeFormat.transport(capture.elapsed))"
+        }
+    }
+}
+
+/// Open in NeuralSheet's outcome when it needs saying: writing, not installed (with the website,
+/// as the container app shows it), or what failed.
+private struct HandoffNotice: View {
+    let model: PluginViewModel
+
+    var body: some View {
+        switch model.handoff {
+        case .idle, .opened:
+            EmptyView()
+        case .writing:
+            Text("Preparing the project for NeuralSheet…")
+                .foregroundStyle(.secondary)
+        case .appMissing:
+            HStack(spacing: 6) {
+                Text("NeuralSheet is not installed.")
+                    .foregroundStyle(.secondary)
+                Link("neural-sheet.quassum.com", destination: PluginViewModel.website)
+            }
+        case let .failed(message):
+            Text(message)
+                .foregroundStyle(.red)
         }
     }
 }
