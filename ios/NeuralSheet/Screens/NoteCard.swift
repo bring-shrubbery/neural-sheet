@@ -21,9 +21,9 @@ struct NoteCard: View {
             Form {
                 Section {
                     instrumentRow(notes)
-                    secondsRow(Text("Start", comment: "Note card: the notes' start, in seconds"),
+                    secondsRow(Text("Start", comment: "Note card: the notes' start, in seconds"), field: Text(AccessibilityText.noteStart),
                                value: shared(notes.map(\.startTime)), range: 0...36_000) { model.setSelectionStart($0) }
-                    secondsRow(Text("Length", comment: "Note card: the notes' length, in seconds"),
+                    secondsRow(Text("Length", comment: "Note card: the notes' length, in seconds"), field: Text(AccessibilityText.noteLength),
                                value: shared(notes.map { $0.endTime - $0.startTime }),
                                range: NoteDocument.minimumLength...3_600) { model.setSelectionLength($0) }
                     pitchRow(notes)
@@ -126,10 +126,10 @@ struct NoteCard: View {
         }
     }
 
-    private func secondsRow(_ label: Text, value: Double?, range: ClosedRange<Double>,
+    private func secondsRow(_ label: Text, field: Text, value: Double?, range: ClosedRange<Double>,
                             commit: @escaping (Double) -> Void) -> some View {
         LabeledContent {
-            CommitField(text: value.map { String(format: "%.3f", $0) } ?? "—", keyboard: .decimalPad) { text in
+            CommitField(label: field, text: value.map { String(format: "%.3f", $0) } ?? "—", keyboard: .decimalPad) { text in
                 guard let seconds = Double(text.replacingOccurrences(of: ",", with: ".")), seconds.isFinite else { return false }
 
                 commit(min(max(seconds, range.lowerBound), range.upperBound))
@@ -145,7 +145,7 @@ struct NoteCard: View {
 
         return LabeledContent {
             HStack(spacing: 8) {
-                CommitField(text: pitch.map(TimeFormat.pitchName) ?? "—", keyboard: .asciiCapable) { text in
+                CommitField(label: Text(AccessibilityText.pitch), text: pitch.map(TimeFormat.pitchName) ?? "—", keyboard: .asciiCapable) { text in
                     guard let pitch = SelectionText.parsePitch(text) else { return false }
 
                     model.setSelectionPitch(pitch)
@@ -163,6 +163,8 @@ struct NoteCard: View {
                 }
                 .labelsHidden()
                 .disabled(pitch == nil)
+                .accessibilityLabel(Text("Pitch, a semitone at a time", comment: "VoiceOver (iOS note card): the stepper beside the pitch field"))
+                .accessibilityValue(Text(verbatim: pitch.map(TimeFormat.pitchName) ?? "—"))
                 .accessibilityIdentifier("card-pitch-stepper")
             }
         } label: {
@@ -186,10 +188,14 @@ struct NoteCard: View {
                     model.setSelectionVelocity(Int(velocity))
                 }
                 .frame(minWidth: 120)
+                .accessibilityLabel(Text(AccessibilityText.velocity))
+                .accessibilityValue(Text(verbatim: draftVelocity.map { String(Int($0)) } ?? shown.map(String.init) ?? "—"))
+                .accessibilityIdentifier("card-velocity")
 
                 Text(verbatim: draftVelocity.map { String(Int($0)) } ?? shown.map(String.init) ?? "—")
                     .monospacedDigit()
                     .frame(minWidth: 32, alignment: .trailing)
+                    .accessibilityHidden(true)
             }
         } label: {
             Text("Velocity", comment: "Note card: the notes' velocity")
@@ -199,7 +205,7 @@ struct NoteCard: View {
     /// One note's syllable at a time: a selection of several shows "—" and waits for one.
     private func lyricRow(_ notes: [NoteEvent]) -> some View {
         LabeledContent {
-            CommitField(text: notes.count == 1 ? notes[0].lyric?.typed ?? "" : "—", keyboard: .default) { text in
+            CommitField(label: Text(AccessibilityText.lyric), text: notes.count == 1 ? notes[0].lyric?.typed ?? "" : "—", keyboard: .default) { text in
                 model.setSelectedLyric(text)
                 return true
             }
@@ -220,6 +226,8 @@ struct NoteCard: View {
 /// A field that shows the model's value and commits what is typed on Return or when the focus
 /// leaves; an entry the commit refuses goes back to the value.
 private struct CommitField: View {
+    /// What VoiceOver calls the field: the row's name, which the field itself does not show.
+    let label: Text
     let text: String
     let keyboard: UIKeyboardType
     let onCommit: (String) -> Bool
@@ -240,6 +248,7 @@ private struct CommitField: View {
             .onChange(of: text) { _, new in if !isFocused { draft = new } }
             .onChange(of: isFocused) { _, focused in if !focused { commit() } }
             .onSubmit { isFocused = false }
+            .accessibilityLabel(label)
     }
 
     private func commit() {

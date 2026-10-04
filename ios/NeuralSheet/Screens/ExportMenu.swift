@@ -88,6 +88,8 @@ struct ExportDragChip: View {
         }
         .allowsHitTesting(enabled)
         .accessibilityLabel(Text("Drag the MIDI into another app", comment: "The iPad's MIDI chip, to VoiceOver"))
+        .accessibilityValue(Text(verbatim: dragsMusicXML ? "MusicXML" : "MIDI"))
+        .accessibilityHint(Text("Touch and hold to drag it as MusicXML instead", comment: "VoiceOver hint (iPad): the MIDI chip's long-press menu chooses the file a drag carries"))
         .accessibilityIdentifier("drag-chip")
     }
 }

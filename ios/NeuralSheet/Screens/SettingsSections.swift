@@ -81,6 +81,7 @@ struct SoundBankSection: View {
             case let .downloading(received, total):
                 ProgressView(value: Double(received), total: Double(max(total, 1)))
                     .frame(width: 80)
+                    .accessibilityLabel(Text(AccessibilityText.downloadProgress))
                 Button { library.cancelDownload() } label: {
                     Image(systemName: "xmark.circle.fill")
                 }
@@ -94,6 +95,7 @@ struct SoundBankSection: View {
                 if library.hasGeneralMidiBank {
                     Image(systemName: "checkmark")
                         .foregroundStyle(.tint)
+                        .accessibilityLabel(Text(AccessibilityText.modelInstalled))
                 } else {
                     Button { library.startDownload() } label: {
                         if case .failed = library.phase {

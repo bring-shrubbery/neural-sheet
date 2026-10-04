@@ -97,6 +97,10 @@ struct TranscribeScreen: View {
             }
             .frame(height: 110)
             .listRowInsets(EdgeInsets(top: 8, leading: 8, bottom: 8, trailing: 8))
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(Text("Waveform", comment: "VoiceOver (iOS Transcribe screen): the take's waveform"))
+            .accessibilityValue(waveformValue)
+            .accessibilityIdentifier("waveform")
 
             if let line = takeLine {
                 Text(line)
@@ -144,6 +148,29 @@ struct TranscribeScreen: View {
         .tint(.red)
         .disabled(model.recording == nil && !model.canImport)
         .accessibilityIdentifier("record")
+    }
+
+    /// What the waveform shows, for VoiceOver: the count-in's beat, the take in progress, the
+    /// import, or the empty hint; the take line under it names a loaded take.
+    private var waveformValue: Text {
+        switch model.recording {
+        case let .countingIn(remaining):
+            return Text(verbatim: "\(String(localized: AccessibilityText.recordState(.countingIn))), \(remaining)")
+        case .recording:
+            return Text(AccessibilityText.recordState(.recording))
+        case nil:
+            break
+        }
+
+        if model.source != nil {
+            return Text(verbatim: takeLine ?? "")
+        }
+
+        if model.isImporting {
+            return Text("Loading", comment: "VoiceOver value (iOS Transcribe screen): a file is being read into the waveform")
+        }
+
+        return Text("Record or import a take", comment: "Transcribe screen: the empty waveform's hint")
     }
 
     /// The take's name and length; the seconds captured while recording.
@@ -254,6 +281,7 @@ struct TranscribeScreen: View {
                 VStack(alignment: .leading, spacing: 8) {
                     ProgressView(value: Double(run.progress))
                         .tint(run.paused ? .orange : .accentColor)
+                        .accessibilityLabel(Text("Transcription progress", comment: "VoiceOver (iOS Transcribe screen): the run's progress bar"))
 
                     HStack {
                         Text(model.runStatusText)

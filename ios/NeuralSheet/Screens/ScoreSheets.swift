@@ -47,6 +47,8 @@ struct PartDisplaySheet: View {
                         Text(verbatim: semitones(display.transposition))
                             .monospacedDigit()
                     }
+                    .accessibilityLabel(Text(AccessibilityText.transpositionSemitones))
+                    .accessibilityValue(Text(verbatim: semitones(display.transposition)))
                 }
 
                 if !isDrums {

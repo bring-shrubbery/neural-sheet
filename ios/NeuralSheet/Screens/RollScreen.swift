@@ -114,10 +114,11 @@ private struct EditBar: View {
 
             Toggle(isOn: Binding(get: { model.editor.snapEnabled }, set: { model.setSnapEnabled($0) })) {
                 Image(systemName: "squareshape.split.3x3")
-                    .accessibilityLabel(Text("Snap", comment: "Roll tools: snap to the grid"))
             }
             .toggleStyle(.button)
             .frame(minWidth: 44, minHeight: 44)
+            .accessibilityLabel(Text(AccessibilityText.snapToGrid))
+            .accessibilityIdentifier("snap")
 
             Spacer(minLength: 4)
 

@@ -69,6 +69,11 @@ targets:
       # The core package's names (instruments, model sizes) in the user's language, and their
       # string table, as the Mac shows them (sub-issue D).
       - path: ../app/NeuralSheet/UI/Localization/CoreNames.swift
+      # What VoiceOver says, as the Mac says it (sub-issue J): the controls' names and values, a
+      # note on the roll, a note in the score.
+      - path: ../app/NeuralSheet/UI/Accessibility/AccessibilityText.swift
+      - path: ../app/NeuralSheet/UI/Accessibility/NoteSpeech.swift
+      - path: ../app/NeuralSheet/UI/Accessibility/ScoreSpeech.swift
       - path: ../app/NeuralSheet/Core.xcstrings
       # The timeline's drawing, shared with the Mac by path (iOS app design §2, sub-issue E): the
       # geometry, the palette and text, the playhead layer and each band's `+Drawing.swift`

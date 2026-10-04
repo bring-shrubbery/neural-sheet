@@ -73,14 +73,13 @@ struct TransportBar<Trailing: View>: View {
         let playing = model.isTransportRunning
 
         TransportIconButton(systemImage: "backward.end.fill", id: "go-to-start",
-                            label: Text("Go to Start", comment: "Transport: stop and rewind to the start")) {
+                            label: Text(AccessibilityText.goToStart)) {
             model.goToStart()
         }
         .disabled(!model.canPlay)
 
         TransportIconButton(systemImage: playing ? "pause.fill" : "play.fill", id: "play",
-                            label: playing ? Text("Pause", comment: "Transport: pause playback")
-                                           : Text("Play", comment: "Transport: start playback")) {
+                            label: playing ? Text(AccessibilityText.pause) : Text(AccessibilityText.play)) {
             model.togglePlay()
         }
         .font(.title2)
@@ -92,13 +91,14 @@ struct TransportBar<Trailing: View>: View {
     @ViewBuilder
     private var practice: some View {
         TransportToggle(systemImage: "repeat", isOn: model.loopEnabled, id: "loop",
-                        label: Text("Loop", comment: "Transport: repeat the marked range, or the whole take")) {
+                        label: Text(AccessibilityText.loop),
+                        hint: Text("Repeats the marked range, or the whole take", comment: "VoiceOver hint (iOS transport bar): what the Loop button does")) {
             model.toggleLoop()
         }
         .disabled(!model.canPlay)
 
         TransportToggle(systemImage: "metronome", isOn: model.clickEnabled, id: "click",
-                        label: Text("CLICK", comment: "Master panel: the metronome button")) {
+                        label: Text(AccessibilityText.click)) {
             model.toggleClick()
         }
     }
@@ -141,6 +141,7 @@ private struct TransportToggle: View {
     let isOn: Bool
     let id: String
     let label: Text
+    var hint: Text?
     let action: () -> Void
 
     var body: some View {
@@ -152,6 +153,8 @@ private struct TransportToggle: View {
                 .contentShape(Rectangle())
         }
         .accessibilityLabel(label)
+        .accessibilityValue(Text(AccessibilityText.onOff(isOn)))
+        .accessibilityHint(hint ?? Text(verbatim: ""))
         .accessibilityAddTraits(isOn ? .isSelected : [])
         .accessibilityIdentifier(id)
     }
@@ -168,8 +171,9 @@ private struct PositionText: View {
             .foregroundStyle(.secondary)
             .lineLimit(1)
             .fixedSize()
-            .accessibilityLabel(Text("Position", comment: "Transport: the playhead's time"))
-            .accessibilityValue(Text(verbatim: TimeFormat.transport(model.positionSeconds)))
+            .accessibilityLabel(Text(AccessibilityText.position))
+            .accessibilityValue(Text(AccessibilityText.positionValue(TimeFormat.transport(model.positionSeconds),
+                                                                     of: TimeFormat.transport(model.duration))))
             .accessibilityIdentifier("position")
     }
 }
@@ -185,6 +189,7 @@ private struct MixControl: View {
     var body: some View {
         HStack(spacing: 2) {
             MixHoldLabel(text: String(localized: "ORIG", comment: "Master panel: the mix slider's source-audio end; held, only the source plays"),
+                         hint: Text("Hold to hear only the source audio", comment: "VoiceOver hint (iOS transport bar): the ORIG label"),
                          isHeld: model.mixHold == 0, id: "mix-orig") {
                 model.beginMixHold(.source)
             } end: {
@@ -193,11 +198,12 @@ private struct MixControl: View {
 
             Slider(value: Binding(get: { model.effectiveMix }, set: { model.setMix($0) }), in: 0 ... 1)
                 .disabled(model.stereoSplit || !model.canPlay)
-                .accessibilityLabel(Text("Mix", comment: "Transport: the ORIG / MIDI crossfade"))
-                .accessibilityValue(Text(verbatim: "\(Int((model.effectiveMix * 100).rounded())) %"))
+                .accessibilityLabel(Text(AccessibilityText.mix))
+                .accessibilityValue(Text(AccessibilityText.mixValue(model.effectiveMix)))
                 .accessibilityIdentifier("mix")
 
             MixHoldLabel(text: String(localized: "MIDI", comment: "Master panel: the mix slider's MIDI end; held, only the MIDI plays"),
+                         hint: Text("Hold to hear only the MIDI", comment: "VoiceOver hint (iOS transport bar): the MIDI label"),
                          isHeld: model.mixHold == 1, id: "mix-midi") {
                 model.beginMixHold(.synth)
             } end: {
@@ -205,7 +211,8 @@ private struct MixControl: View {
             }
 
             TransportToggle(systemImage: "headphones", isOn: model.stereoSplit, id: "split",
-                            label: Text("Stereo split", comment: "Transport: the original in the left ear, the MIDI in the right")) {
+                            label: Text(AccessibilityText.stereoSplit),
+                            hint: Text("The source audio in the left ear, the MIDI in the right", comment: "VoiceOver hint (iOS transport bar): what the stereo split does")) {
                 model.setStereoSplit(!model.stereoSplit)
             }
         }
@@ -216,6 +223,7 @@ private struct MixControl: View {
 /// the finger went, as the Mac's label does with the mouse. For VoiceOver it latches.
 private struct MixHoldLabel: View {
     let text: String
+    let hint: Text
     let isHeld: Bool
     let id: String
     let begin: () -> Void
@@ -243,6 +251,8 @@ private struct MixHoldLabel: View {
                     })
             .accessibilityElement()
             .accessibilityLabel(Text(verbatim: text))
+            .accessibilityValue(Text(isHeld ? AccessibilityText.soloing : AccessibilityText.notSoloing))
+            .accessibilityHint(hint)
             .accessibilityAddTraits(isHeld ? [.isButton, .isSelected] : .isButton)
             .accessibilityAction { isHeld ? end() : begin() }
             .accessibilityIdentifier(id)
@@ -264,7 +274,8 @@ private struct SpeedButton: View {
                 .frame(minWidth: 52, minHeight: 44)
         }
         .disabled(!model.canPlay)
-        .accessibilityLabel(Text("Playback speed", comment: "Transport: how fast the take plays, pitch unchanged"))
+        .accessibilityLabel(Text(AccessibilityText.playbackSpeed))
+        .accessibilityValue(Text(AccessibilityText.percent(Int((model.playbackSpeed * 100).rounded()))))
         .accessibilityIdentifier("speed")
         .popover(isPresented: $isShown) {
             SpeedPopover(model: model)
@@ -297,7 +308,7 @@ private struct SpeedPopover: View {
             } maximumValueLabel: {
                 Text(Formats.percent(150)).font(.caption2)
             }
-            .accessibilityValue(Text(Formats.percent(percent)))
+            .accessibilityValue(Text(AccessibilityText.percent(percent)))
             .accessibilityIdentifier("speed-slider")
 
             HStack {
@@ -331,7 +342,8 @@ private struct OutputButton: View {
             Image(systemName: model.outputMuted ? "speaker.slash.fill" : "speaker.wave.2.fill")
                 .frame(width: 44, height: 44)
         }
-        .accessibilityLabel(Text("MASTER", comment: "The master panel's header"))
+        .accessibilityLabel(Text("Output", comment: "VoiceOver (iOS transport bar): the speaker button that opens the output level, MUTE and the click level"))
+        .accessibilityValue(model.outputMuted ? Text("Muted", comment: "VoiceOver value (iOS transport bar): the output is muted") : Text(verbatim: ""))
         .accessibilityIdentifier("output")
         .popover(isPresented: $isShown) {
             OutputPopover(model: model)
@@ -358,13 +370,14 @@ private struct OutputPopover: View {
                 }
                 .toggleStyle(.button)
                 .tint(.red)
+                .accessibilityLabel(Text("Mute output", comment: "VoiceOver (iOS output popover): the MUTE button, which silences the output"))
                 .accessibilityIdentifier("mute")
             }
 
             MasterMeter(model: model)
 
             GainSlider(value: model.masterGainDb, id: "master-gain",
-                       label: Text("Output level", comment: "The master panel: the output's fader")) { db, _ in
+                       label: Text(AccessibilityText.outputLevel)) { db, _ in
                 model.setMasterGain(db: db)
             } ended: {}
 
@@ -375,7 +388,7 @@ private struct OutputPopover: View {
                 .foregroundStyle(.secondary)
 
             GainSlider(value: model.clickGainDb, id: "click-gain",
-                       label: Text("Click level", comment: "The master panel: the click's fader")) { db, dragging in
+                       label: Text(AccessibilityText.clickLevel)) { db, dragging in
                 model.setClickGain(db: db, dragging: dragging)
             } ended: {
                 model.endMixDrag()
@@ -419,10 +432,13 @@ struct GainSlider: View {
 
                 if !editing { ended() }
             }
-            .accessibilityValue(Text(verbatim: GainSlider.text(value)))
+            .accessibilityValue(value > InstrumentMixerState.minGainDb
+                                    ? Text(AccessibilityText.decibels(value))
+                                    : Text("Silent", comment: "VoiceOver value (iOS): a fader at its bottom, −∞ dB"))
             .accessibilityIdentifier(id)
 
             Text(verbatim: GainSlider.text(value))
+                .accessibilityHidden(true)
                 .font(.caption.monospacedDigit())
                 .foregroundStyle(.secondary)
                 .frame(width: 52, alignment: .trailing)

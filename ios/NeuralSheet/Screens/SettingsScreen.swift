@@ -94,6 +94,16 @@ private struct ModelRow: View {
                         .foregroundStyle(.red)
                 }
             }
+            // The name, the trade-off and a failure read as one; tapping it chooses an installed
+            // size, so VoiceOver offers it as a button then.
+            .accessibilityElement(children: .combine)
+            .accessibilityValue(Text(installed
+                ? (isChosen ? AccessibilityText.modelSelected : AccessibilityText.modelInstalled)
+                : AccessibilityText.modelNotInstalled))
+            .accessibilityAddTraits(isChosen ? .isSelected : [])
+            .accessibilityAddTraits(installed && onChoose != nil ? .isButton : [])
+            .accessibilityAction { if installed { onChoose?() } }
+            .accessibilityIdentifier("model-\(size.rawValue)")
 
             Spacer()
 
@@ -110,8 +120,6 @@ private struct ModelRow: View {
                 }
             }
         }
-        .accessibilityElement(children: .combine)
-        .accessibilityAddTraits(isChosen ? .isSelected : [])
     }
 
     @ViewBuilder
@@ -121,6 +129,7 @@ private struct ModelRow: View {
             HStack(spacing: 8) {
                 ProgressView(value: Double(received), total: Double(max(total, 1)))
                     .frame(width: 80)
+                    .accessibilityLabel(Text(AccessibilityText.downloadProgress))
                 Button { library.cancelDownload(size) } label: {
                     Image(systemName: "xmark.circle.fill")
                 }
@@ -141,6 +150,7 @@ private struct ModelRow: View {
                 if isChosen {
                     Image(systemName: "checkmark")
                         .foregroundStyle(.tint)
+                        .accessibilityHidden(true)
                 } else if onChoose == nil {
                     Text("Installed", comment: "Settings: the model is on the device")
                         .font(.footnote)

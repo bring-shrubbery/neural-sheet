@@ -71,6 +71,7 @@ private struct InstrumentStripRow: View {
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
+                .accessibilityHint(Text("Singles the instrument out on the piano roll", comment: "VoiceOver hint (iOS instrument strip): tapping the name highlights its notes"))
                 .accessibilityAddTraits(highlighted ? .isSelected : [])
                 .accessibilityIdentifier("strip-\(program)")
 
@@ -82,16 +83,16 @@ private struct InstrumentStripRow: View {
 
             HStack(spacing: 6) {
                 letterToggle("M", isOn: settings.muted, tint: .orange, id: "mute-\(program)",
-                             label: Text("Mute", comment: "Instrument strip: the mute toggle")) {
+                             label: Text(AccessibilityText.mute)) {
                     model.setMuted(program: program, !settings.muted)
                 }
                 letterToggle("S", isOn: settings.soloed, tint: .yellow, id: "solo-\(program)",
-                             label: Text("Solo", comment: "Instrument strip: the solo toggle")) {
+                             label: Text(AccessibilityText.solo)) {
                     model.setSoloed(program: program, !settings.soloed)
                 }
 
                 GainSlider(value: settings.gainDb, id: "fader-\(program)",
-                           label: Text("Level", comment: "Instrument strip: the fader")) { db, dragging in
+                           label: Text(AccessibilityText.level)) { db, dragging in
                     model.setGain(program: program, db: db, dragging: dragging)
                 } ended: {
                     model.endMixDrag()
@@ -149,7 +150,7 @@ private struct InstrumentStripRow: View {
                 .frame(width: 44, height: 44)
         }
         .disabled(!model.canEdit || entry.isPlaceholder)
-        .accessibilityLabel(Text("Instrument commands", comment: "Instrument strip: the menu of whole-instrument commands"))
+        .accessibilityLabel(Text(AccessibilityText.instrumentCommands))
         .accessibilityIdentifier("strip-menu-\(entry.program)")
     }
 
@@ -166,6 +167,7 @@ private struct InstrumentStripRow: View {
         }
         .buttonStyle(.plain)
         .accessibilityLabel(label)
+        .accessibilityValue(Text(AccessibilityText.onOff(isOn)))
         .accessibilityAddTraits(isOn ? .isSelected : [])
         .accessibilityIdentifier(id)
     }
@@ -196,26 +198,21 @@ private struct PanSlider: View {
             Text("L", comment: "Instrument strip: the pan's left end")
                 .font(.caption2)
                 .foregroundStyle(.secondary)
+                .accessibilityHidden(true)
             Slider(value: Binding(get: { value }, set: { change(abs($0) < 0.05 ? 0 : $0, isDragging) }), in: -1 ... 1) {
-                Text("Pan", comment: "Instrument strip: the pan")
+                Text(AccessibilityText.panLabel)
             } onEditingChanged: { editing in
                 isDragging = editing
 
                 if !editing { ended() }
             }
-            .accessibilityValue(Text(verbatim: PanSlider.text(value)))
+            .accessibilityValue(Text(AccessibilityText.pan(value)))
             .accessibilityIdentifier(id)
             Text("R", comment: "Instrument strip: the pan's right end")
                 .font(.caption2)
                 .foregroundStyle(.secondary)
+                .accessibilityHidden(true)
         }
-    }
-
-    /// "C", "L 40", "R 100".
-    static func text(_ pan: Double) -> String {
-        let amount = Int((abs(pan) * 100).rounded())
-
-        return amount == 0 ? "C" : (pan < 0 ? "L \(amount)" : "R \(amount)")
     }
 }
 
