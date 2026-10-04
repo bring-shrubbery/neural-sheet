@@ -52,6 +52,7 @@ struct ExportMenu: View {
             .frame(width: 44, height: 44)
         }
         .disabled(!model.canExportAudio && !model.canExport)
+        .accessibilityElement(children: .combine)
         .accessibilityIdentifier("export")
     }
 }

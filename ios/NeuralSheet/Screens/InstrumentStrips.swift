@@ -148,9 +148,11 @@ private struct InstrumentStripRow: View {
         } label: {
             Image(systemName: "ellipsis.circle")
                 .frame(width: 44, height: 44)
+                .accessibilityLabel(Text(AccessibilityText.instrumentCommands))
         }
         .disabled(!model.canEdit || entry.isPlaceholder)
-        .accessibilityLabel(Text(AccessibilityText.instrumentCommands))
+        // A menu's button takes its name from what it holds, not from a label set on it.
+        .accessibilityElement(children: .combine)
         .accessibilityIdentifier("strip-menu-\(entry.program)")
     }
 

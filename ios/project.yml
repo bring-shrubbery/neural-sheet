@@ -250,6 +250,25 @@ targets:
         TEST_HOST: $(BUILT_PRODUCTS_DIR)/NeuralSheet.app/NeuralSheet
         BUNDLE_LOADER: $(TEST_HOST)
 
+  # The accessibility audit and the localized screenshots (sub-issue J): the app driven on the
+  # simulator through its accessibility tree.
+  NeuralSheetUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    deploymentTarget: "26.0"
+    sources:
+      - path: NeuralSheetUITests
+    dependencies:
+      - target: NeuralSheet
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.quassum.neuralsheet.ios.uitests
+        DEVELOPMENT_TEAM: 6WCYZER5LX
+        CODE_SIGN_STYLE: Automatic
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_TARGET_NAME: NeuralSheet
+        SWIFT_DEFAULT_ACTOR_ISOLATION: nonisolated
+
 schemes:
   NeuralSheet:
     build:
@@ -259,6 +278,7 @@ schemes:
       config: Debug
       targets:
         - NeuralSheetTests
+        - NeuralSheetUITests
     run:
       config: Debug
     archive:

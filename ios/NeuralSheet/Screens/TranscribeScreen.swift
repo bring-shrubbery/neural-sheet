@@ -124,6 +124,7 @@ struct TranscribeScreen: View {
                 }
                 .buttonStyle(.bordered)
                 .disabled(!model.canImport)
+                .accessibilityLabel(Text("Import", comment: "Transcribe screen: the import menu"))
                 .accessibilityIdentifier("import")
             }
         }
@@ -235,6 +236,13 @@ struct TranscribeScreen: View {
                 }
             }
             .disabled(!library.hasStemsModel || model.isRunning)
+            .accessibilityRepresentation {
+                Toggle(isOn: Binding(get: { model.separateStems && library.hasStemsModel }, set: { model.separateStems = $0 })) {
+                    Text("Stems", comment: "Transcribe screen: separate drums, bass and vocals before transcribing")
+                }
+                .disabled(!library.hasStemsModel || model.isRunning)
+            }
+            .accessibilityIdentifier("stems")
         } header: {
             Text("Transcription", comment: "Transcribe screen: the section with the model, instruments and Stems")
         }
@@ -270,6 +278,10 @@ struct TranscribeScreen: View {
         }
         .tint(.primary)
         .disabled(model.isRunning)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(Text("Model", comment: "Transcribe screen: the transcription model picker"))
+        .accessibilityValue(Text(verbatim: model.modelSize?.localizedName
+                                 ?? String(localized: "None installed", comment: "Transcribe screen: no transcription model on the device")))
         .accessibilityIdentifier("model")
     }
 

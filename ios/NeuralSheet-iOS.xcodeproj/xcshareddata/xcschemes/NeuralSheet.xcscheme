@@ -50,6 +50,17 @@
                ReferencedContainer = "container:NeuralSheet-iOS.xcodeproj">
             </BuildableReference>
          </TestableReference>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "190965C0838AD52D52821620"
+               BuildableName = "NeuralSheetUITests.xctest"
+               BlueprintName = "NeuralSheetUITests"
+               ReferencedContainer = "container:NeuralSheet-iOS.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
       <CommandLineArguments>
       </CommandLineArguments>

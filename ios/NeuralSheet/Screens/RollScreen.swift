@@ -110,6 +110,7 @@ private struct EditBar: View {
             .pickerStyle(.segmented)
             .labelStyle(.iconOnly)
             .frame(width: 96)
+            .accessibilityLabel(Text("Tool", comment: "Roll tools: the tool picker"))
             .accessibilityIdentifier("tool")
 
             Toggle(isOn: Binding(get: { model.editor.snapEnabled }, set: { model.setSnapEnabled($0) })) {

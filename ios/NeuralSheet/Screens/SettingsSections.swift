@@ -18,6 +18,9 @@ struct SoundBankSection: View {
             } label: {
                 Text("Sound bank", comment: "Settings → Audio: the sound bank row")
             }
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(Text("Sound bank", comment: "Settings → Audio: the sound bank row"))
+            .accessibilityValue(Text(verbatim: library.currentName ?? String(localized: "None (fallback tone)", comment: "Settings → Sound bank (iOS): no bank, the synth's own tone")))
             .accessibilityIdentifier("sound-bank")
 
             generalMidiRow

@@ -108,6 +108,9 @@ struct NoteCard: View {
             } label: {
                 Text(verbatim: title)
             }
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel(Text(AccessibilityText.instrument))
+            .accessibilityValue(Text(verbatim: title))
             .accessibilityIdentifier("card-instrument")
         } label: {
             Text("Instrument", comment: "Note card: the notes' instrument")

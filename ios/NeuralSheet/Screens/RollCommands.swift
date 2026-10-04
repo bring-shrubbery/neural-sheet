@@ -44,6 +44,7 @@ struct RollCommandsMenu: View {
             .frame(width: 44, height: 44)
         }
         .disabled(model.document == nil)
+        .accessibilityElement(children: .combine)
         .accessibilityIdentifier("commands")
         .sheet(isPresented: $askingInterval) {
             NumberSheet(title: Text("Transpose by Interval", comment: "Edit → Transpose → By Interval…: the alert's title"),

@@ -28,6 +28,7 @@
 		1FC6C114F5EB243883182FF0 /* nsheet_stems.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 23317E8AEEF4AAFE949E2DC7 /* nsheet_stems.cpp */; };
 		1FDDA6BCF7E2F8132F448E36 /* MobileModelTransportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19D6B4362888485E52324D7A /* MobileModelTransportTests.swift */; };
 		2335EEB90EFA3D99F0D270B4 /* InstrumentSynthBank+Audition.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC48D300B57BD8077795CBB6 /* InstrumentSynthBank+Audition.swift */; };
+		24CC5672323A143F49F99326 /* AccessibilityAuditTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9882921A9BB6F383A3D53CF7 /* AccessibilityAuditTests.swift */; };
 		27F04C07A5751E684CC3061F /* ScoreGlyphs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EB84C173F4AC695378C49EC /* ScoreGlyphs.swift */; };
 		28171975AA2FFA4EAF223940 /* PlaybackEngine+Lifecycle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 897641DEB991F9073B52C67C /* PlaybackEngine+Lifecycle.swift */; };
 		28F598A6C682EAEDA21AE7B4 /* ScoreSheets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 646BFAC8E1571F22BE390DE0 /* ScoreSheets.swift */; };
@@ -114,8 +115,10 @@
 		AE5D81C82C0E6008C0F6EF5F /* InstrumentSynthBank+SoundBank.swift in Sources */ = {isa = PBXBuildFile; fileRef = 052243AAB4D027C196C04FF2 /* InstrumentSynthBank+SoundBank.swift */; };
 		B06B0E79D1436612BE9AB213 /* MobileModel+AudioExport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BDA7EE9E506E1EE074026F4 /* MobileModel+AudioExport.swift */; };
 		B0BE711ADB0966EFE8596051 /* RulerView+Drawing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A28C6DE995641684F40E549 /* RulerView+Drawing.swift */; };
+		B285EAA79889F5AD3C6068A6 /* ProjectFixture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A7A71B7AAB32AC7E0316A0B /* ProjectFixture.swift */; };
 		B562B23A8E356262AFF58C8D /* VideoAudioExtractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F42D8FAD397C447B517DDA2 /* VideoAudioExtractor.swift */; };
 		B939287A1386301BF7BF9524 /* WaveformView+Drawing.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB6C0208C18EEDF4382D3A3A /* WaveformView+Drawing.swift */; };
+		BBBCFCCC15ED013EFCB616E9 /* LocalizedScreenshotTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4F100E710F60173250146AC /* LocalizedScreenshotTests.swift */; };
 		C0F4408E60718D33A1838B72 /* TimelineEditingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD446906F7FC289D9CB240E7 /* TimelineEditingTests.swift */; };
 		C1F664F807063AF3547291EC /* MobileModel+StemsExport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4129E1DB3C47BCBE9662737F /* MobileModel+StemsExport.swift */; };
 		C23285A87EC04BBAF6BB5EF8 /* TimelineGeometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C9FC29C367E646A1848567B /* TimelineGeometry.swift */; };
@@ -167,6 +170,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		60BC20B65C19D922154C7FFD /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 492061A242D07609A8A3CE77 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = C22D53D5FD5EAC4331A1EEF8;
+			remoteInfo = NeuralSheet;
+		};
 		65943CEEE979760C1963C27B /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 492061A242D07609A8A3CE77 /* Project object */;
@@ -233,6 +243,7 @@
 		2A15ADE0B865AAF92CDB089C /* Fonts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Fonts.swift; sourceTree = "<group>"; };
 		2A49A0164420AAAE6BE36B74 /* MobileModel+Imports.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MobileModel+Imports.swift"; sourceTree = "<group>"; };
 		2A6F2FA61179724EEFDCA2DF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		2A7A71B7AAB32AC7E0316A0B /* ProjectFixture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectFixture.swift; sourceTree = "<group>"; };
 		2B6063449B8C47775921AC6C /* MobileModel+Editing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MobileModel+Editing.swift"; sourceTree = "<group>"; };
 		2C2D55847A3F90A85BA70E83 /* StemFiles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StemFiles.swift; sourceTree = "<group>"; };
 		2C71304975BAABA1121D286A /* MobileModel+Recording.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MobileModel+Recording.swift"; sourceTree = "<group>"; };
@@ -293,6 +304,7 @@
 		93CD4146B455F7D7B190DBFC /* RollScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RollScreen.swift; sourceTree = "<group>"; };
 		97D7581CAABFDB8B55197F21 /* CoreNames.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreNames.swift; sourceTree = "<group>"; };
 		983FA8DE62CCAFEC53817465 /* NeuralSheetWidgets.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = NeuralSheetWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		9882921A9BB6F383A3D53CF7 /* AccessibilityAuditTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibilityAuditTests.swift; sourceTree = "<group>"; };
 		9B3D5CB6E881256ABE27AC91 /* PlaybackEngine+Render.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PlaybackEngine+Render.swift"; sourceTree = "<group>"; };
 		9E81E7774A4240388816677E /* MobileModel+Mix.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MobileModel+Mix.swift"; sourceTree = "<group>"; };
 		9FDD01CAD3090DD466753E1D /* InstrumentSynthBank+Render.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "InstrumentSynthBank+Render.swift"; sourceTree = "<group>"; };
@@ -307,6 +319,7 @@
 		AE3FE572A1D29D9470FC8260 /* TimelineGeometryPortTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineGeometryPortTests.swift; sourceTree = "<group>"; };
 		B2B2D77049E56B468D54069C /* JetBrainsMonoNL-SemiBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "JetBrainsMonoNL-SemiBold.ttf"; sourceTree = "<group>"; };
 		B407AE8CF1EAF1A02065C5E6 /* ScoreTouchView+Sync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ScoreTouchView+Sync.swift"; sourceTree = "<group>"; };
+		B4F100E710F60173250146AC /* LocalizedScreenshotTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalizedScreenshotTests.swift; sourceTree = "<group>"; };
 		B66F95147F9E2B13856B3FC7 /* JetBrainsMono-OFL.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "JetBrainsMono-OFL.txt"; sourceTree = "<group>"; };
 		B6D12E5EF025B8AD7A8F7FA5 /* Recorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Recorder.swift; sourceTree = "<group>"; };
 		B9DABA1B3EA739FF3BB03DB7 /* Core.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Core.xcstrings; sourceTree = "<group>"; };
@@ -337,6 +350,7 @@
 		D59E88F0F4CE89D0A631A62F /* TimelineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineView.swift; sourceTree = "<group>"; };
 		D611CBDDE3E03699D43CA513 /* MobileModel+Transport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MobileModel+Transport.swift"; sourceTree = "<group>"; };
 		D6D8A1F6AE3E8FA641FFEC58 /* PlaybackEngine+Transport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PlaybackEngine+Transport.swift"; sourceTree = "<group>"; };
+		D8990453CCC2975F131D2952 /* NeuralSheetUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = NeuralSheetUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D8C8D283E1ED68D29366544F /* WaveformStrip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaveformStrip.swift; sourceTree = "<group>"; };
 		DA4FAC447F0474A06A6E70B1 /* TimelineTouchView+Accessibility.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TimelineTouchView+Accessibility.swift"; sourceTree = "<group>"; };
 		DADA77140294259B7EF09A9A /* ExportCommands.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportCommands.swift; sourceTree = "<group>"; };
@@ -412,6 +426,7 @@
 			children = (
 				4B149A6B93FC14D59A40B663 /* NeuralSheet.app */,
 				087728EC95200F77CD217785 /* NeuralSheetTests.xctest */,
+				D8990453CCC2975F131D2952 /* NeuralSheetUITests.xctest */,
 				983FA8DE62CCAFEC53817465 /* NeuralSheetWidgets.appex */,
 			);
 			name = Products;
@@ -490,6 +505,7 @@
 				12C5103528E1838BF112B5F4 /* neural-sheet */,
 				2BD5675C191DEC69F37EEC4E /* NeuralSheet */,
 				70301ED2D66DC9241419B61A /* NeuralSheetTests */,
+				7880032D1B8FC440A4C33929 /* NeuralSheetUITests */,
 				08D6E71F3EBFB59606FEAF2F /* NeuralSheetWidgets */,
 				C992E487CDD65C0DB420C4DD /* Packages */,
 				A1412CA94CFF96634857A805 /* Shared */,
@@ -667,6 +683,16 @@
 			path = NeuralSheet;
 			sourceTree = "<group>";
 		};
+		7880032D1B8FC440A4C33929 /* NeuralSheetUITests */ = {
+			isa = PBXGroup;
+			children = (
+				9882921A9BB6F383A3D53CF7 /* AccessibilityAuditTests.swift */,
+				B4F100E710F60173250146AC /* LocalizedScreenshotTests.swift */,
+				2A7A71B7AAB32AC7E0316A0B /* ProjectFixture.swift */,
+			);
+			path = NeuralSheetUITests;
+			sourceTree = "<group>";
+		};
 		A1412CA94CFF96634857A805 /* Shared */ = {
 			isa = PBXGroup;
 			children = (
@@ -787,6 +813,24 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		190965C0838AD52D52821620 /* NeuralSheetUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = EF53A2F38B3E1A5E9CC71087 /* Build configuration list for PBXNativeTarget "NeuralSheetUITests" */;
+			buildPhases = (
+				5B4AFCBCAA3CD081F098E218 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				00F4A38E1AAF6FFB577C9121 /* PBXTargetDependency */,
+			);
+			name = NeuralSheetUITests;
+			packageProductDependencies = (
+			);
+			productName = NeuralSheetUITests;
+			productReference = D8990453CCC2975F131D2952 /* NeuralSheetUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 		48722AEF8CD8163E35AFDB15 /* NeuralSheetTests */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 756E92D939C4563DA12A500E /* Build configuration list for PBXNativeTarget "NeuralSheetTests" */;
@@ -857,6 +901,11 @@
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
+					190965C0838AD52D52821620 = {
+						DevelopmentTeam = 6WCYZER5LX;
+						ProvisioningStyle = Automatic;
+						TestTargetID = C22D53D5FD5EAC4331A1EEF8;
+					};
 					48722AEF8CD8163E35AFDB15 = {
 						DevelopmentTeam = 6WCYZER5LX;
 						ProvisioningStyle = Automatic;
@@ -892,6 +941,7 @@
 				C22D53D5FD5EAC4331A1EEF8 /* NeuralSheet */,
 				AD17E762176D0EB27B71E907 /* NeuralSheetWidgets */,
 				48722AEF8CD8163E35AFDB15 /* NeuralSheetTests */,
+				190965C0838AD52D52821620 /* NeuralSheetUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -1076,6 +1126,16 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		5B4AFCBCAA3CD081F098E218 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				24CC5672323A143F49F99326 /* AccessibilityAuditTests.swift in Sources */,
+				BBBCFCCC15ED013EFCB616E9 /* LocalizedScreenshotTests.swift in Sources */,
+				B285EAA79889F5AD3C6068A6 /* ProjectFixture.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		79B86E5C6B09247B0A35763C /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1106,6 +1166,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		00F4A38E1AAF6FFB577C9121 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = C22D53D5FD5EAC4331A1EEF8 /* NeuralSheet */;
+			targetProxy = 60BC20B65C19D922154C7FFD /* PBXContainerItemProxy */;
+		};
 		179339330DB3306721E280F3 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = C22D53D5FD5EAC4331A1EEF8 /* NeuralSheet */;
@@ -1299,6 +1364,27 @@
 			};
 			name = Debug;
 		};
+		66B7F0A2D7E97564E530C6B1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 6WCYZER5LX;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.quassum.neuralsheet.ios.uitests;
+				SDKROOT = iphoneos;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = nonisolated;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = NeuralSheet;
+			};
+			name = Debug;
+		};
 		86CAE9F0FF9B2BE51B259C0E /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -1418,6 +1504,27 @@
 			};
 			name = Debug;
 		};
+		FE1DA699D9314F521539D789 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 6WCYZER5LX;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.quassum.neuralsheet.ios.uitests;
+				SDKROOT = iphoneos;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = nonisolated;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = NeuralSheet;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -1453,6 +1560,15 @@
 			buildConfigurations = (
 				57C9CFCD22E54BB09FFA4DD5 /* Debug */,
 				335BE42F9C80EE51DA7D8B6F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		EF53A2F38B3E1A5E9CC71087 /* Build configuration list for PBXNativeTarget "NeuralSheetUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				66B7F0A2D7E97564E530C6B1 /* Debug */,
+				FE1DA699D9314F521539D789 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
