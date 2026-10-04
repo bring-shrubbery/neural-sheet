@@ -72,7 +72,9 @@ struct RollScreen: View {
                 Text(verbatim: status)
                     .font(.caption.monospacedDigit())
                     .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
-                    .foregroundStyle(Color(cgColor: TimelinePalette.textPrimary).opacity(0.7))
+                    // Full strength under Increase Contrast, as the Mac's status bar text is.
+                    .foregroundStyle(Color(cgColor: TimelinePalette.textPrimary)
+                        .opacity(Accommodations.shared.increaseContrast ? 1 : 0.7))
                     .lineLimit(1)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal, 12)

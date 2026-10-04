@@ -74,7 +74,9 @@ struct ExportDragChip: View {
         }
         .padding(.horizontal, 10)
         .frame(minHeight: 44)
-        .background(Capsule().fill(.regularMaterial))
+        // Opaque under Reduce Transparency, as the Mac's floating cards are.
+        .background(Capsule().fill(Accommodations.shared.reduceTransparency
+            ? AnyShapeStyle(Color(.secondarySystemBackground)) : AnyShapeStyle(.regularMaterial)))
         .opacity(enabled ? 1 : 0.4)
         .onDrag {
             model.dragItemProvider(musicXML: dragsMusicXML) ?? NSItemProvider()

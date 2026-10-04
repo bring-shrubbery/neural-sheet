@@ -41,6 +41,8 @@ final class WaveformStripView: UIView {
     }
 
     private var link: CADisplayLink?
+    /// Increase Contrast changes the panel's colours (`TimelinePalette`): drawn again when it flips.
+    private var accommodationsObserver: NSObjectProtocol?
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -48,10 +50,22 @@ final class WaveformStripView: UIView {
         contentMode = .redraw
         isAccessibilityElement = false
         geometry.scale = 1
+
+        accommodationsObserver = NotificationCenter.default.addObserver(
+            forName: Accommodations.didChange, object: nil, queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated { self?.setNeedsDisplay() }
+        }
     }
 
     required init?(coder: NSCoder) {
         nil
+    }
+
+    deinit {
+        if let accommodationsObserver {
+            NotificationCenter.default.removeObserver(accommodationsObserver)
+        }
     }
 
     override func didMoveToWindow() {
