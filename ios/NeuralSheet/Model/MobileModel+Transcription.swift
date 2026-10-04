@@ -167,7 +167,7 @@ extension MobileModel {
     }
 
     private static var recordingName: String {
-        String(localized: "Recording", comment: "The Live Activity's name for a take that was recorded rather than imported")
+        String(localized: "take.recorded", defaultValue: "Recording", comment: "The name of a take that was recorded rather than imported, a noun: the Transcribe screen's take line and the Live Activity")
     }
 
     // MARK: - The run, off the main actor

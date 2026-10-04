@@ -501,7 +501,10 @@ struct GainSlider: View {
     static func text(_ db: Double) -> String {
         guard db > InstrumentMixerState.minGainDb else { return "−∞" }
 
-        return String(format: "%+.1f dB", db).replacingOccurrences(of: "-", with: "−")
+        // The locale's decimal mark, the sign always shown, the minus a true minus.
+        let number = db.formatted(.number.precision(.fractionLength(1)).sign(strategy: .always()).grouping(.never))
+
+        return "\(number) dB".replacingOccurrences(of: "-", with: "−")
     }
 }
 

@@ -87,7 +87,7 @@ struct TranscribeScreen: View {
                     WaveformStrip(peaks: source.peaks)
                         .clipShape(RoundedRectangle(cornerRadius: 10))
                 } else if case let .countingIn(remaining) = model.recording {
-                    Text("\(remaining)")
+                    Text(remaining, format: .number)
                         .font(.system(size: 56, weight: .semibold, design: .rounded).monospacedDigit())
                 } else if model.isImporting {
                     ProgressView()
@@ -186,7 +186,7 @@ struct TranscribeScreen: View {
         guard let source = model.source else { return nil }
 
         let name = source.droppedFileName
-            ?? String(localized: "Recording", comment: "The Live Activity's name for a take that was recorded rather than imported")
+            ?? String(localized: "take.recorded", defaultValue: "Recording", comment: "The name of a take that was recorded rather than imported, a noun: the Transcribe screen's take line and the Live Activity")
 
         return "\(name) · \(TimeFormat.transport(source.duration))"
     }
@@ -301,7 +301,7 @@ struct TranscribeScreen: View {
                     HStack {
                         Text(model.runStatusText)
                         Spacer()
-                        Text("\(RunSupport.percent(run.progress)) %")
+                        Text(verbatim: "\(RunSupport.percent(run.progress)) %")
                             .monospacedDigit()
                     }
                     .font(.footnote)
@@ -348,7 +348,7 @@ struct TranscribeScreen: View {
 
             if let seconds = model.lastRunSeconds {
                 Spacer()
-                Text(String(format: "%.1f s", seconds))
+                Text(verbatim: "\(Formats.number(seconds, decimals: 1)) s")
                     .monospacedDigit()
                     .foregroundStyle(.secondary)
             }

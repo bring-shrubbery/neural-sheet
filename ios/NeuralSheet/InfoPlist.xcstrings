@@ -1,0 +1,49 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "Audio or Video" : {
+      "comment" : "The audio and video document type the app opens from the share sheet, as Files names it",
+      "extractionState" : "stale"
+    },
+    "CFBundleDisplayName" : {
+      "comment" : "Bundle display name",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "NeuralSheet"
+          }
+        }
+      }
+    },
+    "CFBundleName" : {
+      "comment" : "Bundle name",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "NeuralSheet"
+          }
+        }
+      }
+    },
+    "NeuralSheet Project" : {
+      "comment" : "The project document type, as Files names it"
+    },
+    "NSMicrophoneUsageDescription" : {
+      "comment" : "Privacy - Microphone Usage Description: why the app asks for the microphone",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "NeuralSheet records from the microphone to transcribe what you play."
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

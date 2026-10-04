@@ -1,0 +1,1372 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "\"%@\" could not be loaded as a SoundFont (.sf2) or DLS (.dls) file." : {
+      "comment" : "Settings → Audio → Sound bank (iOS): a chosen or downloaded file was refused"
+    },
+    "%@ GB" : {
+      "comment" : "A file size in gigabytes, e.g. \"2.7 GB\""
+    },
+    "%@ beats" : {
+      "comment" : "VoiceOver: a note's length in beats, to a tenth, e.g. \"1.5 beats\""
+    },
+    "%@ by %@: free to use and redistribute." : {
+      "comment" : "Settings → Sound bank (iOS): the downloadable bank's author and licence in brief",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ by %2$@: free to use and redistribute."
+          }
+        }
+      }
+    },
+    "%@ dB" : {
+      "comment" : "Accessibility value: a level in decibels, e.g. \"-6.0 dB\""
+    },
+    "%@ is for another version of NeuralSheet. Delete it from the models folder, then download it again" : {
+      "comment" : "The reason in a failed transcription's alert: the model file is from another release"
+    },
+    "%@ of %@" : {
+      "comment" : "Accessibility value: the playhead's time of the take's length, e.g. \"0:12.34 of 3:05.00\"",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ of %2$@"
+          }
+        }
+      }
+    },
+    "%@ rest, %@, bar %lld" : {
+      "comment" : "VoiceOver: a rest in the score, e.g. \"quarter rest, Piano, bar 5\"; the first value is a note value such as \"quarter\"",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ rest, %2$@, bar %3$lld"
+          }
+        }
+      }
+    },
+    "%@ to %@" : {
+      "comment" : "VoiceOver: the keys on show, lowest to highest, e.g. \"C2 to C6\"",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ to %2$@"
+          }
+        }
+      }
+    },
+    "%@ — %lld notes" : {
+      "comment" : "Edit → Versions: a version and its note count, e.g. \"Version 2 — 412 notes\"",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ — %2$lld notes"
+          }
+        }
+      }
+    },
+    "%@, %@ note, %@, bar %lld" : {
+      "comment" : "VoiceOver: a note or chord in the score, e.g. \"E4 G4, quarter note, Piano, bar 5\"; the second value is a note value such as \"quarter\"",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@, %2$@ note, %3$@, bar %4$lld"
+          }
+        }
+      }
+    },
+    "%@, %@, bar %lld beat %lld, %@" : {
+      "comment" : "VoiceOver: a note on the piano roll; pitch, instrument, where it starts, how long it is, e.g. \"C4, Piano, bar 3 beat 2, half a beat\"",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@, %2$@, bar %3$lld beat %4$lld, %5$@"
+          }
+        }
+      }
+    },
+    "%@, bar %lld beat %lld" : {
+      "comment" : "VoiceOver: a chord symbol in the chord lane, e.g. \"Am7, bar 3 beat 1\"\nVoiceOver: the ruler's value, the playhead's time then its bar and beat",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@, bar %2$lld beat %3$lld"
+          }
+        }
+      }
+    },
+    "%lld MB" : {
+      "comment" : "A file size in megabytes, e.g. \"618 MB\""
+    },
+    "%lld bars" : {
+      "comment" : "Settings → Audio: a count-in of so many bars",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld bar"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld bars"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld beats" : {
+      "comment" : "VoiceOver: a note's length in whole beats",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld beat"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld beats"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld hits" : {
+      "comment" : "Instrument strip: how many drum hits",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld hit"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld hits"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld instruments" : {
+      "comment" : "Accessibility label: the sidebar header's instrument count\nTranscribe screen: how many instruments are chosen",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld instrument"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld instruments"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld instruments · %lld notes · %@" : {
+      "comment" : "Roll screen's status line: how many instruments and notes, and the pitch range, e.g. \"3 instruments · 412 notes · C2–G5\"",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld instruments · %2$lld notes · %3$@"
+          }
+        }
+      }
+    },
+    "%lld notes" : {
+      "comment" : "Instrument strip: how many notes\nThe selection panel and the note card: how many notes are selected\nTranscribe screen: how many notes the transcription holds",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld note"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld notes"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld notes so far" : {
+      "comment" : "Transcribe screen: notes found while the run streams"
+    },
+    "%lld percent" : {
+      "comment" : "Accessibility value: a percentage, e.g. a speed or a progress"
+    },
+    "%lld percent MIDI" : {
+      "comment" : "Accessibility value: how much of the mix is the MIDI rather than the source audio"
+    },
+    "%lld selected · %@" : {
+      "comment" : "Roll screen's status line with a selection: how many notes are selected, then the summary",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld selected · %2$@"
+          }
+        }
+      }
+    },
+    "%lld semitones" : {
+      "comment" : "Part sheet: the transposition in semitones, e.g. \"-12 semitones\""
+    },
+    "A SoundFont (.sf2) or DLS (.dls) file the MIDI and the click play through." : {
+      "comment" : "Settings → Audio: what the sound bank is"
+    },
+    "A separation is still finishing. Try again in a moment." : {
+      "comment" : "Alert body: Export Stems… while a separation ends"
+    },
+    "About" : {
+      "comment" : "Settings (iOS): the version and the licences"
+    },
+    "Add instrument" : {
+      "comment" : "Accessibility label: the sidebar's + button"
+    },
+    "Add to the notes" : {
+      "comment" : "Alert button: the MIDI file's notes join the transcription's"
+    },
+    "After transcription" : {
+      "comment" : "Settings → Model: the section with the note filters"
+    },
+    "All Instruments" : {
+      "comment" : "Note card's instrument menu: every other instrument"
+    },
+    "Apply" : {
+      "comment" : "A number sheet's button that runs the command"
+    },
+    "Arranger" : {
+      "comment" : "Score sheet: the arranger field"
+    },
+    "Audio…" : {
+      "comment" : "Export menu: render the take or the MIDI to an audio file"
+    },
+    "Automatic" : {
+      "comment" : "Transcribe screen: no instruments chosen, the model picks"
+    },
+    "Automatic (any instrument)" : {
+      "comment" : "Instrument menu row: let the model choose the instruments"
+    },
+    "Bass" : {
+      "comment" : "Accessibility label: the chord card's slash bass button"
+    },
+    "Beat 1 at" : {
+      "comment" : "Accessibility label: the toolbar field for where bar 1 starts, in seconds"
+    },
+    "Beat unit" : {
+      "comment" : "Accessibility label: the time signature's denominator button"
+    },
+    "Beats in a bar" : {
+      "comment" : "Accessibility label: the time signature's numerator button"
+    },
+    "Before %@ — %@" : {
+      "comment" : "A version saved before a run, e.g. \"Before Transcribe — 14:02\"",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Before %1$@ — %2$@"
+          }
+        }
+      }
+    },
+    "Both sides" : {
+      "comment" : "Accessibility value: ORIG or MIDI not held"
+    },
+    "By Interval…" : {
+      "comment" : "Edit → Transpose"
+    },
+    "B♭ tenor (+14)" : {
+      "comment" : "Part card: a transposition, as a tenor saxophone reads"
+    },
+    "CLICK" : {
+      "comment" : "Master panel: the metronome button"
+    },
+    "Cancel" : {
+      "comment" : "A dialog's cancel button\nAlert button\nCloses a sheet without doing anything\nTranscribe screen: stops the count-in\nTranscribe screen: stops the run"
+    },
+    "Cancel download" : {
+      "comment" : "Settings: stops a model download"
+    },
+    "Cancelled" : {
+      "comment" : "Live Activity: the run was cancelled"
+    },
+    "Cancelling…" : {
+      "comment" : "Transcribe screen: the run is stopping at the next chunk"
+    },
+    "Center" : {
+      "comment" : "Accessibility value: a pan slider in the middle"
+    },
+    "Center playhead" : {
+      "comment" : "Accessibility label: the top bar's button that keeps the playhead in view"
+    },
+    "Change to" : {
+      "comment" : "Accessibility label: the strip card's instrument to move every note to\nInstrument card: every note of the instrument to another one"
+    },
+    "Check your file format (Accepted formats: %@)." : {
+      "comment" : "Alert body: a file that would not load; the formats are extensions, e.g. \"mp3, wav, …\""
+    },
+    "Choose from Files…" : {
+      "comment" : "Settings → Sound bank (iOS): pick a .sf2 or .dls from Files"
+    },
+    "Chords" : {
+      "comment" : "VoiceOver: the chord lane above the piano roll"
+    },
+    "Clear" : {
+      "comment" : "Accessibility label: the Transcribe toolbar's bin button"
+    },
+    "Clear transcription only" : {
+      "comment" : "Accessibility action on the bin button: the right-click menu's second choice"
+    },
+    "Clef" : {
+      "comment" : "Accessibility label: the part card's clef button"
+    },
+    "Click" : {
+      "comment" : "Accessibility label: the master panel's metronome button"
+    },
+    "Click level" : {
+      "comment" : "Accessibility label: the metronome's volume slider"
+    },
+    "Click while recording" : {
+      "comment" : "Settings → Audio: the click during a take"
+    },
+    "Commands" : {
+      "comment" : "Roll screen: the menu of editing commands"
+    },
+    "Compare With" : {
+      "comment" : "Edit → Versions: the version to ghost behind the roll"
+    },
+    "Composer" : {
+      "comment" : "Score sheet: the composer field"
+    },
+    "Confidence" : {
+      "comment" : "Accessibility label: how sure the model was of the selected notes\nNote card: how sure the model was, read-only"
+    },
+    "Continuous" : {
+      "comment" : "Score toolbar: the systems in one column"
+    },
+    "Copyright" : {
+      "comment" : "Score sheet: the copyright field"
+    },
+    "Could not detect a tempo." : {
+      "comment" : "Alert title: Detect found no tempo"
+    },
+    "Could not import the MIDI file." : {
+      "comment" : "Alert title: File → Import MIDI… failed"
+    },
+    "Could not load the audio file." : {
+      "comment" : "Alert title: an audio file could not be decoded"
+    },
+    "Could not load the file." : {
+      "comment" : "Alert title: a dropped or opened file could not be read"
+    },
+    "Could not load the recorded audio sample." : {
+      "comment" : "Alert title: a finished take could not be read back"
+    },
+    "Could not write the MIDI file." : {
+      "comment" : "Alert body: File → Export MIDI… failed"
+    },
+    "Could not write the MusicXML file." : {
+      "comment" : "Alert body: File → Export MusicXML… failed"
+    },
+    "Could not write the PDF file." : {
+      "comment" : "Alert body: File → Export PDF… failed"
+    },
+    "Could not write the audio file." : {
+      "comment" : "Alert title: File → Export Audio… or Export Stems… failed"
+    },
+    "Count-in" : {
+      "comment" : "Settings → Audio: the count-in picker"
+    },
+    "Counting in" : {
+      "comment" : "Accessibility value: the record button while the count-in plays"
+    },
+    "Create Project" : {
+      "comment" : "Document browser: a new, empty project"
+    },
+    "Custom" : {
+      "comment" : "Part card: a transposition or tuning that is none of the presets"
+    },
+    "Cut Note" : {
+      "comment" : "Undo title: one note cut"
+    },
+    "Cut Notes" : {
+      "comment" : "Undo title: several notes cut"
+    },
+    "Delete" : {
+      "comment" : "Roll tools: delete the selected notes\nSettings: removes a downloaded model\nVoiceOver action on a note: delete it"
+    },
+    "Delete Note" : {
+      "comment" : "Note card: delete the selected note"
+    },
+    "Delete Notes" : {
+      "comment" : "Note card: delete the selected notes"
+    },
+    "Delete instrument" : {
+      "comment" : "Instrument card: delete every note of the instrument"
+    },
+    "Demucs weights: licence and source" : {
+      "comment" : "Settings: a link to the stems model's page"
+    },
+    "Deselect All" : {
+      "comment" : "Roll commands: select nothing"
+    },
+    "Detect" : {
+      "comment" : "Undo title: the tempo map, key and chords Detect found"
+    },
+    "Detect Tempo, Key and Chords" : {
+      "comment" : "Roll commands: the Mac's Detect button"
+    },
+    "Detect replaces the tempo changes and the time signature with what it finds in the take." : {
+      "comment" : "Alert body: Detect over an edited tempo map"
+    },
+    "Discard" : {
+      "comment" : "Alert button: go ahead and lose the edits"
+    },
+    "Discard your edits?" : {
+      "comment" : "Alert title: an action would lose the edits to the transcription"
+    },
+    "Display" : {
+      "comment" : "Shown in the Score tab's part card"
+    },
+    "Done" : {
+      "comment" : "Closes a sheet\nLive Activity: the run has finished\nNote card: close it\nScore sheets: close the sheet\nThe export sheet: close it"
+    },
+    "Download" : {
+      "comment" : "Settings: starts a model download"
+    },
+    "Download GM bank" : {
+      "comment" : "Settings → Sound bank (iOS): the General MIDI bank download"
+    },
+    "Download a transcription model in Settings to transcribe." : {
+      "comment" : "Transcribe screen: no model installed"
+    },
+    "Download progress" : {
+      "comment" : "Accessibility label: a model download's progress bar"
+    },
+    "Download…" : {
+      "comment" : "Transcribe screen: opens the settings to download a model"
+    },
+    "Drag as" : {
+      "comment" : "The MIDI chip's long-press menu: which file a drag carries"
+    },
+    "Drag the MIDI into another app" : {
+      "comment" : "The iPad's MIDI chip, to VoiceOver"
+    },
+    "Draw" : {
+      "comment" : "Roll tools: the Draw tool"
+    },
+    "Draw tool" : {
+      "comment" : "Accessibility label: the Edit toolbar's pencil tool"
+    },
+    "Drop notes less sure than" : {
+      "comment" : "Settings → Model: the minimum confidence picker"
+    },
+    "Drop notes shorter than" : {
+      "comment" : "Settings → Model: the minimum note length picker"
+    },
+    "Dropped notes are gone; lower the setting and transcribe again to get them back." : {
+      "comment" : "Settings → Model: the note filters' footnote"
+    },
+    "Erase tool" : {
+      "comment" : "Accessibility label: the Edit toolbar's eraser tool"
+    },
+    "Error" : {
+      "comment" : "Alert title: a plain failure, e.g. a file that could not be written"
+    },
+    "Export" : {
+      "comment" : "File → Export Stems…'s folder panel: the button\nThe Export menu's button"
+    },
+    "Export Audio" : {
+      "comment" : "File → Export Audio…'s save panel"
+    },
+    "Export MIDI" : {
+      "comment" : "Accessibility label: the toolbar's MIDI chip, which exports the MIDI file when pressed"
+    },
+    "Exporting Audio" : {
+      "comment" : "File → Export Audio…: the sheet's title while the file is written"
+    },
+    "Exporting Stems" : {
+      "comment" : "Export Stems…: the sheet's title while the files are written"
+    },
+    "E♭ alto (+9)" : {
+      "comment" : "Part card: a transposition, as an alto saxophone reads"
+    },
+    "E♭ baritone (+21)" : {
+      "comment" : "Part card: a transposition, as a baritone saxophone reads"
+    },
+    "File creation for recording failed." : {
+      "comment" : "Alert body: the recording file could not be made"
+    },
+    "Files…" : {
+      "comment" : "Import menu: choose an audio or video file"
+    },
+    "Format:" : {
+      "comment" : "Export Audio: the file format"
+    },
+    "Frets" : {
+      "comment" : "Accessibility label: the part card's fret count field"
+    },
+    "From Audio" : {
+      "comment" : "Edit → Velocity"
+    },
+    "GeneralUser GS licence" : {
+      "comment" : "Settings → Sound bank (iOS): a link to the bank's licence text"
+    },
+    "Go to start" : {
+      "comment" : "Accessibility label: the top bar's button that moves the playhead to the start"
+    },
+    "Grid division" : {
+      "comment" : "Accessibility label: the Edit toolbar's division button, e.g. 1/16"
+    },
+    "Hidden" : {
+      "comment" : "Accessibility label: the part card's hide switch\nPart card: the part is left off the score"
+    },
+    "Hold to hear only the MIDI" : {
+      "comment" : "VoiceOver hint (iOS transport bar): the MIDI label"
+    },
+    "Hold to hear only the source audio" : {
+      "comment" : "VoiceOver hint (iOS transport bar): the ORIG label"
+    },
+    "Humanize" : {
+      "comment" : "Edit menu: small random timing and velocity"
+    },
+    "Import" : {
+      "comment" : "Transcribe screen: the import menu\nUndo menu: a take was imported"
+    },
+    "Import MIDI" : {
+      "comment" : "A version's name: \"Before Import MIDI — 14:02\""
+    },
+    "Import “%@”?" : {
+      "comment" : "Alert title: File → Import MIDI… over a transcription"
+    },
+    "In the Mix" : {
+      "comment" : "Note card's instrument menu: the instruments the notes use"
+    },
+    "Installed" : {
+      "comment" : "Accessibility label: a model row's radio, installed but not in use\nSettings: the model is on the device"
+    },
+    "Instrument" : {
+      "comment" : "Accessibility label: the selection's instrument button\nNote card: the notes' instrument"
+    },
+    "Instrument commands" : {
+      "comment" : "Accessibility label: the button VoiceOver offers in place of a right-click on an instrument strip"
+    },
+    "Instruments" : {
+      "comment" : "The instruments sheet's title\nThe strips sheet's title: the take's instruments\nTranscribe screen: the row that opens the instruments sheet\nTransport: opens the instrument strips\niPad sidebar: the take's instruments"
+    },
+    "Join Notes" : {
+      "comment" : "Edit menu: same-pitch runs joined"
+    },
+    "Key" : {
+      "comment" : "Accessibility label: the toolbar's key tonic button, e.g. C or none"
+    },
+    "Keyboard" : {
+      "comment" : "VoiceOver: the piano keys left of the piano roll"
+    },
+    "L" : {
+      "comment" : "Instrument strip: the pan's left end"
+    },
+    "Layout" : {
+      "comment" : "Score sheet: continuous or pages"
+    },
+    "Left %lld" : {
+      "comment" : "Accessibility value: a pan slider to the left, out of 100"
+    },
+    "Legato" : {
+      "comment" : "Edit menu: each note to the next start"
+    },
+    "Length" : {
+      "comment" : "Accessibility label: the selection's length field, in seconds\nNote card: the notes' length, in seconds"
+    },
+    "Level" : {
+      "comment" : "Accessibility label: an instrument strip's fader"
+    },
+    "Licences" : {
+      "comment" : "Settings → About: a link to the third-party notices"
+    },
+    "Load or record audio first, then import a MIDI file over it." : {
+      "comment" : "Alert body: a MIDI file dropped with no take"
+    },
+    "Loading" : {
+      "comment" : "VoiceOver value (iOS Transcribe screen): a file is being read into the waveform"
+    },
+    "Loop" : {
+      "comment" : "Accessibility label: the top bar's loop button"
+    },
+    "Lyric" : {
+      "comment" : "Accessibility label: the syllable field for a note\nNote card: the note's syllable"
+    },
+    "MASTER" : {
+      "comment" : "The master panel's header"
+    },
+    "MIDI" : {
+      "comment" : "Export menu: the .mid file\nMaster panel: the mix slider's MIDI end; held, only the MIDI plays"
+    },
+    "MIX WAVEFORM" : {
+      "comment" : "The waveform's corner label"
+    },
+    "MUTE" : {
+      "comment" : "Master panel: the input mute button"
+    },
+    "Marked range" : {
+      "comment" : "Export Audio: only the range marked on the ruler"
+    },
+    "Marker name" : {
+      "comment" : "Accessibility label: the ruler card's marker name field"
+    },
+    "Measure numbers" : {
+      "comment" : "Score sheet: show the measure numbers"
+    },
+    "Microphone access has not been granted. Allow NeuralSheet to use the microphone in Settings › Privacy & Security › Microphone." : {
+      "comment" : "Alert body: recording without the microphone permission (iOS)"
+    },
+    "Missing" : {
+      "comment" : "Accessibility value: a recent project whose file is no longer where it was"
+    },
+    "Mix" : {
+      "comment" : "Accessibility label: the slider between the source audio (ORIG) and the MIDI\nUndo title: a change to the strips' faders, mutes, solos or pans, or to the click"
+    },
+    "Mode" : {
+      "comment" : "Accessibility label: the toolbar's major / minor button"
+    },
+    "Model" : {
+      "comment" : "Transcribe screen: the transcription model picker"
+    },
+    "Model weights: CC BY-NC 4.0 (non-commercial)" : {
+      "comment" : "Settings → Model: the transcription weights' licence"
+    },
+    "Move Down" : {
+      "comment" : "VoiceOver action on a note: a semitone lower"
+    },
+    "Move Left" : {
+      "comment" : "VoiceOver action on a note: a grid step earlier"
+    },
+    "Move Right" : {
+      "comment" : "VoiceOver action on a note: a grid step later"
+    },
+    "Move Up" : {
+      "comment" : "VoiceOver action on a note: a semitone higher"
+    },
+    "MusicXML" : {
+      "comment" : "Export menu: the .musicxml score"
+    },
+    "Mute" : {
+      "comment" : "Accessibility label: an instrument strip's M button"
+    },
+    "Mute input" : {
+      "comment" : "Accessibility label: the master panel's MUTE button"
+    },
+    "Mute output" : {
+      "comment" : "VoiceOver (iOS output popover): the MUTE button, which silences the output"
+    },
+    "Muted" : {
+      "comment" : "VoiceOver value (iOS transport bar): the output is muted"
+    },
+    "NeuralSheet %@ (%@)" : {
+      "comment" : "Settings: the app's version and build",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "NeuralSheet %1$@ (%2$@)"
+          }
+        }
+      }
+    },
+    "New Project from %@" : {
+      "comment" : "Document browser: a new project whose take is the file the share sheet handed over"
+    },
+    "No instruments yet" : {
+      "comment" : "Instrument strips: nothing transcribed or selected"
+    },
+    "No notes yet" : {
+      "comment" : "Score screen: there is no transcription in the project"
+    },
+    "No selection" : {
+      "comment" : "The selection panel and the note card: nothing selected"
+    },
+    "No take yet" : {
+      "comment" : "Roll screen: there is no audio in the project"
+    },
+    "None" : {
+      "comment" : "Edit → Versions → Compare With: no comparison\nPart card: no tab\nPart card: no transposition"
+    },
+    "None (fallback tone)" : {
+      "comment" : "Settings → Sound bank (iOS): no bank, the synth's own tone"
+    },
+    "None installed" : {
+      "comment" : "Transcribe screen: no transcription model on the device"
+    },
+    "Not installed" : {
+      "comment" : "Accessibility label: a model row's radio, not downloaded"
+    },
+    "Not recording" : {
+      "comment" : "Accessibility value: the record button while idle"
+    },
+    "Note Card" : {
+      "comment" : "Roll tools: open the selection's fields"
+    },
+    "Notes at or above" : {
+      "comment" : "Split sheet: send the notes at or above the pitch"
+    },
+    "Notes below" : {
+      "comment" : "Split sheet: send the notes below the pitch"
+    },
+    "OR DROP A FILE HERE" : {
+      "comment" : "The empty waveform, under the Load audio file button"
+    },
+    "ORIG" : {
+      "comment" : "Master panel: the mix slider's source-audio end; held, only the source plays"
+    },
+    "Octave Down" : {
+      "comment" : "Edit → Transpose"
+    },
+    "Octave Up" : {
+      "comment" : "Edit → Transpose"
+    },
+    "Octave down (−12)" : {
+      "comment" : "Part card: written an octave below the sound"
+    },
+    "Octave up (+12)" : {
+      "comment" : "Part card: written an octave above the sound"
+    },
+    "Off" : {
+      "comment" : "Accessibility value: a toggle button that is off\nSettings → Audio: no count-in\nSettings → Model: no minimum confidence\nSettings → Model: no minimum note length"
+    },
+    "On" : {
+      "comment" : "Accessibility value: a toggle button that is on"
+    },
+    "Only this side" : {
+      "comment" : "Accessibility value: ORIG or MIDI held, so only that side plays"
+    },
+    "Open Note Card" : {
+      "comment" : "VoiceOver action on a note: open the card with its fields"
+    },
+    "Open Part Card" : {
+      "comment" : "VoiceOver action on a note in the score (iOS): open its part's display sheet, as a tap on the part's name does"
+    },
+    "Output" : {
+      "comment" : "VoiceOver (iOS transport bar): the speaker button that opens the output level, MUTE and the click level"
+    },
+    "Output level" : {
+      "comment" : "Accessibility label: the master panel's volume slider"
+    },
+    "PDF" : {
+      "comment" : "Export menu: the score's pages"
+    },
+    "Page size" : {
+      "comment" : "Score sheet: A4 or Letter"
+    },
+    "Pages" : {
+      "comment" : "Score toolbar: the systems on printed pages"
+    },
+    "Pan" : {
+      "comment" : "Accessibility label: an instrument strip's pan slider"
+    },
+    "Part names" : {
+      "comment" : "Score sheet: show the part names"
+    },
+    "Pause" : {
+      "comment" : "Accessibility label: the top bar's play button while playing"
+    },
+    "Paused — cooling down" : {
+      "comment" : "Transcribe screen and Live Activity: the device is too hot to carry on"
+    },
+    "Percentage to scale each velocity by:" : {
+      "comment" : "Edit → Velocity → Scale…: the alert's question"
+    },
+    "Photos…" : {
+      "comment" : "Import menu: choose a video from Photos"
+    },
+    "Piano roll" : {
+      "comment" : "VoiceOver: the piano roll, which holds the notes"
+    },
+    "Piano roll vertical zoom" : {
+      "comment" : "Accessibility label: the status bar's zoom slider"
+    },
+    "Pitch" : {
+      "comment" : "Accessibility label: the selection's pitch field, e.g. C4\nNote card: the notes' pitch"
+    },
+    "Pitch curve" : {
+      "comment" : "Accessibility label: the selected notes' largest pitch deviation, in cents\nNote card: the largest deviation of the notes' pitch curves, read-only"
+    },
+    "Pitch unchanged" : {
+      "comment" : "The speed popover: the take's pitch does not follow its speed"
+    },
+    "Pitch, a semitone at a time" : {
+      "comment" : "VoiceOver (iOS note card): the stepper beside the pitch field"
+    },
+    "Play" : {
+      "comment" : "Accessibility label: the top bar's play button while stopped"
+    },
+    "Playback speed" : {
+      "comment" : "Accessibility label: the top bar's SPEED slider\nTransport: how fast the take plays, pitch unchanged"
+    },
+    "Playing" : {
+      "comment" : "Accessibility value: the transport is playing"
+    },
+    "Position" : {
+      "comment" : "Accessibility label: the top bar's time readout"
+    },
+    "Quality" : {
+      "comment" : "Accessibility label: the chord card's quality button, e.g. major"
+    },
+    "Quantize" : {
+      "comment" : "Roll commands: notes onto the grid"
+    },
+    "R" : {
+      "comment" : "Instrument strip: the pan's right end"
+    },
+    "Range:" : {
+      "comment" : "Export Audio: how much of the take"
+    },
+    "Record" : {
+      "comment" : "Accessibility label: the top bar's record button\nTranscribe screen: starts a take\nUndo menu: a take was recorded"
+    },
+    "Record or import a take" : {
+      "comment" : "Transcribe screen: the empty waveform's hint"
+    },
+    "Record or import a take on the Transcribe screen." : {
+      "comment" : "Roll screen: where a take comes from"
+    },
+    "Recording" : {
+      "comment" : "Accessibility value: the record button while a take is recorded"
+    },
+    "Recording %@" : {
+      "comment" : "Transcribe screen: the take in progress and its length"
+    },
+    "Redo" : {
+      "comment" : "Accessibility label: the Edit toolbar's redo button\nEdit menu: redo with nothing to redo"
+    },
+    "Redo %@" : {
+      "comment" : "Edit menu: redo the named edit, e.g. \"Redo Move Note\""
+    },
+    "Repeats the marked range, or the whole take" : {
+      "comment" : "VoiceOver hint (iOS transport bar): what the Loop button does"
+    },
+    "Replace" : {
+      "comment" : "Alert button: replace the edited tempo map"
+    },
+    "Replace the notes" : {
+      "comment" : "Alert button: the MIDI file's notes replace the transcription's"
+    },
+    "Replace the tempo map?" : {
+      "comment" : "Alert title: Detect over an edited tempo map"
+    },
+    "Reset" : {
+      "comment" : "The speed popover: back to the take's own speed"
+    },
+    "Restore" : {
+      "comment" : "Edit → Versions: the versions to restore"
+    },
+    "Restore %@" : {
+      "comment" : "Undo title: a version restored"
+    },
+    "Retry" : {
+      "comment" : "Settings: starts a failed model download again"
+    },
+    "Revert to Transcription" : {
+      "comment" : "Undo title: the edits thrown away"
+    },
+    "Revert to Transcription…" : {
+      "comment" : "Roll commands: throw the edits away"
+    },
+    "Right %lld" : {
+      "comment" : "Accessibility value: a pan slider to the right, out of 100"
+    },
+    "Roll" : {
+      "comment" : "Tab: the piano roll"
+    },
+    "Root" : {
+      "comment" : "Accessibility label: the chord card's root button"
+    },
+    "Ruler" : {
+      "comment" : "VoiceOver: the time ruler above the piano roll; its value is the playhead"
+    },
+    "SPEED" : {
+      "comment" : "The speed pill's caption"
+    },
+    "Save" : {
+      "comment" : "Save Version: the button that saves"
+    },
+    "Save Version" : {
+      "comment" : "Edit → Versions → Save Version…: the alert's title\nUndo title: a version saved"
+    },
+    "Save Version…" : {
+      "comment" : "Edit → Versions"
+    },
+    "Save the current %lld notes as a version named:" : {
+      "comment" : "Edit → Versions → Save Version…: the alert's question",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Save the current %lld note as a version named:"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Save the current %lld notes as a version named:"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Save to Files…" : {
+      "comment" : "The export sheet: copy the files into a folder"
+    },
+    "Scale Velocity" : {
+      "comment" : "Edit → Velocity → Scale…: the alert's title\nUndo title: velocities scaled"
+    },
+    "Scale…" : {
+      "comment" : "Edit → Velocity"
+    },
+    "Score" : {
+      "comment" : "Tab: the score\nVoiceOver: the Score tab's sheet music"
+    },
+    "Score Layout" : {
+      "comment" : "Undo title: a change to how the score shows the parts or the sheet"
+    },
+    "Select" : {
+      "comment" : "Roll tools: the Select tool\nVoiceOver action on a note: select it"
+    },
+    "Select All" : {
+      "comment" : "Roll commands: select every note"
+    },
+    "Select Doubtful Notes" : {
+      "comment" : "Edit menu: the notes the model was unsure of"
+    },
+    "Select tool" : {
+      "comment" : "Accessibility label: the Edit toolbar's arrow tool"
+    },
+    "Selected" : {
+      "comment" : "Accessibility label: a model row's radio, the model in use"
+    },
+    "Semitone Down" : {
+      "comment" : "Edit → Transpose"
+    },
+    "Semitone Up" : {
+      "comment" : "Edit → Transpose"
+    },
+    "Semitones to move the notes by:" : {
+      "comment" : "Edit → Transpose → By Interval…: the alert's question"
+    },
+    "Send" : {
+      "comment" : "Split sheet: which side of the pitch moves"
+    },
+    "Send to" : {
+      "comment" : "Accessibility label: the strip card's instrument the split notes go to\nInstrument card: the instrument the split notes go to"
+    },
+    "Separating stems" : {
+      "comment" : "Transcribe screen and Live Activity: Demucs is splitting the take"
+    },
+    "Set beat 1 from playhead" : {
+      "comment" : "Accessibility label: the toolbar's target button beside BEAT 1 AT"
+    },
+    "Settings" : {
+      "comment" : "Tab: the settings\nThe gear button: opens the settings\nThe settings screen's title"
+    },
+    "Share…" : {
+      "comment" : "The export sheet: the system's share sheet"
+    },
+    "Sheet" : {
+      "comment" : "Score sheet: its title"
+    },
+    "Show Differences" : {
+      "comment" : "Edit → Versions: select the notes the compared version lacks"
+    },
+    "Show chords" : {
+      "comment" : "Score sheet: show the chord symbols"
+    },
+    "Shown" : {
+      "comment" : "Part card: the part is on the score"
+    },
+    "Silent" : {
+      "comment" : "VoiceOver value (iOS): a fader at its bottom, −∞ dB"
+    },
+    "Singles the instrument out on the piano roll" : {
+      "comment" : "VoiceOver hint (iOS instrument strip): tapping the name highlights its notes"
+    },
+    "Snap to Scale" : {
+      "comment" : "Roll commands: notes onto the key's scale"
+    },
+    "Snap to grid" : {
+      "comment" : "Accessibility label: the Edit toolbar's magnet button"
+    },
+    "Solo" : {
+      "comment" : "Accessibility label: an instrument strip's S button"
+    },
+    "Sound bank" : {
+      "comment" : "Settings → Audio: the sound bank row"
+    },
+    "Split" : {
+      "comment" : "Instrument card: make the split"
+    },
+    "Split at" : {
+      "comment" : "Accessibility label: the strip card's split pitch field\nInstrument card: the pitch the split is made at"
+    },
+    "Split at Playhead" : {
+      "comment" : "Edit menu: notes the playhead crosses cut in two"
+    },
+    "Split…" : {
+      "comment" : "Instrument strip menu: split the instrument at a pitch"
+    },
+    "Start" : {
+      "comment" : "Accessibility label: the selection's start field, in seconds\nNote card: the notes' start, in seconds"
+    },
+    "Stem separation" : {
+      "comment" : "Settings: the section with the Demucs model"
+    },
+    "Stems" : {
+      "comment" : "A version's name: \"Before Stems — 14:02\", saved before a stems run\nTranscribe screen: separate drums, bass and vocals before transcribing"
+    },
+    "Stems…" : {
+      "comment" : "Export menu: the take's drums, bass, vocals and the rest"
+    },
+    "Stereo split" : {
+      "comment" : "Accessibility label: the master panel's headphones button"
+    },
+    "Stop" : {
+      "comment" : "Transcribe screen: ends the take"
+    },
+    "Stop download" : {
+      "comment" : "Accessibility label: a model download's stop button"
+    },
+    "Stopped" : {
+      "comment" : "Accessibility value: the transport is not playing"
+    },
+    "String %lld" : {
+      "comment" : "Part sheet: one string's open pitch, the top string being 1"
+    },
+    "String %lld tuning" : {
+      "comment" : "Accessibility label: one string's pitch field on the part card, numbered from the top tab line"
+    },
+    "Subtitle" : {
+      "comment" : "Score sheet: the subtitle field"
+    },
+    "Swing" : {
+      "comment" : "Accessibility label: the Edit toolbar's swing percentage field"
+    },
+    "System %lld, bars %lld to %lld" : {
+      "comment" : "VoiceOver: one line of the score, e.g. \"System 2, bars 5 to 8\"",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "System %1$lld, bars %2$lld to %3$lld"
+          }
+        }
+      }
+    },
+    "Tab" : {
+      "comment" : "Accessibility label: the part card's tablature instrument button"
+    },
+    "Tempo" : {
+      "comment" : "Accessibility label: a tempo field, in quarter notes a minute"
+    },
+    "Tempo mark" : {
+      "comment" : "Score sheet: show the tempo mark"
+    },
+    "The Large model needs a device with 8 GB of memory or more." : {
+      "comment" : "Settings: why the Large model is not offered"
+    },
+    "The audio could not be converted." : {
+      "comment" : "Alert body: Export Stems… could not convert"
+    },
+    "The audio format is not available." : {
+      "comment" : "Alert body: Export Audio… could not set up the format\nAlert body: Export Stems… could not set up the format"
+    },
+    "The count-in plays a click at the project's tempo and meter, then starts the take on the next downbeat." : {
+      "comment" : "Settings → Audio: what the count-in does"
+    },
+    "The file has no notes." : {
+      "comment" : "Alert body: a MIDI file without notes"
+    },
+    "The file is a format %lld MIDI file. NeuralSheet reads formats 0 and 1." : {
+      "comment" : "Alert body: a type 2 MIDI file"
+    },
+    "The file is not a MIDI file, or it is damaged." : {
+      "comment" : "Alert body: an unreadable MIDI file"
+    },
+    "The notes in the file do not match its audio, or could not be read, and were left out. Saving the project will remove them from the file." : {
+      "comment" : "Alert body: a project's notes could not be read"
+    },
+    "The offline render failed." : {
+      "comment" : "Alert body: Export Audio… failed while rendering"
+    },
+    "The project's audio file could not be decoded." : {
+      "comment" : "Alert body: opening a project"
+    },
+    "The separated stems could not be written to disk." : {
+      "comment" : "Alert body: Export Stems… failed to write"
+    },
+    "The source audio in the left ear, the MIDI in the right" : {
+      "comment" : "VoiceOver hint (iOS transport bar): what the stereo split does"
+    },
+    "The stems could not be separated: %@." : {
+      "comment" : "Alert body: Export Stems… could not separate; the reason follows"
+    },
+    "The take already has a transcription. The file's notes can replace its notes or be added to them." : {
+      "comment" : "Alert body: File → Import MIDI… over a transcription"
+    },
+    "The take is too short or has no clear beat." : {
+      "comment" : "Alert body: Detect found no tempo"
+    },
+    "The transcription has been edited. Reverting to the transcription will throw the edits away." : {
+      "comment" : "Alert body: Edit → Revert to Transcription… over edits"
+    },
+    "The transcription model could not be loaded or run." : {
+      "comment" : "Alert body: a run failed without a reason"
+    },
+    "The transcription model could not be loaded or run: %@." : {
+      "comment" : "Alert body: a run failed; the reason is the engine's, or a sentence from this catalog"
+    },
+    "Tick to include in transcription" : {
+      "comment" : "The instruments sheet: what the ticks do"
+    },
+    "Timeline" : {
+      "comment" : "VoiceOver: the block holding the waveform, the ruler, the keyboard and the piano roll"
+    },
+    "Title" : {
+      "comment" : "Score sheet: the title field"
+    },
+    "Tool" : {
+      "comment" : "Roll tools: the tool picker"
+    },
+    "Touch and hold to drag it as MusicXML instead" : {
+      "comment" : "VoiceOver hint (iPad): the MIDI chip's long-press menu chooses the file a drag carries"
+    },
+    "Track Pitch" : {
+      "comment" : "Edit menu: measure the notes' pitch curves"
+    },
+    "Transcribe" : {
+      "comment" : "A version's name: \"Before Transcribe — 14:02\", saved before a run\nTab: the Transcribe screen\nTranscribe screen: runs the model over the take"
+    },
+    "Transcribe a take on the Transcribe screen." : {
+      "comment" : "Score screen: where the notes come from"
+    },
+    "Transcribing" : {
+      "comment" : "Transcribe screen and Live Activity: the model is running"
+    },
+    "Transcribing %@" : {
+      "comment" : "Transcribe screen and Live Activity: the model is running over one stem, e.g. \"Transcribing Drums\""
+    },
+    "Transcription" : {
+      "comment" : "Transcribe screen: the section with the model, instruments and Stems"
+    },
+    "Transcription failed." : {
+      "comment" : "Alert title: a run failed"
+    },
+    "Transcription finished, %lld notes" : {
+      "comment" : "VoiceOver announcement (iOS): a run has landed, with how many notes it found"
+    },
+    "Transcription model" : {
+      "comment" : "Settings: the section of transcription model sizes"
+    },
+    "Transcription progress" : {
+      "comment" : "VoiceOver (iOS Transcribe screen): the run's progress bar"
+    },
+    "Transpose" : {
+      "comment" : "Edit menu: the Transpose submenu\nUndo title: notes moved up or down"
+    },
+    "Transpose by Interval" : {
+      "comment" : "Edit → Transpose → By Interval…: the alert's title"
+    },
+    "Transposition" : {
+      "comment" : "Accessibility label: the part card's transposition preset button"
+    },
+    "Transposition in semitones" : {
+      "comment" : "Accessibility label: the part card's transposition field"
+    },
+    "Tuning" : {
+      "comment" : "Accessibility label: the part card's tuning preset button"
+    },
+    "Undo" : {
+      "comment" : "Accessibility label: the Edit toolbar's undo button\nEdit menu: undo with nothing to undo"
+    },
+    "Undo %@" : {
+      "comment" : "Edit menu: undo the named edit, e.g. \"Undo Move Note\""
+    },
+    "Untitled" : {
+      "comment" : "The title of a project that has not been saved"
+    },
+    "Use the Fallback Tone" : {
+      "comment" : "Settings → Sound bank (iOS): remove the bank; the synth plays its own tone"
+    },
+    "Velocity" : {
+      "comment" : "Accessibility label: the selection's velocity slider and field\nEdit menu: the Velocity submenu\nNote card: the notes' velocity"
+    },
+    "Velocity from Audio" : {
+      "comment" : "Undo title: velocities set from the audio's loudness"
+    },
+    "Verifying" : {
+      "comment" : "Settings: a downloaded model's checksum is being checked"
+    },
+    "Version" : {
+      "comment" : "Settings → About: the app's version"
+    },
+    "Version %lld — %@" : {
+      "comment" : "A version's default name, its number and when it was saved",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Version %1$lld — %2$@"
+          }
+        }
+      }
+    },
+    "Versions" : {
+      "comment" : "Edit menu: the Versions submenu"
+    },
+    "Waveform" : {
+      "comment" : "VoiceOver (iOS Transcribe screen): the take's waveform"
+    },
+    "What:" : {
+      "comment" : "Export Audio: the source (the take, the MIDI or both)"
+    },
+    "Whole take" : {
+      "comment" : "Export Audio: the whole take's length"
+    },
+    "a quarter of a beat" : {
+      "comment" : "VoiceOver: a note's length"
+    },
+    "a separation is already running" : {
+      "comment" : "The reason after \"The stems could not be separated:\""
+    },
+    "arr. %@" : {
+      "comment" : "The score's title block: the arranger's credit"
+    },
+    "dotted %@" : {
+      "comment" : "VoiceOver: a dotted note value, e.g. \"dotted quarter\""
+    },
+    "eighth" : {
+      "comment" : "VoiceOver: a note value, as in \"eighth note\""
+    },
+    "half" : {
+      "comment" : "VoiceOver: a note value, as in \"half note\""
+    },
+    "half a beat" : {
+      "comment" : "VoiceOver: a note's length"
+    },
+    "kit map" : {
+      "comment" : "Instrument strip: the drums' notes name kit pieces, not pitches"
+    },
+    "not transcribed yet" : {
+      "comment" : "Instrument strip: no notes for it yet"
+    },
+    "quarter" : {
+      "comment" : "VoiceOver: a note value, as in \"quarter note\""
+    },
+    "selected" : {
+      "comment" : "Instrument strip: an instrument chosen for the next run"
+    },
+    "semitones" : {
+      "comment" : "Edit → Transpose → By Interval…: the unit after the field"
+    },
+    "settings.recording" : {
+      "comment" : "Settings (iOS): the section with the count-in and the click while recording, a noun",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Recording"
+          }
+        }
+      }
+    },
+    "sixteenth" : {
+      "comment" : "VoiceOver: a note value, as in \"sixteenth note\""
+    },
+    "take.recorded" : {
+      "comment" : "The name of a take that was recorded rather than imported, a noun: the Transcribe screen's take line and the Live Activity",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Recording"
+          }
+        }
+      }
+    },
+    "the stems could not be separated: %@" : {
+      "comment" : "The reason in a failed transcription's alert, after \"could not be loaded or run:\""
+    },
+    "the stems model could not be loaded" : {
+      "comment" : "The reason after \"The stems could not be separated:\""
+    },
+    "the take is empty" : {
+      "comment" : "The reason after \"The stems could not be separated:\""
+    },
+    "thirty-second" : {
+      "comment" : "VoiceOver: a note value, as in \"thirty-second note\""
+    },
+    "three quarters of a beat" : {
+      "comment" : "VoiceOver: a note's length"
+    },
+    "ticked" : {
+      "comment" : "Accessibility value: a menu row or switch whose box is ticked"
+    },
+    "unticked" : {
+      "comment" : "Accessibility value: a menu row or switch whose box is empty"
+    },
+    "whole" : {
+      "comment" : "VoiceOver: a note value, as in \"whole note\""
+    }
+  },
+  "version" : "1.0"
+}

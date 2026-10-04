@@ -44,7 +44,8 @@ struct SoundBankSection: View {
             Text("Sound bank", comment: "Settings → Audio: the sound bank row")
         } footer: {
             VStack(alignment: .leading, spacing: 4) {
-                Text("A SoundFont (.sf2) or DLS (.dls) file the MIDI and the click play through.")
+                Text("A SoundFont (.sf2) or DLS (.dls) file the MIDI and the click play through.",
+                     comment: "Settings → Audio: what the sound bank is")
                 Text("\(SoundBankManifest.name) by \(SoundBankManifest.author): free to use and redistribute.",
                      comment: "Settings → Sound bank (iOS): the downloadable bank's author and licence in brief")
                 Link(destination: SoundBankManifest.licenceURL) {
@@ -136,9 +137,10 @@ struct RecordingSection: View {
                 Text("Click while recording", comment: "Settings → Audio: the click during a take")
             }
         } header: {
-            Text("Recording", comment: "Settings (iOS): the count-in and the click while recording")
+            Text(String(localized: "settings.recording", defaultValue: "Recording", comment: "Settings (iOS): the section with the count-in and the click while recording, a noun"))
         } footer: {
-            Text("The count-in plays a click at the project's tempo and meter, then starts the take on the next downbeat.")
+            Text("The count-in plays a click at the project's tempo and meter, then starts the take on the next downbeat.",
+                 comment: "Settings → Audio: what the count-in does")
         }
     }
 
@@ -161,25 +163,26 @@ struct AfterTranscriptionSection: View {
         Section {
             Picker(selection: $appSettings.settings.minimumNoteLength) {
                 ForEach(NoteFilter.minimumLengthChoices, id: \.self) { seconds in
-                    (seconds == 0 ? Text("Off")
+                    (seconds == 0 ? Text("Off", comment: "Settings → Model: no minimum note length")
                                   : Text(verbatim: "\(Int((seconds * 1000).rounded())) ms")).tag(seconds)
                 }
             } label: {
-                Text("Drop notes shorter than")
+                Text("Drop notes shorter than", comment: "Settings → Model: the minimum note length picker")
             }
 
             Picker(selection: $appSettings.settings.minimumConfidence) {
                 ForEach(NoteFilter.minimumConfidenceChoices, id: \.self) { confidence in
-                    (confidence == 0 ? Text("Off")
+                    (confidence == 0 ? Text("Off", comment: "Settings → Model: no minimum confidence")
                                      : Text(verbatim: "\(Int((confidence * 100).rounded())) %")).tag(confidence)
                 }
             } label: {
-                Text("Drop notes less sure than")
+                Text("Drop notes less sure than", comment: "Settings → Model: the minimum confidence picker")
             }
         } header: {
-            Text("After transcription")
+            Text("After transcription", comment: "Settings → Model: the section with the note filters")
         } footer: {
-            Text("Dropped notes are gone; lower the setting and transcribe again to get them back.")
+            Text("Dropped notes are gone; lower the setting and transcribe again to get them back.",
+                 comment: "Settings → Model: the note filters' footnote")
         }
     }
 }

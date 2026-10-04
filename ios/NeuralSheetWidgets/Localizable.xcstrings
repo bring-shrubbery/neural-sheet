@@ -1,0 +1,17 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "%@, %@, %@" : {
+      "comment" : "VoiceOver (Live Activity): the take's name, what the run is doing and how far it is, e.g. \"take.wav, Transcribing, 42%\"",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@, %2$@, %3$@"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

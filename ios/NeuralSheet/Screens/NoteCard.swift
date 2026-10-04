@@ -50,8 +50,11 @@ struct NoteCard: View {
                         model.deleteSelection()
                     } label: {
                         Label {
-                            Text(notes.count == 1 ? "Delete Note" : "Delete Notes",
-                                 comment: "Note card: delete the selected notes")
+                            if notes.count == 1 {
+                                Text("Delete Note", comment: "Note card: delete the selected note")
+                            } else {
+                                Text("Delete Notes", comment: "Note card: delete the selected notes")
+                            }
                         } icon: {
                             Image(systemName: "trash")
                         }
@@ -59,10 +62,8 @@ struct NoteCard: View {
                     .accessibilityIdentifier("card-delete")
                 }
             }
-            // "1 note", "3 notes": inflected here, since the Mac's catalog with its plural
-            // variants of SelectionText's count is not in this target yet (sub-issue J).
-            .navigationTitle(notes.isEmpty ? Text(verbatim: SelectionText.count(0))
-                                           : Text("^[\(notes.count) note](inflect: true)", comment: "Note card's title: how many notes are selected"))
+            // "1 note", "3 notes", through the catalog's plural variants, as the Mac's card says it.
+            .navigationTitle(Text(verbatim: SelectionText.count(notes.count)))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
@@ -132,8 +133,8 @@ struct NoteCard: View {
     private func secondsRow(_ label: Text, field: Text, value: Double?, range: ClosedRange<Double>,
                             commit: @escaping (Double) -> Void) -> some View {
         LabeledContent {
-            CommitField(label: field, text: value.map { String(format: "%.3f", $0) } ?? "—", keyboard: .decimalPad) { text in
-                guard let seconds = Double(text.replacingOccurrences(of: ",", with: ".")), seconds.isFinite else { return false }
+            CommitField(label: field, text: value.map { Formats.number($0, decimals: 3) } ?? "—", keyboard: .decimalPad) { text in
+                guard let seconds = Formats.parseNumber(text), seconds.isFinite else { return false }
 
                 commit(min(max(seconds, range.lowerBound), range.upperBound))
                 return true

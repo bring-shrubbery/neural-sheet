@@ -89,7 +89,7 @@ private struct ModelRow: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(size.localizedName)
                     .font(.body)
-                Text("\(size.localizedHint) · \(ByteCountFormatter.string(fromByteCount: spec.byteSize, countStyle: .file))")
+                Text(verbatim: "\(size.localizedHint) · \(ByteCountFormatter.string(fromByteCount: spec.byteSize, countStyle: .file))")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
 

@@ -63,7 +63,7 @@ struct ExportSheet: View {
                 } else if let ready = exports.ready {
                     ExportReadyView(model: model, ready: ready)
                 } else if let render = exports.audioRender {
-                    ExportProgressView(title: Text("Exporting Audio"), detail: render.fileName, progress: render.progress) {
+                    ExportProgressView(title: Text("Exporting Audio", comment: "File → Export Audio…: the sheet's title while the file is written"), detail: render.fileName, progress: render.progress) {
                         model.cancelAudioExport()
                     }
                 } else if let stems = exports.stemsExport {
@@ -158,14 +158,14 @@ private struct AudioExportForm: View {
                         .selectionDisabled(what.includesSynth && !hasNotes)
                 }
             } label: {
-                Text("What:")
+                Text("What:", comment: "Export Audio: the source (the take, the MIDI or both)")
             }
 
             Picker(selection: $choice.markedRange) {
-                Text("Whole take").tag(false)
-                Text("Marked range").tag(true).selectionDisabled(!hasRange)
+                Text("Whole take", comment: "Export Audio: the whole take's length").tag(false)
+                Text("Marked range", comment: "Export Audio: only the range marked on the ruler").tag(true).selectionDisabled(!hasRange)
             } label: {
-                Text("Range:")
+                Text("Range:", comment: "Export Audio: how much of the take")
             }
 
             Picker(selection: $choice.format) {
@@ -173,7 +173,7 @@ private struct AudioExportForm: View {
                     Text(format.localizedTitle).tag(format)
                 }
             } label: {
-                Text("Format:")
+                Text("Format:", comment: "Export Audio: the file format")
             }
 
             Section {

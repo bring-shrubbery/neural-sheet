@@ -20,7 +20,7 @@ struct PartDisplaySheet: View {
             Form {
                 Section {
                     if !isDrums {
-                        Picker(String(localized: "Display"), selection: binding(display.mode) { model.setPartMode($0, program: program) }) {
+                        Picker(String(localized: "Display", comment: "Shown in the Score tab's part card"), selection: binding(display.mode) { model.setPartMode($0, program: program) }) {
                             ForEach(PartDisplay.Mode.allCases, id: \.self) { mode in
                                 Text(verbatim: mode.localizedName).tag(mode)
                             }
@@ -29,7 +29,7 @@ struct PartDisplaySheet: View {
                         .accessibilityIdentifier("part.mode")
                     }
 
-                    Picker(String(localized: "Clef"), selection: binding(display.clef) { model.setPartClef($0, program: program) }) {
+                    Picker(String(localized: "Clef", comment: "Accessibility label: the part card's clef button"), selection: binding(display.clef) { model.setPartClef($0, program: program) }) {
                         ForEach(ClefChoice.allCases, id: \.self) { clef in
                             Text(verbatim: clef.localizedName).tag(clef)
                         }
@@ -37,7 +37,7 @@ struct PartDisplaySheet: View {
                 }
 
                 Section {
-                    Picker(String(localized: "Transposition"), selection: binding(display.transposition) { model.setPartTransposition($0, program: program) }) {
+                    Picker(String(localized: "Transposition", comment: "Accessibility label: the part card's transposition preset button"), selection: binding(display.transposition) { model.setPartTransposition($0, program: program) }) {
                         ForEach(transpositions(including: display.transposition), id: \.1) { preset in
                             Text(verbatim: preset.0).tag(preset.1)
                         }
@@ -56,7 +56,7 @@ struct PartDisplaySheet: View {
                 }
 
                 Section {
-                    Toggle(String(localized: "Hidden"), isOn: binding(display.isHidden) { model.setPartHidden($0, program: program) })
+                    Toggle(String(localized: "Hidden", comment: "Accessibility label: the part card's hide switch"), isOn: binding(display.isHidden) { model.setPartHidden($0, program: program) })
                         .accessibilityIdentifier("part.hidden")
                 }
             }
@@ -73,7 +73,7 @@ struct PartDisplaySheet: View {
     @ViewBuilder
     private func tabSection(_ display: PartDisplay) -> some View {
         Section {
-            Picker(String(localized: "Tab"), selection: binding(display.tab?.template) { id in
+            Picker(String(localized: "Tab", comment: "Accessibility label: the part card's tablature instrument button"), selection: binding(display.tab?.template) { id in
                 if let id, let template = TabTemplate.template(id: id) {
                     model.setPartTab(template: template, preset: template.presets[0], program: program)
                 } else {
@@ -88,7 +88,7 @@ struct PartDisplaySheet: View {
             .accessibilityIdentifier("part.tab")
 
             if let tab = display.tab, let template = TabTemplate.template(id: tab.template) {
-                Picker(String(localized: "Tuning"), selection: binding(tab.presetName) { name in
+                Picker(String(localized: "Tuning", comment: "Accessibility label: the part card's tuning preset button"), selection: binding(tab.presetName) { name in
                     if let preset = template.presets.first(where: { $0.name == name }) {
                         model.setPartTab(template: template, preset: preset, program: program)
                     }
@@ -116,7 +116,7 @@ struct PartDisplaySheet: View {
                 }
 
                 Stepper(value: binding(tab.frets) { model.setPartFrets($0, program: program) }, in: 1 ... 36) {
-                    LabeledContent(String(localized: "Frets")) {
+                    LabeledContent(String(localized: "Frets", comment: "Accessibility label: the part card's fret count field")) {
                         Text(tab.frets, format: .number)
                             .monospacedDigit()
                     }
@@ -180,19 +180,19 @@ struct ScoreSheetForm: View {
                 Section {
                     // The title's placeholder is what the header prints without one: the take's
                     // name, or "Untitled".
-                    field(String(localized: "Title"), text: Binding(get: { draft.title ?? "" }, set: { draft.title = $0 }),
+                    field(String(localized: "Title", comment: "Score sheet: the title field"), text: Binding(get: { draft.title ?? "" }, set: { draft.title = $0 }),
                           prompt: CoreNames.localized(SheetMetadata().resolvedTitle(takeName: model.droppedFileName)))
-                    field(String(localized: "Subtitle"), text: $draft.subtitle)
-                    field(String(localized: "Composer"), text: $draft.composer)
-                    field(String(localized: "Arranger"), text: $draft.arranger)
-                    field(String(localized: "Copyright"), text: $draft.copyright)
+                    field(String(localized: "Subtitle", comment: "Score sheet: the subtitle field"), text: $draft.subtitle)
+                    field(String(localized: "Composer", comment: "Score sheet: the composer field"), text: $draft.composer)
+                    field(String(localized: "Arranger", comment: "Score sheet: the arranger field"), text: $draft.arranger)
+                    field(String(localized: "Copyright", comment: "Score sheet: the copyright field"), text: $draft.copyright)
                 }
 
                 Section {
-                    toggle(String(localized: "Measure numbers"), \.showsMeasureNumbers)
-                    toggle(String(localized: "Part names"), \.showsPartNames)
-                    toggle(String(localized: "Tempo mark"), \.showsTempo)
-                    toggle(String(localized: "Show chords"), \.showsChords)
+                    toggle(String(localized: "Measure numbers", comment: "Score sheet: show the measure numbers"), \.showsMeasureNumbers)
+                    toggle(String(localized: "Part names", comment: "Score sheet: show the part names"), \.showsPartNames)
+                    toggle(String(localized: "Tempo mark", comment: "Score sheet: show the tempo mark"), \.showsTempo)
+                    toggle(String(localized: "Show chords", comment: "Score sheet: show the chord symbols"), \.showsChords)
                 }
             }
             .navigationTitle(Text("Sheet", comment: "Score sheet: its title"))
