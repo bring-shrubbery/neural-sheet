@@ -136,6 +136,41 @@ jobs:
         working-directory: app
         run: Scripts/check-localizations.sh --ios CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
 
+  plugin:
+    name: Build and validate the Audio Unit
+    runs-on: macos-26
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+      - name: Select the newest installed Xcode
+        run: |
+          # shellcheck disable=SC2012
+          XCODE=$(ls -d /Applications/Xcode_*.app | sort -V | tail -1)
+          echo "using $XCODE"
+          sudo xcode-select -s "$XCODE"
+          xcodebuild -version
+      - name: Build (Debug, unsigned)
+        working-directory: plugin
+        run: |
+          set -o pipefail
+          xcodebuild -project NeuralSheet-Plugin.xcodeproj -scheme "NeuralSheet Plugin" \
+            -configuration Debug -destination 'platform=macOS,arch=arm64' \
+            CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO \
+            build 2>&1 | tee build.log | tail -40
+      - name: Fail on warnings in our own sources
+        working-directory: plugin
+        run: |
+          if grep -E "/(plugin/(Container|NeuralSheetAU|PluginCore)|app/Packages)/.*warning:" build.log; then
+            echo "::error::warnings in NeuralSheet sources"; exit 1
+          fi
+          echo "no warnings in NeuralSheet sources"
+      # Release, signed ad hoc (no certificate on the runner), registered with pluginkit, auval,
+      # unregistered. Should the runner's session ever refuse the registration, set
+      # NS_PLUGIN_SKIP_AUVAL: 1 here and say "build only" in the job's name.
+      - name: Validate (auval)
+        working-directory: plugin
+        run: Scripts/validate.sh
+
   web:
     name: Website
     runs-on: ubuntu-latest
