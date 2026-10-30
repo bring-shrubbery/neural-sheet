@@ -416,6 +416,8 @@ import UniformTypeIdentifiers
         didSet {
             // The MIDI output's channels follow the export's overflow mode (MIDI out design §2).
             if settings.midiOverflowMode != oldValue.midiOverflowMode { refreshMidiRoutes() }
+            // Settings → General → Appearance, applied as it is chosen (native chrome design §2).
+            if settings.appearance != oldValue.appearance { AppearanceTracker.shared.apply(settings.appearance) }
         }
     }
 

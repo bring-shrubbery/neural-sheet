@@ -16,6 +16,15 @@ struct GeneralSettingsView: View {
     var body: some View {
         Form {
             Section {
+                // Native chrome design §2: the Mac's own Light / Dark, or one of them always.
+                Picker("Appearance", selection: $model.settings.appearance) {
+                    Text("System", comment: "Settings → General → Appearance: follow the Mac's Light / Dark setting")
+                        .tag(AppearanceSetting.system)
+                    Text("Light", comment: "Settings → General → Appearance").tag(AppearanceSetting.light)
+                    Text("Dark", comment: "Settings → General → Appearance").tag(AppearanceSetting.dark)
+                }
+                .pickerStyle(.segmented)
+
                 Toggle("Show tooltips", isOn: $model.settings.tooltipsVisible)
             }
 

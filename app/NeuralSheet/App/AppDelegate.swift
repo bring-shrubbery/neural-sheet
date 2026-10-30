@@ -1,9 +1,18 @@
 import AppKit
+import NeuralSheetCore
 
 /// Quit and the Finder (projects design §5.4, §5.5). The model is handed over by the app's
 /// `init`, before any delegate method can run.
 final class AppDelegate: NSObject, NSApplicationDelegate {
     static var model: AppModel?
+
+    /// The appearance the settings ask for, before the first window is drawn (native chrome
+    /// design §2).
+    func applicationWillFinishLaunching(_ notification: Notification) {
+        if let model = Self.model {
+            AppearanceTracker.shared.start(setting: model.settings.appearance)
+        }
+    }
 
     /// The standalone quits with its last window, as the JUCE one did: closing the welcome
     /// window quits; closing the project window opens the welcome window first, so it is never
