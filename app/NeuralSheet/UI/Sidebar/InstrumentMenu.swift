@@ -5,76 +5,9 @@ import SwiftUI
 /// The picker behind the sidebar's "+" (§3.3): every instrument the model can name, ticked where
 /// it is selected, with "Automatic" at the top for the default of letting the model choose.
 ///
-/// A panel of its own rather than a `MenuPanel`: the selection is a multi-select, so it stays open
-/// across clicks, every row carries a box whether ticked or not, and its header and footer are
-/// ruled and set differently from the popup menus'. It shares the menus' metrics, surface and
-/// tick box.
-///
-/// `InstrumentMenuOverlay` covers the whole main view: everything outside the panel is the scrim
-/// that closes it, and so is Escape. The main view puts it in its root stack while
-/// `model.isInstrumentMenuOpen`.
-struct InstrumentMenuOverlay: View {
-    let model: AppModel
-    /// Where the sidebar sits in the main view, in authored points: under the top bar. The panel
-    /// hangs off the sidebar's anchor, `(width - 10, 33)` from there.
-    var sidebarOrigin: CGPoint = CGPoint(x: 0, y: 54)
-
-    @Environment(\.uiScale) private var k
-
-    @State private var keyMonitor: Any?
-
-    var body: some View {
-        let s = Scaled(k: k)
-        let anchorX = sidebarOrigin.x + SidebarMetrics.width - SidebarMetrics.menuAnchorRight
-        let anchorY = sidebarOrigin.y + SidebarMetrics.menuAnchorTop
-
-        ZStack(alignment: .topLeading) {
-            // The scrim: nothing to see, everything to click.
-            Color.clear
-                .contentShape(Rectangle())
-                .onTapGesture { close() }
-                .accessibilityHidden(true)
-
-            InstrumentMenu(model: model)
-                .padding(.leading, s(anchorX - MenuMetrics.width))
-                .padding(.top, s(anchorY))
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        // VoiceOver's escape gesture closes it as Escape and the scrim do (a11y design §2).
-        .accessibilityAction(.escape) { close() }
-        .onAppear(perform: installKeyMonitor)
-        .onDisappear(perform: removeKeyMonitor)
-    }
-
-    private func close() {
-        model.isInstrumentMenuOpen = false
-    }
-
-    // MARK: - Escape
-
-    /// A local monitor rather than focus: the menu is on screen only while it is open, and Escape
-    /// has to reach it whatever else in the window has the keyboard (§11.2).
-    private func installKeyMonitor() {
-        guard keyMonitor == nil else { return }
-
-        keyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
-            guard event.keyCode == 53 else { return event }
-
-            close()
-            return nil
-        }
-    }
-
-    private func removeKeyMonitor() {
-        if let keyMonitor {
-            NSEvent.removeMonitor(keyMonitor)
-            self.keyMonitor = nil
-        }
-    }
-}
-
-/// The panel itself: header, the scrolling row list, footer, on the popup surface with the menus'
-/// drop shadow (34 / (0, 14)).
+/// A multi-select, so it stays open across clicks and every row carries a box whether ticked or
+/// not. Shown in a popover off the "+" (native chrome design §4), which closes it on Escape and on
+/// a click outside; it shares the menus' metrics and tick box.
 struct InstrumentMenu: View {
     let model: AppModel
 
@@ -153,7 +86,6 @@ struct InstrumentMenu: View {
                 }
         }
         .frame(width: s(MenuMetrics.width))
-        .popupSurface(corner: corner)
         .accessibilityElement(children: .contain)
         .accessibilityLabel(Text(verbatim: Self.title))
     }
@@ -229,21 +161,9 @@ private struct InstrumentMenuRow: View {
 #Preview("Instrument menu") {
     let model = AppModel()
 
-    return ZStack(alignment: .topLeading) {
-        Theme.bgRoot
-
-        HStack(spacing: 0) {
-            Sidebar(model: model)
-            Spacer()
+    return InstrumentMenu(model: model)
+        .onAppear {
+            model.setSelected(.acousticPiano, true)
+            model.setSelected(.drums, true)
         }
-        .padding(.top, 54)
-
-        InstrumentMenuOverlay(model: model)
-    }
-    .frame(width: 640, height: 500)
-    .onAppear {
-        model.isInstrumentMenuOpen = true
-        model.setSelected(.acousticPiano, true)
-        model.setSelected(.drums, true)
-    }
 }

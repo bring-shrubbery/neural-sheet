@@ -34,7 +34,7 @@ enum AccessibilityText {
         return LocalizedStringResource("\(number) dB", comment: "Accessibility value: a level in decibels, e.g. \"-6.0 dB\"")
     }
 
-    // MARK: - Transport (top bar)
+    // MARK: - Transport
 
     static var goToStart: LocalizedStringResource {
         LocalizedStringResource("Go to start", comment: "Accessibility label: the top bar's button that moves the playhead to the start")

@@ -2,9 +2,9 @@ import AppKit
 import NeuralSheetCore
 import SwiftUI
 
-/// The Edit toolbar's Re-transcribe (region design §6.4, §6.5): a label button live while a range
-/// is marked, opening the popup that picks the instruments and runs; replaced in place by the
-/// progress group while the run is in flight.
+/// Re-transcribe (region design §6.4, §6.5), on the Transcribe and Edit tabs' toolbar: live while a
+/// range is marked, opening the popup that picks the instruments and runs; replaced in place by
+/// the progress group while the run is in flight.
 struct RetranscribeButton: View {
     let model: AppModel
 
@@ -12,27 +12,24 @@ struct RetranscribeButton: View {
     @State private var menu = PopupMenuPresenter()
     @State private var anchor: NSView?
 
-    private typealias Metrics = Toolbar.Metrics
+    private typealias Metrics = ToolbarMetrics
 
     var body: some View {
-        let s = Scaled(k: k)
-
         if model.regionJob != nil {
             RegionProgress(model: model)
         } else {
-            FlatButton(isEnabled: model.canRetranscribe,
-                       idle: Theme.bgControlAlt,
-                       on: Theme.bgControlActive,
-                       foregroundIdle: Theme.textButton,
-                       foregroundOn: Theme.textBright,
-                       corner: s(Metrics.corner),
-                       action: showMenu) { _ in
-                Text("Re-transcribe")
-                    .font(Fonts.buttonLabel(k))
-                    .fixedSize()
-                    .padding(.horizontal, s(Metrics.buttonPadX))
-                    .frame(height: s(Metrics.buttonHeight))
+            // A toolbar button (native chrome design §4); the popup hangs under it.
+            Button(action: showMenu) {
+                Label {
+                    Text("Re-transcribe")
+                } icon: {
+                    Image(systemName: "waveform.badge.magnifyingglass")
+                }
             }
+            // The icon alone: the toolbar is tight with the sidebar and the inspector open, and
+            // the tooltip and VoiceOver say the title.
+            .labelStyle(.iconOnly)
+            .disabled(!model.canRetranscribe)
             .tooltip("Re-transcribe the marked range")
             .background(AnchorCatcher { anchor = $0 })
         }

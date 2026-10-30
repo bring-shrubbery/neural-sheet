@@ -2,7 +2,7 @@ import AppKit
 import NeuralSheetCore
 import SwiftUI
 
-/// The whole timeline block (`VisualizationPanel` less its toolbar and status bar): the 46 px
+/// The whole timeline block (`VisualizationPanel` less its toolbar and status bar, which are the window's toolbar and the transport capsule now): the 46 px
 /// gutter-and-keyboard column on the left, and to its right one horizontally scrolling viewport
 /// stacking the waveform, the ruler, the Edit tab's chord lane and the piano roll so their time
 /// axes can never drift apart.

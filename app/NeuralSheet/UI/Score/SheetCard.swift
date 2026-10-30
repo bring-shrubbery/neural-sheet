@@ -5,7 +5,7 @@ import SwiftUI
 /// The sheet's title block (arrangement design §6): title, subtitle, composer, arranger and the
 /// copyright footer, then the measure numbers, the part names, the tempo mark and the chord
 /// symbols as ticks. Every
-/// change goes to the model as a whole `SheetMetadata`. Shown in the Score toolbar's menu panel
+/// change goes to the model as a whole `SheetMetadata`. Shown in a menu panel under the Score tab's Sheet… toolbar button
 /// under `Sheet…`, which takes key so the fields can be typed in; the rows are sized so the whole
 /// card fits the panel's list without scrolling.
 struct SheetCard: View {

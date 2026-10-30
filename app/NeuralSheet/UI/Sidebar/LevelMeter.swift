@@ -2,7 +2,7 @@ import NeuralSheetCore
 import SwiftUI
 
 /// A row of rounded segments lit from the left up to a level (`NnLevelMeter`): 16 of them under an
-/// instrument strip's fader, 26 in the master panel.
+/// instrument strip's fader, 30 in the sidebar's mix.
 ///
 /// The level arrives already smoothed -- `AppModel` runs the ballistics and the staleness rule for
 /// every meter on one clock (§2.5) -- so this is only the mapping from a decibel value to segments,

@@ -117,6 +117,9 @@ and Spanish, as the Mac's follow macOS's.
 | command-line tool | Befehlszeilenprogramm | herramienta de línea de comandos | |
 | Settings | Einstellungen | Ajustes | The app's window; the system's is *Systemeinstellungen* / *Ajustes del Sistema* |
 | tooltip | Tooltip | descripción emergente | |
+| inspector | Informationen | inspector | The window's right-hand column (native chrome design §2), as Final Cut Pro names it in German |
+| appearance (Light / Dark) | Erscheinungsbild (Hell / Dunkel) | apariencia (claro / oscuro) | As System Settings → Appearance names them |
+| workspace (the tabs) | Arbeitsbereich | espacio de trabajo | VoiceOver's name for the Transcribe / Edit / Score control |
 | VoiceOver: note (role) | Note | nota | |
 | note card | Notenkarte | ficha de la nota | The Mac's *Open Note Card*; on iOS a sheet or a popover |
 | part card | Stimmenkarte | ficha de la parte | |

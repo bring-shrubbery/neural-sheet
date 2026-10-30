@@ -123,7 +123,7 @@ enum Icons {
         }
     }
 
-    // MARK: - Top bar
+    // MARK: - Transport
 
     nonisolated struct Speaker: Shape {
         func path(in rect: CGRect) -> Path {

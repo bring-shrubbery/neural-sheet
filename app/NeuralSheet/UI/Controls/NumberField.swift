@@ -2,7 +2,7 @@ import AppKit
 import SwiftUI
 
 /// A small numeric field in the timeline's mono face: commits on Return or focus loss, steps by
-/// `step` on ↑/↓ (×10 with ⇧), and clamps into `range`. Shared by the Edit toolbar, the
+/// `step` on ↑/↓ (×10 with ⇧), and clamps into `range`. Shared by the inspector, the
 /// selection inspector and the note card. Return also gives the keyboard back, so the next
 /// Space is the transport's rather than a character in the field.
 ///
@@ -128,7 +128,7 @@ struct NumberField: View {
 }
 
 /// Hands the caller the AppKit view under a SwiftUI control, to anchor a popup to it. Shared by
-/// the Edit toolbar's division menu and the selection inspector's instrument menu.
+/// the cards' menus and the selection fields' instrument menu.
 struct AnchorCatcher: NSViewRepresentable {
     let found: (NSView) -> Void
 

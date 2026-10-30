@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// The MIDI chip at the trailing end of the Edit and Score toolbars (MIDI out design §2): a
+/// The MIDI chip at the trailing end of the Edit and Score tabs' toolbar (MIDI out design §2): a
 /// document glyph and "MIDI", dragged onto the Finder or a DAW's track as the `.mid` File →
 /// Export MIDI… would write, or with ⌥ held at the mouse-down as the `.musicxml`. A click without
 /// a drag runs Export MIDI…. Dimmed and inert until there is a finished transcription.
@@ -10,28 +10,23 @@ import SwiftUI
 struct MidiDragChip: View {
     let model: AppModel
 
-    @Environment(\.uiScale) private var k
-
-    private typealias Metrics = Toolbar.Metrics
-
     var body: some View {
-        let s = Scaled(k: k)
         let enabled = model.canExport
         let model = model
 
-        HStack(spacing: s(6)) {
+        HStack(spacing: 6) {
             DocumentGlyph()
-                .stroke(style: Icons.strokeStyle(scale: k))
-                .frame(width: s(Metrics.iconSize), height: s(Metrics.iconSize))
+                .stroke(style: Icons.strokeStyle(scale: 1))
+                .frame(width: 13, height: 13)
 
             Text("MIDI")
-                .font(Fonts.buttonLabel(k))
+                .font(.system(size: 13, weight: .medium))
                 .fixedSize()
         }
-        .foregroundStyle(Theme.textButton)
-        .padding(.horizontal, s(Metrics.buttonPadX - 2))
-        .frame(height: s(Metrics.buttonHeight))
-        .background(RoundedRectangle(cornerRadius: s(Metrics.corner), style: .circular).fill(Theme.bgControlAlt))
+        .foregroundStyle(Theme.textPrimary)
+        .padding(.horizontal, 10)
+        .frame(height: 28)
+        .contentShape(Rectangle())
         .opacity(enabled ? 1 : Theme.disabledAlpha)
         .overlay(
             MidiDragSource(isEnabled: enabled,

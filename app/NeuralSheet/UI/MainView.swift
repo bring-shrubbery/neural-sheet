@@ -2,11 +2,11 @@ import AppKit
 import NeuralSheetCore
 import SwiftUI
 
-/// The window (`NeuralNoteMainView`, inventory §1.2): top bar over the tab strip over a
-/// full-height sidebar beside the toolbar, the timeline and the status bar, laid out to whatever
-/// size the window is -- the sidebar keeps its width, the timeline takes the rest -- with the
-/// overlays on top in the order the original stacked them: the no-model notice (centred on the
-/// piano roll), the instrument picker off the sidebar. The settings are a window of their own (⌘,).
+/// The window (`NeuralNoteMainView`, inventory §1.2), rebuilt from SwiftUI's own pieces (native
+/// chrome design §2): a split view with the mixer in the sidebar, the timeline or the score in
+/// the detail beside the inspector, and the window's toolbar carrying the tabs and their actions,
+/// laid out to whatever size the window is. The no-model notice sits on the piano roll, the
+/// transport floats over the detail. The settings are a window of their own (⌘,).
 ///
 /// Also where the app's window-bound pieces are installed: the dialogs, the shortcuts and the
 /// display link.
@@ -50,14 +50,11 @@ struct MainView: View {
                                             set: { if !$0 { model.cancelAudioExport() } })) {
                     RenderProgressSheet(model: model)
                 }
-
-            if model.isInstrumentMenuOpen {
-                InstrumentMenuOverlay(model: model)
-            }
         }
         .frame(minWidth: MainWindowController.minContentSize.width,
                minHeight: MainWindowController.minContentSize.height)
         .navigationTitle(model.projectTitle)
+        .navigationSubtitle(StatusText.subtitle(model))
         .background(MainWindowHost(controller: windowController, model: model))
         .sheet(isPresented: Binding(get: { model.isExportDialogPresented },
                                     set: { model.isExportDialogPresented = $0 })) {
@@ -69,55 +66,64 @@ struct MainView: View {
 
     // MARK: - Composition
 
-    /// The status bar belongs to the column right of the sidebar (`VisualizationPanel::resized`),
-    /// and the sidebar runs to the bottom of the window with its master panel.
+    /// A split view (native chrome design §2): the mixer in the system's floating sidebar, the
+    /// timeline or the score in the detail with the inspector on its right, and the window's
+    /// toolbar over both. The transport floats in glass over the bottom of the detail, the
+    /// vertical zoom over the roll's corner.
     private var composition: some View {
-        VStack(spacing: 0) {
-            TopBar(model: model)
-            TabStrip(model: model)
-
-            HStack(spacing: 0) {
-                Sidebar(model: model)
-
-                VStack(spacing: 0) {
-                    // One row per tab; the Score toolbar carries the grid and the key too, since
-                    // they are the score's parameters (score design §1).
-                    switch model.workspace {
-                    case .transcribe: Toolbar(model: model)
-                    case .edit: EditToolbar(model: model)
-                    case .score: ScoreToolbar(model: model)
-                    }
-
-                    // The timeline stays in the hierarchy under the score, so its zoom, scroll
-                    // and pitch range survive a visit to the Score tab.
-                    // Time runs left to right whatever the language: the timeline and the score
-                    // keep their direction under a right-to-left system language (localization
-                    // design §2); the menus and Settings follow the system.
-                    ZStack {
-                        TimelineView(model: model)
-                            .opacity(model.workspace == .score ? 0 : 1)
-                            .allowsHitTesting(model.workspace != .score)
-                            .accessibilityHidden(model.workspace == .score)
-                            .environment(\.layoutDirection, .leftToRight)
-
-                        if model.workspace == .score {
-                            ScoreTabView(model: model)
-                                .environment(\.layoutDirection, .leftToRight)
-                        }
-                    }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .overlay {
-                        if model.workspace == .transcribe, model.needsModelNotice {
-                            NoModelNotice(model: model)
-                                .padding(.leading, TimelineMetrics.gutterWidth)
-                                .padding(.top, TimelineMetrics.pianoRollY)
-                        }
-                    }
-
-                    StatusBar(model: model)
+        NavigationSplitView {
+            MixerSidebar(model: model)
+                .navigationSplitViewColumnWidth(SidebarMetrics.width)
+        } detail: {
+            detail
+                .inspector(isPresented: Binding(get: { model.isInspectorShown }, set: { model.isInspectorShown = $0 })) {
+                    InspectorView(model: model)
+                        .inspectorColumnWidth(min: 250, ideal: 280, max: 360)
                 }
+        }
+        .toolbar {
+            MainToolbar(model: model,
+                        isInspectorShown: Binding(get: { model.isInspectorShown }, set: { model.isInspectorShown = $0 }))
+        }
+    }
+
+    private var detail: some View {
+        // The timeline stays in the hierarchy under the score, so its zoom, scroll and pitch
+        // range survive a visit to the Score tab. Time runs left to right whatever the language:
+        // the timeline and the score keep their direction under a right-to-left system language
+        // (localization design §2); the menus and Settings follow the system.
+        ZStack {
+            TimelineView(model: model)
+                .opacity(model.workspace == .score ? 0 : 1)
+                .allowsHitTesting(model.workspace != .score)
+                .accessibilityHidden(model.workspace == .score)
+                .environment(\.layoutDirection, .leftToRight)
+
+            if model.workspace == .score {
+                ScoreTabView(model: model)
+                    .environment(\.layoutDirection, .leftToRight)
             }
-            .frame(maxHeight: .infinity)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Theme.bgRoot)
+        .overlay {
+            if model.workspace == .transcribe, model.needsModelNotice {
+                NoModelNotice(model: model)
+                    .padding(.leading, TimelineMetrics.gutterWidth)
+                    .padding(.top, TimelineMetrics.pianoRollY)
+            }
+        }
+        .overlay(alignment: .bottomTrailing) {
+            // Above the transport, so the two never meet in a narrow detail.
+            if model.workspace != .score {
+                ZoomCapsule(model: model)
+                    .padding(.trailing, 16)
+                    .padding(.bottom, 84)
+            }
+        }
+        .overlay(alignment: .bottom) {
+            TransportCapsule(model: model)
+                .padding(.bottom, 18)
         }
     }
 

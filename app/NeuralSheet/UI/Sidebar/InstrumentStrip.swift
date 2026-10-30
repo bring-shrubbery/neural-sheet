@@ -2,10 +2,10 @@ import AppKit
 import NeuralSheetCore
 import SwiftUI
 
-/// One instrument's row in the sidebar (`InstrumentStrip`, §1.5): colour chip, name, note count
-/// and range, mute, solo, a fader, the level meter under it and the pan beside the meter, under
-/// the fader's readout (click design §2). 76 authored points tall, as wide as the sidebar's strip
-/// column.
+/// One instrument's row in the sidebar (`InstrumentStrip`, §1.5): colour dot, name, note count
+/// and range, mute, solo, a fader with its readout, and the level meter under it with the pan
+/// beside it (click design §2). A rounded row in the glass sidebar (native chrome design §4), as
+/// wide as the sidebar's column.
 ///
 /// The row is a function of the three values it is handed -- the entry, its mix settings and its
 /// smoothed level -- and it talks back to the model only through the mixer commands. The model
@@ -17,103 +17,66 @@ struct InstrumentStrip: View {
     let settings: InstrumentChannelSettings
     /// The instrument's level after ballistics, in dB.
     let level: Double
-    /// The strip's own width in authored points: the sidebar's column, which is the sidebar less
-    /// its 1 px border.
+    /// The strip's own width in points: the sidebar's column less its side margins.
     var width: CGFloat = SidebarMetrics.stripWidth
     /// Edit tab: this strip's instrument is where new and reassigned notes go (design §6.2).
     var isTarget = false
-    /// This strip's instrument is singled out in the roll, the others faded; the chip's border
-    /// lights up in the accent so the sidebar says so without competing with the roll.
+    /// This strip's instrument is singled out in the roll, the others faded; the dot takes an
+    /// accent ring so the sidebar says so without competing with the roll.
     var isHighlighted = false
-    /// A click on the chip or the name: toggles the highlight, and in the Edit tab makes this the
+    /// A click on the dot or the name: toggles the highlight, and in the Edit tab makes this the
     /// target too. Nil for a strip that cannot be clicked.
     var onSelect: (() -> Void)?
     /// A secondary click anywhere on the strip: opens the strip card in the Edit tab (region
     /// design §6.1). Nil, and no catcher is installed, in the Transcribe tab.
     var onSecondaryClick: ((NSWindow, CGPoint) -> Void)?
 
-    @Environment(\.uiScale) private var k
+    // MARK: - Extents
 
-    // MARK: - Authored extents (`InstrumentStrip.cpp`, `nn::metrics`)
-
-    private static let paddingSide: CGFloat = 14
-    private static let paddingTop: CGFloat = 11
-    private static let identityRowHeight: CGFloat = 22
-    private static let toggleWidth: CGFloat = 20
-    private static let toggleHeight: CGFloat = 18
-    private static let toggleGap: CGFloat = 3
-    private static let toggleCorner: CGFloat = 4
-    /// Between the name column and the toggles.
-    private static let toggleTextGap: CGFloat = 8
-    private static let faderTopGap: CGFloat = 9
-    private static let faderHeight: CGFloat = 11
-    private static let valueWidth: CGFloat = 30
-    private static let valueGap: CGFloat = 9
-    private static let chipSize: CGFloat = 22
-    private static let chipCorner: CGFloat = 5
-    /// Chip (22) + gap (9): where the name, the fader and the meter start.
-    private static let textInset: CGFloat = 31
-    private static let metaGap: CGFloat = 2
-    private static let meterTopGap: CGFloat = 6
+    private static let padding: CGFloat = 8
+    private static let dotSize: CGFloat = 24
+    /// Dot (24) + gap (8): where the name, the fader and the meter start.
+    private static let textInset: CGFloat = 32
+    private static let toggleSize: CGFloat = 24
+    private static let valueWidth: CGFloat = 38
+    private static let panWidth: CGFloat = 44
+    private static let meterSegments = 20
     private static let meterHeight: CGFloat = 3
-    private static let meterSegments = 16
     private static let meterGap: CGFloat = 2
     /// The pan slider's ends, −100 (left) … +100 (right), and the detent either side of the
     /// centre that snaps to it (click design §2).
     private static let panSpan = 100.0
     private static let panDetent = 5.0
 
-    /// The name row is the name font's own line height, rounded, as JUCE split the identity row.
-    /// Measured from the face rather than written down so the split follows the font.
-    private static let nameRowHeight: CGFloat = {
-        guard let font = NSFont(name: Fonts.Name.interMedium, size: Fonts.Size.instrumentName) else { return 15 }
-
-        return (font.ascender - font.descender).rounded()
-    }()
-
     var body: some View {
-        let s = Scaled(k: k)
         let muted = settings.muted
         let alpha = muted ? Theme.mutedAlpha : 1.0
         let colour = Color(instrument: entry.info.colour)
-        let contentWidth = width - 2 * Self.paddingSide
-        let faderWidth = contentWidth - Self.textInset - Self.valueWidth - Self.valueGap
+        let contentWidth = width - 2 * Self.padding
+        let faderWidth = contentWidth - Self.textInset - Self.valueWidth - 8
 
-        VStack(alignment: .leading, spacing: 0) {
-            // Identity row: chip, name over meta, and the M/S pair.
-            HStack(alignment: .top, spacing: 0) {
-                // The chip and the name are one click target in the Edit tab: the strip becomes
-                // the target instrument. Inert in the Transcribe tab.
-                HStack(alignment: .top, spacing: 0) {
-                    chip(colour: colour, alpha: alpha, s: s)
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 8) {
+                // The dot and the name are one click target in the Edit tab: the strip becomes the
+                // target instrument. Inert in the Transcribe tab.
+                HStack(spacing: 8) {
+                    dot(colour: colour, alpha: alpha)
 
-                    VStack(alignment: .leading, spacing: 0) {
-                        ZStack(alignment: .leading) {
-                            Text(entry.info.localizedName)
-                                .font(Fonts.instrumentName(k))
-                                .foregroundStyle((muted ? Theme.textLabel : Theme.textStrong).opacity(alpha))
-                                .lineLimit(1)
-                                .truncationMode(.tail)
-
-                            if muted {
-                                // A 1 px line across the name's own width, at the row's centre.
-                                Rectangle()
-                                    .fill(Theme.textLabel.opacity(alpha))
-                                    .frame(width: min(nameWidth(), s(nameColumnWidth(contentWidth))), height: k)
-                            }
-                        }
-                        .frame(height: s(Self.nameRowHeight), alignment: .leading)
-
-                        Text(meta)
-                            .font(Fonts.meta(k))
-                            .foregroundStyle(Theme.textFaintest.opacity(alpha))
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text(entry.info.localizedName)
+                            .font(.system(size: 13, weight: .medium))
+                            .strikethrough(muted)
+                            .foregroundStyle((muted ? Theme.textLabel : Theme.textPrimary).opacity(alpha))
                             .lineLimit(1)
                             .truncationMode(.tail)
-                            .frame(height: s(Self.identityRowHeight - Self.nameRowHeight - Self.metaGap))
-                            .padding(.top, s(Self.metaGap))
+
+                        Text(meta)
+                            .font(.system(size: 11).monospacedDigit())
+                            .foregroundStyle(Theme.textMuted.opacity(alpha))
+                            .lineLimit(1)
+                            .truncationMode(.tail)
                     }
-                    .frame(width: s(nameColumnWidth(contentWidth)), height: s(Self.identityRowHeight), alignment: .topLeading)
-                    .padding(.leading, s(Self.textInset - Self.chipSize))
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
                 .contentShape(Rectangle())
                 .onTapGesture { onSelect?() }
@@ -125,37 +88,34 @@ struct InstrumentStrip: View {
                 }
                 .accessibilityValue(Text(verbatim: meta))
 
-                Spacer(minLength: 0)
-
-                HStack(spacing: s(Self.toggleGap)) {
-                    toggle(LocalizedStringResource("M", comment: "Instrument strip: the mute toggle's letter"),
-                           isOn: muted,
-                           onBackground: Theme.bgMuteActive,
-                           onText: Theme.warn,
-                           tooltip: "Mute this instrument",
-                           accessibilityName: Text(AccessibilityText.mute),
-                           s: s) { model.setMuted(program: entry.program, !muted) }
-
-                    toggle(LocalizedStringResource("S", comment: "Instrument strip: the solo toggle's letter"),
-                           isOn: settings.soloed,
-                           onBackground: Theme.soloButtonBg,
-                           onText: Theme.rec,
-                           tooltip: "Solo this instrument",
-                           accessibilityName: Text(AccessibilityText.solo),
-                           s: s) { model.setSoloed(program: entry.program, !settings.soloed) }
+                toggle(isOn: muted,
+                       onColour: Theme.warn,
+                       tooltip: "Mute this instrument",
+                       accessibilityName: Text(AccessibilityText.mute)) {
+                    Image(systemName: muted ? "speaker.slash.fill" : "speaker.wave.2.fill")
+                        .font(.system(size: 11, weight: .medium))
+                } action: {
+                    model.setMuted(program: entry.program, !muted)
                 }
-                .opacity(alpha)
-                .frame(height: s(Self.identityRowHeight))
-            }
-            .frame(height: s(Self.identityRowHeight))
 
-            // Fader row: the fader under the name, the readout at the right.
-            HStack(spacing: 0) {
+                toggle(isOn: settings.soloed,
+                       onColour: Theme.rec,
+                       tooltip: "Solo this instrument",
+                       accessibilityName: Text(AccessibilityText.solo)) {
+                    Text("S", comment: "Instrument strip: the solo toggle's letter")
+                        .font(.system(size: 11, weight: .bold))
+                } action: {
+                    model.setSoloed(program: entry.program, !settings.soloed)
+                }
+            }
+
+            // The fader under the name, the readout at the right.
+            HStack(spacing: 8) {
                 PillSlider(value: gain,
                            range: InstrumentMixerState.minGainDb ... InstrumentMixerState.maxGainDb,
                            step: InstrumentMixerState.gainStepDb,
-                           width: s(faderWidth),
-                           fill: muted ? Theme.faderFillMuted : colour.opacity(0.85),
+                           width: faderWidth,
+                           fill: muted ? Theme.faderFillMuted : colour.opacity(0.9),
                            track: Theme.faderTrack,
                            thumb: muted ? Theme.faderThumbMuted : Theme.faderThumb,
                            onDoubleClick: { model.setGain(program: entry.program, db: 0) },
@@ -164,34 +124,28 @@ struct InstrumentStrip: View {
                     .opacity(alpha)
                     .tooltip("Level for this instrument")
                     .accessibilityLabel(Text(AccessibilityText.level))
-                    .padding(.leading, s(Self.textInset))
-
-                Spacer(minLength: 0)
 
                 Text(Formats.decibels(settings.gainDb))
-                    .font(Fonts.meta(k))
-                    .foregroundStyle(Theme.textDim.opacity(alpha))
+                    .font(.system(size: 11).monospacedDigit())
+                    .foregroundStyle(Theme.textMuted.opacity(alpha))
                     .lineLimit(1)
-                    .frame(width: s(Self.valueWidth), height: s(Self.faderHeight), alignment: .trailing)
+                    .frame(width: Self.valueWidth, alignment: .trailing)
                     // The fader reads its own value.
                     .accessibilityHidden(true)
             }
-            .frame(height: s(Self.faderHeight))
-            .padding(.top, s(Self.faderTopGap))
+            .padding(.leading, Self.textInset)
 
-            // The meter takes the fader's own insets, so the two line up under the name; the pan
-            // takes the readout's column, so the strip keeps its height.
-            HStack(spacing: 0) {
+            // The meter takes the fader's own width, so the two line up under the name; the pan
+            // takes the readout's column.
+            HStack(spacing: 8) {
                 LevelMeter(db: level, segments: Self.meterSegments, gap: Self.meterGap, height: Self.meterHeight)
-                    .frame(width: s(faderWidth))
+                    .frame(width: faderWidth)
                     .opacity(alpha)
-
-                Spacer(minLength: 0)
 
                 PillSlider(value: pan,
                            range: -Self.panSpan ... Self.panSpan,
                            step: 1,
-                           width: s(Self.valueGap + Self.valueWidth),
+                           width: Self.valueWidth,
                            fill: Theme.faderTrack,
                            track: Theme.faderTrack,
                            thumb: muted ? Theme.faderThumbMuted : Theme.faderThumb,
@@ -202,33 +156,16 @@ struct InstrumentStrip: View {
                     .tooltip("Pan | double-click to centre")
                     .accessibilityLabel(Text(AccessibilityText.panLabel))
             }
-            .frame(height: s(Self.meterHeight))
-            .padding(.leading, s(Self.textInset))
-            .padding(.top, s(Self.meterTopGap))
-
-            Spacer(minLength: 0)
+            .padding(.leading, Self.textInset)
         }
-        .padding(.horizontal, s(Self.paddingSide))
-        .padding(.top, s(Self.paddingTop))
-        .frame(width: s(width), height: s(SidebarMetrics.stripHeight), alignment: .topLeading)
-        .background(settings.soloed ? Theme.soloRowTint : Color.clear)
+        .padding(Self.padding)
+        .frame(width: width, alignment: .topLeading)
+        .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(rowFill))
         .overlay {
             if let onSecondaryClick {
                 RightClickCatcher(onRightClick: onSecondaryClick,
                                   accessibilityTitle: String(localized: AccessibilityText.instrumentCommands))
             }
-        }
-        .overlay(alignment: .leading) {
-            if isTarget {
-                Rectangle()
-                    .fill(Theme.accent)
-                    .frame(width: s(2))
-            }
-        }
-        .overlay(alignment: .bottom) {
-            Rectangle()
-                .fill(Theme.divRow)
-                .frame(height: k)
         }
         .accessibilityElement(children: .contain)
         .accessibilityLabel(Text(verbatim: entry.info.localizedName))
@@ -236,45 +173,54 @@ struct InstrumentStrip: View {
 
     // MARK: - Pieces
 
-    private func chip(colour: Color, alpha: Double, s: Scaled) -> some View {
-        let shape = RoundedRectangle(cornerRadius: s(Self.chipCorner), style: .circular)
+    /// The target instrument's row on the accent, a soloed one on the solo colour.
+    private var rowFill: Color {
+        if isTarget { return Theme.accentFillActive }
+        if settings.soloed { return Theme.soloRowTint }
 
-        // Fill, border and label each carry the muted alpha on their own colour, as the original
-        // multiplied it in, rather than as one group: the border overlaps the fill.
-        return ZStack {
-            shape.fill(Theme.chipFill(colour).opacity(alpha))
-            shape.strokeBorder((isHighlighted ? Theme.accent : Theme.chipBorder(colour)).opacity(alpha), lineWidth: k)
-            Text(entry.info.abbreviation)
-                .font(Fonts.mono(8, weight: 600, scale: k))
-                .foregroundStyle(colour.opacity(alpha))
-                .lineLimit(1)
-        }
-        .frame(width: s(Self.chipSize), height: s(Self.chipSize))
-        .accessibilityHidden(true)
+        return .clear
     }
 
-    private func toggle(_ label: LocalizedStringResource,
-                        isOn: Bool,
-                        onBackground: Color,
-                        onText: Color,
-                        tooltip: LocalizedStringResource,
-                        accessibilityName: Text,
-                        s: Scaled,
-                        action: @escaping () -> Void) -> some View {
-        FlatButton(isOn: isOn,
-                   isEnabled: !entry.isPlaceholder,
-                   idle: Theme.bgControlSubtle,
-                   on: onBackground,
-                   foregroundIdle: Theme.textDim,
-                   foregroundOn: onText,
-                   corner: s(Self.toggleCorner),
-                   action: action) { _ in
-            Text(label)
-                .font(Fonts.metaStrong(k))
-                .frame(width: s(Self.toggleWidth), height: s(Self.toggleHeight))
+    /// The instrument's colour as a filled dot with its abbreviation; an accent ring while it is
+    /// singled out in the roll.
+    private func dot(colour: Color, alpha: Double) -> some View {
+        Circle()
+            .fill(colour.opacity(alpha))
+            .overlay {
+                Text(entry.info.abbreviation)
+                    .font(.system(size: 7.5, weight: .bold))
+                    .foregroundStyle(.white.opacity(alpha))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.6)
+                    .padding(2)
+            }
+            .overlay {
+                if isHighlighted {
+                    Circle().strokeBorder(Theme.accent, lineWidth: 2).padding(-3)
+                }
+            }
+            .frame(width: Self.dotSize, height: Self.dotSize)
+            .accessibilityHidden(true)
+    }
+
+    /// A round toggle: the label in the secondary colour, on its colour's tint while on.
+    private func toggle<Label: View>(isOn: Bool,
+                                     onColour: Color,
+                                     tooltip: LocalizedStringResource,
+                                     accessibilityName: Text,
+                                     @ViewBuilder label: () -> Label,
+                                     action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            label()
+                .foregroundStyle(isOn ? onColour : Theme.textIcon)
+                .frame(width: Self.toggleSize, height: Self.toggleSize)
+                .background(Circle().fill(isOn ? onColour.opacity(0.18) : Theme.bgControl))
+                .contentShape(Circle())
         }
+        .buttonStyle(.plain)
+        .disabled(entry.isPlaceholder)
         .tooltip(tooltip)
-        // "M" and "S" say nothing read aloud: the toggle is named, its state the value.
+        // A glyph says nothing read aloud: the toggle is named, its state the value.
         .accessibilityLabel(accessibilityName)
         .accessibilityValue(Text(AccessibilityText.onOff(isOn)))
     }
@@ -296,19 +242,6 @@ struct InstrumentStrip: View {
                     let snapped = abs(value) < Self.panDetent ? 0 : value
                     model.setPan(program: entry.program, snapped / Self.panSpan)
                 })
-    }
-
-    /// How wide the name and meta column is: the row less the chip and the toggles.
-    private func nameColumnWidth(_ contentWidth: CGFloat) -> CGFloat {
-        contentWidth - Self.textInset - (2 * Self.toggleWidth + Self.toggleGap + Self.toggleTextGap)
-    }
-
-    /// The name's rendered width, for the strike-through: the line runs under the text, not the
-    /// column.
-    private func nameWidth() -> CGFloat {
-        guard let font = NSFont(name: Fonts.Name.interMedium, size: Fonts.Size.instrumentName * k) else { return 0 }
-
-        return (entry.info.localizedName as NSString).size(withAttributes: [.font: font]).width
     }
 
     /// Drums have no pitch range to report: their key numbers name pieces of a kit, not notes.
@@ -348,15 +281,6 @@ extension InstrumentStrip: @MainActor Equatable {
             && lhs.isHighlighted == rhs.isHighlighted
             && (lhs.onSelect == nil) == (rhs.onSelect == nil)
             && (lhs.onSecondaryClick == nil) == (rhs.onSecondaryClick == nil)
-    }
-}
-
-private extension Color {
-    /// The model's own colour type, which is what an instrument's palette entry arrives as. File
-    /// scope: the piano roll makes the same conversion for its notes, and two visible overloads
-    /// would collide.
-    init(_ rgba: NeuralSheetCore.RGBA) {
-        self.init(.sRGB, red: rgba.r, green: rgba.g, blue: rgba.b, opacity: rgba.a)
     }
 }
 
