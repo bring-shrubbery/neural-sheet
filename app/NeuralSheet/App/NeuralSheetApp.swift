@@ -211,6 +211,14 @@ struct NeuralSheetApp: App {
                 model.resetZoom()
             }
             .keyboardShortcut("0", modifiers: .command)
+
+            Divider()
+
+            // Native chrome design §2: ⌥⌘I is Import MIDI…, so the inspector takes Xcode's key.
+            Button(model.isInspectorShown ? "Hide Inspector" : "Show Inspector") {
+                model.isInspectorShown.toggle()
+            }
+            .keyboardShortcut("0", modifiers: [.command, .option])
         }
     }
 

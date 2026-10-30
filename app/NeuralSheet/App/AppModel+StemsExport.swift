@@ -4,7 +4,7 @@ import NeuralSheetCore
 
 /// File → Export Stems… (audio export design §2): the take's four stems as 24-bit WAV at its rate
 /// and channel count, `<take name> - Drums.wav` …, into a folder the user picks. From the kept
-/// separation when there is one; otherwise the take is separated first, with the status bar's
+/// separation when there is one; otherwise the take is separated first, with the transport capsule's
 /// progress and its cancel, and the result kept for next time.
 extension AppModel {
     /// Export Stems…'s own run: the separation when nothing is kept, then the writing.
@@ -43,7 +43,7 @@ extension AppModel {
                                 projectName: projectURL?.deletingPathExtension().lastPathComponent)
     }
 
-    /// The status bar's caption while the export runs.
+    /// The progress caption while the export runs.
     var stemsExportCaption: String? {
         guard let stemsExport else { return nil }
 
@@ -78,7 +78,7 @@ extension AppModel {
         }
     }
 
-    /// The status bar's cross: the separation is abandoned (its thread removes what it kept), the
+    /// The progress group's cross: the separation is abandoned (its thread removes what it kept), the
     /// writing stops and removes the files it wrote. Also every clear's, through ``clearNow()``.
     func cancelStemsExport() {
         guard let job = stemsExport else { return }

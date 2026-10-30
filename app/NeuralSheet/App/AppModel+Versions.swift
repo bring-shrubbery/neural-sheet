@@ -161,7 +161,7 @@ extension AppModel {
         setSelection(EditingCommands.differences(in: document, against: comparedVersion))
     }
 
-    /// The status bar's counts, matched again when the document or the comparison changes.
+    /// The subtitle's counts, matched again when the document or the comparison changes.
     func refreshComparison() {
         let summary = EditingCommands.comparisonSummary(document: document, comparedVersion: comparedVersion)
 

@@ -68,7 +68,7 @@ extension AppModel {
     }
 
     /// File → Export MusicXML…: a save panel titled "Export MusicXML" in the Music folder, the
-    /// MIDI exit's shape. No dialog: the tempo and the division are the Edit toolbar's.
+    /// MIDI exit's shape. No dialog: the tempo and the division are the grid's.
     func exportMusicXML() {
         guard let data = musicXMLData() else { return }
 

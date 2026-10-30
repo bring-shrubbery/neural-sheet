@@ -1,7 +1,7 @@
 import Foundation
 import NeuralSheetCore
 
-/// What the status bar says while a version is compared (versions design §2, Differences).
+/// What the window's subtitle says while a version is compared (versions design §2, Differences).
 nonisolated struct VersionComparisonSummary: Equatable {
     var added: Int
     var missing: Int
@@ -91,7 +91,7 @@ nonisolated extension EditingCommands {
         NoteMatcher.unmatched(current: document.notes, against: version.notes).added
     }
 
-    /// The status bar's counts while `version` is compared; nil with no comparison.
+    /// The subtitle's counts while `version` is compared; nil with no comparison.
     static func comparisonSummary(document: NoteDocument?, comparedVersion version: NoteVersion?) -> VersionComparisonSummary? {
         guard let version, let document else { return nil }
 

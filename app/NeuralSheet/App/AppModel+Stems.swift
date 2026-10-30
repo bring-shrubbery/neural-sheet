@@ -37,7 +37,7 @@ extension AppModel {
         set { settings.separateStems = newValue }
     }
 
-    /// The status bar's caption reads SEPARATING while this is true.
+    /// The progress caption reads SEPARATING while this is true.
     var isSeparatingStems: Bool { stemsJob?.phase == .separating }
 
     // MARK: - Launch
@@ -176,7 +176,7 @@ extension AppModel {
 
     // MARK: - Cancel and clear
 
-    /// The status bar's cross during a stems run: an abandoned separation completes as a
+    /// The progress group's cross during a stems run: an abandoned separation completes as a
     /// cancel at once, since its completion will never come; a stem's run is cancelled as the
     /// main run is.
     func cancelStemsRun() {

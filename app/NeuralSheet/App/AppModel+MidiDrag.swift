@@ -1,7 +1,7 @@
 import Foundation
 import NeuralSheetCore
 
-/// What the MIDI chip on the Edit and Score toolbars drags out (MIDI out design §2): the file
+/// What the MIDI chip on the Edit and Score tabs' toolbar drags out (MIDI out design §2): the file
 /// File → Export MIDI… or Export MusicXML… would write, by the same writer and with the same name,
 /// and the scratch folder it passes through on the way to the drop.
 extension AppModel {

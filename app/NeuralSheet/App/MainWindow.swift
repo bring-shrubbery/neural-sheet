@@ -10,12 +10,13 @@ import SwiftUI
 /// frame is the system's to remember. One per `MainView`; ``MainWindowHost`` hands it the window
 /// once the view is in one.
 @MainActor @Observable final class MainWindowController {
-    /// The smallest content the top bar, the toolbar, the status bar and a few sidebar strips
+    /// The smallest content the toolbar, the sidebar with a few strips and the timeline
     /// still fit in.
     static let minContentSize = CGSize(width: 960, height: 560)
 
     /// The size a fresh window opens at, when the system has nothing remembered for it.
-    static let defaultContentSize = CGSize(width: 1280, height: 800)
+    /// Room for the sidebar, the inspector and the timeline beside them (native chrome design §2).
+    static let defaultContentSize = CGSize(width: 1440, height: 900)
 
     @ObservationIgnored private(set) weak var window: NSWindow?
 

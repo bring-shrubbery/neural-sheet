@@ -129,7 +129,7 @@ extension AppModel {
 
     // MARK: - Swing
 
-    /// SWING on the Edit toolbar, as a ratio (0.5…0.75); saved with the project.
+    /// Swing in the inspector's Grid section, as a ratio (0.5…0.75); saved with the project.
     func setSwing(_ ratio: Double) {
         editor.grid.swing = ratio
     }

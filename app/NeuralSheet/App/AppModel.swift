@@ -160,7 +160,7 @@ import UniformTypeIdentifiers
     /// dropped with the transcription.
     var comparedVersion: NoteVersion?
 
-    /// What the status bar says while comparing, kept current by `refreshComparison()` rather
+    /// What the window's subtitle says while comparing, kept current by `refreshComparison()` rather
     /// than matched on every read of the status line.
     var comparisonSummary: VersionComparisonSummary?
 
@@ -271,7 +271,7 @@ import UniformTypeIdentifiers
         }
     }
 
-    /// The tab switch (⌘1, ⌘2, ⌘3, the tab strip): Edit and Score only with a finished
+    /// The tab switch (⌘1, ⌘2, ⌘3, the toolbar's segmented control): Edit and Score only with a finished
     /// transcription. Beside ``workspace`` because its setter is this file's.
     func setWorkspace(_ workspace: Workspace) {
         guard workspace != self.workspace else { return }
@@ -359,7 +359,7 @@ import UniformTypeIdentifiers
         }
     }
 
-    /// A crossfade held in place of ``mix`` for as long as the master panel's ORIG or MIDI label
+    /// A crossfade held in place of ``mix`` for as long as the sidebar mix's Original or MIDI label
     /// is pressed, to hear one side alone; nil otherwise. Never written to ``mix``, so letting go
     /// puts back exactly what was set.
     // Internal setter: written from AppModel+Mix.swift.
@@ -370,7 +370,7 @@ import UniformTypeIdentifiers
         didSet { engine.masterGainDb = masterGainDb }
     }
 
-    /// The master panel's CLICK and `k`: the metronome on the grid's beats during playback
+    /// The sidebar mix's Click switch and `k`: the metronome on the grid's beats during playback
     /// (click design §2). Per project; `AppModel+Click.swift` pushes it to the engine.
     var clickEnabled = false {
         didSet { applyClickEnabled() }
@@ -381,7 +381,7 @@ import UniformTypeIdentifiers
         didSet { engine.synthBank.setClickGain(db: clickGainDb) }
     }
 
-    /// The beats still to come in the count-in, as the status bar shows them ("Count-in · 3"),
+    /// The beats still to come in the count-in, as the transport capsule shows them ("Count-in · 3"),
     /// or nil when there is no count-in. `AppModel+Click.swift` is its only writer.
     var countInRemaining: Int?
 
@@ -401,7 +401,7 @@ import UniformTypeIdentifiers
 
     /// What an automatic vertical zoom (`verticalZoom < 0`) resolves to: the norm that fits the
     /// transcription's octaves in the piano roll's height. The timeline writes it whenever it
-    /// re-fits, since only it knows its height; the status bar's slider reads it.
+    /// re-fits, since only it knows its height; the zoom capsule's slider reads it.
     var fittedVerticalZoom: Double = 0
 
     // MARK: - Export and settings
@@ -473,6 +473,10 @@ import UniformTypeIdentifiers
     @ObservationIgnored var modelPollTimer: Timer?
 
     var isInstrumentMenuOpen: Bool = false
+
+    /// The window's inspector (native chrome design §2): shown by default, toggled from the
+    /// toolbar and View → Show / Hide Inspector (⌥⌘0).
+    var isInspectorShown: Bool = true
 
     // MARK: - Updates
 
@@ -589,7 +593,7 @@ import UniformTypeIdentifiers
     // MARK: - Updates
 
     /// Check for Updates…, from the app menu and Settings. Sparkle shows the result itself,
-    /// including "You're up to date"; there is nothing to say in the status bar any more.
+    /// including "You're up to date"; there is no status bar to say it in.
     func checkForUpdates() {
         updates.check()
     }

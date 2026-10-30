@@ -1,7 +1,7 @@
 import Foundation
 import NeuralSheetCore
 
-/// What the toolbar, the roll and the status bar derive from the state: which commands are
+/// What the toolbar, the roll and the window's subtitle derive from the state: which commands are
 /// available, the Transcribe label, the time readout and the status line's counts.
 extension AppModel {
     /// Record starts a take from empty, and stops one in progress or cancels its count-in.
@@ -28,7 +28,7 @@ extension AppModel {
          duration > 0 ? TimeFormat.transport(duration) : TimeFormat.transportPlaceholder)
     }
 
-    /// What the status bar counts. The range is nil until there is a note to range over, so a
+    /// What the window's subtitle counts (the status bar's figures, native chrome design §4). The range is nil until there is a note to range over, so a
     /// placeholder strip does not read as "C-1 - C-1" (§1.7).
     var statusLine: (instruments: Int, notes: Int, lowest: Int?, highest: Int?) {
         let populated = mixer.entries.filter { $0.noteCount > 0 }
