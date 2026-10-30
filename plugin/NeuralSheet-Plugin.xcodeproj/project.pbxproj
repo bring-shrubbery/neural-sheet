@@ -86,6 +86,7 @@
 		9EBF12E033BC0B2404F44580 /* PluginStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E30A14AAC9DA3374ECE3E9F5 /* PluginStateTests.swift */; };
 		A0D7BB45E27411BC8BCC381A /* KeyboardView+Drawing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EFD0389276D661FB4A28A2A /* KeyboardView+Drawing.swift */; };
 		A71E20F229FD84E80F9E3EB7 /* InstrumentSynthBank+MidiOut.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA0CC7B1AC64A37344537DA6 /* InstrumentSynthBank+MidiOut.swift */; };
+		AA32805496C87C664DEC1B89 /* Theme+Palette.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16A1EA8EA298B0FB83542638 /* Theme+Palette.swift */; };
 		AB730DD37DE11FD4F9F87D31 /* CaptureSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E278E2722F6F1DC4F5E5962 /* CaptureSession.swift */; };
 		AC47994F8A46364068248A91 /* PluginRollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DCB8196392D1269E3861A34 /* PluginRollView.swift */; };
 		AD8199CB8D28F9D84BA9AD88 /* SynthRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C113E98DA662CB421B568D6 /* SynthRenderer.swift */; };
@@ -167,6 +168,7 @@
 		0A02A10ABDAD4CD0150BD1A5 /* NeuralSheet Plugin.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "NeuralSheet Plugin.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		0D29223D1C1679E98C34FCEA /* ContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContainerView.swift; sourceTree = "<group>"; };
 		164A5C131A48F6D9D89F5ED9 /* InstrumentSynthBank+Render.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "InstrumentSynthBank+Render.swift"; sourceTree = "<group>"; };
+		16A1EA8EA298B0FB83542638 /* Theme+Palette.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Theme+Palette.swift"; sourceTree = "<group>"; };
 		1A74BED166C5816BFC29D016 /* MidiOutput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MidiOutput.swift; sourceTree = "<group>"; };
 		209FB5D262EB3FD83CFFEF76 /* TimelineGeometry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineGeometry.swift; sourceTree = "<group>"; };
 		2AA7E509B6C0E16C11B83C95 /* Fonts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Fonts.swift; sourceTree = "<group>"; };
@@ -424,6 +426,7 @@
 				2AA7E509B6C0E16C11B83C95 /* Fonts.swift */,
 				45AF3F4B97F0EC83E679ED3D /* Theme.swift */,
 				8F16DFE194AF0036ACFC062A /* Theme+Accommodations.swift */,
+				16A1EA8EA298B0FB83542638 /* Theme+Palette.swift */,
 				F4BE586A5A4BDEE06D03E511 /* Accessibility */,
 				364D37990CAEBF5F9720E99D /* Localization */,
 				CB669D1CDA3375BC9895F5D8 /* Timeline */,
@@ -736,6 +739,7 @@
 				70179AE15EB2C62F64B6540D /* SynthRing.swift in Sources */,
 				574DD897AA4DBCB08D95F07D /* TakeALAC.swift in Sources */,
 				C511EA6CBD579BE247674538 /* Theme+Accommodations.swift in Sources */,
+				AA32805496C87C664DEC1B89 /* Theme+Palette.swift in Sources */,
 				892E89BB6E014A7D7FDC6F73 /* Theme.swift in Sources */,
 				ED536463A2AD43A797E2BF6D /* TimelineDrawing.swift in Sources */,
 				AFBD3083CEFA87F1FFCEA6F1 /* TimelineGeometry.swift in Sources */,

@@ -62,12 +62,20 @@ struct RollPainter {
     /// `buckets[s]` holds the indices of every note drawn over second `s`, in note order.
     var buckets: [[Int]] = []
 
-    /// Per program: whether it is heard, and the colour it draws in.
+    /// Per program: whether it is heard.
     var audible = [Bool](repeating: true, count: NoteEvent.drumProgram + 1)
-    let colours: [CGColor]
-    /// Per program: its colour lightened 30 % toward white, what a pitch curve is stroked in so
-    /// it reads over its own note's fill.
-    let curveColours: [CGColor]
+
+    /// Per program, for each appearance: the colour it draws in, and that colour lightened 30 %
+    /// toward white, what a pitch curve is stroked in so it reads over its own note's fill.
+    private let darkColours: [CGColor]
+    private let lightColours: [CGColor]
+    private let darkCurveColours: [CGColor]
+    private let lightCurveColours: [CGColor]
+
+    /// Per program: the colour it draws in, in the appearance the app is drawn in (native chrome
+    /// design §3).
+    var colours: [CGColor] { ThemeAppearance.shared.isDark ? darkColours : lightColours }
+    var curveColours: [CGColor] { ThemeAppearance.shared.isDark ? darkCurveColours : lightCurveColours }
 
     /// The instrument a strip click singled out: every other instrument fades while it is set.
     var highlightedProgram: Int?
@@ -95,11 +103,16 @@ struct RollPainter {
     init(geometry: TimelineGeometry) {
         self.geometry = geometry
 
-        let colours = (0...NoteEvent.drumProgram).map { program in
-            TimelinePalette.cg(Instruments.info(forProgram: program).colour, alpha: 1)
+        func colours(dark: Bool) -> [CGColor] {
+            (0...NoteEvent.drumProgram).map { program in
+                TimelinePalette.cg(TimelinePalette.instrument(Instruments.info(forProgram: program).colour, dark: dark), alpha: 1)
+            }
         }
-        self.colours = colours
-        curveColours = colours.map(RollPainter.lightened)
+
+        darkColours = colours(dark: true)
+        lightColours = colours(dark: false)
+        darkCurveColours = darkColours.map(RollPainter.lightened)
+        lightCurveColours = lightColours.map(RollPainter.lightened)
     }
 
     /// A colour 30 % of the way to white: `NSColor.blended(withFraction:of:)` on the Mac, the

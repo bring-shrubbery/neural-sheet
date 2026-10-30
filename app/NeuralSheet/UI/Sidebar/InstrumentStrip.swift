@@ -75,7 +75,7 @@ struct InstrumentStrip: View {
         let s = Scaled(k: k)
         let muted = settings.muted
         let alpha = muted ? Theme.mutedAlpha : 1.0
-        let colour = Color(entry.info.colour)
+        let colour = Color(instrument: entry.info.colour)
         let contentWidth = width - 2 * Self.paddingSide
         let faderWidth = contentWidth - Self.textInset - Self.valueWidth - Self.valueGap
 

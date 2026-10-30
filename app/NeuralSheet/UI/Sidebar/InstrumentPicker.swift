@@ -43,7 +43,7 @@ enum InstrumentPicker {
                 MenuSectionLabel(title: "IN THE MIX")
 
                 ForEach(inMix, id: \.program) { info in
-                    row(info, chip: Color(.sRGB, red: info.colour.r, green: info.colour.g, blue: info.colour.b, opacity: info.colour.a))
+                    row(info, chip: Color(instrument: info.colour))
                 }
 
                 MenuSeparator()

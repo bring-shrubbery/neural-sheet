@@ -9,8 +9,8 @@ struct ScoreLayout {
     static let pageGap: CGFloat = 24
     /// Authored staff space; scaled by the view's scale.
     static let staffSpace: CGFloat = 8
-    /// The grey behind the pages (arrangement design §6).
-    static let surround = TimelinePalette.cg(Theme.bgPanel)
+    /// The grey behind the pages (arrangement design §6), in the appearance the app is drawn in.
+    static var surround: CGColor { TimelinePalette.bgPanel }
 
     let mode: ScoreLayoutMode
     let scale: CGFloat

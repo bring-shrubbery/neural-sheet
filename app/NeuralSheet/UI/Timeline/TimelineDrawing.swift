@@ -7,106 +7,158 @@ import CoreText
 import NeuralSheetCore
 import SwiftUI
 
-/// The palette as CoreGraphics colours, resolved once from `Theme` so the AppKit views paint the
-/// same sRGB values the SwiftUI chrome does.
+/// The palette as CoreGraphics colours, resolved from `Theme` so the AppKit views paint the same
+/// sRGB values the SwiftUI chrome does. One set per appearance and contrast, made once each, so a
+/// draw loop picks a colour rather than converting a `Color` per lane; which set is in force
+/// follows ``ThemeAppearance`` and ``Accommodations`` (native chrome design §2, a11y design §2).
 enum TimelinePalette {
-    static let bgRoot = cg(Theme.bgRoot)
-    static let bgPanel = cg(Theme.bgPanel)
-    static let bgGutter = cg(Theme.bgGutter)
-    static var divStrong: CGColor { contrasted(\.divStrong) }
-    static var divSoft: CGColor { contrasted(\.divSoft) }
-    static var divTick: CGColor { contrasted(\.divTick) }
-    static var divOctave: CGColor { contrasted(\.divOctave) }
-    static let textBright = cg(Theme.textBright)
-    static var textFaint: CGColor { contrasted(\.textFaint) }
-    static var textScale: CGColor { contrasted(\.textScale) }
-    static let accentWashWave = cg(Theme.accentWashWave)
-    static let accentWashRoll = cg(Theme.accentWashRoll)
-    static let accentWashEdge = cg(Theme.accentWashEdge)
-    static let wavePlayed = cg(Theme.wavePlayed)
-    static let waveCentreLine = cg(Theme.waveCentreLine)
-    static let keyWhite = cg(Theme.keyWhite)
-    static let keyBlack = cg(Theme.keyBlack)
-    static var keyLabel: CGColor { contrasted(\.keyLabel) }
-    static let laneBlack = cg(Theme.laneBlack)
-    static let laneWhite = cg(Theme.laneWhite)
-    static let noteOnsetEdge = cg(Theme.noteOnsetEdge)
-    static let faderTrack = cg(Theme.faderTrack)
-    static let ctaBorder = cg(Theme.ctaBorder)
-    static let ctaFill = cg(Theme.ctaFill)
-    static var dropZoneBorder: CGColor { contrasted(\.dropZoneBorder) }
-    static let dropZoneFill = cg(Theme.dropZoneFill)
-
-    /// `Keyboard::_keyColour` while dimmed: the key colour blended 40 % over `bgGutter`.
-    static let keyWhiteDimmed = tween(Theme.bgGutter, toward: Theme.keyWhite, proportion: 0.4)
-    static let keyBlackDimmed = tween(Theme.bgGutter, toward: Theme.keyBlack, proportion: 0.4)
-    static var keyLabelDimmed: CGColor { contrasted(\.keyLabelDimmed) }
-
-    /// `PianoRoll::_drawLanes` while there are no notes: the lanes at 55 %.
-    static let laneWhiteEmpty = cg(Theme.laneWhite, alpha: 0.55)
-    /// Key design §5: the tonic's lanes, a wash over the light lane.
-    static let laneTonic = cg(Theme.accent, alpha: 0.10)
-    static let laneBlackEmpty = cg(Theme.laneBlack, alpha: 0.55)
-    static var divOctaveEmpty: CGColor { contrasted(\.divOctaveEmpty) }
-
-    /// `nn::colours::bgRoot.withAlpha(0.75f)`, the unfinished stretch of a running transcription.
-    static let frontierShade = cg(Theme.bgRoot, alpha: 0.75)
-
-    /// The Edit tab's finest grid line (design §6.5): `divSoft` at half strength, under the beats.
-    static var gridDivision: CGColor { contrasted(\.gridDivision) }
-
-    /// Design §6.5: a selected note's outline, and the marquee in the accent.
-    static let textPrimary = cg(Theme.textPrimary)
-    static let marqueeBorder = cg(Theme.accent)
-    static let marqueeFill = cg(Theme.accent, alpha: 0.12)
-
-    /// Tempo map design §4: a tempo change's flag on the ruler, the accent over the panel, its
-    /// stem and its label.
-    static let tempoFlag = tween(Theme.bgPanel, toward: Theme.accent, proportion: 0.3)
-    static let tempoStem = cg(Theme.accent)
-    static let tempoLabel = cg(Theme.accentText)
-
-    /// Markers and lyrics design §2: a section marker's flag along the ruler's lower half, in
-    /// the accent like the tempo flags but lighter, so the two rows read apart.
-    static let markerFlag = cg(Theme.accent, alpha: 0.22)
-    static let markerStem = cg(Theme.accent)
-    static let markerLabel = cg(Theme.textBright)
-
-    /// Region design §6.3: the marked range, its edges, and the fill that grows with a run.
-    static let rangeFill = cg(Theme.accent, alpha: 0.10)
-    static let rangeEdge = cg(Theme.accent, alpha: 0.6)
-    static let rangeProgress = cg(Theme.accent, alpha: 0.22)
-
-    /// The colours Increase Contrast changes (a11y design §2), made once in each palette so a
-    /// draw loop picks one rather than converting a `Color` per lane.
-    struct Contrasted {
+    /// Every colour the timeline draws with, for one appearance and contrast.
+    struct Resolved {
+        let bgRoot, bgPanel, bgGutter, textBright, textPrimary: CGColor
         let divStrong, divSoft, divTick, divOctave, textFaint, textScale, keyLabel, dropZoneBorder: CGColor
-        let keyLabelDimmed, divOctaveEmpty, gridDivision: CGColor
+        let accentWashWave, accentWashRoll, accentWashEdge, wavePlayed, waveCentreLine: CGColor
+        let keyWhite, keyBlack, laneBlack, laneWhite, noteOnsetEdge, faderTrack: CGColor
+        let ctaBorder, ctaFill, dropZoneFill: CGColor
+        let keyWhiteDimmed, keyBlackDimmed, keyLabelDimmed: CGColor
+        let laneWhiteEmpty, laneTonic, laneBlackEmpty, divOctaveEmpty, frontierShade, gridDivision: CGColor
+        let marqueeBorder, marqueeFill, tempoFlag, tempoStem, tempoLabel: CGColor
+        let markerFlag, markerStem, markerLabel, rangeFill, rangeEdge, rangeProgress: CGColor
 
-        init(standard: Bool) {
-            typealias Standard = Theme.Standard
-            typealias High = Theme.HighContrast
+        init(_ p: Theme.Palette, _ c: Theme.ContrastPalette) {
+            bgRoot = cg(p.bgRoot)
+            bgPanel = cg(p.bgPanel)
+            bgGutter = cg(p.bgGutter)
+            textBright = cg(p.textBright)
+            // Design §6.5: a selected note's outline.
+            textPrimary = cg(p.textPrimary)
 
-            divStrong = cg(standard ? Standard.divStrong : High.divStrong)
-            divSoft = cg(standard ? Standard.divSoft : High.divSoft)
-            divTick = cg(standard ? Standard.divTick : High.divTick)
-            divOctave = cg(standard ? Standard.divOctave : High.divOctave)
-            textFaint = cg(standard ? Standard.textFaint : High.textFaint)
-            textScale = cg(standard ? Standard.textScale : High.textScale)
-            keyLabel = cg(standard ? Standard.keyLabel : High.keyLabel)
-            dropZoneBorder = cg(standard ? Standard.dropZoneBorder : High.dropZoneBorder)
-            keyLabelDimmed = tween(Theme.bgGutter, toward: standard ? Standard.keyLabel : High.keyLabel, proportion: 0.4)
-            divOctaveEmpty = cg(standard ? Standard.divOctave : High.divOctave, alpha: 0.55)
-            gridDivision = cg(standard ? Standard.divSoft : High.divSoft, alpha: 0.5)
+            divStrong = cg(c.divStrong)
+            divSoft = cg(c.divSoft)
+            divTick = cg(c.divTick)
+            divOctave = cg(c.divOctave)
+            textFaint = cg(c.textFaint)
+            textScale = cg(c.textScale)
+            keyLabel = cg(c.keyLabel)
+            dropZoneBorder = cg(c.dropZoneBorder)
+
+            accentWashWave = cg(p.accent, alpha: 0.045)
+            accentWashRoll = cg(p.accent, alpha: 0.03)
+            accentWashEdge = cg(p.accent, alpha: 0.14)
+            wavePlayed = cg(p.wavePlayed)
+            waveCentreLine = cg(p.waveCentreLine)
+            keyWhite = cg(p.keyWhite)
+            keyBlack = cg(p.keyBlack)
+            laneBlack = cg(p.laneBlack)
+            laneWhite = cg(p.laneWhite)
+            noteOnsetEdge = cg(p.noteOnsetEdge)
+            faderTrack = cg(p.faderTrack)
+            ctaBorder = cg(p.accent)
+            ctaFill = cg(p.accent, alpha: 0.11)
+            dropZoneFill = cg(p.accent, alpha: 0.015)
+
+            // `Keyboard::_keyColour` while dimmed: the key colour blended 40 % over `bgGutter`.
+            keyWhiteDimmed = tween(p.bgGutter, toward: p.keyWhite, proportion: 0.4)
+            keyBlackDimmed = tween(p.bgGutter, toward: p.keyBlack, proportion: 0.4)
+            keyLabelDimmed = tween(p.bgGutter, toward: c.keyLabel, proportion: 0.4)
+
+            // `PianoRoll::_drawLanes` while there are no notes: the lanes at 55 %.
+            laneWhiteEmpty = cg(p.laneWhite, alpha: 0.55)
+            // Key design §5: the tonic's lanes, a wash over the light lane.
+            laneTonic = cg(p.accent, alpha: 0.10)
+            laneBlackEmpty = cg(p.laneBlack, alpha: 0.55)
+            divOctaveEmpty = cg(c.divOctave, alpha: 0.55)
+            // `nn::colours::bgRoot.withAlpha(0.75f)`, the unfinished stretch of a running
+            // transcription.
+            frontierShade = cg(p.bgRoot, alpha: 0.75)
+            // The Edit tab's finest grid line (design §6.5): `divSoft` at half strength, under the
+            // beats.
+            gridDivision = cg(c.divSoft, alpha: 0.5)
+
+            // Design §6.5: the marquee in the accent.
+            marqueeBorder = cg(p.accent)
+            marqueeFill = cg(p.accent, alpha: 0.12)
+
+            // Tempo map design §4: a tempo change's flag on the ruler, the accent over the panel,
+            // its stem and its label.
+            tempoFlag = tween(p.bgPanel, toward: p.accent, proportion: 0.3)
+            tempoStem = cg(p.accent)
+            tempoLabel = cg(p.accentText)
+
+            // Markers and lyrics design §2: a section marker's flag along the ruler's lower half,
+            // in the accent like the tempo flags but lighter, so the two rows read apart.
+            markerFlag = cg(p.accent, alpha: 0.22)
+            markerStem = cg(p.accent)
+            markerLabel = cg(p.textBright)
+
+            // Region design §6.3: the marked range, its edges, and the fill that grows with a run.
+            rangeFill = cg(p.accent, alpha: 0.10)
+            rangeEdge = cg(p.accent, alpha: 0.6)
+            rangeProgress = cg(p.accent, alpha: 0.22)
         }
     }
 
-    private static let standard = Contrasted(standard: true)
-    private static let highContrast = Contrasted(standard: false)
+    private static let darkStandard = Resolved(.dark, .darkStandard)
+    private static let darkHigh = Resolved(.dark, .darkHigh)
+    private static let lightStandard = Resolved(.light, .lightStandard)
+    private static let lightHigh = Resolved(.light, .lightHigh)
 
-    private static func contrasted(_ colour: KeyPath<Contrasted, CGColor>) -> CGColor {
-        (Accommodations.shared.increaseContrast ? highContrast : standard)[keyPath: colour]
+    /// The set in force.
+    static var current: Resolved {
+        switch (ThemeAppearance.shared.isDark, Accommodations.shared.increaseContrast) {
+        case (true, false): darkStandard
+        case (true, true): darkHigh
+        case (false, false): lightStandard
+        case (false, true): lightHigh
+        }
     }
+
+    static var bgRoot: CGColor { current.bgRoot }
+    static var bgPanel: CGColor { current.bgPanel }
+    static var bgGutter: CGColor { current.bgGutter }
+    static var divStrong: CGColor { current.divStrong }
+    static var divSoft: CGColor { current.divSoft }
+    static var divTick: CGColor { current.divTick }
+    static var divOctave: CGColor { current.divOctave }
+    static var textBright: CGColor { current.textBright }
+    static var textFaint: CGColor { current.textFaint }
+    static var textScale: CGColor { current.textScale }
+    static var accentWashWave: CGColor { current.accentWashWave }
+    static var accentWashRoll: CGColor { current.accentWashRoll }
+    static var accentWashEdge: CGColor { current.accentWashEdge }
+    static var wavePlayed: CGColor { current.wavePlayed }
+    static var waveCentreLine: CGColor { current.waveCentreLine }
+    static var keyWhite: CGColor { current.keyWhite }
+    static var keyBlack: CGColor { current.keyBlack }
+    static var keyLabel: CGColor { current.keyLabel }
+    static var laneBlack: CGColor { current.laneBlack }
+    static var laneWhite: CGColor { current.laneWhite }
+    static var noteOnsetEdge: CGColor { current.noteOnsetEdge }
+    static var faderTrack: CGColor { current.faderTrack }
+    static var ctaBorder: CGColor { current.ctaBorder }
+    static var ctaFill: CGColor { current.ctaFill }
+    static var dropZoneBorder: CGColor { current.dropZoneBorder }
+    static var dropZoneFill: CGColor { current.dropZoneFill }
+    static var keyWhiteDimmed: CGColor { current.keyWhiteDimmed }
+    static var keyBlackDimmed: CGColor { current.keyBlackDimmed }
+    static var keyLabelDimmed: CGColor { current.keyLabelDimmed }
+    static var laneWhiteEmpty: CGColor { current.laneWhiteEmpty }
+    static var laneTonic: CGColor { current.laneTonic }
+    static var laneBlackEmpty: CGColor { current.laneBlackEmpty }
+    static var divOctaveEmpty: CGColor { current.divOctaveEmpty }
+    static var frontierShade: CGColor { current.frontierShade }
+    static var gridDivision: CGColor { current.gridDivision }
+    static var textPrimary: CGColor { current.textPrimary }
+    static var marqueeBorder: CGColor { current.marqueeBorder }
+    static var marqueeFill: CGColor { current.marqueeFill }
+    static var tempoFlag: CGColor { current.tempoFlag }
+    static var tempoStem: CGColor { current.tempoStem }
+    static var tempoLabel: CGColor { current.tempoLabel }
+    static var markerFlag: CGColor { current.markerFlag }
+    static var markerStem: CGColor { current.markerStem }
+    static var markerLabel: CGColor { current.markerLabel }
+    static var rangeFill: CGColor { current.rangeFill }
+    static var rangeEdge: CGColor { current.rangeEdge }
+    static var rangeProgress: CGColor { current.rangeProgress }
 
     static func cg(_ colour: Color, alpha: Double? = nil) -> CGColor {
         let rgba = colour.rgba
@@ -116,6 +168,41 @@ enum TimelinePalette {
 
     static func cg(_ rgba: NeuralSheetCore.RGBA, alpha: Double) -> CGColor {
         CGColor(srgbRed: rgba.r, green: rgba.g, blue: rgba.b, alpha: alpha)
+    }
+
+    // MARK: - Instrument colours
+
+    /// An instrument's colour as the appearance draws it (native chrome design §3): itself on the
+    /// dark side; on the light side the same hue and saturation with its HSL lightness held to
+    /// ``lightMaxLightness``, so a pale green or lilac still reads on a white lane.
+    static func instrument(_ rgba: NeuralSheetCore.RGBA, dark: Bool) -> NeuralSheetCore.RGBA {
+        guard !dark else { return rgba }
+
+        let high = max(rgba.r, rgba.g, rgba.b)
+        let low = min(rgba.r, rgba.g, rgba.b)
+        let lightness = (high + low) / 2
+
+        guard lightness > lightMaxLightness, high > low else { return rgba }
+
+        // Scaling each channel's distance from the grey of the same lightness keeps the hue
+        // and the HSL saturation; the grey moves to the new lightness.
+        let saturation = (high - low) / (1 - abs(2 * lightness - 1))
+        let newSpan = saturation * (1 - abs(2 * lightMaxLightness - 1))
+        let scale = newSpan / (high - low)
+
+        func channel(_ value: Double) -> Double {
+            min(1, max(0, lightMaxLightness + (value - lightness) * scale))
+        }
+
+        return NeuralSheetCore.RGBA(r: channel(rgba.r), g: channel(rgba.g), b: channel(rgba.b), a: rgba.a)
+    }
+
+    /// The light side's ceiling on an instrument colour's lightness.
+    static let lightMaxLightness = 0.5
+
+    /// An instrument's colour in the appearance the app is drawn in.
+    static func instrument(_ rgba: NeuralSheetCore.RGBA) -> NeuralSheetCore.RGBA {
+        instrument(rgba, dark: ThemeAppearance.shared.isDark)
     }
 
     /// `juce::Colour::interpolatedWith`, byte for byte: each channel moves by
@@ -272,5 +359,15 @@ extension CGContext {
         setFillColor(colour)
         addPath(CGPath(roundedRect: rect, cornerWidth: radius, cornerHeight: radius, transform: nil))
         fillPath()
+    }
+}
+
+extension Color {
+    /// An instrument's colour as the appearance the app is drawn in shows it (native chrome
+    /// design §3): a chip, a fader's fill, a menu row's dot.
+    init(instrument rgba: NeuralSheetCore.RGBA) {
+        let drawn = TimelinePalette.instrument(rgba)
+
+        self.init(.sRGB, red: drawn.r, green: drawn.g, blue: drawn.b, opacity: drawn.a)
     }
 }

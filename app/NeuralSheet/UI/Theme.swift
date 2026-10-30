@@ -103,24 +103,26 @@ extension Color {
 }
 
 /// The palette and the shared interaction rules, ported from `nn::colours` and `nn::surfaceFor` /
-/// `nn::foregroundFor`. Every name is the C++ name; every value is the C++ value.
+/// `nn::foregroundFor`. Every name is the C++ name; the dark values are the C++ values, and each
+/// has a light twin (native chrome design §3) in `Theme+Palette.swift`. Each colour is read
+/// through `ThemeAppearance`, so a SwiftUI body using one is drawn again when the appearance flips.
 ///
 /// There are no disabled variants here on purpose: a disabled control is its enabled self drawn at
 /// `disabledAlpha`.
 enum Theme {
     // MARK: - Surfaces
 
-    static let windowBorder = Color(hex: 0x26282E)
-    static let bgRoot = Color(hex: 0x131417)
-    static let bgTopBar = Color(hex: 0x17181C)
-    static let bgSidebar = Color(hex: 0x161719)
-    static let bgPanel = Color(hex: 0x15161A)
-    static let bgGutter = Color(hex: 0x16171A)
-    static let bgControl = Color(hex: 0x1C1E23)
-    static let bgControlAlt = Color(hex: 0x1B1D21)
-    static let bgControlSubtle = Color(hex: 0x1F2126)
-    static let bgControlActive = Color(hex: 0x22242A)
-    static let bgMuteActive = Color(hex: 0x3A2F22)
+    static var windowBorder: Color { palette.windowBorder }
+    static var bgRoot: Color { palette.bgRoot }
+    static var bgTopBar: Color { palette.bgTopBar }
+    static var bgSidebar: Color { palette.bgSidebar }
+    static var bgPanel: Color { palette.bgPanel }
+    static var bgGutter: Color { palette.bgGutter }
+    static var bgControl: Color { palette.bgControl }
+    static var bgControlAlt: Color { palette.bgControlAlt }
+    static var bgControlSubtle: Color { palette.bgControlSubtle }
+    static var bgControlActive: Color { palette.bgControlActive }
+    static var bgMuteActive: Color { palette.bgMuteActive }
 
     // MARK: - Dividers
 
@@ -132,85 +134,85 @@ enum Theme {
     // textButton, textIcon, textIconSoft, textLabel, textMuted, textDim, textFaint, textFainter,
     // textFaintest, textScale and textSeparator are in `Theme+Accommodations.swift` too.
 
-    static let textBright = Color(hex: 0xF2F4F7)
-    static let textPrimary = Color(hex: 0xE7E9EC)
-    static let textStrong = Color(hex: 0xDCDFE4)
-    static let textFile = Color(hex: 0xD7DADE)
+    static var textBright: Color { palette.textBright }
+    static var textPrimary: Color { palette.textPrimary }
+    static var textStrong: Color { palette.textStrong }
+    static var textFile: Color { palette.textFile }
 
     // MARK: - Accent
 
-    static let accent = Color(hex: 0x6E9BFF)
-    static let accentText = Color(hex: 0xA8C2FF)
-    static let accentFillActive = Color(hex: 0x6E9BFF, alpha: 0.14)
-    static let accentFillButton = Color(hex: 0x6E9BFF, alpha: 0.09)
-    static let accentWashWave = Color(hex: 0x6E9BFF, alpha: 0.045)
-    static let accentWashRoll = Color(hex: 0x6E9BFF, alpha: 0.03)
-    static let accentWashEdge = Color(hex: 0x6E9BFF, alpha: 0.14)
+    static var accent: Color { palette.accent }
+    static var accentText: Color { palette.accentText }
+    static var accentFillActive: Color { accent.opacity(0.14) }
+    static var accentFillButton: Color { accent.opacity(0.09) }
+    static var accentWashWave: Color { accent.opacity(0.045) }
+    static var accentWashRoll: Color { accent.opacity(0.03) }
+    static var accentWashEdge: Color { accent.opacity(0.14) }
 
     // MARK: - Status
 
-    static let warn = Color(hex: 0xF2A33C)
-    static let rec = Color(hex: 0xFF6B8A)
-    static let recIdle = Color(hex: 0x7A3B44)
+    static var warn: Color { palette.warn }
+    static var rec: Color { palette.rec }
+    static var recIdle: Color { palette.recIdle }
 
     // MARK: - Level meters
 
-    static let meterLow = Color(hex: 0x4F7A52)
-    static let meterMid = Color(hex: 0x8EC98C)
-    static let meterHot = warn
-    static let meterUnlitStrip = bgControlActive
-    static let meterUnlitMaster = bgControlSubtle
+    static var meterLow: Color { palette.meterLow }
+    static var meterMid: Color { palette.meterMid }
+    static var meterHot: Color { warn }
+    static var meterUnlitStrip: Color { bgControlActive }
+    static var meterUnlitMaster: Color { bgControlSubtle }
 
     // MARK: - Waveform
 
-    static let wavePlayed = Color(hex: 0x7D8797)
-    static let waveUnplayed = Color(hex: 0x3A3F47)
-    static let waveCentreLine = Color.white.opacity(0.05)
+    static var wavePlayed: Color { palette.wavePlayed }
+    static var waveUnplayed: Color { palette.waveUnplayed }
+    static var waveCentreLine: Color { palette.waveCentreLine }
 
     // MARK: - Piano roll
 
-    static let keyWhite = Color(hex: 0xE2E4E8)
-    static let keyBlack = Color(hex: 0x0E0F11)
-    static let laneBlack = Color(hex: 0x141519)
-    static let laneWhite = Color(hex: 0x191A1E)
-    static let noteOnsetEdge = Color.white.opacity(0.35)
+    static var keyWhite: Color { palette.keyWhite }
+    static var keyBlack: Color { palette.keyBlack }
+    static var laneBlack: Color { palette.laneBlack }
+    static var laneWhite: Color { palette.laneWhite }
+    static var noteOnsetEdge: Color { palette.noteOnsetEdge }
 
     // MARK: - Faders
 
-    static let faderTrack = Color(hex: 0x26282E)
-    static let faderTrackTop = Color(hex: 0x2B2E35)
-    static let faderThumb = Color(hex: 0xE7E9EC)
-    static let faderThumbMuted = Color(hex: 0x5A5F67)
-    static let faderFillMuted = Color(hex: 0x3A3D44)
-    static let volumeFill = Color(hex: 0x8E939C)
+    static var faderTrack: Color { palette.faderTrack }
+    static var faderTrackTop: Color { palette.faderTrackTop }
+    static var faderThumb: Color { palette.faderThumb }
+    static var faderThumbMuted: Color { palette.faderThumbMuted }
+    static var faderFillMuted: Color { palette.faderFillMuted }
+    static var volumeFill: Color { palette.volumeFill }
 
     // MARK: - Popups
 
-    static let popupBg = Color(hex: 0x1B1D21)
-    static let popupFooterBg = Color(hex: 0x191A1E)
-    static let popupRowHover = Color(hex: 0x22242A)
-    static let popupItemTicked = Color(hex: 0xE7E9EC)
-    static let checkboxTick = Color(hex: 0x12131A)
-    static let popupShadow = Color.black.opacity(0.55)
+    static var popupBg: Color { palette.popupBg }
+    static var popupFooterBg: Color { palette.popupFooterBg }
+    static var popupRowHover: Color { palette.popupRowHover }
+    static var popupItemTicked: Color { palette.popupItemTicked }
+    static var checkboxTick: Color { palette.checkboxTick }
+    static var popupShadow: Color { palette.popupShadow }
 
     // MARK: - Empty states
 
-    static let ctaBorder = accent
-    static let ctaText = accentText
-    static let ctaFill = Color(hex: 0x6E9BFF, alpha: 0.11)
-    static let dropZoneFill = Color(hex: 0x6E9BFF, alpha: 0.015)
+    static var ctaBorder: Color { accent }
+    static var ctaText: Color { accentText }
+    static var ctaFill: Color { accent.opacity(0.11) }
+    static var dropZoneFill: Color { accent.opacity(0.015) }
 
     // MARK: - Transcription progress
 
-    static let progressTrack = Color(hex: 0x26282E)
-    static let progressFill = accent
-    static let progressText = accentText
+    static var progressTrack: Color { palette.progressTrack }
+    static var progressFill: Color { accent }
+    static var progressText: Color { accentText }
 
     // MARK: - Vertical zoom slider
 
-    static let zoomTrack = Color(hex: 0x26282E)
-    static let zoomFill = Color(hex: 0x6B7078)
-    static let zoomThumb = Color(hex: 0xC2C6CC)
+    static var zoomTrack: Color { palette.zoomTrack }
+    static var zoomFill: Color { palette.zoomFill }
+    static var zoomThumb: Color { palette.zoomThumb }
 
     // MARK: - Instrument-derived chips
 
@@ -225,8 +227,8 @@ enum Theme {
         colour.opacity(Accommodations.shared.increaseContrast ? 1 : 0.25)
     }
 
-    static let soloRowTint = Color(hex: 0xFF6B8A, alpha: 0.05)
-    static let soloButtonBg = Color(hex: 0xFF6B8A, alpha: 0.18)
+    static var soloRowTint: Color { rec.opacity(0.05) }
+    static var soloButtonBg: Color { rec.opacity(0.18) }
 
     // MARK: - Global alphas
 

@@ -38,7 +38,7 @@ struct InstrumentCard: View {
 
     var body: some View {
         let s = Scaled(k: k)
-        let colour = Color(.sRGB, red: entry.info.colour.r, green: entry.info.colour.g, blue: entry.info.colour.b, opacity: entry.info.colour.a)
+        let colour = Color(instrument: entry.info.colour)
 
         VStack(alignment: .leading, spacing: 0) {
             HStack(spacing: s(8)) {

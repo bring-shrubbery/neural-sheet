@@ -87,6 +87,7 @@ targets:
       # over the timeline geometry, the palette and text, the theme and the type ramp.
       - path: ../app/NeuralSheet/UI/Theme.swift
       - path: ../app/NeuralSheet/UI/Theme+Accommodations.swift
+      - path: ../app/NeuralSheet/UI/Theme+Palette.swift
       - path: ../app/NeuralSheet/UI/Accessibility/Accommodations.swift
       - path: ../app/NeuralSheet/UI/Fonts.swift
       - path: ../app/NeuralSheet/UI/Localization/Formats.swift

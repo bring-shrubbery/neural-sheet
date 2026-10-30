@@ -135,7 +135,8 @@ struct ScoreRenderer {
                 var hitFrame = CGRect(x: leftEdge, y: centreY - sp, width: room, height: 2 * sp)
 
                 if arrangement.sheet.showsPartNames {
-                    let colour = TimelinePalette.cg(Instruments.info(forProgram: part.program).colour, alpha: 1)
+                    let colour = TimelinePalette.cg(TimelinePalette.instrument(Instruments.info(forProgram: part.program).colour,
+                                                                               dark: style.instrumentsDark), alpha: 1)
                     // The instrument's name in the user's language on screen and in the PDF; the
                     // MusicXML keeps the package's English (localization design §2).
                     var label = isFirst ? CoreNames.localized(part.name) : part.abbreviation
@@ -287,15 +288,30 @@ extension ScoreRenderer {
         var selectionEdge: CGColor
         /// The line around a page, so the sheet reads against the surround; nil draws none.
         var pageEdge: CGColor?
+        /// Whether the part names take the instruments' dark-side colours: on screen, as the
+        /// appearance has them (native chrome design §3); on paper, as they always were.
+        var instrumentsDark = true
 
-        static let screen = Style(paper: TimelinePalette.cg(Theme.bgRoot),
-                                  ink: TimelinePalette.cg(Theme.textBright),
-                                  line: TimelinePalette.cg(Theme.textScale),
-                                  faint: TimelinePalette.cg(Theme.textFaint),
-                                  unplayable: TimelinePalette.cg(Theme.warn),
-                                  cursor: TimelinePalette.cg(Theme.accent),
-                                  selectionEdge: TimelinePalette.cg(Theme.accent),
-                                  pageEdge: TimelinePalette.cg(Theme.textScale))
+        /// The screen's style in the appearance the app is drawn in.
+        static var screen: Style { ThemeAppearance.shared.isDark ? darkScreen : lightScreen }
+
+        private static let darkScreen = screenStyle(dark: true)
+        private static let lightScreen = screenStyle(dark: false)
+
+        private static func screenStyle(dark: Bool) -> Style {
+            let p: Theme.Palette = dark ? .dark : .light
+            let c: Theme.ContrastPalette = dark ? .darkStandard : .lightStandard
+
+            return Style(paper: TimelinePalette.cg(p.bgRoot),
+                         ink: TimelinePalette.cg(p.textBright),
+                         line: TimelinePalette.cg(c.textScale),
+                         faint: TimelinePalette.cg(c.textFaint),
+                         unplayable: TimelinePalette.cg(p.warn),
+                         cursor: TimelinePalette.cg(p.accent),
+                         selectionEdge: TimelinePalette.cg(p.accent),
+                         pageEdge: TimelinePalette.cg(c.textScale),
+                         instrumentsDark: dark)
+        }
 
         /// For paper: the unplayable warning and the accent stay the screen's; the page has no
         /// surround to read against, so no edge.
@@ -303,9 +319,9 @@ extension ScoreRenderer {
                                  ink: CGColor(gray: 0, alpha: 1),
                                  line: CGColor(gray: 0.45, alpha: 1),
                                  faint: CGColor(gray: 0.55, alpha: 1),
-                                 unplayable: TimelinePalette.cg(Theme.warn),
-                                 cursor: TimelinePalette.cg(Theme.accent),
-                                 selectionEdge: TimelinePalette.cg(Theme.accent),
+                                 unplayable: TimelinePalette.cg(Theme.Palette.dark.warn),
+                                 cursor: TimelinePalette.cg(Theme.Palette.dark.accent),
+                                 selectionEdge: TimelinePalette.cg(Theme.Palette.dark.accent),
                                  pageEdge: nil)
     }
 }

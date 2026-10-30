@@ -82,6 +82,7 @@ targets:
       # iPhone and iPad views over the same painters are in NeuralSheet/Timeline.
       - path: ../app/NeuralSheet/UI/Theme.swift
       - path: ../app/NeuralSheet/UI/Theme+Accommodations.swift
+      - path: ../app/NeuralSheet/UI/Theme+Palette.swift
       - path: ../app/NeuralSheet/UI/Fonts.swift
       - path: ../app/NeuralSheet/UI/Localization/Formats.swift
       - path: ../app/NeuralSheet/UI/Timeline/TimelineGeometry.swift

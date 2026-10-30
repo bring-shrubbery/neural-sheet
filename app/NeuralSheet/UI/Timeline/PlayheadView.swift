@@ -48,10 +48,13 @@ final class PlayheadView: NSView {
 /// A flat rectangle of one colour, for the washes and lines that move with the playhead or the
 /// decode frontier: the played region's tint and its edge, the frontier's shade and its line.
 /// `updateLayer` rather than `draw`, so there is no backing store however wide it gets.
+///
+/// The colour is read again on every `updateLayer`, so a repaint after the appearance changes
+/// (native chrome design §2) picks up the palette now in force.
 final class FillView: NSView {
-    private let colour: CGColor
+    private let colour: () -> CGColor
 
-    init(colour: CGColor) {
+    init(colour: @escaping @autoclosure () -> CGColor) {
         self.colour = colour
         super.init(frame: .zero)
         wantsLayer = true
@@ -67,7 +70,7 @@ final class FillView: NSView {
     override var wantsUpdateLayer: Bool { true }
 
     override func updateLayer() {
-        layer?.backgroundColor = colour
+        layer?.backgroundColor = colour()
     }
 
     override func hitTest(_ point: NSPoint) -> NSView? { nil }

@@ -85,7 +85,7 @@ struct RetranscribeButton: View {
 
             ForEach(inMix, id: \.program) { info in
                 if let group = info.group {
-                    MenuRow(title: info.localizedName, isTicked: chosen.contains(group), chip: Color(info.colour)) {
+                    MenuRow(title: info.localizedName, isTicked: chosen.contains(group), chip: Color(instrument: info.colour)) {
                         model.toggleRetranscribeGroup(group)
                         refreshRows(range: range)
                     }
