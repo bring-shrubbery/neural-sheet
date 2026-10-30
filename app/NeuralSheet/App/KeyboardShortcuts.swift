@@ -36,6 +36,7 @@ import NeuralSheetCore
 /// | key | action |
 /// |---|---|
 /// | ↑ / ↓ | the selected tab note a string up / down |
+/// | ← / → | the previous / next note on the selected note's tab |
 ///
 /// A press while a text field has the keyboard is the field's; so is anything
 /// with Command, Control or Option down, which are the menu bar's. Only the main window's own
@@ -113,13 +114,21 @@ import NeuralSheetCore
             return handled
         }
 
-        // The Score tab's keys: the selected tab note a string up or down. Up is toward the top
-        // tab line, up the page, whatever pitch that string is tuned to.
-        if model.workspace == .score, !shift, event.keyCode == KeyCode.up || event.keyCode == KeyCode.down {
+        // The Score tab's keys: the selected tab note a string up or down, or the selection to the
+        // next or previous note on its tab. Up is toward the top tab line, up the page, whatever
+        // pitch that string is tuned to.
+        if model.workspace == .score, !shift,
+           [KeyCode.left, KeyCode.right, KeyCode.up, KeyCode.down].contains(event.keyCode) {
             // With nothing selected the key is not the Score tab's; it falls through.
             guard model.selectedTabNote != nil else { return false }
 
-            model.moveSelectedTabString(by: event.keyCode == KeyCode.up ? 1 : -1)
+            switch event.keyCode {
+            case KeyCode.up, KeyCode.down:
+                model.moveSelectedTabString(by: event.keyCode == KeyCode.up ? 1 : -1)
+            default:
+                model.stepSelectedTabNote(by: event.keyCode == KeyCode.right ? 1 : -1)
+            }
+
             return true
         }
 

@@ -78,6 +78,20 @@ extension AppModel {
         setString(min(max(current + delta, 0), tab.tuning.count - 1), program: selected.program, id: selected.id)
     }
 
+    /// ← / → in the Score tab: the next or previous note on the selected note's tab, in reading
+    /// order (`ScoreDocument.tabStops`), staying put at either end.
+    func stepSelectedTabNote(by delta: Int) {
+        guard let selected = selectedTabNote else { return }
+
+        let stops = scoreDocument().tabStops(program: selected.program)
+        guard let index = stops.firstIndex(where: { $0.id == selected.id }) else { return }
+
+        let next = min(max(index + delta, 0), stops.count - 1)
+        if next != index {
+            selectedTabNote = (selected.program, stops[next].id)
+        }
+    }
+
     /// The string a note is on now: the manual choice, else where the automatic placement put
     /// it, read off a fresh score.
     func currentString(program: Int, id: NoteID) -> Int? {
