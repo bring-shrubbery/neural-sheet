@@ -1,3 +1,6 @@
+#if os(macOS)
+import AppKit
+#endif
 import CoreText
 import Foundation
 import SwiftUI
@@ -60,20 +63,69 @@ enum Fonts {
         static let pillLabelWide: Double = 0.09
     }
 
+    // MARK: - The face
+
+    /// Native chrome design §2: the Mac app's chrome is set in the system font at macOS sizes,
+    /// figures in its monospaced digits. Set once at launch, before anything is drawn; the iOS
+    /// app and the Audio Unit, which share this file, leave it off and keep the bundled faces.
+    /// The drawn timeline and the score use the faces by name and are not affected.
+    nonisolated(unsafe) static var usesSystemFace = false
+
+    /// An authored size as the system face sets it: nothing under 10, the small labels at 11,
+    /// the controls at 13, which are the sizes macOS sets its own chrome in.
+    static func systemSize(_ pointSize: CGFloat) -> CGFloat {
+        if pointSize <= 8 { return 10 }
+        if pointSize < 11 { return 11 }
+        if pointSize < 13 { return 13 }
+
+        return pointSize
+    }
+
+    private static func systemWeight(_ weight: Int) -> Font.Weight {
+        if weight >= 700 { return .bold }
+        if weight >= 600 { return .semibold }
+        if weight >= 500 { return .medium }
+
+        return .regular
+    }
+
     // MARK: - Families
 
     /// Inter at a point height, picking the face the weight maps onto. Relative to the body
     /// style, so the system's accessibility text size scales it (a11y design §2); at the
-    /// default size it is exactly `pointSize`.
+    /// default size it is exactly `pointSize`. The system font at its macOS size when
+    /// ``usesSystemFace`` is on.
     static func sans(_ pointSize: CGFloat, weight: Int, scale: CGFloat = 1) -> Font {
-        Font.custom(sansName(weight), size: pointSize * scale, relativeTo: .body)
+        if usesSystemFace {
+            return Font.system(size: systemSize(pointSize) * scale, weight: systemWeight(weight))
+        }
+
+        return Font.custom(sansName(weight), size: pointSize * scale, relativeTo: .body)
     }
 
     /// JetBrains Mono NL at a point height, picking the face the weight maps onto; scaled with
-    /// the accessibility text size as `sans` is.
+    /// the accessibility text size as `sans` is. The system font with monospaced digits when
+    /// ``usesSystemFace`` is on: the figures still line up, the letters read as the chrome's.
     static func mono(_ pointSize: CGFloat, weight: Int, scale: CGFloat = 1) -> Font {
-        Font.custom(monoName(weight), size: pointSize * scale, relativeTo: .body)
+        if usesSystemFace {
+            return Font.system(size: systemSize(pointSize) * scale, weight: systemWeight(weight)).monospacedDigit()
+        }
+
+        return Font.custom(monoName(weight), size: pointSize * scale, relativeTo: .body)
     }
+
+    #if os(macOS)
+    /// The font a label set by ``sans(_:weight:scale:)`` is drawn in, for measuring it.
+    static func measuring(_ pointSize: CGFloat, weight: Int) -> NSFont {
+        if usesSystemFace {
+            let nsWeight: NSFont.Weight = weight >= 700 ? .bold : weight >= 600 ? .semibold : weight >= 500 ? .medium : .regular
+
+            return NSFont.systemFont(ofSize: systemSize(pointSize), weight: nsWeight)
+        }
+
+        return NSFont(name: sansName(weight), size: pointSize) ?? NSFont.systemFont(ofSize: pointSize)
+    }
+    #endif
 
     static func sansName(_ weight: Int) -> String {
         if weight >= 700 { return Name.interBold }

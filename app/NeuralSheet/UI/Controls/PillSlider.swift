@@ -1,7 +1,9 @@
 import SwiftUI
 
 /// The flat horizontal fader used by the dry/wet control, the output volume and every instrument
-/// strip (`NnFlatSlider`): a 3 px track, a fill up to the value, and a 3 x 11 thumb.
+/// strip (`NnFlatSlider`): a track, a fill up to the value, and a thumb. A 4 pt track and a 16 pt
+/// round knob since the native chrome (native chrome design §2), the size of the system's small
+/// slider, rather than `NnFlatSlider`'s 3 px track and 3 x 11 bar, which was hard to grab.
 ///
 /// The thumb travel is inset by `thumbIndent` at both ends and the drag maps across exactly that
 /// same span, so the thumb always sits under the pointer.
@@ -28,12 +30,11 @@ struct PillSlider: View {
     @Environment(\.uiScale) private var k
     @Environment(\.isEnabled) private var isEnabled
 
-    /// Authored extents, from `NnFlatSlider`.
-    private static let trackHeight: CGFloat = 3
-    private static let thumbWidth: CGFloat = 3
-    private static let thumbHeight: CGFloat = 11
-    /// Half the thumb, rounded up, so the travel can be expressed on both sides.
-    private static let thumbIndent: CGFloat = 2
+    private static let trackHeight: CGFloat = 4
+    private static let thumbWidth: CGFloat = 16
+    private static let thumbHeight: CGFloat = 16
+    /// Half the thumb, so it stops at the track's ends.
+    private static let thumbIndent: CGFloat = 8
 
     init(value: Binding<Double>,
          range: ClosedRange<Double>,
@@ -75,8 +76,10 @@ struct PillSlider: View {
                 .frame(width: max(0, centre), height: trackHeight)
 
             if let thumb {
-                Capsule(style: .circular)
+                Circle()
                     .fill(thumb)
+                    .overlay(Circle().strokeBorder(Color.black.opacity(0.12), lineWidth: 0.5))
+                    .shadow(color: .black.opacity(0.22), radius: 1.5, y: 0.5)
                     .frame(width: s(Self.thumbWidth), height: height)
                     .offset(x: centre - s(Self.thumbWidth) / 2)
             }

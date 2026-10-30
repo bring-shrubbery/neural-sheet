@@ -68,7 +68,7 @@ extension Theme {
             wavePlayed: Color(hex: 0x636366), waveUnplayed: Color(hex: 0xC7C7CC), waveCentreLine: Color.black.opacity(0.06),
             keyWhite: Color(hex: 0xFFFFFF), keyBlack: Color(hex: 0x2C2C2E), laneBlack: Color(hex: 0xF0F0F3),
             laneWhite: Color(hex: 0xFFFFFF), noteOnsetEdge: Color.white.opacity(0.45),
-            faderTrack: Color(hex: 0xD1D1D6), faderTrackTop: Color(hex: 0xD1D1D6), faderThumb: Color(hex: 0x3A3A3C),
+            faderTrack: Color(hex: 0xD1D1D6), faderTrackTop: Color(hex: 0xD1D1D6), faderThumb: Color(hex: 0xFFFFFF),
             faderThumbMuted: Color(hex: 0xAEAEB2), faderFillMuted: Color(hex: 0xC7C7CC), volumeFill: Color(hex: 0x8E8E93),
             popupBg: Color(hex: 0xFFFFFF), popupFooterBg: Color(hex: 0xF5F5F7), popupRowHover: Color(hex: 0xE8E8ED),
             popupItemTicked: Color(hex: 0x1D1D1F), checkboxTick: Color(hex: 0xFFFFFF), popupShadow: Color.black.opacity(0.18),

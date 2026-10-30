@@ -23,6 +23,8 @@ struct NeuralSheetApp: App {
 
     init() {
         FontRegistry.registerBundledFonts()
+        // The chrome in the system font (native chrome design §2), before anything is drawn.
+        Fonts.usesSystemFace = true
 
         let model = AppModel()
         _model = State(initialValue: model)

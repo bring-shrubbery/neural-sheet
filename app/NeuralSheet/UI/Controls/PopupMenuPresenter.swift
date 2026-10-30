@@ -44,8 +44,7 @@ import SwiftUI
     /// and the tick column, never narrower than the minimum, then the 4 px `PopupMenu` border on
     /// each side (`workOutManualSize`). Authored units in, scaled points out.
     static func width(forTitles titles: [String], scale: CGFloat) -> CGFloat {
-        let font = NSFont(name: Fonts.Name.interRegular, size: Fonts.Size.menuItem)
-            ?? NSFont.systemFont(ofSize: Fonts.Size.menuItem)
+        let font = Fonts.measuring(Fonts.Size.menuItem, weight: 500)
         let tickColumn = MenuMetrics.checkboxSize + MenuMetrics.padX
         let border = MenuMetrics.listPadY
 
