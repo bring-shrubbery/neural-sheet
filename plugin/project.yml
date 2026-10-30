@@ -35,7 +35,7 @@ settings:
     # The plugin is released beside the app and carries its version: the Mac app's
     # MARKETING_VERSION here (Scripts/check-version.sh fails otherwise), the release's version
     # on the release's command line, as the Mac app's archive takes it.
-    MARKETING_VERSION: 1.1.0
+    MARKETING_VERSION: 1.2.0
     CURRENT_PROJECT_VERSION: 1
 
 packages:
@@ -182,11 +182,11 @@ targets:
                 name: "Quassum: NeuralSheet"
                 description: NeuralSheet
                 # MARKETING_VERSION as the integer a component carries (major << 16 |
-                # minor << 8 | patch: 1.1.0 is 0x010100), which hosts compare to decide whether a
+                # minor << 8 | patch: 1.2.0 is 0x010200), which hosts compare to decide whether a
                 # cached scan is stale. An integer, so it cannot be a build setting; kept in step
                 # with MARKETING_VERSION by hand, and Scripts/check-version.sh fails when they
                 # disagree. The release stamps its own version's integer into the built extension.
-                version: 65792
+                version: 66048
                 factoryFunction: $(PRODUCT_MODULE_NAME).NeuralSheetAUViewController
                 sandboxSafe: true
                 tags:
