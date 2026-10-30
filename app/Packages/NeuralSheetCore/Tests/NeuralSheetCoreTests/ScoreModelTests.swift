@@ -222,6 +222,27 @@ private extension ScorePiece {
     #expect(part.staves[0].measures[0].pieces[0].notes.map(\.writtenPitch) == [67, 76])
 }
 
+@Test func tabStopsReadAcrossTheBarsAChordLowestFirst() {
+    var arrangement = ScoreArrangement()
+    var guitar = PartDisplay()
+    guitar.mode = .tab
+    guitar.tab = TabTemplate.template(id: "guitar")!.setup(preset: TabTemplate.template(id: "guitar")!.presets[0])
+    guitar.strings = [NoteID(1): 0]
+    arrangement.parts[24] = guitar
+
+    // A chord, a note tied over the bar line, a note in the second bar; a piano note between.
+    let notes = [note(64, at: 0, program: 24), note(52, at: 0, program: 24), note(57, at: 1.5, length: 1, program: 24),
+                 note(60, at: 0.5), note(55, at: 3, program: 24)]
+    let ids: [NoteID?] = [NoteID(1), NoteID(2), NoteID(3), NoteID(4), NoteID(5)]
+    let score = ScoreDocument.build(notes: notes, ids: ids, grid: grid, key: nil, arrangement: arrangement)
+
+    #expect(score.tabStops(program: 24) == [ScoreTabStop(id: NoteID(2), measure: 0), ScoreTabStop(id: NoteID(1), measure: 0),
+                                             ScoreTabStop(id: NoteID(3), measure: 0), ScoreTabStop(id: NoteID(5), measure: 1)],
+            "by pitch in the chord whatever the strings; the tied note once")
+    #expect(score.tabStops(program: 0).isEmpty, "the piano has no tab")
+    #expect(score.tabStops(program: 40).isEmpty, "no such part")
+}
+
 @Test func tabOnlyAndHiddenParts() {
     var arrangement = ScoreArrangement()
     var bass = PartDisplay()
