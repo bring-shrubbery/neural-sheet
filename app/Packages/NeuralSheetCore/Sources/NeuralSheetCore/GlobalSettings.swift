@@ -72,6 +72,10 @@ public struct GlobalSettings: Codable, Equatable, Sendable {
     public var audioExportFormat: AudioExportFormat = .wav24
     public var audioExportMarkedRange = false
 
+    /// Settings → General → Appearance (native chrome design §2): the system's, or light or dark
+    /// whatever the system says.
+    public var appearance: AppearanceSetting = .system
+
     /// What the Count-in picker offers.
     public static let countInChoices = [0, 1, 2]
 
@@ -94,7 +98,8 @@ public struct GlobalSettings: Codable, Equatable, Sendable {
         midiOutMutesSynth: Bool = true,
         audioExportWhat: AudioExportWhat = .midi,
         audioExportFormat: AudioExportFormat = .wav24,
-        audioExportMarkedRange: Bool = false
+        audioExportMarkedRange: Bool = false,
+        appearance: AppearanceSetting = .system
     ) {
         self.modelSize = modelSize
         self.editorScale = editorScale
@@ -115,6 +120,7 @@ public struct GlobalSettings: Codable, Equatable, Sendable {
         self.audioExportWhat = audioExportWhat
         self.audioExportFormat = audioExportFormat
         self.audioExportMarkedRange = audioExportMarkedRange
+        self.appearance = appearance
     }
 
     // MARK: - Files
@@ -148,6 +154,7 @@ public struct GlobalSettings: Codable, Equatable, Sendable {
         case soundBankPath, countInBars, clickWhileRecording, recordingInput
         case midiOutUniqueID, midiOutMutesSynth
         case audioExportWhat, audioExportFormat, audioExportMarkedRange
+        case appearance
     }
 
     /// Every key falls back to its default, so a file written by a version that did not have one
@@ -193,5 +200,7 @@ public struct GlobalSettings: Codable, Equatable, Sendable {
             .flatMap { $0 } ?? defaults.audioExportFormat
         audioExportMarkedRange =
             try container.decodeIfPresent(Bool.self, forKey: .audioExportMarkedRange) ?? defaults.audioExportMarkedRange
+        appearance = (try? container.decodeIfPresent(AppearanceSetting.self, forKey: .appearance))
+            .flatMap { $0 } ?? defaults.appearance
     }
 }

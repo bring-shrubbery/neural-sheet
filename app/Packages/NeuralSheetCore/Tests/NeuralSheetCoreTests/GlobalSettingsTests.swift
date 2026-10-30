@@ -151,3 +151,42 @@ private func makeTempDirectory() throws -> URL {
     #expect(GlobalSettings.load(from: url).midiOutUniqueID == nil)
     #expect(GlobalSettings.load(from: url).midiOutMutesSynth)
 }
+
+@Test func globalSettingsAppearanceRoundTripsAndDefaultsToSystem() throws {
+    let directory = try makeTempDirectory()
+    defer { try? FileManager.default.removeItem(at: directory) }
+    let url = directory.appendingPathComponent("global.settings")
+
+    #expect(GlobalSettings().appearance == .system)
+
+    var settings = GlobalSettings()
+    settings.appearance = .light
+    try settings.save(to: url)
+
+    #expect(GlobalSettings.load(from: url).appearance == .light)
+}
+
+@Test func globalSettingsUnknownAppearanceFallsBackToSystem() throws {
+    let directory = try makeTempDirectory()
+    defer { try? FileManager.default.removeItem(at: directory) }
+    let url = directory.appendingPathComponent("global.settings")
+    // A value a later version might write; the rest of the file must still load.
+    let plist = """
+        <?xml version="1.0" encoding="UTF-8"?>
+        <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+        <plist version="1.0">
+        <dict>
+            <key>appearance</key>
+            <string>sepia</string>
+            <key>tooltipsVisible</key>
+            <false/>
+        </dict>
+        </plist>
+        """
+    try Data(plist.utf8).write(to: url)
+
+    let loaded = GlobalSettings.load(from: url)
+
+    #expect(loaded.appearance == .system)
+    #expect(!loaded.tooltipsVisible)
+}
