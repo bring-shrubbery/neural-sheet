@@ -222,6 +222,7 @@ final class ScoreContainerView: NSView {
         if selected?.program != score.selectedTabNote?.program || selected?.id != score.selectedTabNote?.id {
             score.selectedTabNote = selected
             score.needsDisplay = true
+            revealSelectedTabNote()
         }
 
         if score.takeName != model.droppedFileName {
@@ -256,6 +257,28 @@ final class ScoreContainerView: NSView {
         updateCursor()
     }
 
+    /// ← / → can step the tab selection onto a system off the screen; it comes into view as the
+    /// playhead's does. A clicked note is on the screen already, so a click never scrolls.
+    private func revealSelectedTabNote() {
+        guard let selected = score.selectedTabNote, let layout = score.layout,
+              let stop = score.document.tabStops(program: selected.program).first(where: { $0.id == selected.id }),
+              let (system, _) = layout.box(forMeasure: stop.measure)
+        else { return }
+
+        scrollIntoView(system.frame, layout: layout)
+    }
+
+    /// Scrolls so `frame` shows with a little room, when it does not already.
+    private func scrollIntoView(_ frame: CGRect, layout: ScoreLayout) {
+        let visible = scrollView.contentView.bounds
+
+        if frame.minY - layout.sp * 2 < visible.minY || frame.maxY + layout.sp * 2 > visible.maxY {
+            let target = max(0, min(frame.minY - layout.sp * 3, score.frame.height - visible.height))
+            scrollView.contentView.scroll(to: CGPoint(x: 0, y: target))
+            scrollView.reflectScrolledClipView(scrollView.contentView)
+        }
+    }
+
     private func updateCursor() {
         guard model.state.canPlay, let layout = score.layout,
               let position = score.document.measureIndex(atSeconds: model.playheadSeconds, grid: model.editor.grid)
@@ -273,14 +296,7 @@ final class ScoreContainerView: NSView {
         else { return }
 
         cursorSystemIndex = systemIndex
-        let system = layout.systems[systemIndex]
-        let visible = scrollView.contentView.bounds
-
-        if system.frame.minY - layout.sp * 2 < visible.minY || system.frame.maxY + layout.sp * 2 > visible.maxY {
-            let target = max(0, min(system.frame.minY - layout.sp * 3, score.frame.height - visible.height))
-            scrollView.contentView.scroll(to: CGPoint(x: 0, y: target))
-            scrollView.reflectScrolledClipView(scrollView.contentView)
-        }
+        scrollIntoView(layout.systems[systemIndex].frame, layout: layout)
     }
 }
 
