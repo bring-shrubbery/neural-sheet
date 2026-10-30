@@ -47,6 +47,7 @@ Work towards v2 starts here: user-experience improvements beyond NeuralNote pari
 - NeuralSheet speaks German and Spanish, and works with VoiceOver, full keyboard access and the system's contrast, transparency and motion settings.
 - NeuralSheet is also an Audio Unit: capture a clip on any track, transcribe it in the plugin, and drag the MIDI onto an instrument track or record it from the plugin's MIDI source.
 - In the Score tab, ← and → move the selected tab note to the previous or next note, so you can change strings note after note.
+- A light appearance: NeuralSheet follows the Mac's Light or Dark setting, or keeps one of its own in Settings → General → Appearance.
 
 ### Changed
 
@@ -56,6 +57,7 @@ Work towards v2 starts here: user-experience improvements beyond NeuralNote pari
 - Clicking the timeline, or pressing Return in a field, gives the keyboard back to the transport.
 - The window is titled after the project.
 - The transcription engine is now written in Swift, so it runs on the Mac's GPU without any C++ and can be built for iOS.
+- A new window: the tabs and their tools are in the toolbar, the mixer in the sidebar, the grid, the key and the selected notes in an inspector on the right (⌥⌘0), and the transport floats over the timeline.
 
 ### Removed
 
