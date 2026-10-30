@@ -213,7 +213,9 @@ the page number at the outer edge.
 Selection: the renderer records each drawn tab note's frame and id into the layout's hit list;
 `ScoreView` keeps `selectedTabNote: (program: Int, id: NoteID)?`, draws its frame with the
 accent, and on ↑/↓ (via `KeyboardShortcuts` in the `.score` workspace) calls
-`setString(program:id:string:)`; a right-click opens a card listing the strings with the fret
+`setString(program:id:string:)`; ←/→ move the selection to the previous or next note on the same
+tab (`ScoreDocument.tabStops`: bar by bar, a chord lowest pitch first, a tied note once; it stops
+at either end), scrolling its system into view; a right-click opens a card listing the strings with the fret
 each would need, unplayable ones red.
 
 ## 5. Model
